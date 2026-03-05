@@ -1,0 +1,8 @@
+.gemini/
+.agents/
+.agent/
+.stitch/
+desktop_preview.html
+node_modules/
+.DS_Store
+*.log

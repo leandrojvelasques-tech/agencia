@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Leandro Velasques | Automatización Real con IA</title>
+  <meta
+    content="Automatización Real. Sin Humo. Multiplicá tu tiempo con IA. Soluciones de Inteligencia Artificial que generan resultados medibles."
+    name="description" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.12)',
+            'card-hover': '0 20px 40px -15px rgba(40, 90, 71, 0.15)',
+          },
+          borderRadius: {
+            'premium': '10px',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+            body {
+                @apply bg-refined-gray text-dark-gray font-sans;
+            }
+            h1, h2, h3, h4 {
+                @apply font-heading text-deep-green;
+            }
+        }
+        .glass-nav {
+            background: rgba(237, 237, 237, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(40, 90, 71, 0.08);
+        }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #A8D5C1;
+            z-index: 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .rounded-premium-btn {
+            border-radius: 10px;
+        }
+        .rounded-premium-card {
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+  <a aria-label="WhatsApp"
+    class="fixed bottom-8 right-8 z-[60] bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+    href="#">
+    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+      <path
+        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z">
+      </path>
+    </svg>
+  </a>
+  <header class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center gap-3">
+          <img alt="Leandro Velasques" class="h-10 w-auto"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp9q1923nCthFqyWTs3_I_FdOVRnuN8Nr5LYMlCK1vg7dKIg6wa8qoqNew1ob-d8Fs4exy_thGFdy_Z8dFSmmv0dl7BwrqPM_I1ibsNca_Z8m4ZMTcBrGL6j8INwxHp7J6JXmPZORcF-5JHNZ5EIf8YiSsEqFgBSahk3YQ0Axc27Q7aBHOpDOXWVz9XI3eb-n19Yaidk9Zu-jwnQjOHKbUWcmZCYVqicYVcNkVj858bQZ2wswfS7QkYSqa6zmNZHzrlZmwodUneLs" />
+          <span class="font-heading font-extrabold text-deep-green tracking-tight text-xl">LEANDRO VELASQUES</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-10">
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="#beneficios">Beneficios</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="#servicios">Servicios</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="#metodologia">Metodología</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="#casos">Casos</a>
+          <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
+            href="#contacto">Contacto</a>
+        </nav>
+        <a class="md:hidden bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold shadow-premium"
+          href="#contacto">Contacto</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="relative pt-20 pb-28 lg:pt-36 lg:pb-44 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+          <div class="space-y-10 max-w-2xl">
+            <div
+              class="inline-flex items-center gap-2 bg-white/60 border border-deep-green/10 px-5 py-2.5 rounded-full">
+              <span class="flex h-2 w-2 rounded-full bg-deep-green animate-pulse"></span>
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green">Automatización &amp; Eficiencia
+                Real</span>
+            </div>
+            <h1 class="text-5xl lg:text-7xl font-extrabold leading-[1.05] tracking-tight text-deep-green">
+              Automatización Real. <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-deep-green to-light-green">Sin Humo.</span>
+              Multiplicá tu tiempo con IA.
+            </h1>
+            <p class="text-xl text-dark-gray leading-relaxed font-medium">
+              Dejá de apagar incendios. Diseñó e implemento soluciones de Inteligencia Artificial que ordenan tus
+              procesos y generan resultados medibles desde el primer día.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-5 pt-4">
+              <a class="bg-deep-green text-white px-10 py-5 rounded-premium-btn font-bold text-center hover:translate-y-[-2px] transition-all shadow-premium text-lg"
+                href="https://cal.com/leandro-velasques">Agendar una videollamada gratis</a>
+              <a class="bg-white border-2 border-deep-green text-deep-green px-10 py-5 rounded-premium-btn font-bold text-center hover:bg-deep-green hover:text-white transition-all text-lg"
+                href="#servicios">Ver servicios</a>
+            </div>
+          </div>
+          <div class="relative">
+            <div class="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+              <img alt="High Performance AI Implementation" class="w-full h-auto object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6Ccl2I99nDXBJBNjENAC-mJXCcaIcIUZynVnPYwtRKXnYJBUIO_jNzAfeahLCpiBGo5U5RPZp3H37l9h-ROJLosrD1ORac4dR3lDaOMjDpcwLaWngiyKIYs6IWXZsFxVy1W036KT63EpQCkt8mWZ3RAaz2wmdLu5LYnUj_6RnUzwiMbj1g0xnWVq7-TUH9CgdodtaQ6edR-VlAjoG6Oh1LfRBn285W_bYFdmqdV6Ry7PGk2CMSreQMWNQ1HOcj4N5vsq3dDKrzSI" />
+            </div>
+            <div class="absolute -top-12 -right-12 w-72 h-72 bg-light-green/20 rounded-full blur-3xl -z-0"></div>
+            <div class="absolute -bottom-12 -left-12 w-72 h-72 bg-deep-green/10 rounded-full blur-3xl -z-0"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-16 border-y border-deep-green/5 bg-white/40">
+      <div class="max-w-7xl mx-auto px-6">
+        <p class="text-center text-xs font-bold uppercase tracking-[0.25em] text-dark-gray/50 mb-12">Nuestros Clientes
+        </p>
+        <div
+          class="flex flex-wrap justify-center items-center gap-8 md:gap-16 lg:gap-28 opacity-30 grayscale brightness-50">
+          <div class="h-7 w-32 bg-dark-gray/40 rounded"></div>
+          <div class="h-7 w-40 bg-dark-gray/40 rounded"></div>
+          <div class="h-7 w-28 bg-dark-gray/40 rounded"></div>
+          <div class="h-7 w-36 bg-dark-gray/40 rounded"></div>
+          <div class="h-7 w-32 bg-dark-gray/40 rounded"></div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40" id="beneficios">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center max-w-3xl mx-auto mb-24">
+          <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Resultados que escalan tu negocio</h2>
+          <p class="text-xl text-dark-gray/70">No implementamos tecnología por moda, sino para optimizar tu rentabilidad
+            y liberar tu potencial directivo.</p>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div
+            class="bg-white p-10 rounded-premium-card shadow-premium hover:shadow-card-hover transition-all group border border-deep-green/5">
+            <div
+              class="w-16 h-16 bg-refined-gray rounded-premium-card flex items-center justify-center text-deep-green mb-8 group-hover:bg-deep-green group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-4xl">schedule</span>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-deep-green">Vuelve a enfocarte en lo importante</h3>
+            <p class="text-dark-gray/80 leading-relaxed text-sm">Delegá la carga operativa a sistemas inteligentes y
+              recuperá horas para la visión estratégica de tu empresa.</p>
+          </div>
+          <div
+            class="bg-white p-10 rounded-premium-card shadow-premium hover:shadow-card-hover transition-all group border border-deep-green/5">
+            <div
+              class="w-16 h-16 bg-refined-gray rounded-premium-card flex items-center justify-center text-deep-green mb-8 group-hover:bg-deep-green group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-4xl">account_tree</span>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-deep-green">Procesos que funcionan solos</h3>
+            <p class="text-dark-gray/80 leading-relaxed text-sm">Flujos de trabajo orquestados que se ejecutan sin
+              fricción, garantizando orden total en cada área.</p>
+          </div>
+          <div
+            class="bg-white p-10 rounded-premium-card shadow-premium hover:shadow-card-hover transition-all group border border-deep-green/5">
+            <div
+              class="w-16 h-16 bg-refined-gray rounded-premium-card flex items-center justify-center text-deep-green mb-8 group-hover:bg-deep-green group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-4xl">support_agent</span>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-deep-green">Atención impecable 24/7</h3>
+            <p class="text-dark-gray/80 leading-relaxed text-sm">Sistemas de IA que responden, califican y venden en
+              tiempo real, sin importar la hora o el día.</p>
+          </div>
+          <div
+            class="bg-white p-10 rounded-premium-card shadow-premium hover:shadow-card-hover transition-all group border border-deep-green/5">
+            <div
+              class="w-16 h-16 bg-refined-gray rounded-premium-card flex items-center justify-center text-deep-green mb-8 group-hover:bg-deep-green group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-4xl">verified_user</span>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-deep-green">Cero errores humanos</h3>
+            <p class="text-dark-gray/80 leading-relaxed text-sm">Eliminamos las fallas de carga manual y descuidos
+              operativos mediante validaciones automáticas robustas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40 bg-white" id="servicios">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">Nuestra Oferta Premium</h2>
+        <div class="grid lg:grid-cols-3 gap-10">
+          <div
+            class="border border-deep-green/10 p-12 rounded-premium-card bg-refined-gray/30 flex flex-col hover:bg-refined-gray/50 transition-colors">
+            <h3 class="text-2xl font-bold mb-6">Formación Estratégica en IA</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Capacitamos a tu equipo directivo y técnico para
+              dominar la IA generativa con propósito de negocio.</p>
+            <ul class="space-y-5 mb-12">
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Talleres de Prompt Engineering</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Gestión de herramientas No-Code</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Frameworks de productividad IA</span></li>
+            </ul>
+            <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
+              href="#contacto">Consultar Servicio</a>
+          </div>
+          <div
+            class="border-2 border-deep-green p-12 rounded-premium-card bg-white relative shadow-card-hover flex flex-col scale-105 z-10">
+            <div
+              class="absolute -top-4 left-1/2 -translate-x-1/2 bg-deep-green text-white px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-xl">
+              Recomendado</div>
+            <h3 class="text-2xl font-bold mb-6">Automatización de Operaciones (n8n &amp; WhatsApp)</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Diseño de ecosistemas que conectan tus apps y canales
+              de venta en flujos autónomos de alto impacto.</p>
+            <ul class="space-y-5 mb-12">
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Integraciones avanzadas con n8n</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Chatbots inteligentes con WhatsApp</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Sincronización total de CRM/ERP</span></li>
+            </ul>
+            <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
+              href="#contacto">Consultar Servicio</a>
+          </div>
+          <div
+            class="border border-deep-green/10 p-12 rounded-premium-card bg-refined-gray/30 flex flex-col hover:bg-refined-gray/50 transition-colors">
+            <h3 class="text-2xl font-bold mb-6">Sitio Web de Alta Conversión</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Desarrollamos tu presencia digital enfocada en un solo
+              objetivo: convertir visitas en clientes premium.</p>
+            <ul class="space-y-5 mb-12">
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Diseño UX centrado en ventas</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Optimización extrema de velocidad</span></li>
+              <li class="flex items-start gap-3"><span
+                  class="material-symbols-outlined text-deep-green font-bold">check</span> <span
+                  class="text-sm font-medium">Integración nativa con calendarios</span></li>
+            </ul>
+            <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
+              href="#contacto">Consultar Servicio</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40" id="metodologia">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">El Camino al Éxito</h2>
+        <div class="relative timeline-container hidden lg:block">
+          <div class="grid lg:grid-cols-4 gap-8">
+            <div class="relative z-10 text-center px-6">
+              <div
+                class="w-12 h-12 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-8 shadow-premium text-lg">
+                1</div>
+              <h4 class="font-bold text-xl mb-4 text-deep-green">Diagnóstico</h4>
+              <p class="text-sm text-dark-gray/70 font-medium">Mapeamos cuellos de botella y oportunidades de alto ROI.
+              </p>
+            </div>
+            <div class="relative z-10 text-center px-6">
+              <div
+                class="w-12 h-12 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-8 shadow-premium text-lg">
+                2</div>
+              <h4 class="font-bold text-xl mb-4 text-deep-green">Arquitectura</h4>
+              <p class="text-sm text-dark-gray/70 font-medium">Diseñamos el flujo técnico a medida de tu operación.</p>
+            </div>
+            <div class="relative z-10 text-center px-6">
+              <div
+                class="w-12 h-12 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-8 shadow-premium text-lg">
+                3</div>
+              <h4 class="font-bold text-xl mb-4 text-deep-green">Desarrollo</h4>
+              <p class="text-sm text-dark-gray/70 font-medium">Programación y pruebas exhaustivas de cada integración.
+              </p>
+            </div>
+            <div class="relative z-10 text-center px-6">
+              <div
+                class="w-12 h-12 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-8 shadow-premium text-lg">
+                4</div>
+              <h4 class="font-bold text-xl mb-4 text-deep-green">Implementación</h4>
+              <p class="text-sm text-dark-gray/70 font-medium">Puesta en marcha y capacitación final a tu equipo.</p>
+            </div>
+          </div>
+        </div>
+        <div class="lg:hidden space-y-12 max-w-lg mx-auto">
+          <div class="flex gap-6 items-start">
+            <div
+              class="w-10 h-10 bg-deep-green text-white rounded-full flex-shrink-0 flex items-center justify-center font-bold">
+              1</div>
+            <div>
+              <h4 class="font-bold text-xl mb-2">Diagnóstico</h4>
+              <p class="text-dark-gray/70 text-sm">Identificación de puntos clave para automatizar.</p>
+            </div>
+          </div>
+          <div class="flex gap-6 items-start">
+            <div
+              class="w-10 h-10 bg-deep-green text-white rounded-full flex-shrink-0 flex items-center justify-center font-bold">
+              2</div>
+            <div>
+              <h4 class="font-bold text-xl mb-2">Arquitectura</h4>
+              <p class="text-dark-gray/70 text-sm">Diseño de la solución técnica personalizada.</p>
+            </div>
+          </div>
+          <div class="flex gap-6 items-start">
+            <div
+              class="w-10 h-10 bg-deep-green text-white rounded-full flex-shrink-0 flex items-center justify-center font-bold">
+              3</div>
+            <div>
+              <h4 class="font-bold text-xl mb-2">Desarrollo</h4>
+              <p class="text-dark-gray/70 text-sm">Ejecución y testeo de automatizaciones.</p>
+            </div>
+          </div>
+          <div class="flex gap-6 items-start">
+            <div
+              class="w-10 h-10 bg-deep-green text-white rounded-full flex-shrink-0 flex items-center justify-center font-bold">
+              4</div>
+            <div>
+              <h4 class="font-bold text-xl mb-2">Implementación</h4>
+              <p class="text-dark-gray/70 text-sm">Lanzamiento y acompañamiento inicial.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40 bg-white" id="casos">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <h2 class="text-4xl lg:text-5xl font-extrabold mb-20 tracking-tight">Casos de Éxito</h2>
+        <div class="grid md:grid-cols-2 gap-10">
+          <div
+            class="group bg-refined-gray/40 rounded-premium-card overflow-hidden p-10 lg:p-14 border border-deep-green/5 hover:border-deep-green/10 transition-all">
+            <div class="flex justify-between items-start mb-10">
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Finanzas &amp;
+                Contabilidad</span>
+              <span
+                class="bg-light-green/30 text-deep-green text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-tighter">Implementation
+                in Progress</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-8 text-deep-green">Estudio Contable Andrés Aguilar</h3>
+            <p class="text-lg text-dark-gray/70 leading-relaxed mb-10">
+              Automatización masiva de conciliación bancaria y extracción de datos mediante OCR avanzado, proyectando un
+              ahorro de 60 horas mensuales de carga manual.
+            </p>
+            <div class="h-1.5 bg-deep-green/10 w-full rounded-full overflow-hidden">
+              <div class="h-full bg-deep-green w-3/4"></div>
+            </div>
+          </div>
+          <div
+            class="group bg-refined-gray/40 rounded-premium-card overflow-hidden p-10 lg:p-14 border border-deep-green/5 hover:border-deep-green/10 transition-all">
+            <div class="flex justify-between items-start mb-10">
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Salud &amp; Bienestar</span>
+              <span
+                class="bg-light-green/30 text-deep-green text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-tighter">Implementation
+                in Progress</span>
+            </div>
+            <h3 class="text-3xl font-bold mb-8 text-deep-green">Consultorio Dr. Emilio Velasques</h3>
+            <p class="text-lg text-dark-gray/70 leading-relaxed mb-10">
+              Despliegue de un agente de IA para WhatsApp que gestiona el 100% de la agenda médica y recordatorios de
+              turnos, optimizando la ocupación del consultorio.
+            </p>
+            <div class="h-1.5 bg-deep-green/10 w-full rounded-full overflow-hidden">
+              <div class="h-full bg-deep-green w-1/2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">Novedades &amp; Contenido</h2>
+          <a class="text-deep-green font-bold flex items-center gap-2 hover:underline text-lg"
+            href="https://linkedin.com/in/leandrovelasques">Seguime en LinkedIn <span
+              class="material-symbols-outlined font-bold">north_east</span></a>
+        </div>
+        <div class="grid md:grid-cols-2 gap-16">
+          <div class="space-y-8">
+            <div
+              class="aspect-video bg-dark-gray/10 rounded-premium-card overflow-hidden relative group cursor-pointer shadow-premium">
+              <img alt="YouTube Thumbnail"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjolqp174GQSSl664MLyzA8oxnMjWxsINIa_ocInfVAQFBJPhVkE7Z9Zmav1cxDkId_HnwHU-3sInl-rQ9AgwjiPQETullfClhdTWQOkqwB2hpyLEqWJ-5HQiHChZTg3b1ByyxC3k7YeMgKpsHCCaZ4AL9HTWOCkhwVDoSSInI3g9sxaxObqFxUTl1O7JOq0WCFGCY--ldkxafeChZGuPCY1DqQZegj3q0c65hfjrpw3uUk0b0TXD4c1VDxD4cryza4IGvvpwXLOM" />
+              <div
+                class="absolute inset-0 bg-deep-green/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="material-symbols-outlined text-8xl text-white">play_circle</span>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h3 class="text-2xl font-bold text-deep-green">Cómo automatizar tu CRM con IA en 15 minutos</h3>
+              <p class="text-xs text-dark-gray/60 uppercase font-bold tracking-[0.2em]">YouTube Tutorial</p>
+            </div>
+          </div>
+          <div
+            class="bg-white p-12 rounded-premium-card shadow-premium border border-deep-green/5 flex flex-col justify-center">
+            <div class="flex items-center gap-5 mb-10">
+              <img alt="Leandro Profile" class="w-16 h-16 rounded-full border-2 border-light-green p-1"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDce2MDa2b1Ytb2B7R9_mR2F5E65cVNNYeN9aKy5wk3KA-IP4NB2l_4opEJRPYLK5dxz1vxTmJDhP7OefOOud9D11z1u8pAlf9DhbE-jnkK9xPBkepQthqFVQrAyWsaROBfF8DGmG12o7Lm65cKjjKtlDC9rbGu8ESKTMJ8UaAjSTsVLNVwy11kBGLrfo0yogAc9uLFNYmgh-Jiu0E1U_rKxjZRcgHOffUikc5KQ_3jGS7m5k2A_qNSxLakQZoGcOLcvwKweSEdByU" />
+              <div>
+                <p class="font-bold text-deep-green text-lg">Leandro Velasques</p>
+                <p class="text-xs text-dark-gray/50 font-semibold">Publicado recientemente</p>
+              </div>
+            </div>
+            <p class="text-xl text-dark-gray/80 italic leading-relaxed mb-10">
+              "La verdadera ventaja competitiva hoy no es tener IA, es saber cómo conectarla con tus procesos humanos
+              para que realmente funcionen..."
+            </p>
+            <a class="bg-refined-gray text-deep-green px-8 py-4 rounded-premium-btn text-sm font-bold inline-block hover:bg-light-green/20 transition-all w-fit"
+              href="https://linkedin.com/in/leandrovelasques">Leer post completo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40 bg-white" id="sobremi">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid lg:grid-cols-2 gap-24 items-center">
+          <div class="relative order-2 lg:order-1">
+            <div
+              class="rounded-premium-card overflow-hidden shadow-2xl relative z-10 border-[12px] border-refined-gray">
+              <img alt="Soy Leandro Velasques" class="w-full h-auto object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBidYNrsOZskU5UXItDINWYVUVpNpXFZJPzhlA0qgGEJy0hDB2qgx3QzdaENAdxfLnCXDIHylTXQtv5lMuDnRK6E14g6pvoslcWtHNm_OfR_tUw12pXZVZCqe5eTCicFkAmEjb7Db2D_Oa2mtbL297jXQDpLFr-uAlo9xa28mzOqzS4-q5-c6ada-GTfBeBiDEURNNjCHBE0DPYakdGa64H1lWO0ZEE4_ZeNQkNoD4-CWjnC8FlsE3KP9eGo_H2v-C4bFuHx76o0ZA" />
+            </div>
+            <div class="absolute -bottom-12 -left-12 w-full h-full bg-light-green/20 rounded-premium-card -z-0"></div>
+          </div>
+          <div class="order-1 lg:order-2 space-y-8">
+            <h2 class="text-4xl lg:text-6xl font-extrabold mb-10 leading-tight tracking-tight">Soy Leandro Velasques
+            </h2>
+            <p class="text-xl text-dark-gray/80 leading-relaxed font-medium">
+              No soy un consultor que solo habla de teoría. Mi enfoque es pragmático: si una tecnología no ahorra tiempo
+              o dinero, no sirve.
+            </p>
+            <p class="text-xl text-dark-gray/80 leading-relaxed">
+              Con más de una década de experiencia en liderazgo técnico, hoy me dedico a ayudar a dueños de negocio a
+              recuperar su tiempo y profesionalizar su operación mediante el uso inteligente de la IA.
+            </p>
+            <div class="grid grid-cols-2 gap-12 pt-8">
+              <div>
+                <p class="text-6xl font-black text-deep-green mb-3">50+</p>
+                <p class="text-xs font-bold uppercase tracking-widest text-dark-gray/50">Implementaciones IA</p>
+              </div>
+              <div>
+                <p class="text-6xl font-black text-deep-green mb-3">10+</p>
+                <p class="text-xs font-bold uppercase tracking-widest text-dark-gray/50">Años de trayectoria</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-44" id="contacto">
+      <div class="max-w-4xl mx-auto px-6 lg:px-12">
+        <div class="text-center mb-24">
+          <h2 class="text-4xl lg:text-6xl font-extrabold mb-8 tracking-tight">¿Hablamos sobre tu negocio?</h2>
+          <p class="text-xl text-dark-gray/70">Completá el formulario o agendá directamente en mi calendario.</p>
+        </div>
+        <div class="bg-white p-12 lg:p-20 rounded-premium-card shadow-card-hover border border-deep-green/5">
+          <form action="#" class="space-y-12" method="POST">
+            <div class="grid md:grid-cols-2 gap-10">
+              <div class="space-y-3">
+                <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="name">Nombre
+                  Completo</label>
+                <input
+                  class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all"
+                  id="name" placeholder="Ej: Juan Pérez" required="" type="text" />
+              </div>
+              <div class="space-y-3">
+                <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="email">Email
+                  Corporativo</label>
+                <input
+                  class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all"
+                  id="email" placeholder="juan@empresa.com" required="" type="email" />
+              </div>
+            </div>
+            <div class="space-y-5">
+              <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1">Interés
+                Principal</label>
+              <div class="flex flex-wrap gap-4">
+                <label class="cursor-pointer">
+                  <input class="sr-only peer" name="interest" type="radio" value="formacion" />
+                  <span
+                    class="px-7 py-4 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Formación
+                    Estratégica</span>
+                </label>
+                <label class="cursor-pointer">
+                  <input checked="" class="sr-only peer" name="interest" type="radio" value="automatizacion" />
+                  <span
+                    class="px-7 py-4 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Automatización
+                    (n8n)</span>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="sr-only peer" name="interest" type="radio" value="web" />
+                  <span
+                    class="px-7 py-4 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">High-Performance
+                    Web</span>
+                </label>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="message">¿En qué
+                etapa se encuentra tu empresa?</label>
+              <textarea
+                class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all min-h-[160px]"
+                id="message" placeholder="Contame un poco sobre tus desafíos actuales..."></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-6 pt-6">
+              <button
+                class="flex-[2] bg-deep-green text-white py-6 rounded-premium-btn font-extrabold hover:bg-opacity-90 shadow-premium transition-all text-xl"
+                type="submit">Enviar Solicitud</button>
+              <a class="flex-1 bg-white border-2 border-deep-green text-deep-green py-6 rounded-premium-btn font-extrabold hover:bg-deep-green hover:text-white text-center transition-all text-xl"
+                href="https://cal.com/leandro-velasques" target="_blank">Agendar en Cal.com</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="bg-deep-green text-white py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+        <div class="col-span-1 lg:col-span-2 space-y-10">
+          <div class="flex items-center gap-4">
+            <img alt="Logo White" class="h-12 w-auto brightness-0 invert"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6JfVdiMoZ5DFLig-kUwPF1seOZSjFOEdZy9oYzvaTHoSRKCI0P3ia3EYqRrlv6HOEyhPDLEA3L3ldyWi1au11z_lkmASByN6GXWe89ZAffJMjVEJe9Q07C0RdKMnEC1Hcrq70tFFDf2f1NU_wOgymlhN1SA0P9ser6bWTJ7ryEAX5QIrfHbgzNzfg87PsQEf7cp2-RMBD2lf8IGWH3CMaAe05bzY9A8s31ewgWhlwa-MkYGziw1YYiP_wMLA-wgiJFvOzjcLvPTM" />
+            <span class="font-heading font-extrabold text-2xl tracking-tight">LEANDRO VELASQUES</span>
+          </div>
+          <p class="text-white/60 max-w-sm leading-relaxed text-lg font-medium">
+            Impulsando la frontera de la eficiencia empresarial mediante IA aplicada y automatización avanzada.
+          </p>
+          <div class="flex gap-6">
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="#"><span class="material-symbols-outlined text-xl">share</span></a>
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="#"><span class="material-symbols-outlined text-xl">mail</span></a>
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="#"><span class="material-symbols-outlined text-xl">videocam</span></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Secciones</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors" href="#beneficios">Beneficios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#servicios">Servicios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#metodologia">Metodología</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#casos">Casos de Éxito</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Recursos</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors" href="#">LinkedIn</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#">YouTube Channel</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#">Cal.com</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#">WhatsApp</a></li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm text-white/40 font-medium">
+        <p>© 2026 Leandro Velasques. Todos los derechos reservados.</p>
+        <div class="flex gap-10">
+          <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
+          <a class="hover:text-white transition-colors" href="#">Términos de Servicio</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
