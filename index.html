@@ -478,13 +478,14 @@
             <h2 class="text-4xl lg:text-6xl font-extrabold mb-10 leading-tight tracking-tight">Soy Leandro Velasques
             </h2>
             <p class="text-xl text-dark-gray/80 leading-relaxed font-medium">
-              Soy Licenciado en Administración con una trayectoria enfocada en la intersección estratégica entre el
-              Marketing Digital y la Inteligencia Artificial.
+              Soy Licenciado en Administración con una visión estratégica forjada en la intersección entre el Marketing
+              Digital y la Inteligencia Artificial.
             </p>
             <p class="text-xl text-dark-gray/80 leading-relaxed">
-              En los últimos años, me he especializado en guiar a profesionales y pymes hacia una transición tecnológica
-              efectiva. Mi misión es implementar procesos orquestados por IA que permitan a las empresas adaptarse con
-              agilidad a los desafíos de la nueva era digital, optimizando resultados y escalando su competitividad.
+              En los últimos años, he centrado mi carrera en guiar a profesionales y pymes a través de la gran
+              transición tecnológica que estamos viviendo. Mi misión es facilitar la implementación de ecosistemas
+              guiados por IA que permitan a las empresas adaptarse con agilidad y convertir los nuevos desafíos en
+              ventajas competitivas reales.
             </p>
             <div class="grid grid-cols-2 gap-12 pt-8">
               <div>
@@ -583,13 +584,15 @@
             </div>
             <div class="flex flex-col sm:flex-row gap-6 pt-6">
               <button
-                class="flex-[2] bg-deep-green text-white py-6 rounded-premium-btn font-extrabold hover:bg-opacity-90 shadow-premium transition-all text-xl"
-                type="submit">Enviar consulta</button>
+                class="flex-[2] bg-deep-green text-white py-6 rounded-premium-btn font-extrabold hover:bg-opacity-90 shadow-premium transition-all text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                id="submit-btn" type="submit">Enviar consulta</button>
               <a class="flex-1 bg-white border-2 border-deep-green text-deep-green py-6 rounded-premium-btn font-extrabold hover:bg-deep-green hover:text-white text-center transition-all text-xl"
                 href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7" target="_blank">Agendar Cita</a>
             </div>
           </form>
+          <div id="form-message" class="mt-8 p-6 rounded-premium-card hidden"></div>
         </div>
+      </div>
       </div>
     </section>
   </main>
@@ -614,7 +617,8 @@
               </svg>
             </a>
             <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
-              href="#" aria-label="Email"><span class="material-symbols-outlined text-xl">mail</span></a>
+              href="mailto:info@leandrovelasques.com.ar" aria-label="Email"><span
+                class="material-symbols-outlined text-xl">mail</span></a>
             <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
               href="https://www.youtube.com/@Leandro.Velasques" target="_blank" aria-label="YouTube">
               <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -659,6 +663,54 @@
     </div>
   </footer>
 
+  <script>
+    const contactForm = document.querySelector('form');
+    const submitBtn = document.getElementById('submit-btn');
+    const formMessage = document.getElementById('form-message');
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Estado de carga
+      submitBtn.disabled = true;
+      const originalBtnText = submitBtn.textContent;
+      submitBtn.textContent = 'Enviando...';
+      formMessage.classList.add('hidden');
+
+      const formData = new FormData(contactForm);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        // REEMPLAZAR con tu URL de Webhook de n8n
+        const WEBHOOK_URL = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/contacto-leandro-web';
+
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          formMessage.textContent = '¡Gracias! Tu consulta ha sido enviada con éxito. Te responderemos pronto.';
+          formMessage.className = 'mt-8 p-6 rounded-premium-card bg-light-green/20 text-deep-green font-bold text-center';
+          formMessage.classList.remove('hidden');
+          contactForm.reset();
+        } else {
+          throw new Error('Error en el servidor');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        formMessage.textContent = 'Hubo un error al enviar la consulta. Por favor, intentá nuevamente o escribime a info@leandrovelasques.com.ar';
+        formMessage.className = 'mt-8 p-6 rounded-premium-card bg-red-100 text-red-700 font-bold text-center';
+        formMessage.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+      }
+    });
+  </script>
 </body>
 
 </html>
