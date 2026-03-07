@@ -1,26 +1,12 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="es">
+<html class="scroll-smooth" lang="en">
 
 <head>
   <meta charset="utf-8" />
-  <script>
-    (function () {
-      const savedLang = localStorage.getItem('preferredLang');
-      if (savedLang === 'en') {
-        window.location.href = 'index_en.html';
-      } else if (!savedLang) {
-        const userLang = navigator.language || navigator.userLanguage;
-        if (userLang.toLowerCase().startsWith('en')) {
-          localStorage.setItem('preferredLang', 'en');
-          window.location.href = 'index_en.html';
-        }
-      }
-    })();
-  </script>
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Leandro Velasques | Automatización Real con IA</title>
+  <title>Leandro Velasques | Real AI Automation</title>
   <meta
-    content="Automatización Real. Sin Humo. Multiplicá tu tiempo con IA. Soluciones de Inteligencia Artificial que generan resultados medibles."
+    content="Real Automation. No gimmicks. Multiply your time with AI. Artificial Intelligence solutions that generate measurable results."
     name="description" />
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -105,41 +91,40 @@
           <div class="flex flex-col">
             <span class="font-heading font-extrabold text-deep-green tracking-tight text-xl leading-none">LEANDRO
               VELASQUES</span>
-            <span
-              class="font-heading text-xs md:text-sm font-semibold text-deep-green/80 mt-1 tracking-tight">Licenciado en
-              Administración</span>
+            <span class="font-heading text-xs md:text-sm font-semibold text-deep-green/80 mt-1 tracking-tight">Business
+              AI Consultant</span>
           </div>
         </div>
         <nav class="hidden md:flex items-center gap-10">
           <div
             class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
             <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');"
-              class="text-deep-green font-bold">ES</a>
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
             <span class="text-dark-gray/30">|</span>
             <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');"
-              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+              class="text-deep-green font-bold">EN</a>
           </div>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#beneficios">Beneficios</a>
+            href="#beneficios">Benefits</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#servicios">Servicios</a>
+            href="#servicios">Services</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#metodologia">Metodología</a>
+            href="#metodologia">Methodology</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#casos">Casos</a>
+            href="#casos">Cases</a>
           <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
-            href="#contacto">Contacto</a>
+            href="#contacto">Contact</a>
         </nav>
         <div class="flex items-center gap-4 md:hidden">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mr-2">
             <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');"
-              class="text-deep-green font-bold">ES</a>
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
             <span class="text-dark-gray/30">|</span>
             <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');"
-              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+              class="text-deep-green font-bold">EN</a>
           </div>
           <a class="bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold shadow-premium"
-            href="#contacto">Contacto</a>
+            href="#contacto">Contact</a>
         </div>
       </div>
     </div>
@@ -152,23 +137,23 @@
             <div
               class="inline-flex items-center gap-2 bg-white/60 border border-deep-green/10 px-5 py-2.5 rounded-full">
               <span class="flex h-2 w-2 rounded-full bg-deep-green animate-pulse"></span>
-              <span class="text-xs font-bold uppercase tracking-widest text-deep-green">Automatización &amp; Eficiencia
-                Real</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green">Real Automation &amp;
+                Efficiency</span>
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-[1.05] tracking-tight text-deep-green">
-              Inteligencia artificial aplicada a <span
-                class="text-transparent bg-clip-text bg-gradient-to-r from-deep-green to-light-green">potenciar</span>
-              tu negocio
+              Artificial intelligence applied to <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-deep-green to-light-green">boost</span>
+              your business
             </h1>
             <p class="text-lg lg:text-xl text-dark-gray leading-relaxed font-medium max-w-xl mx-auto lg:mx-0">
-              Dejá de apagar incendios. Diseño e implemento soluciones de Inteligencia Artificial que ordenan tus
-              procesos y generan resultados medibles desde el primer día.
+              Stop putting out fires. I design and implement Artificial Intelligence solutions that organize your
+              processes and generate measurable results from day one.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 pt-2 justify-center lg:justify-start">
               <a class="bg-deep-green text-white px-8 py-5 rounded-premium-btn font-bold text-center hover:translate-y-[-2px] transition-all shadow-premium text-base lg:text-lg w-full sm:w-auto"
-                href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7">Agendar una videollamada gratis</a>
+                href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7">Schedule a free video call</a>
               <a class="bg-white border-2 border-deep-green text-deep-green px-8 py-5 rounded-premium-btn font-bold text-center hover:bg-deep-green hover:text-white transition-all text-base lg:text-lg w-full sm:w-auto"
-                href="#servicios">Ver servicios</a>
+                href="#servicios">View services</a>
             </div>
           </div>
           <div class="relative hidden lg:block">
@@ -185,7 +170,7 @@
     <section class="py-28 lg:py-40" id="beneficios">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="text-center max-w-3xl mx-auto mb-24">
-          <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Resultados que escalan tu negocio</h2>
+          <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Results that scale your business</h2>
           <p class="text-xl text-dark-gray/70">No implementamos tecnología por moda, sino para optimizar tu rentabilidad
             y liberar tu potencial directivo.</p>
         </div>
@@ -201,7 +186,7 @@
               </div>
             </div>
             <div class="p-8 pb-10 flex-grow">
-              <h3 class="text-2xl font-bold mb-4 text-deep-green">Vuelve a enfocarte en lo importante</h3>
+              <h3 class="text-2xl font-bold mb-4 text-deep-green">Focus on what matters again</h3>
               <p class="text-dark-gray/80 leading-relaxed text-base">Delegá la carga operativa a sistemas inteligentes y
                 recuperá horas para la visión estratégica de tu empresa.</p>
             </div>
@@ -217,9 +202,9 @@
               </div>
             </div>
             <div class="p-8 pb-10 flex-grow">
-              <h3 class="text-2xl font-bold mb-4 text-deep-green">Procesos que se ejecutan solos</h3>
-              <p class="text-dark-gray/80 leading-relaxed text-base">Flujos de trabajo orquestados que se ejecutan sin
-                fricción, garantizando orden total en cada área.</p>
+              <h3 class="text-2xl font-bold mb-4 text-deep-green">Processes that run by themselves</h3>
+              <p class="text-dark-gray/80 leading-relaxed text-base">Orchestrated workflows that run frictionlessly,
+                ensuring total order in every area.</p>
             </div>
           </div>
           <div
@@ -233,15 +218,15 @@
               </div>
             </div>
             <div class="p-8 pb-10 flex-grow">
-              <h3 class="text-2xl font-bold mb-4 text-deep-green">Atención impecable 24/7</h3>
-              <p class="text-dark-gray/80 leading-relaxed text-base">Sistemas de IA que responden, califican y venden en
-                tiempo real, sin importar la hora o el día.</p>
+              <h3 class="text-2xl font-bold mb-4 text-deep-green">Flawless 24/7 Support</h3>
+              <p class="text-dark-gray/80 leading-relaxed text-base">AI systems that reply, qualify, and sell in real
+                time, regardless of the time or day.</p>
             </div>
           </div>
           <div
             class="bg-white rounded-premium-card shadow-premium hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 group border border-deep-green/5 overflow-hidden flex flex-col">
             <div class="h-48 overflow-hidden relative">
-              <img src="./beneficios_errores.png" alt="Reducción de errores humanos"
+              <img src="./beneficios_errores.png" alt="Reduction of human errors"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
               <div
                 class="absolute bottom-4 left-4 w-12 h-12 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center text-deep-green shadow-lg">
@@ -249,7 +234,7 @@
               </div>
             </div>
             <div class="p-8 pb-10 flex-grow">
-              <h3 class="text-2xl font-bold mb-4 text-deep-green">Reducción de errores humanos</h3>
+              <h3 class="text-2xl font-bold mb-4 text-deep-green">Reduction of human errors</h3>
               <p class="text-dark-gray/80 leading-relaxed text-base">Eliminamos las fallas de carga manual y descuidos
                 operativos mediante validaciones automáticas robustas.</p>
             </div>
@@ -259,152 +244,152 @@
     </section>
     <section class="py-28 lg:py-40 bg-white" id="servicios">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">Nuestra Oferta Premium</h2>
+        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">Our Premium Offer</h2>
         <div class="grid md:grid-cols-2 gap-10 lg:gap-12">
           <div
             class="border-2 border-deep-green p-10 lg:p-12 rounded-premium-card bg-white relative shadow-card-hover flex flex-col z-10">
             <div
               class="absolute -top-4 left-1/2 -translate-x-1/2 bg-deep-green text-white px-5 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest shadow-xl whitespace-nowrap">
-              Recomendado</div>
-            <h3 class="text-2xl font-bold mb-6 pt-2">Automatización de Operaciones</h3>
-            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Diseño de ecosistemas que conectan tus apps y canales
-              de venta en flujos autónomos de alto impacto.</p>
+              Recommended</div>
+            <h3 class="text-2xl font-bold mb-6 pt-2">Operations Automation</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Design of ecosystems that connect your apps and sales
+              channels into high-impact autonomous flows.</p>
             <ul class="space-y-5 mb-12">
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Integraciones avanzadas con n8n</span></li>
+                  class="text-sm font-medium">Advanced API Integrations with n8n</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Chatbots inteligentes con WhatsApp</span></li>
+                  class="text-sm font-medium">Smart chatbots via WhatsApp</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Sincronización total de CRM/ERP</span></li>
+                  class="text-sm font-medium">Total CRM/ERP data synchronization</span></li>
             </ul>
             <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
-              href="#contacto">Consultar Servicio</a>
+              href="#contacto">Inquire about this service</a>
           </div>
           <div
             class="border border-deep-green/10 p-10 lg:p-12 rounded-premium-card bg-refined-gray/30 flex flex-col hover:bg-refined-gray/50 transition-colors">
-            <h3 class="text-2xl font-bold mb-6">Formación Estratégica en IA</h3>
-            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Capacitamos a tu equipo directivo y técnico para
-              dominar la IA generativa con propósito de negocio.</p>
+            <h3 class="text-2xl font-bold mb-6">Strategic AI Training</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">We train your management and technical team to master
+              generative AI with a business purpose.</p>
             <ul class="space-y-5 mb-12">
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Talleres de Introducción / Uso avanzado de ChatGPT</span></li>
+                  class="text-sm font-medium">Introductory / Advanced ChatGPT workshops</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Gestión de herramientas No-Code</span></li>
+                  class="text-sm font-medium">Management of No-Code tools</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Frameworks de productividad IA</span></li>
+                  class="text-sm font-medium">AI productivity frameworks</span></li>
             </ul>
             <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
-              href="#contacto">Consultar Servicio</a>
+              href="#contacto">Inquire about this service</a>
           </div>
           <div
             class="border border-deep-green/10 p-10 lg:p-12 rounded-premium-card bg-refined-gray/30 flex flex-col hover:bg-refined-gray/50 transition-colors">
-            <h3 class="text-2xl font-bold mb-6">Sitios Web de Alta Conversión</h3>
-            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Desarrollamos tu presencia digital enfocada en un solo
-              objetivo: convertir visitas en clientes premium.</p>
+            <h3 class="text-2xl font-bold mb-6">High-Conversion Websites</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">We develop your digital presence focused on a single
+              goal: converting visitors into premium clients.</p>
             <ul class="space-y-5 mb-12">
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Diseño UX centrado en ventas</span></li>
+                  class="text-sm font-medium">UX design centered on sales</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Optimización extrema de velocidad</span></li>
+                  class="text-sm font-medium">Extreme speed optimization</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Integración con agenda de citas, chatbots, formulario de contacto</span>
+                  class="text-sm font-medium">Integration with scheduling, chatbots and contact forms</span>
               </li>
             </ul>
             <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
-              href="#contacto">Consultar Servicio</a>
+              href="#contacto">Inquire about this service</a>
           </div>
           <div
             class="border border-deep-green/10 p-10 lg:p-12 rounded-premium-card bg-refined-gray/30 flex flex-col hover:bg-refined-gray/50 transition-colors">
-            <h3 class="text-2xl font-bold mb-6">Desarrollo de Apps con Vibe-coding</h3>
-            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Llevá tu idea a una aplicación web funcional en tiempo
-              récord utilizando IA.</p>
+            <h3 class="text-2xl font-bold mb-6">App Development via Vibe-coding</h3>
+            <p class="text-dark-gray/70 mb-10 flex-grow text-lg">Turn your idea into a functional web application in
+              record time using AI.</p>
             <ul class="space-y-5 mb-12">
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Mínimo Producto Viable rápido</span></li>
+                  class="text-sm font-medium">Rapid Minimum Viable Product</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Desarrollo ágil de la idea a producción</span></li>
+                  class="text-sm font-medium">Agile development from idea to production</span></li>
               <li class="flex items-start gap-3"><span
                   class="material-symbols-outlined text-deep-green font-bold">check</span> <span
-                  class="text-sm font-medium">Tecnologías de vanguardia</span></li>
+                  class="text-sm font-medium">Cutting-edge technologies</span></li>
             </ul>
             <a class="w-full py-4 text-center bg-deep-green text-white rounded-premium-btn font-bold hover:bg-opacity-95 transition-all shadow-premium"
-              href="#contacto">Consultar Servicio</a>
+              href="#contacto">Inquire about this service</a>
           </div>
         </div>
       </div>
     </section>
     <section class="py-28 lg:py-40" id="metodologia">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">El Camino al Éxito</h2>
+        <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-24 tracking-tight">The Path to Success</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div
             class="bg-white rounded-premium-card overflow-hidden shadow-premium border border-deep-green/5 text-center flex flex-col relative group hover:shadow-card-hover transition-all">
             <div class="h-48 overflow-hidden">
-              <img src="./diagnostico.png" alt="Diagnóstico"
+              <img src="./diagnostico.png" alt="Diagnostic"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
             </div>
             <div class="p-8 pt-0 flex-grow flex flex-col">
               <div
                 class="w-14 h-14 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-6 -mt-7 shadow-lg relative z-10 border-4 border-white text-xl">
                 1</div>
-              <h4 class="font-bold text-xl mb-3 text-deep-green">Diagnóstico</h4>
-              <p class="text-sm text-dark-gray/70 font-medium pb-2">Mapeamos cuellos de botella y oportunidades de alto
-                ROI.</p>
+              <h4 class="font-bold text-xl mb-3 text-deep-green">Diagnostic</h4>
+              <p class="text-sm text-dark-gray/70 font-medium pb-2">We map bottlenecks and high-ROI opportunities.</p>
             </div>
           </div>
           <div
             class="bg-white rounded-premium-card overflow-hidden shadow-premium border border-deep-green/5 text-center flex flex-col relative group hover:shadow-card-hover transition-all">
             <div class="h-48 overflow-hidden">
-              <img src="./arquitectura.png" alt="Arquitectura"
+              <img src="./arquitectura.png" alt="Architecture"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
             </div>
             <div class="p-8 pt-0 flex-grow flex flex-col">
               <div
                 class="w-14 h-14 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-6 -mt-7 shadow-lg relative z-10 border-4 border-white text-xl">
                 2</div>
-              <h4 class="font-bold text-xl mb-3 text-deep-green">Arquitectura</h4>
-              <p class="text-sm text-dark-gray/70 font-medium pb-2">Diseñamos el flujo técnico a medida de tu operación.
+              <h4 class="font-bold text-xl mb-3 text-deep-green">Architecture</h4>
+              <p class="text-sm text-dark-gray/70 font-medium pb-2">We design a custom technical workflow for your
+                operation.
               </p>
             </div>
           </div>
           <div
             class="bg-white rounded-premium-card overflow-hidden shadow-premium border border-deep-green/5 text-center flex flex-col relative group hover:shadow-card-hover transition-all">
             <div class="h-48 overflow-hidden">
-              <img src="./desarrollo.png" alt="Desarrollo"
+              <img src="./desarrollo.png" alt="Development"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
             </div>
             <div class="p-8 pt-0 flex-grow flex flex-col">
               <div
                 class="w-14 h-14 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-6 -mt-7 shadow-lg relative z-10 border-4 border-white text-xl">
                 3</div>
-              <h4 class="font-bold text-xl mb-3 text-deep-green">Desarrollo</h4>
-              <p class="text-sm text-dark-gray/70 font-medium pb-2">Programación y pruebas exhaustivas de cada
-                integración.</p>
+              <h4 class="font-bold text-xl mb-3 text-deep-green">Development</h4>
+              <p class="text-sm text-dark-gray/70 font-medium pb-2">Exhaustive programming and testing of each
+                integration.</p>
             </div>
           </div>
           <div
             class="bg-white rounded-premium-card overflow-hidden shadow-premium border border-deep-green/5 text-center flex flex-col relative group hover:shadow-card-hover transition-all">
             <div class="h-48 overflow-hidden">
-              <img src="./implementacion.png" alt="Implementación"
+              <img src="./implementacion.png" alt="Deployment"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
             </div>
             <div class="p-8 pt-0 flex-grow flex flex-col">
               <div
                 class="w-14 h-14 bg-deep-green text-white rounded-full flex items-center justify-center font-bold mx-auto mb-6 -mt-7 shadow-lg relative z-10 border-4 border-white text-xl">
                 4</div>
-              <h4 class="font-bold text-xl mb-3 text-deep-green">Implementación</h4>
-              <p class="text-sm text-dark-gray/70 font-medium pb-2">Puesta en marcha y capacitación final a tu equipo.
+              <h4 class="font-bold text-xl mb-3 text-deep-green">Deployment</h4>
+              <p class="text-sm text-dark-gray/70 font-medium pb-2">Launch and final training for your team.
               </p>
             </div>
           </div>
@@ -413,21 +398,21 @@
     </section>
     <section class="py-28 lg:py-40 bg-white" id="casos">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        <h2 class="text-4xl lg:text-5xl font-extrabold mb-20 tracking-tight">Casos de Éxito</h2>
+        <h2 class="text-4xl lg:text-5xl font-extrabold mb-20 tracking-tight">Success Cases</h2>
         <div class="grid md:grid-cols-2 gap-10">
           <div
             class="group bg-refined-gray/40 rounded-premium-card overflow-hidden p-10 lg:p-14 border border-deep-green/5 hover:border-deep-green/10 transition-all">
             <div class="flex justify-between items-start mb-10">
-              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Finanzas &amp;
-                Contabilidad</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Finance &amp;
+                Accounting</span>
               <span
                 class="bg-light-green/30 text-deep-green text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-tighter">Implementation
                 in Progress</span>
             </div>
-            <h3 class="text-3xl font-bold mb-8 text-deep-green">Estudio Contable Andrés Aguilar</h3>
+            <h3 class="text-3xl font-bold mb-8 text-deep-green">Andrés Aguilar Accounting Firm</h3>
             <p class="text-lg text-dark-gray/70 leading-relaxed mb-10">
-              Automatización de: notificaciones a clientes, recordatorios de vencimientos, y elaboración de información
-              para liquidación de sueldos, proyectando un ahorro de 50 horas de carga manual.
+              Automation of: notifications to clients, expiration reminders, and preparation of information for payroll,
+              projecting a saving of 50 hours of manual data entry.
             </p>
             <div class="h-1.5 bg-deep-green/10 w-full rounded-full overflow-hidden">
               <div class="h-full bg-deep-green w-3/4"></div>
@@ -436,15 +421,15 @@
           <div
             class="group bg-refined-gray/40 rounded-premium-card overflow-hidden p-10 lg:p-14 border border-deep-green/5 hover:border-deep-green/10 transition-all">
             <div class="flex justify-between items-start mb-10">
-              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Salud &amp; Bienestar</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-deep-green/60">Health &amp; Wellness</span>
               <span
                 class="bg-light-green/30 text-deep-green text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-tighter">Implementation
                 in Progress</span>
             </div>
-            <h3 class="text-3xl font-bold mb-8 text-deep-green">Consultorio Dr. Emilio Velasques</h3>
+            <h3 class="text-3xl font-bold mb-8 text-deep-green">Dr. Emilio Velasques Clinic</h3>
             <p class="text-lg text-dark-gray/70 leading-relaxed mb-10">
-              Desarrollo de CRM básico automatizado para gestionar los distintos estados del paciente, optimizando la
-              ocupación del consultorio.
+              Development of a basic automated CRM to manage the different statuses of the patient, optimizing the
+              clinic's occupancy.
             </p>
             <div class="h-1.5 bg-deep-green/10 w-full rounded-full overflow-hidden">
               <div class="h-full bg-deep-green w-1/2"></div>
@@ -456,7 +441,7 @@
     <section class="py-28 lg:py-40">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-          <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">Novedades &amp; Contenido</h2>
+          <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">News &amp; Content</h2>
         </div>
         <div class="grid md:grid-cols-2 gap-16">
           <div class="space-y-8">
@@ -472,9 +457,9 @@
                 </div>
               </div>
               <div class="space-y-3">
-                <h3 class="text-2xl font-bold text-deep-green">Canvas: La función de ChatGPT que te permite editar más
-                  rápido y ordenado</h3>
-                <p class="text-xs text-dark-gray/60 uppercase font-bold tracking-[0.2em]">Ver en YouTube</p>
+                <h3 class="text-2xl font-bold text-deep-green">Canvas: The ChatGPT feature that lets you edit faster and
+                  neater</h3>
+                <p class="text-xs text-dark-gray/60 uppercase font-bold tracking-[0.2em]">Watch on YouTube</p>
               </div>
             </a>
           </div>
@@ -489,8 +474,7 @@
               </div>
             </div>
             <p class="text-xl text-white font-medium italic leading-relaxed mb-10">
-              "Conectemos para compartir insights sobre cómo la IA está redefiniendo la gestión empresarial y el
-              marketing moderno."
+              "Let's connect to share insights on how AI is redefining business management and modern marketing."
             </p>
             <a class="bg-white text-[#0077b5] px-8 py-4 rounded-premium-btn text-sm font-extrabold flex items-center gap-3 hover:bg-refined-gray transition-all w-fit shadow-xl"
               href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">
@@ -499,7 +483,7 @@
                   d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
                 </path>
               </svg>
-              Seguime en LinkedIn
+              Follow me on LinkedIn
             </a>
           </div>
         </div>
@@ -519,14 +503,14 @@
             <h2 class="text-4xl lg:text-6xl font-extrabold mb-10 leading-tight tracking-tight">Leandro Velasques
             </h2>
             <p class="text-xl text-dark-gray/80 leading-relaxed font-medium">
-              Soy Licenciado en Administración, nacido y criado en la Patagonia Argentina y formado en la Universidad
-              Nacional de la Patagonia San Juan Bosco.
+              I am a Business AI Consultant, born and raised in the Argentine Patagonia, and educated at the National
+              University of Patagonia San Juan Bosco.
             </p>
             <p class="text-xl text-dark-gray/80 leading-relaxed">
-              He acumulado experiencia tanto en relación de dependencia como realizando consultoría externa para
-              empresas privadas y públicas. En los últimos años me he dedicado a especializarme en mis mayores
-              intereses: el Marketing Digital y la Inteligencia Artificial, conectando estas disciplinas para
-              implementar sistemas eficientes que optimizan recursos y ahorran horas operativas todas las semanas.
+              I have accumulated experience both as an employee and as an external consultant for private and public
+              companies. In recent years, I have dedicated myself to specializing in my greatest interests: Digital
+              Marketing and Artificial Intelligence, connecting these disciplines to implement efficient systems that
+              optimize resources and save operational hours every week.
             </p>
             <div class="grid grid-cols-2 gap-12 pt-8">
               <div>
@@ -536,7 +520,8 @@
               </div>
               <div>
                 <p class="text-5xl lg:text-6xl font-black text-deep-green mb-3">15+</p>
-                <p class="text-xs font-bold uppercase tracking-widest text-dark-gray/50">Años de experiencia profesional
+                <p class="text-xs font-bold uppercase tracking-widest text-dark-gray/50">Years of professional
+                  experience
                 </p>
               </div>
             </div>
@@ -547,9 +532,9 @@
     <section class="py-28 lg:py-44" id="contacto">
       <div class="max-w-4xl mx-auto px-6 lg:px-12">
         <div class="text-center mb-24">
-          <h2 class="text-4xl lg:text-6xl font-extrabold mb-8 tracking-tight">¿Hablamos sobre tu negocio?</h2>
-          <p class="text-xl text-dark-gray/70 max-w-2xl mx-auto">Completá el formulario y describime tu consulta lo
-            mejor que puedas para poder darte una respuesta adecuada.</p>
+          <h2 class="text-4xl lg:text-6xl font-extrabold mb-8 tracking-tight">Should we talk about your business?</h2>
+          <p class="text-xl text-dark-gray/70 max-w-2xl mx-auto">Fill out the form and describe your query as best as
+            you can so I can give you an appropriate answer.</p>
         </div>
         <div class="bg-white p-12 lg:p-20 rounded-premium-card shadow-card-hover border border-deep-green/5">
           <form action="#" class="space-y-12" method="POST">
@@ -559,7 +544,7 @@
                   Completo</label>
                 <input
                   class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all font-medium"
-                  id="name" name="name" placeholder="Ej: Juan Pérez" required="" type="text" />
+                  id="name" name="name" placeholder="E.g. John Doe" required="" type="text" />
               </div>
               <div class="space-y-3">
                 <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="email">Email
@@ -569,8 +554,8 @@
                   id="email" name="email" placeholder="juan@empresa.com" required="" type="email" />
               </div>
               <div class="space-y-3 md:col-span-2">
-                <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="phone">Teléfono
-                  <span class="text-dark-gray/30 normal-case">(opcional)</span></label>
+                <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="phone">Phone
+                  <span class="text-dark-gray/30 normal-case">(optional)</span></label>
                 <input
                   class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all font-medium"
                   id="phone" name="phone" placeholder="Ej: +54 9 11 1234 5678" type="tel" />
@@ -583,12 +568,12 @@
                 <label class="cursor-pointer">
                   <input class="sr-only peer" name="interest" type="radio" value="automatizaciones" checked />
                   <span
-                    class="px-6 py-3 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Automatizaciones</span>
+                    class="px-6 py-3 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Automations</span>
                 </label>
                 <label class="cursor-pointer">
                   <input class="sr-only peer" name="interest" type="radio" value="chatbots" />
                   <span
-                    class="px-6 py-3 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Implementación
+                    class="px-6 py-3 rounded-premium-btn border border-deep-green/10 text-sm font-bold peer-checked:bg-deep-green peer-checked:text-white peer-checked:border-deep-green transition-all inline-block bg-refined-gray/50">Deployment
                     de Chatbots</span>
                 </label>
                 <label class="cursor-pointer">
@@ -618,19 +603,19 @@
               </div>
             </div>
             <div class="space-y-3">
-              <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="message">¿En qué
-                podemos ayudarte?</label>
+              <label class="text-xs font-bold uppercase tracking-widest text-dark-gray/60 ml-1" for="message">How can we
+                help you?</label>
               <textarea
                 class="w-full bg-refined-gray border-none rounded-premium-btn p-5 focus:ring-2 focus:ring-deep-green/20 transition-all min-h-[160px] font-medium"
                 id="message" name="message"
-                placeholder="Contame un poco sobre tus desafíos actuales o el motivo de tu consulta..."></textarea>
+                placeholder="Tell me a bit about your current challenges or the reason for your contact..."></textarea>
             </div>
             <div class="flex flex-col sm:flex-row gap-6 pt-6">
               <button
                 class="flex-[2] bg-deep-green text-white py-6 rounded-premium-btn font-extrabold hover:bg-opacity-90 shadow-premium transition-all text-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                id="submit-btn" type="submit">Enviar consulta</button>
+                id="submit-btn" type="submit">Submit message</button>
               <a class="flex-1 bg-white border-2 border-deep-green text-deep-green py-6 rounded-premium-btn font-extrabold hover:bg-deep-green hover:text-white text-center transition-all text-xl"
-                href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7" target="_blank">Agendar Cita</a>
+                href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7" target="_blank">Book an Appointment</a>
             </div>
           </form>
           <div id="form-message" class="mt-8 p-6 rounded-premium-card hidden"></div>
@@ -647,8 +632,8 @@
             <img alt="Logo Triskel" class="h-12 w-auto brightness-0 invert" src="./logo_triskel.png" />
             <div class="flex flex-col">
               <span class="font-heading font-extrabold text-2xl tracking-tight leading-none">LEANDRO VELASQUES</span>
-              <span class="font-heading text-xs md:text-sm font-semibold text-white/80 mt-1 tracking-tight">Licenciado
-                en Administración</span>
+              <span class="font-heading text-xs md:text-sm font-semibold text-white/80 mt-1 tracking-tight">Business AI
+                Consultant</span>
               <span
                 class="font-heading text-[10px] md:text-[11px] font-bold text-white/50 uppercase tracking-widest mt-3">MATRICULA
                 PROFESIONAL</span>
@@ -658,7 +643,7 @@
             </div>
           </div>
           <p class="text-white/60 max-w-sm leading-relaxed text-lg font-medium">
-            Impulsando la frontera de la eficiencia empresarial mediante IA aplicada y automatización avanzada.
+            Pushing the boundaries of business efficiency through applied AI and advanced automation.
           </p>
           <div class="flex gap-6">
             <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
@@ -683,23 +668,23 @@
           </div>
         </div>
         <div>
-          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Secciones</h4>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Sections</h4>
           <ul class="space-y-5 text-white/70 font-medium">
-            <li><a class="hover:text-light-green transition-colors" href="#beneficios">Beneficios</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#servicios">Servicios</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#metodologia">Metodología</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#casos">Casos de Éxito</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#beneficios">Benefits</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#servicios">Services</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#metodologia">Methodology</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#casos">Cases de Éxito</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Recursos</h4>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Resources</h4>
           <ul class="space-y-5 text-white/70 font-medium">
             <li><a class="hover:text-light-green transition-colors"
                 href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">LinkedIn</a></li>
             <li><a class="hover:text-light-green transition-colors" href="https://www.youtube.com/@Leandro.Velasques"
                 target="_blank">YouTube Channel</a></li>
             <li><a class="hover:text-light-green transition-colors" href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7"
-                target="_blank">Agenda de Citas</a>
+                target="_blank">Booking Calendar</a>
             </li>
             <li><a class="hover:text-light-green transition-colors" href="https://t.me/Lean2071"
                 target="_blank">Telegram (@Lean2071)</a></li>
@@ -709,13 +694,13 @@
       <div
         class="pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm text-white/40 font-medium">
         <div class="flex flex-col md:flex-row items-center md:gap-2 text-center md:text-left">
-          <p>© 2026 Leandro Velasques. Todos los derechos reservados.</p>
+          <p>© 2026 Leandro Velasques. All rights reserved.</p>
           <span class="hidden md:inline">|</span>
-          <p>Diseñado por Leandro Velasques</p>
+          <p>Designed by Leandro Velasques</p>
         </div>
         <div class="flex gap-10">
-          <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
-          <a class="hover:text-white transition-colors" href="#">Términos de Servicio</a>
+          <a class="hover:text-white transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-white transition-colors" href="#">Terms of Service</a>
         </div>
       </div>
     </div>
@@ -731,7 +716,7 @@
 
       submitBtn.disabled = true;
       const originalBtnText = submitBtn.textContent;
-      submitBtn.textContent = 'Enviando...';
+      submitBtn.textContent = 'Sending...';
       formMessage.classList.add('hidden');
 
       const formData = new FormData(contactForm);
@@ -739,8 +724,8 @@
 
       // Agregamos los campos de Web3Forms
       data.access_key = 'ae387037-1e1b-41ef-ba0a-52dcc0901680';
-      data.subject = `Nueva consulta web: ${data.name} - ${data.interest}`;
-      data.from_name = 'Formulario Web - Leandro Velasques';
+      data.subject = `New web inquiry: ${data.name} - ${data.interest}`;
+      data.from_name = 'Web Form - Leandro Velasques';
 
       try {
         const response = await fetch('https://api.web3forms.com/submit', {
@@ -752,16 +737,16 @@
         const result = await response.json();
 
         if (result.success) {
-          formMessage.textContent = '¡Gracias! Tu consulta ha sido enviada con éxito. Te responderemos pronto.';
+          formMessage.textContent = 'Thank you! Your inquiry was sent successfully. We will reply soon.';
           formMessage.className = 'mt-8 p-6 rounded-premium-card bg-light-green/20 text-deep-green font-bold text-center';
           formMessage.classList.remove('hidden');
           contactForm.reset();
         } else {
-          throw new Error(result.message || 'Error desconocido');
+          throw new Error(result.message || 'Unknown error');
         }
       } catch (error) {
         console.error('Error:', error);
-        formMessage.textContent = 'Hubo un error al enviar la consulta. Por favor, intentá nuevamente o escribime a info@leandrovelasques.com.ar';
+        formMessage.textContent = 'There was an error sending the message. Please try again or reach out at info@leandrovelasques.com.ar';
         formMessage.className = 'mt-8 p-6 rounded-premium-card bg-red-100 text-red-700 font-bold text-center';
         formMessage.classList.remove('hidden');
       } finally {
