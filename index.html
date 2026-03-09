@@ -7,12 +7,12 @@
     (function () {
       const savedLang = localStorage.getItem('preferredLang');
       if (savedLang === 'en') {
-        window.location.href = 'index_en.html';
+        window.location.href = '/en/';
       } else if (!savedLang) {
         const userLang = navigator.language || navigator.userLanguage;
         if (userLang.toLowerCase().startsWith('en')) {
           localStorage.setItem('preferredLang', 'en');
-          window.location.href = 'index_en.html';
+          window.location.href = '/en/';
         }
       }
     })();
@@ -22,6 +22,35 @@
   <meta
     content="Automatización Real. Sin Humo. Multiplicá tu tiempo con IA. Soluciones de Inteligencia Artificial que generan resultados medibles."
     name="description" />
+  <link rel="canonical" href="https://leandrovelasques.com.ar/" />
+  <link rel="alternate" hreflang="es" href="https://leandrovelasques.com.ar/" />
+  <link rel="alternate" hreflang="en" href="https://leandrovelasques.com.ar/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://leandrovelasques.com.ar/" />
+
+  <meta property="og:title" content="Leandro Velasques – Consultor en IA para Negocios" />
+  <meta property="og:description"
+    content="Consultoría e implementación de soluciones de Inteligencia Artificial para empresas." />
+  <meta property="og:url" content="https://leandrovelasques.com.ar/" />
+  <meta property="og:type" content="website" />
+
+  <script type="application/ld+json">
+  {
+   "@context": "https://schema.org",
+   "@type": "Person",
+   "name": "Leandro Velasques",
+   "jobTitle": "Business AI Consultant",
+   "url": "https://leandrovelasques.com.ar/",
+   "description": "Consultant specialized in Artificial Intelligence for business transformation and AI implementation in organizations.",
+   "knowsAbout": [
+    "Artificial Intelligence",
+    "AI Strategy",
+    "Business Automation",
+    "AI Consulting",
+    "Machine Learning for Business"
+   ],
+   "sameAs": []
+  }
+  </script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
   <link
@@ -113,10 +142,9 @@
         <nav class="hidden md:flex items-center gap-10">
           <div
             class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
-            <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');"
-              class="text-deep-green font-bold">ES</a>
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
             <span class="text-dark-gray/30">|</span>
-            <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');"
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
               class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
           </div>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
@@ -132,10 +160,9 @@
         </nav>
         <div class="flex items-center gap-4 md:hidden">
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mr-2">
-            <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');"
-              class="text-deep-green font-bold">ES</a>
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
             <span class="text-dark-gray/30">|</span>
-            <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');"
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
               class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
           </div>
           <a class="bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold shadow-premium"
@@ -186,7 +213,8 @@
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="text-center max-w-3xl mx-auto mb-24">
           <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Resultados que escalan tu negocio</h2>
-          <p class="text-xl text-dark-gray/70">Implementamos tecnología de forma estratégica para optimizar tu rentabilidad y liberar tu potencial directivo.</p>
+          <p class="text-xl text-dark-gray/70">Implementamos tecnología de forma estratégica para optimizar tu
+            rentabilidad y liberar tu potencial directivo.</p>
         </div>
         <div class="grid md:grid-cols-2 gap-10">
           <div

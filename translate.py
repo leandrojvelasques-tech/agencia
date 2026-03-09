@@ -1,6 +1,6 @@
 import sys
 
-with open("index_en.html", "r", encoding="utf-8") as f:
+with open("en/index.html", "r", encoding="utf-8") as f:
     html = f.read()
 
 replacements = {
@@ -124,12 +124,12 @@ routing_es = """<script>
     (function() {
       const savedLang = localStorage.getItem('preferredLang');
       if (savedLang === 'en') {
-        window.location.href = 'index_en.html';
+        window.location.href = '/en/';
       } else if (!savedLang) {
         const userLang = navigator.language || navigator.userLanguage;
         if (userLang.toLowerCase().startsWith('en')) {
           localStorage.setItem('preferredLang', 'en');
-          window.location.href = 'index_en.html';
+          window.location.href = '/en/';
         }
       }
     })();
@@ -139,36 +139,44 @@ routing_en = """<script>
     (function() {
       const savedLang = localStorage.getItem('preferredLang');
       if (savedLang === 'es') {
-        window.location.href = 'index.html';
+        window.location.href = '/';
       }
     })();
   </script>"""
 html = html.replace(routing_es, routing_en)
 
 # Invert Nav active classes
-nav_es = '''<div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-l border-deep-green/20 pl-6 ml-2">
-             <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
-             <span class="text-dark-gray/30">|</span>
-             <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');" class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+nav_es = '''<div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
           </div>'''
-nav_en = '''<div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-l border-deep-green/20 pl-6 ml-2">
-             <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');" class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
-             <span class="text-dark-gray/30">|</span>
-             <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');" class="text-deep-green font-bold">EN</a>
+nav_en = '''<div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-deep-green font-bold">EN</a>
           </div>'''
 html = html.replace(nav_es, nav_en)
 
 mobile_nav_es = '''<div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mr-2">
-                <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
-                <span class="text-dark-gray/30">|</span>
-                <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');" class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
-            </div>'''
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+          </div>'''
 mobile_nav_en = '''<div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mr-2">
-                <a href="index.html" onclick="localStorage.setItem('preferredLang', 'es');" class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
-                <span class="text-dark-gray/30">|</span>
-                <a href="index_en.html" onclick="localStorage.setItem('preferredLang', 'en');" class="text-deep-green font-bold">EN</a>
-            </div>'''
+            <a href="/" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-deep-green font-bold">EN</a>
+          </div>'''
 html = html.replace(mobile_nav_es, mobile_nav_en)
 
-with open("index_en.html", "w", encoding="utf-8") as f:
+with open("en/index.html", "w", encoding="utf-8") as f:
     f.write(html)

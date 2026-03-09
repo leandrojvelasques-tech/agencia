@@ -1,0 +1,9 @@
+{
+    "redirects": [
+        {
+            "source": "/index_en.html",
+            "destination": "/en/",
+            "permanent": true
+        }
+    ]
+}
