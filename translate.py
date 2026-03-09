@@ -23,7 +23,7 @@ replacements = {
     "Agendar una videollamada gratis": "Schedule a free video call",
     "Ver servicios": "View services",
     "Resultados que escalan tu negocio": "Results that scale your business",
-    "No implementamos tecnología por moda, sino para optimizar tu rentabilidad y liberar tu potencial directivo.": "We don't implement technology for the sake of a trend, but to optimize your profitability and unlock your management potential.",
+    "Implementamos tecnología de forma estratégica para optimizar tu rentabilidad y liberar tu potencial directivo.": "We implement technology strategically to optimize your profitability and unlock your management potential.",
     "Vuelve a enfocarte en lo importante": "Focus on what matters again",
     "Delegá la carga operativa a sistemas inteligentes y recuperá horas para la visión estratégica de tu empresa.": "Delegate operational burden to smart systems and recover hours for your company's strategic vision.",
     "Procesos que se ejecutan solos": "Processes that run by themselves",
