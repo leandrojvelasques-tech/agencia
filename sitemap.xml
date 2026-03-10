@@ -2,15 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://leandrovelasques.com.ar/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://leandrovelasques.com.ar/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://leandrovelasques.com.ar/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://leandrovelasques.com.ar/" />
+    <loc>https://www.leandrovelasques.com.ar/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.leandrovelasques.com.ar/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.leandrovelasques.com.ar/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.leandrovelasques.com.ar/" />
   </url>
   <url>
-    <loc>https://leandrovelasques.com.ar/en/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://leandrovelasques.com.ar/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://leandrovelasques.com.ar/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://leandrovelasques.com.ar/" />
+    <loc>https://www.leandrovelasques.com.ar/en/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.leandrovelasques.com.ar/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.leandrovelasques.com.ar/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.leandrovelasques.com.ar/" />
   </url>
 </urlset>

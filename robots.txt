@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://leandrovelasques.com.ar/sitemap.xml
+Sitemap: https://www.leandrovelasques.com.ar/sitemap.xml
