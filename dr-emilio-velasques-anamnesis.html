@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Anamnesis Rinoplastia | Dr. Emilio Velasques</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-green': '#285A47',
+                        'light-green': '#A8D5C1',
+                        'refined-gray': '#EDEDED',
+                        'dark-gray': '#4F4C4D',
+                        'medical-blue': '#F0F7F4',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-medical-blue text-dark-gray font-sans min-h-screen;
+            }
+            h1, h2, h3, h4 {
+                @apply font-heading text-deep-green;
+            }
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar-fill {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(40, 90, 71, 0.05);
+        }
+        input:focus, textarea:focus {
+            @apply ring-2 ring-deep-green/20 border-deep-green outline-none;
+        }
+    </style>
+</head>
+
+<body class="antialiased py-12 px-6">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header Logo / Back -->
+        <div class="flex justify-between items-center mb-12">
+            <a href="index.html"
+                class="flex items-center gap-2 text-deep-green hover:opacity-70 transition-all font-bold text-sm uppercase tracking-widest">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver a la Agencia
+            </a>
+            <div class="text-right">
+                <p class="font-heading font-extrabold text-deep-green text-lg leading-none">DR. EMILIO VELASQUES</p>
+                <p class="text-[10px] font-bold text-deep-green/60 uppercase tracking-widest mt-1">Cirugía Estética &
+                    Reparadora</p>
+            </div>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div class="mb-12">
+            <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-deep-green/40 mb-4">
+                <span id="step-count">Paso 1 de 4</span>
+                <span id="progress-percent">25% Completado</span>
+            </div>
+            <div class="h-2 w-full bg-deep-green/5 rounded-full overflow-hidden">
+                <div id="progress-fill" class="h-full bg-deep-green progress-bar-fill" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-8 md:p-12 shadow-2xl shadow-deep-green/5">
+            <form id="anamnesis-form">
+                <!-- Step 1: Introducción & Datos -->
+                <div class="step-content active" data-step="1">
+                    <div class="mb-10">
+                        <h1 class="text-3xl md:text-4xl font-extrabold mb-4 leading-tight">Formulario de Anamnesis para
+                            Rinoplastia</h1>
+                        <p class="text-lg text-dark-gray/70 leading-relaxed">
+                            Gracias por agendar tu consulta con el <strong>Dr. Emilio Velasques</strong>.
+                            Este formulario nos permite conocerte mejor y optimizar el tiempo de tu consulta médica.
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="group">
+                            <label
+                                class="block text-xs font-bold uppercase tracking-widest text-deep-green/60 mb-2 ml-1">Nombre
+                                y Apellido *</label>
+                            <input type="text" name="nombre" required
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="Tu nombre completo">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold uppercase tracking-widest text-deep-green/60 mb-2 ml-1">DNI
+                                    *</label>
+                                <input type="text" name="dni" required
+                                    class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                    placeholder="Nro de documento">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold uppercase tracking-widest text-deep-green/60 mb-2 ml-1">Celular
+                                    *</label>
+                                <input type="tel" name="celular" required
+                                    class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                    placeholder="+54 9 ...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Motivación -->
+                <div class="step-content" data-step="2">
+                    <h2 class="text-2xl font-extrabold mb-8 flex items-center gap-3">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-deep-green text-white flex items-center justify-center text-sm font-bold">2</span>
+                        Motivación para el Procedimiento
+                    </h2>
+                    <div class="space-y-8">
+                        <div>
+                            <label class="block text-sm font-bold text-deep-green mb-3">¿Hace cuánto tiempo considera
+                                hacerse una rinoplastia y qué le motiva a hacerlo ahora?</label>
+                            <textarea name="motivacion" rows="4"
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="Tu respuesta..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-deep-green mb-3">¿Cómo se sentiría si su nariz se
+                                viera mucho mejor, pero tuviera pequeños defectos o asimetrías remanentes?</label>
+                            <textarea name="expectativas" rows="4"
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="Es importante para nosotros conocer tus expectativas..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Historia Personal -->
+                <div class="step-content" data-step="3">
+                    <h2 class="text-2xl font-extrabold mb-8 flex items-center gap-3">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-deep-green text-white flex items-center justify-center text-sm font-bold">3</span>
+                        Historia Personal
+                    </h2>
+                    <div class="space-y-8">
+                        <div>
+                            <label class="block text-sm font-bold text-deep-green mb-3">¿Tuvo anteriormente una
+                                rinoplastia?</label>
+                            <p class="text-xs text-dark-gray/50 mb-4">Especifique si fue ORL, Cirujano Plástico y si se
+                                trabajó sobre el tabique nasal.</p>
+                            <textarea name="historia_operaciones" rows="3"
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="No, o especificar detalles..."></textarea>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <label class="block text-sm font-bold text-deep-green mb-4">¿Le colocaron Ácido
+                                    hialurónico?</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" name="hialuronico" value="punta"
+                                            class="rounded border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">Punta</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" name="hialuronico" value="dorso"
+                                            class="rounded border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">Dorso</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" name="hialuronico" value="radix"
+                                            class="rounded border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">Radix (entre
+                                            ojos)</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="radio" name="hialuronico_bool" value="no"
+                                            class="border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">Nunca realicé ese
+                                            procedimiento</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-deep-green mb-4">¿Utilizó hilos
+                                    tensores?</label>
+                                <div class="flex gap-6">
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="radio" name="hilos" value="si"
+                                            class="border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">Sí</span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="radio" name="hilos" value="no"
+                                            class="border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium group-hover:text-deep-green">No</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Historia de Salud -->
+                <div class="step-content" data-step="4">
+                    <h2 class="text-2xl font-extrabold mb-8 flex items-center gap-3">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-deep-green text-white flex items-center justify-center text-sm font-bold">4</span>
+                        Historia de Salud & Medicación
+                    </h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-deep-green mb-2">¿Tiene problemas de salud o
+                                enfermedades autoinmunes?</label>
+                            <textarea name="salud_general" rows="2"
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="Especifique..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-deep-green mb-2">¿Tiene antecedentes de ansiedad
+                                o depresión?</label>
+                            <textarea name="mental_health" rows="2"
+                                class="w-full bg-refined-gray/30 border-none rounded-xl p-4 font-medium"
+                                placeholder="Especifique..."></textarea>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 pt-2">
+                            <div>
+                                <label class="block text-sm font-bold text-deep-green mb-3">¿Usted fuma?</label>
+                                <div class="flex gap-6">
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="fuma" value="si"
+                                            class="border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium">Sí</span>
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="fuma" value="no"
+                                            class="border-deep-green/20 text-deep-green focus:ring-deep-green">
+                                        <span class="text-sm font-medium">No</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-deep-green mb-3">¿Restricciones
+                                    alimentarias?</label>
+                                <p class="text-[10px] text-dark-gray/50 mb-2">(Vegano, vegetariano, etc)</p>
+                                <input type="text" name="dieta"
+                                    class="w-full bg-refined-gray/30 border-none rounded-xl p-3 font-medium">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fixed Footer Actions -->
+                <div class="mt-12 pt-8 border-t border-deep-green/5 flex items-center justify-between">
+                    <button type="button" id="prev-btn"
+                        class="hidden text-deep-green font-bold text-sm uppercase tracking-widest hover:translate-x-[-4px] transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined">west</span>
+                        Anterior
+                    </button>
+                    <div class="flex-grow"></div>
+                    <button type="button" id="next-btn"
+                        class="bg-deep-green text-white px-8 py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-xl flex items-center gap-3">
+                        Siguiente etapa
+                        <span class="material-symbols-outlined">east</span>
+                    </button>
+                    <button type="submit" id="submit-btn"
+                        class="hidden bg-deep-green text-white px-10 py-4 rounded-xl font-extrabold hover:bg-opacity-90 transition-all shadow-xl">
+                        Finalizar y Enviar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Case Study Banner -->
+        <div
+            class="mt-16 bg-white rounded-3xl p-8 border border-deep-green/5 flex flex-col md:flex-row items-center gap-8 justify-between opacity-80 hover:opacity-100 transition-opacity">
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-deep-green/60 uppercase tracking-widest">Demo de Caso de
+                    Éxito</span>
+                <h4 class="text-xl font-bold">Potenciando resultados para el Dr. Velasques</h4>
+                <p class="text-sm text-dark-gray/70">Diseño UX Premium + Automatización de datos hacia CRM centralizado.
+                </p>
+            </div>
+            <a href="index.html#casos"
+                class="bg-deep-green/5 text-deep-green px-6 py-3 rounded-xl font-bold text-sm hover:bg-deep-green hover:text-white transition-all">
+                Ver Caso de Éxito
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        const form = document.getElementById('anamnesis-form');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const stepCountText = document.getElementById('step-count');
+        const progressPercentText = document.getElementById('progress-percent');
+
+        function updateUI() {
+            // Step visibility
+            document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active');
+
+            // Progress bar
+            const perc = (currentStep / totalSteps) * 100;
+            progressFill.style.width = `${perc}%`;
+            stepCountText.textContent = `Paso ${currentStep} de ${totalSteps}`;
+            progressPercentText.textContent = `${Math.round(perc)}% Completado`;
+
+            // Buttons
+            prevBtn.classList.toggle('hidden', currentStep === 1);
+            if (currentStep === totalSteps) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('¡Genial! Esto es una demo del sistema que implementamos. En el proyecto real, estos datos viajan directo al CRM personalizado del Doctor.');
+        });
+
+        updateUI();
+    </script>
+</body>
+
+</html>
