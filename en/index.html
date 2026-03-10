@@ -115,12 +115,14 @@
   <header class="sticky top-0 z-50 glass-nav">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
       <div class="flex justify-between items-center h-20">
-        <div class="flex items-center gap-3">
-          <img alt="Logo Triskel" class="h-10 w-auto logo-multiply" src="../logo_triskel.png" />
+        <div class="flex items-center gap-2 md:gap-3">
+          <img alt="Logo Triskel" class="h-8 md:h-10 w-auto logo-multiply" src="../logo_triskel.png" />
           <div class="flex flex-col">
-            <span class="font-heading font-extrabold text-deep-green tracking-tight text-xl leading-none">LEANDRO
+            <span
+              class="font-heading font-extrabold text-deep-green tracking-tight text-[1rem] md:text-xl leading-none mt-0.5 md:mt-0">LEANDRO
               VELASQUES</span>
-            <span class="font-heading text-xs md:text-sm font-semibold text-deep-green/80 mt-1 tracking-tight">Business
+            <span
+              class="font-heading text-sm font-semibold text-deep-green/80 mt-1 tracking-tight hidden md:block">Business
               AI Consultant</span>
           </div>
         </div>
@@ -144,15 +146,15 @@
           <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
             href="#contacto">Contact</a>
         </nav>
-        <div class="flex items-center gap-4 md:hidden">
-          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mr-2">
+        <div class="flex items-center gap-3 md:hidden">
+          <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
             <a href="/" onclick="localStorage.setItem('preferredLang', 'es');"
               class="text-dark-gray/60 hover:text-deep-green transition-colors">ES</a>
             <span class="text-dark-gray/30">|</span>
             <a href="/en/" onclick="localStorage.setItem('preferredLang', 'en');"
               class="text-deep-green font-bold">EN</a>
           </div>
-          <a class="bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold shadow-premium"
+          <a class="bg-deep-green text-white px-4 py-2 rounded-premium-btn text-xs font-bold shadow-premium"
             href="#contacto">Contact</a>
         </div>
       </div>
