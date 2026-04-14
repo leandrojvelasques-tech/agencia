@@ -14,7 +14,11 @@
             "destination": "/_app/index.html"
         },
         {
-            "source": "/evento/:path*",
+            "source": "/evento/:slug",
+            "destination": "/api/event-meta?slug=:slug"
+        },
+        {
+            "source": "/evento/:slug/:subpath*",
             "destination": "/_app/index.html"
         },
         {
