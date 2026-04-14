@@ -244,6 +244,42 @@ export const useStore = create((set, get) => ({
     return null
   },
 
+  updateParticipantManual: async (participantId, data) => {
+    const { data: updated, error } = await supabase
+      .from('participants')
+      .update(data)
+      .eq('id', participantId)
+      .select()
+      .single()
+
+    if (!error) {
+      set(state => ({
+        registrations: state.registrations.map(r => 
+          r.participants?.id === participantId 
+            ? { ...r, participants: updated } 
+            : r
+        )
+      }))
+      return updated
+    }
+    return null
+  },
+
+  deleteRegistration: async (registrationId) => {
+    const { error } = await supabase
+      .from('registrations')
+      .delete()
+      .eq('id', registrationId)
+
+    if (!error) {
+      set(state => ({
+        registrations: state.registrations.filter(r => r.id !== registrationId)
+      }))
+      return true
+    }
+    return false
+  },
+
   selfRegister: async (eventSlug, participantData) => {
     const event = await get().getEventBySlug(eventSlug)
     if (!event) return { success: false, error: 'Evento no encontrado' }

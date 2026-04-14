@@ -4,10 +4,11 @@ import { useStore } from '../../store/useStore'
 
 export default function EventParticipants() {
   const { id } = useParams()
-  const { getEventById, fetchEventData, registrations, addParticipantManual, isLoading } = useStore()
+  const { getEventById, fetchEventData, registrations, addParticipantManual, updateParticipantManual, deleteRegistration, isLoading } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [editingParticipant, setEditingParticipant] = useState(null)
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
   const [search, setSearch] = useState('')
 
@@ -34,11 +35,43 @@ export default function EventParticipants() {
       p.email?.toLowerCase().includes(q)
   })
 
-  const handleAdd = async () => {
-    if (!form.first_name || !form.last_name) return
-    await addParticipantManual(id, form)
+  const handleOpenAdd = () => {
+    setEditingParticipant(null)
     setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setShowModal(true)
+  }
+
+  const handleOpenEdit = (reg) => {
+    const p = reg.participants
+    setEditingParticipant({ registrationId: reg.id, participantId: p.id })
+    setForm({
+      first_name: p.first_name || '',
+      last_name: p.last_name || '',
+      email: p.email || '',
+      phone: p.phone || '',
+      notes: p.notes || ''
+    })
+    setShowModal(true)
+  }
+
+  const handleSave = async () => {
+    if (!form.first_name || !form.last_name) return
+    
+    if (editingParticipant) {
+      await updateParticipantManual(editingParticipant.participantId, form)
+    } else {
+      await addParticipantManual(id, form)
+    }
+    
+    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setEditingParticipant(null)
     setShowModal(false)
+  }
+
+  const handleDelete = async (reg) => {
+    if (window.confirm(`¿Estás seguro de eliminar a ${reg.participants.first_name} ${reg.participants.last_name} de este evento?`)) {
+      await deleteRegistration(reg.id)
+    }
   }
 
   return (
@@ -51,7 +84,7 @@ export default function EventParticipants() {
           <h1 className="text-2xl font-extrabold tracking-tight">Participantes</h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {registrations.length} inscriptos</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn-primary">
+        <button onClick={handleOpenAdd} className="btn-primary">
           <span className="material-symbols-outlined text-lg">person_add</span>
           <span className="hidden sm:inline">Agregar</span>
         </button>
@@ -71,7 +104,7 @@ export default function EventParticipants() {
                 <th>Email</th>
                 <th>Teléfono</th>
                 <th>Origen</th>
-                <th>Estado</th>
+                <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -79,7 +112,14 @@ export default function EventParticipants() {
                 <tr><td colSpan={5} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
               ) : filtered.map(r => (
                 <tr key={r.id}>
-                  <td className="font-semibold text-[var(--color-dark-gray)]">{r.participants?.first_name} {r.participants?.last_name}</td>
+                  <td className="font-semibold text-[var(--color-dark-gray)]">
+                    <div className="flex flex-col">
+                      <span>{r.participants?.first_name} {r.participants?.last_name}</span>
+                      <span className={`text-[10px] uppercase tracking-wider font-bold ${r.status === 'confirmed' ? 'text-green-600' : r.status === 'cancelled' ? 'text-red-500' : 'text-amber-500'}`}>
+                        {r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}
+                      </span>
+                    </div>
+                  </td>
                   <td>
                     {r.participants?.email ? (
                       <span className="text-sm">{r.participants.email}</span>
@@ -92,7 +132,16 @@ export default function EventParticipants() {
                   </td>
                   <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
                   <td><span className="badge badge-gray">{r.source === 'manual' ? 'Manual' : 'Autoinscripción'}</span></td>
-                  <td><span className={`badge ${r.status === 'confirmed' ? 'badge-green' : r.status === 'cancelled' ? 'badge-red' : 'badge-yellow'}`}>{r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}</span></td>
+                  <td className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => handleOpenEdit(r)} className="btn-ghost !p-1.5 text-blue-600 hover:bg-blue-50" title="Editar">
+                        <span className="material-symbols-outlined text-lg">edit</span>
+                      </button>
+                      <button onClick={() => handleDelete(r)} className="btn-ghost !p-1.5 text-red-600 hover:bg-red-50" title="Eliminar">
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -100,11 +149,11 @@ export default function EventParticipants() {
         </div>
       </div>
 
-      {/* Add Participant Modal */}
+      {/* Add/Edit Participant Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="card p-6 lg:p-8 w-full max-w-md animate-fade-in" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold mb-6">Agregar Participante</h2>
+            <h2 className="text-xl font-bold mb-6">{editingParticipant ? 'Editar Participante' : 'Agregar Participante'}</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -131,7 +180,9 @@ export default function EventParticipants() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="btn-secondary flex-1">Cancelar</button>
-              <button onClick={handleAdd} className="btn-primary flex-1" disabled={!form.first_name || !form.last_name}>Agregar</button>
+              <button onClick={handleSave} className="btn-primary flex-1" disabled={!form.first_name || !form.last_name}>
+                {editingParticipant ? 'Guardar Cambios' : 'Agregar'}
+              </button>
             </div>
           </div>
         </div>
