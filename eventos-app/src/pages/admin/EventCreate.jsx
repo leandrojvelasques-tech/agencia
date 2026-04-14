@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
+import { supabase } from '../../lib/supabase'
 
 const STEPS = ['Información', 'Fecha y Agenda', 'Inscripción', 'Materiales']
 
@@ -29,6 +30,37 @@ export default function EventCreate() {
     banner_url: '',
   })
   const [saveError, setSaveError] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef(null)
+
+  const handleBannerUpload = async (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Solo se permiten imágenes (JPG, PNG, WEBP, GIF)')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('El archivo no puede superar los 5 MB')
+      return
+    }
+    setUploadError('')
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `banner-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName)
+      update('banner_url', publicUrl)
+    } catch (err) {
+      setUploadError('Error al subir la imagen: ' + (err.message || err))
+    } finally {
+      setUploading(false)
+    }
+  }
 
   useEffect(() => {
     if (id) {
@@ -237,16 +269,82 @@ export default function EventCreate() {
         )}
 
         {step === 3 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
+            {/* Banner Upload */}
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">URL del banner <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
-              <input className="form-input" placeholder="https://..." value={form.banner_url} onChange={e => update('banner_url', e.target.value)} />
-              <p className="text-xs text-[var(--color-dark-gray)]/30 mt-1">En MVP, pegá la URL de una imagen. Más adelante podrás subir directamente.</p>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Banner del evento <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+
+              {/* Preview */}
+              {form.banner_url && (
+                <div className="relative mb-4 rounded-[var(--radius-card)] overflow-hidden border border-[var(--color-deep-green)]/10 group">
+                  <img src={form.banner_url} alt="Banner preview" className="w-full h-48 object-cover" />
+                  <button
+                    onClick={() => update('banner_url', '')}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Quitar banner"
+                  >
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Area */}
+              <div
+                className={`border-2 border-dashed rounded-[var(--radius-card)] p-8 text-center transition-all cursor-pointer hover:border-[var(--color-deep-green)]/40 hover:bg-[var(--color-deep-green)]/2 ${
+                  uploading ? 'border-[var(--color-deep-green)]/30 opacity-70' : 'border-[var(--color-deep-green)]/15'
+                }`}
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleBannerUpload(f) }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files[0]; if (f) handleBannerUpload(f) }}
+                />
+                {uploading ? (
+                  <>
+                    <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]/40 mb-2 block animate-spin">progress_activity</span>
+                    <p className="text-sm font-semibold text-[var(--color-dark-gray)]/50">Subiendo imagen...</p>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/20 mb-2 block">add_photo_alternate</span>
+                    <p className="text-sm font-semibold text-[var(--color-dark-gray)]/50">Arrastrá una imagen o hacé click para seleccionar</p>
+                    <p className="text-xs text-[var(--color-dark-gray)]/30 mt-1">JPG, PNG, WEBP · Máx. 5 MB · Recomendado: 1200×628 px</p>
+                  </>
+                )}
+              </div>
+
+              {uploadError && (
+                <p className="text-xs text-red-500 font-semibold mt-2 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">error</span> {uploadError}
+                </p>
+              )}
+
+              {/* Fallback URL */}
+              <div className="mt-4">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">O pegá una URL de imagen</label>
+                <input
+                  className="form-input text-sm"
+                  placeholder="https://..."
+                  value={form.banner_url}
+                  onChange={(e) => update('banner_url', e.target.value)}
+                />
+              </div>
             </div>
-            <div className="p-6 border-2 border-dashed border-[var(--color-deep-green)]/15 rounded-[var(--radius-card)] text-center">
-              <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/20 mb-2 block">upload_file</span>
-              <p className="text-sm font-semibold text-[var(--color-dark-gray)]/40">Carga de materiales (PDF, PPT, links)</p>
-              <p className="text-xs text-[var(--color-dark-gray)]/30 mt-1">Disponible en v1.1 con Supabase Storage</p>
+
+            {/* Materials placeholder */}
+            <div className="p-5 border border-[var(--color-deep-green)]/8 rounded-[var(--radius-card)] bg-[var(--color-refined-gray)]/40">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-2xl text-[var(--color-dark-gray)]/20">folder_open</span>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-dark-gray)]/40">Materiales del evento (PDF, PPT, links)</p>
+                  <p className="text-xs text-[var(--color-dark-gray)]/25 mt-0.5">Disponible en v1.1</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

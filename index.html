@@ -212,6 +212,31 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- EVENTOS SECTION: Dynamically loaded from Supabase -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section class="py-20 lg:py-28 bg-white" id="eventos">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight">Próximos Eventos</h2>
+          <p class="text-xl text-dark-gray/70">Charlas, talleres y capacitaciones abiertas. Inscribíte y participá.</p>
+        </div>
+        <!-- Loading state -->
+        <div id="eventos-loading" class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-deep-green/30 animate-pulse">hourglass_empty</span>
+          <p class="text-sm font-semibold text-dark-gray/40 mt-3">Cargando eventos...</p>
+        </div>
+        <!-- Empty state -->
+        <div id="eventos-empty" class="hidden text-center py-16">
+          <span class="material-symbols-outlined text-5xl text-deep-green/15 mb-4 block">event_busy</span>
+          <p class="text-lg font-bold text-deep-green/40">No hay eventos programados por el momento</p>
+          <p class="text-sm text-dark-gray/40 mt-2">Próximamente publicaremos nuevas charlas y talleres. ¡Mantenete atento!</p>
+        </div>
+        <!-- Events grid (dynamically filled) -->
+        <div id="eventos-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden"></div>
+      </div>
+    </section>
+
     <section class="py-28 lg:py-40" id="beneficios">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="text-center max-w-3xl mx-auto mb-24">
@@ -543,30 +568,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </section>
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- EVENTOS SECTION: Dynamically loaded from Supabase -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <section class="py-28 lg:py-40 bg-white" id="eventos">
-      <div class="max-w-7xl mx-auto px-6 lg:px-12">
-        <div class="text-center max-w-3xl mx-auto mb-20">
-          <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Próximos Eventos</h2>
-          <p class="text-xl text-dark-gray/70">Charlas, talleres y capacitaciones abiertas. Inscribite y participá.</p>
-        </div>
-        <!-- Loading state -->
-        <div id="eventos-loading" class="text-center py-16">
-          <span class="material-symbols-outlined text-4xl text-deep-green/30 animate-pulse">hourglass_empty</span>
-          <p class="text-sm font-semibold text-dark-gray/40 mt-3">Cargando eventos...</p>
-        </div>
-        <!-- Empty state -->
-        <div id="eventos-empty" class="hidden text-center py-16">
-          <span class="material-symbols-outlined text-5xl text-deep-green/15 mb-4 block">event_busy</span>
-          <p class="text-lg font-bold text-deep-green/40">No hay eventos programados por el momento</p>
-          <p class="text-sm text-dark-gray/40 mt-2">Próximamente publicaremos nuevas charlas y talleres. ¡Mantenete atento!</p>
-        </div>
-        <!-- Events grid (dynamically filled) -->
-        <div id="eventos-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden"></div>
       </div>
     </section>
     <section class="py-28 lg:py-40" id="sobremi">
