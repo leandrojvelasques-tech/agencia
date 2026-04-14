@@ -157,6 +157,10 @@
             href="#metodologia">Metodología</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
             href="#casos">Casos</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="#eventos">Eventos</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/blog/">Blog</a>
           <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
             href="#contacto">Contacto</a>
         </nav>
@@ -490,55 +494,85 @@
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
           <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">Novedades &amp; Contenido</h2>
+          <a href="/blog/"
+            class="text-sm font-bold text-deep-green hover:text-deep-green/70 transition-colors flex items-center gap-2 group">
+            Ver todos los artículos
+            <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </a>
         </div>
-        <div class="grid md:grid-cols-2 gap-16">
-          <div class="space-y-8">
-            <a class="space-y-8 block" href="https://www.youtube.com/watch?v=JC2R-0LbDw4" target="_blank">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- ARTICLE PREVIEW 1 -->
+          <a href="/blog/posts/canvas-chatgpt.html"
+            class="group bg-white rounded-premium-card shadow-premium hover:shadow-card-hover border border-deep-green/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col">
+            <div class="aspect-video overflow-hidden relative">
+              <img alt="Canvas: La función de ChatGPT"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
               <div
-                class="aspect-video bg-dark-gray/10 rounded-premium-card overflow-hidden relative group cursor-pointer shadow-premium">
-                <img alt="YouTube: Automatización con IA"
-                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  src="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
-                <div
-                  class="absolute inset-0 bg-deep-green/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="material-symbols-outlined text-8xl text-white">play_circle</span>
-                </div>
-              </div>
-              <div class="space-y-3">
-                <h3 class="text-2xl font-bold text-deep-green">Canvas: La función de ChatGPT que te permite editar más
-                  rápido y ordenado</h3>
-                <p class="text-xs text-dark-gray/60 uppercase font-bold tracking-[0.2em]">Ver en YouTube</p>
-              </div>
-            </a>
-          </div>
-          <div
-            class="bg-[#0077b5] p-12 rounded-premium-card shadow-premium border-none flex flex-col justify-center text-white">
-            <div class="flex items-center gap-5 mb-10">
-              <img alt="Leandro Profile" class="w-16 h-16 rounded-full border-2 border-white/30 p-1 object-cover"
-                src="./leandro_profile.jpg" />
-              <div>
-                <p class="font-bold text-white text-lg">Leandro Velasques</p>
-                <p class="text-xs text-white/70 font-semibold uppercase tracking-widest">LinkedIn Profile</p>
+                class="absolute top-3 left-3 bg-deep-green text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                Video</div>
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/60 mb-2">Herramientas IA</span>
+              <h3 class="text-lg font-bold text-deep-green mb-3 group-hover:text-deep-green/80 transition-colors leading-snug">Canvas: La función de ChatGPT que te permite editar más rápido</h3>
+              <p class="text-dark-gray/60 text-sm leading-relaxed mb-4 flex-grow" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Descubrí cómo usar Canvas para editar contenido de forma más visual y eficiente.</p>
+              <span class="text-xs text-dark-gray/40 font-medium">18 Mar, 2026 • 4 min</span>
+            </div>
+          </a>
+          <!-- COMING SOON 1 -->
+          <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-50">
+            <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-deep-green/20">article</span>
               </div>
             </div>
-            <p class="text-xl text-white font-medium italic leading-relaxed mb-10">
-              "Conectemos para compartir insights sobre cómo la IA está redefiniendo la gestión empresarial y el
-              marketing moderno."
-            </p>
-            <a class="bg-white text-[#0077b5] px-8 py-4 rounded-premium-btn text-sm font-extrabold flex items-center gap-3 hover:bg-refined-gray transition-all w-fit shadow-xl"
-              href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">
-              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path
-                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
-                </path>
-              </svg>
-              Seguime en LinkedIn
-            </a>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-2">Próximamente</span>
+              <h3 class="text-lg font-bold text-deep-green/40 mb-3">Nuevo artículo en camino...</h3>
+              <p class="text-dark-gray/30 text-sm leading-relaxed flex-grow">Nuevas reflexiones sobre IA y automatización para negocios.</p>
+            </div>
+          </div>
+          <!-- COMING SOON 2 -->
+          <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-50">
+            <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-deep-green/20">play_circle</span>
+              </div>
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-2">Próximamente</span>
+              <h3 class="text-lg font-bold text-deep-green/40 mb-3">Nuevo video en producción...</h3>
+              <p class="text-dark-gray/30 text-sm leading-relaxed flex-grow">Tutoriales y estrategias prácticas explicadas paso a paso.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
-    <section class="py-28 lg:py-40 bg-white" id="sobremi">
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- EVENTOS SECTION: Dynamically loaded from Supabase -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section class="py-28 lg:py-40 bg-white" id="eventos">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">Próximos Eventos</h2>
+          <p class="text-xl text-dark-gray/70">Charlas, talleres y capacitaciones abiertas. Inscribite y participá.</p>
+        </div>
+        <!-- Loading state -->
+        <div id="eventos-loading" class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-deep-green/30 animate-pulse">hourglass_empty</span>
+          <p class="text-sm font-semibold text-dark-gray/40 mt-3">Cargando eventos...</p>
+        </div>
+        <!-- Empty state -->
+        <div id="eventos-empty" class="hidden text-center py-16">
+          <span class="material-symbols-outlined text-5xl text-deep-green/15 mb-4 block">event_busy</span>
+          <p class="text-lg font-bold text-deep-green/40">No hay eventos programados por el momento</p>
+          <p class="text-sm text-dark-gray/40 mt-2">Próximamente publicaremos nuevas charlas y talleres. ¡Mantenete atento!</p>
+        </div>
+        <!-- Events grid (dynamically filled) -->
+        <div id="eventos-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden"></div>
+      </div>
+    </section>
+    <section class="py-28 lg:py-40" id="sobremi">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="grid lg:grid-cols-2 gap-24 items-center">
           <div class="relative order-2 lg:order-1">
@@ -561,6 +595,17 @@
               intereses: el Marketing Digital y la Inteligencia Artificial, conectando estas disciplinas para
               implementar sistemas eficientes que optimizan recursos y ahorran horas operativas todas las semanas.
             </p>
+            <div class="pt-10">
+              <a class="inline-flex items-center gap-3 bg-[#0077b5] text-white px-8 py-4 rounded-premium-btn font-bold hover:bg-opacity-90 transition-all shadow-premium"
+                href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
+                  </path>
+                </svg>
+                Contactar en LinkedIn
+              </a>
+            </div>
             <div class="grid grid-cols-2 gap-12 pt-8">
               <div>
                 <p class="text-5xl lg:text-6xl font-black text-deep-green mb-3">M.P.</p>
@@ -730,6 +775,8 @@
             <li><a class="hover:text-light-green transition-colors" href="#servicios">Servicios</a></li>
             <li><a class="hover:text-light-green transition-colors" href="#metodologia">Metodología</a></li>
             <li><a class="hover:text-light-green transition-colors" href="#casos">Casos de Éxito</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="#eventos">Eventos</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/blog/">Blog</a></li>
           </ul>
         </div>
         <div>
@@ -763,9 +810,13 @@
           <span class="hidden md:inline">|</span>
           <p>Diseñado por Leandro Velasques</p>
         </div>
-        <div class="flex gap-10">
+        <div class="flex gap-10 items-center">
           <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
           <a class="hover:text-white transition-colors" href="#">Términos de Servicio</a>
+          <a class="hover:text-white transition-colors flex items-center gap-1.5 text-white/20 hover:text-white/60" href="/admin/login" title="Acceso administrador">
+            <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+            <span class="text-[10px] uppercase tracking-widest">Admin</span>
+          </a>
         </div>
       </div>
     </div>
@@ -819,6 +870,79 @@
         submitBtn.textContent = originalBtnText;
       }
     });
+  </script>
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- Supabase SDK + Events Loader -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    (async function loadEventos() {
+      const SUPABASE_URL = 'https://oaapnglvbkvxyydjnmun.supabase.co';
+      const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXBuZ2x2Ymt2eHl5ZGpubXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjg3MDAsImV4cCI6MjA5MTcwNDcwMH0.Q0H0K1dKT77gawhU-YfkqmpAnDqgzq0i8etoY9bLM_0';
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+      const loadingEl = document.getElementById('eventos-loading');
+      const emptyEl = document.getElementById('eventos-empty');
+      const gridEl = document.getElementById('eventos-grid');
+
+      try {
+        const { data: events, error } = await sb
+          .from('events')
+          .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, max_capacity')
+          .in('status', ['published', 'in_progress'])
+          .gte('event_date', new Date().toISOString().split('T')[0])
+          .order('event_date', { ascending: true });
+
+        loadingEl.classList.add('hidden');
+
+        if (error) throw error;
+        if (!events || events.length === 0) {
+          emptyEl.classList.remove('hidden');
+          return;
+        }
+
+        gridEl.classList.remove('hidden');
+
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+        events.forEach(ev => {
+          const d = new Date(ev.event_date + 'T12:00:00');
+          const dia = d.getDate();
+          const mes = meses[d.getMonth()];
+          const anio = d.getFullYear();
+          const hora = ev.start_time ? ev.start_time.slice(0,5) : '';
+          const typeBadge = ev.type === 'charla' ? '🎤 Charla' : '🛠 Taller';
+          const isInProgress = ev.status === 'in_progress';
+
+          const card = document.createElement('a');
+          card.href = '/evento/' + ev.slug;
+          card.className = 'group bg-refined-gray/40 rounded-premium-card overflow-hidden border border-deep-green/5 hover:border-deep-green/20 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 flex flex-col';
+          card.innerHTML = `
+            ${ev.banner_url ? `<div class="aspect-video overflow-hidden"><img src="${ev.banner_url}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" /></div>` : `<div class="aspect-video bg-gradient-to-br from-deep-green/10 to-light-green/20 flex items-center justify-center"><span class="material-symbols-outlined text-5xl text-deep-green/20">${ev.type === 'charla' ? 'mic' : 'construction'}</span></div>`}
+            <div class="p-6 flex-grow flex flex-col">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-[10px] font-bold uppercase tracking-widest bg-deep-green/8 text-deep-green px-3 py-1 rounded-full">${typeBadge}</span>
+                ${isInProgress ? '<span class="text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-700 px-3 py-1 rounded-full">En curso</span>' : ''}
+              </div>
+              <h3 class="text-lg font-bold text-deep-green mb-2 leading-snug group-hover:text-deep-green/80 transition-colors">${ev.title}</h3>
+              ${ev.subtitle ? `<p class="text-sm text-dark-gray/50 font-medium mb-3">${ev.subtitle}</p>` : ''}
+              <p class="text-sm text-dark-gray/70 leading-relaxed mb-4 flex-grow" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${ev.description_short}</p>
+              <div class="flex items-center gap-4 text-xs text-dark-gray/50 font-semibold mt-auto pt-4 border-t border-deep-green/5">
+                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span>${dia} de ${mes}, ${anio}</span>
+                ${hora ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span>${hora} hs</span>` : ''}
+              </div>
+              ${!isInProgress ? `<div class="mt-4"><span class="inline-flex items-center gap-2 bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold group-hover:bg-opacity-90 transition-all shadow-premium"><span class="material-symbols-outlined text-lg">how_to_reg</span>Inscribirme</span></div>` : ''}
+            </div>
+          `;
+          gridEl.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Error loading events:', err);
+        loadingEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+      }
+    })();
   </script>
   <!-- Floating WhatsApp Button -->
   <div class="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-50">
