@@ -136,15 +136,17 @@
               class="text-deep-green font-bold">EN</a>
           </div>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#beneficios">Benefits</a>
+            href="/en/#beneficios">Benefits</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#servicios">Services</a>
+            href="/en/#servicios">Services</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#metodologia">Methodology</a>
+            href="/en/#metodologia">Methodology</a>
           <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
-            href="#casos">Cases</a>
+            href="/en/#casos">Cases</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/en/blog/">Blog</a>
           <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
-            href="#contacto">Contact</a>
+            href="/en/#contacto">Contact</a>
         </nav>
         <div class="flex items-center gap-3 md:hidden">
           <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
@@ -477,49 +479,56 @@
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
           <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">News &amp; Content</h2>
+          <a href="/en/blog/"
+            class="text-sm font-bold text-deep-green hover:text-deep-green/70 transition-colors flex items-center gap-2 group">
+            View all articles
+            <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </a>
         </div>
-        <div class="grid md:grid-cols-2 gap-16">
-          <div class="space-y-8">
-            <a class="space-y-8 block" href="https://www.youtube.com/watch?v=JC2R-0LbDw4" target="_blank">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- ARTICLE PREVIEW 1 -->
+          <a href="/en/blog/posts/canvas-chatgpt.html"
+            class="group bg-white rounded-premium-card shadow-premium hover:shadow-card-hover border border-deep-green/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col">
+            <div class="aspect-video overflow-hidden relative">
+              <img alt="Canvas: The ChatGPT feature"
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
               <div
-                class="aspect-video bg-dark-gray/10 rounded-premium-card overflow-hidden relative group cursor-pointer shadow-premium">
-                <img alt="YouTube: Automatización con IA"
-                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  src="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
-                <div
-                  class="absolute inset-0 bg-deep-green/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="material-symbols-outlined text-8xl text-white">play_circle</span>
-                </div>
-              </div>
-              <div class="space-y-3">
-                <h3 class="text-2xl font-bold text-deep-green">Canvas: The ChatGPT feature that lets you edit faster and
-                  neater</h3>
-                <p class="text-xs text-dark-gray/60 uppercase font-bold tracking-[0.2em]">Watch on YouTube</p>
-              </div>
-            </a>
-          </div>
-          <div
-            class="bg-[#0077b5] p-12 rounded-premium-card shadow-premium border-none flex flex-col justify-center text-white">
-            <div class="flex items-center gap-5 mb-10">
-              <img alt="Leandro Profile" class="w-16 h-16 rounded-full border-2 border-white/30 p-1 object-cover"
-                src="../leandro_profile.jpg" />
-              <div>
-                <p class="font-bold text-white text-lg">Leandro Velasques</p>
-                <p class="text-xs text-white/70 font-semibold uppercase tracking-widest">LinkedIn Profile</p>
+                class="absolute top-3 left-3 bg-deep-green text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                Video</div>
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/60 mb-2">AI Tools</span>
+              <h3 class="text-lg font-bold text-deep-green mb-3 group-hover:text-deep-green/80 transition-colors leading-snug">Canvas: The ChatGPT feature that lets you edit faster</h3>
+              <p class="text-dark-gray/60 text-sm leading-relaxed mb-4 flex-grow" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Discover how to use Canvas to edit content in a more visual and efficient way.</p>
+              <span class="text-xs text-dark-gray/40 font-medium">Mar 18, 2026 • 4 min</span>
+            </div>
+          </a>
+          <!-- COMING SOON 1 -->
+          <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-50">
+            <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-deep-green/20">article</span>
               </div>
             </div>
-            <p class="text-xl text-white font-medium italic leading-relaxed mb-10">
-              "Let's connect to share insights on how AI is redefining business management and modern marketing."
-            </p>
-            <a class="bg-white text-[#0077b5] px-8 py-4 rounded-premium-btn text-sm font-extrabold flex items-center gap-3 hover:bg-refined-gray transition-all w-fit shadow-xl"
-              href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">
-              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path
-                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
-                </path>
-              </svg>
-              Follow me on LinkedIn
-            </a>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-2">Coming Soon</span>
+              <h3 class="text-lg font-bold text-deep-green/40 mb-3">New article on the way...</h3>
+              <p class="text-dark-gray/30 text-sm leading-relaxed flex-grow">New insights on AI and business automation.</p>
+            </div>
+          </div>
+          <!-- COMING SOON 2 -->
+          <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-50">
+            <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-deep-green/20">play_circle</span>
+              </div>
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-2">Coming Soon</span>
+              <h3 class="text-lg font-bold text-deep-green/40 mb-3">New video in production...</h3>
+              <p class="text-dark-gray/30 text-sm leading-relaxed flex-grow">Step-by-step tutorials and practical strategies.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -547,6 +556,17 @@
               Marketing and Artificial Intelligence, connecting these disciplines to implement efficient systems that
               optimize resources and save operational hours every week.
             </p>
+            <div class="pt-10">
+              <a class="inline-flex items-center gap-3 bg-[#0077b5] text-white px-8 py-4 rounded-premium-btn font-bold hover:bg-opacity-90 transition-all shadow-premium"
+                href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
+                  </path>
+                </svg>
+                Contact on LinkedIn
+              </a>
+            </div>
             <div class="grid grid-cols-2 gap-12 pt-8">
               <div>
                 <p class="text-5xl lg:text-6xl font-black text-deep-green mb-3">M.P.</p>
@@ -713,10 +733,11 @@
         <div>
           <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Sections</h4>
           <ul class="space-y-5 text-white/70 font-medium">
-            <li><a class="hover:text-light-green transition-colors" href="#beneficios">Benefits</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#servicios">Services</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#metodologia">Methodology</a></li>
-            <li><a class="hover:text-light-green transition-colors" href="#casos">Cases de Éxito</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/en/#beneficios">Benefits</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/en/#servicios">Services</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/en/#metodologia">Methodology</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/en/#casos">Success Cases</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/en/blog/">Blog</a></li>
           </ul>
         </div>
         <div>

@@ -1,9 +1,24 @@
 {
+    "buildCommand": "cd eventos-app && npm install && npm run build",
     "redirects": [
         {
             "source": "/index_en.html",
             "destination": "/en/",
             "permanent": true
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/admin/:path*",
+            "destination": "/_app/index.html"
+        },
+        {
+            "source": "/evento/:path*",
+            "destination": "/_app/index.html"
+        },
+        {
+            "source": "/_app/:path*",
+            "destination": "/_app/:path*"
         }
     ]
 }

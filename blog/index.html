@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <script>
+    (function () {
+      const savedLang = localStorage.getItem('preferredLang');
+      if (savedLang === 'en') {
+        window.location.href = '/en/blog/';
+      } else if (!savedLang) {
+        const userLang = navigator.language || navigator.userLanguage;
+        if (userLang.toLowerCase().startsWith('en')) {
+          localStorage.setItem('preferredLang', 'en');
+          window.location.href = '/en/blog/';
+        }
+      }
+    })();
+  </script>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Blog | Leandro Velasques — IA, Automatización y Negocios</title>
+  <meta
+    content="Artículos, novedades y reflexiones sobre Inteligencia Artificial, automatización de procesos y transformación digital para negocios."
+    name="description" />
+  <link rel="canonical" href="https://www.leandrovelasques.com.ar/blog/" />
+  <link rel="alternate" hreflang="es" href="https://www.leandrovelasques.com.ar/blog/" />
+  <link rel="alternate" hreflang="en" href="https://www.leandrovelasques.com.ar/en/blog/" />
+  <link rel="alternate" hreflang="x-default" href="https://www.leandrovelasques.com.ar/blog/" />
+
+  <meta property="og:title" content="Blog | Leandro Velasques — IA, Automatización y Negocios" />
+  <meta property="og:description"
+    content="Artículos, novedades y reflexiones sobre Inteligencia Artificial, automatización de procesos y transformación digital." />
+  <meta property="og:url" content="https://www.leandrovelasques.com.ar/blog/" />
+  <meta property="og:type" content="website" />
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.12)',
+            'card-hover': '0 20px 40px -15px rgba(40, 90, 71, 0.15)',
+          },
+          borderRadius: {
+            'premium': '10px',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-refined-gray text-dark-gray font-sans;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-deep-green;
+      }
+    }
+    .glass-nav {
+      background: rgba(237, 237, 237, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(40, 90, 71, 0.08);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .rounded-premium-btn {
+      border-radius: 10px;
+    }
+    .rounded-premium-card {
+      border-radius: 12px;
+    }
+    .logo-multiply {
+      mix-blend-mode: multiply;
+    }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <a href="/" class="flex items-center gap-2 md:gap-3">
+          <img alt="Logo Triskel" class="h-8 md:h-10 w-auto logo-multiply" src="../logo_triskel.png" />
+          <div class="flex flex-col">
+            <span
+              class="font-heading font-extrabold text-deep-green tracking-tight text-[1rem] md:text-xl leading-none mt-0.5 md:mt-0">LEANDRO
+              VELASQUES</span>
+            <span
+              class="font-heading text-sm font-semibold text-deep-green/80 mt-1 tracking-tight hidden md:block">Licenciado
+              en Administración</span>
+          </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-10">
+          <div
+            class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
+            <a href="/blog/" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/blog/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+          </div>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/#beneficios">Beneficios</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/#servicios">Servicios</a>
+          <a class="text-sm font-semibold text-deep-green uppercase tracking-wider"
+            href="/blog/">Blog</a>
+          <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
+            href="/#contacto">Contacto</a>
+        </nav>
+        <div class="flex items-center gap-3 md:hidden">
+          <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+            <a href="/blog/" onclick="localStorage.setItem('preferredLang', 'es');" class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/blog/" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+          </div>
+          <a class="bg-deep-green text-white px-4 py-2 rounded-premium-btn text-xs font-bold shadow-premium"
+            href="/#contacto">Contacto</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO BLOG -->
+    <section class="pt-20 pb-12 lg:pt-28 lg:pb-16">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="max-w-3xl">
+          <div
+            class="inline-flex items-center gap-2 bg-white/60 border border-deep-green/10 px-5 py-2.5 rounded-full mb-8">
+            <span class="material-symbols-outlined text-deep-green text-lg">rss_feed</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-deep-green">Blog & Novedades</span>
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-deep-green mb-6">
+            Ideas, herramientas y <span
+              class="text-transparent bg-clip-text bg-gradient-to-r from-deep-green to-light-green">estrategias</span>
+            de IA
+          </h1>
+          <p class="text-lg lg:text-xl text-dark-gray/70 leading-relaxed font-medium max-w-2xl">
+            Artículos prácticos sobre automatización, inteligencia artificial y transformación digital para negocios.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARTICLES GRID -->
+    <section class="pb-28 lg:pb-40">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid lg:grid-cols-3 gap-12">
+
+          <!-- MAIN CONTENT: ARTICLES -->
+          <div class="lg:col-span-2">
+            <div class="grid sm:grid-cols-2 gap-8">
+
+              <!-- ARTICLE CARD 1 (Featured) -->
+              <a href="./posts/canvas-chatgpt.html"
+                class="sm:col-span-2 group bg-white rounded-premium-card shadow-premium hover:shadow-card-hover border border-deep-green/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col md:flex-row">
+                <div class="md:w-1/2 aspect-video md:aspect-auto overflow-hidden relative">
+                  <img alt="Canvas: La función de ChatGPT"
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    src="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
+                  <div
+                    class="absolute top-4 left-4 bg-deep-green text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    Video</div>
+                </div>
+                <div class="md:w-1/2 p-8 flex flex-col justify-center">
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/60 mb-3">Herramientas
+                    IA</span>
+                  <h2
+                    class="text-xl lg:text-2xl font-bold text-deep-green mb-4 group-hover:text-deep-green/80 transition-colors leading-snug">
+                    Canvas: La función de ChatGPT que te permite editar más rápido y ordenado</h2>
+                  <p class="text-dark-gray/60 text-sm leading-relaxed line-clamp-3 mb-6">
+                    Descubrí cómo usar Canvas de ChatGPT para editar textos, código y contenido de forma más visual y
+                    eficiente. Una herramienta clave para profesionales que trabajan con IA.
+                  </p>
+                  <div class="flex items-center gap-4 text-xs text-dark-gray/50 font-medium">
+                    <span>18 Mar, 2026</span>
+                    <span>•</span>
+                    <span>4 min de lectura</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- ARTICLE CARD 2 (Placeholder) -->
+              <div
+                class="group bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-60">
+                <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-6xl text-deep-green/20">article</span>
+                  </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-3">Próximamente</span>
+                  <h3 class="text-lg font-bold text-deep-green/40 mb-3 line-clamp-2">Nuevo artículo en camino...</h3>
+                  <p class="text-dark-gray/30 text-sm leading-relaxed line-clamp-2 flex-grow">
+                    Estamos preparando contenido nuevo. ¡Seguinos en LinkedIn para enterarte primero!
+                  </p>
+                </div>
+              </div>
+
+              <!-- ARTICLE CARD 3 (Placeholder) -->
+              <div
+                class="group bg-white rounded-premium-card shadow-premium border border-deep-green/5 overflow-hidden flex flex-col opacity-60">
+                <div class="aspect-video overflow-hidden relative bg-deep-green/5">
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-6xl text-deep-green/20">article</span>
+                  </div>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-deep-green/40 mb-3">Próximamente</span>
+                  <h3 class="text-lg font-bold text-deep-green/40 mb-3 line-clamp-2">Nuevo artículo en camino...</h3>
+                  <p class="text-dark-gray/30 text-sm leading-relaxed line-clamp-2 flex-grow">
+                    Estamos preparando contenido nuevo. ¡Seguinos en LinkedIn para enterarte primero!
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SIDEBAR -->
+          <div class="lg:col-span-1 space-y-8">
+
+            <!-- ABOUT BOX -->
+            <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 p-8">
+              <div class="flex items-center gap-4 mb-6">
+                <img alt="Leandro Velasques" class="w-14 h-14 rounded-full object-cover border-2 border-deep-green/10"
+                  src="../leandro_profile.jpg" />
+                <div>
+                  <p class="font-bold text-deep-green text-base">Leandro Velasques</p>
+                  <p class="text-xs text-dark-gray/50 font-medium">Lic. en Administración</p>
+                </div>
+              </div>
+              <p class="text-sm text-dark-gray/70 leading-relaxed mb-6">
+                Consultor en IA, especializado en automatización de procesos y transformación digital para negocios.
+              </p>
+              <a class="w-full py-3 text-center bg-deep-green text-white rounded-premium-btn font-bold text-sm hover:bg-opacity-90 transition-all shadow-premium block"
+                href="/#contacto">Contactar</a>
+            </div>
+
+            <!-- CATEGORIES -->
+            <div class="bg-white rounded-premium-card shadow-premium border border-deep-green/5 p-8">
+              <h3 class="font-bold text-deep-green text-sm uppercase tracking-widest mb-6">Categorías</h3>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="px-4 py-2 rounded-full border border-deep-green/10 text-xs font-bold text-deep-green/70 hover:bg-deep-green hover:text-white transition-all cursor-pointer">Herramientas
+                  IA</span>
+                <span
+                  class="px-4 py-2 rounded-full border border-deep-green/10 text-xs font-bold text-deep-green/70 hover:bg-deep-green hover:text-white transition-all cursor-pointer">Automatización</span>
+                <span
+                  class="px-4 py-2 rounded-full border border-deep-green/10 text-xs font-bold text-deep-green/70 hover:bg-deep-green hover:text-white transition-all cursor-pointer">Casos
+                  de Éxito</span>
+                <span
+                  class="px-4 py-2 rounded-full border border-deep-green/10 text-xs font-bold text-deep-green/70 hover:bg-deep-green hover:text-white transition-all cursor-pointer">Videos</span>
+                <span
+                  class="px-4 py-2 rounded-full border border-deep-green/10 text-xs font-bold text-deep-green/70 hover:bg-deep-green hover:text-white transition-all cursor-pointer">Entrevistas</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-deep-green text-white py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+        <div class="col-span-1 lg:col-span-2 space-y-10">
+          <a href="/" class="flex items-center gap-4">
+            <img alt="Logo Triskel" class="h-12 w-auto brightness-0 invert" src="../logo_triskel.png" />
+            <div class="flex flex-col">
+              <span class="font-heading font-extrabold text-2xl tracking-tight leading-none">LEANDRO VELASQUES</span>
+              <span class="font-heading text-xs md:text-sm font-semibold text-white/80 mt-1 tracking-tight">Licenciado
+                en Administración</span>
+              <span
+                class="font-heading text-[10px] md:text-[11px] font-bold text-white/50 uppercase tracking-widest mt-3">MATRICULA
+                PROFESIONAL</span>
+              <span
+                class="font-heading text-[10px] md:text-[11px] font-bold text-white/50 uppercase tracking-widest mt-0.5">CPCE
+                - CHUBUT - TOMO III - FOLIO 58</span>
+            </div>
+          </a>
+          <p class="text-white/60 max-w-sm leading-relaxed text-lg font-medium">
+            Impulsando la frontera de la eficiencia empresarial mediante IA aplicada y automatización avanzada.
+          </p>
+          <div class="flex gap-6">
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-[#25D366] hover:text-white transition-all"
+              href="https://wa.me/5492974059568" target="_blank" aria-label="WhatsApp">
+              <svg class="w-6 h-6 fill-current" viewBox="0 0 448 512">
+                <path
+                  d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.1-3.2-5.5-.3-8.5 2.4-11.2 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.3 3.8-5.7 5.7-9.4 1.9-3.7 1-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.3 5.7 23.7 9.1 31.7 11.7 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z">
+                </path>
+              </svg>
+            </a>
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank" aria-label="LinkedIn">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
+                </path>
+              </svg>
+            </a>
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="mailto:info@leandrovelasques.com.ar" aria-label="Email"><span
+                class="material-symbols-outlined text-xl">mail</span></a>
+            <a class="w-12 h-12 rounded-premium-btn border border-white/20 flex items-center justify-center hover:bg-white hover:text-deep-green transition-all"
+              href="https://www.youtube.com/@Leandro.Velasques" target="_blank" aria-label="YouTube">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z">
+                </path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Secciones</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors" href="/#beneficios">Beneficios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/#servicios">Servicios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/#metodologia">Metodología</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/#casos">Casos de Éxito</a></li>
+            <li><a class="hover:text-light-green transition-colors text-white" href="/blog/">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Recursos</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors flex items-center gap-2"
+                href="https://wa.me/5492974059568" target="_blank">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M12 0C6.477 0 2 4.477 2 10c0 1.798.47 3.504 1.302 5.006L2 22l6.994-1.302A9.966 9.966 0 0 0 12 20c5.523 0 10-4.477 10-10S17.523 0 12 0zm0 2c4.418 0 8 3.582 8 8s-3.582 8-8 8c-1.798 0-3.504-.47-5.006-1.302L4 18l1.302-6.994A7.966 7.966 0 0 1 4 10c0-4.418 3.582-8 8-8zm-1 3.5v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2z">
+                  </path>
+                </svg>
+                WhatsApp (+549) 2974059568
+              </a></li>
+            <li><a class="hover:text-light-green transition-colors"
+                href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">LinkedIn</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="https://www.youtube.com/@Leandro.Velasques"
+                target="_blank">YouTube Channel</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7"
+                target="_blank">Agenda de Citas</a>
+            </li>
+            <li><a class="hover:text-light-green transition-colors" href="https://t.me/Lean2071"
+                target="_blank">Telegram (@Lean2071)</a></li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm text-white/40 font-medium">
+        <div class="flex flex-col md:flex-row items-center md:gap-2 text-center md:text-left">
+          <p>© 2026 Leandro Velasques. Todos los derechos reservados.</p>
+          <span class="hidden md:inline">|</span>
+          <p>Diseñado por Leandro Velasques</p>
+        </div>
+        <div class="flex gap-10">
+          <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
+          <a class="hover:text-white transition-colors" href="#">Términos de Servicio</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>

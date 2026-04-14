@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <script>
+    (function () {
+      const savedLang = localStorage.getItem('preferredLang');
+      if (savedLang === 'en') {
+        window.location.href = '/en/blog/posts/canvas-chatgpt.html';
+      }
+    })();
+  </script>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Canvas: La función de ChatGPT que te permite editar más rápido | Leandro Velasques</title>
+  <meta
+    content="Descubrí cómo usar Canvas de ChatGPT para editar textos, código y contenido de forma más visual y eficiente. Una herramienta clave para profesionales que trabajan con IA."
+    name="description" />
+  <link rel="canonical" href="https://www.leandrovelasques.com.ar/blog/posts/canvas-chatgpt.html" />
+  <link rel="alternate" hreflang="es" href="https://www.leandrovelasques.com.ar/blog/posts/canvas-chatgpt.html" />
+  <link rel="alternate" hreflang="en" href="https://www.leandrovelasques.com.ar/en/blog/posts/canvas-chatgpt.html" />
+
+  <meta property="og:title" content="Canvas: La función de ChatGPT que te permite editar más rápido y ordenado" />
+  <meta property="og:description"
+    content="Descubrí cómo usar Canvas de ChatGPT para editar textos, código y contenido de forma más visual y eficiente." />
+  <meta property="og:url" content="https://www.leandrovelasques.com.ar/blog/posts/canvas-chatgpt.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Canvas: La función de ChatGPT que te permite editar más rápido y ordenado",
+    "description": "Descubrí cómo usar Canvas de ChatGPT para editar textos, código y contenido de forma más visual y eficiente.",
+    "image": "https://img.youtube.com/vi/JC2R-0LbDw4/maxresdefault.jpg",
+    "author": {
+      "@type": "Person",
+      "name": "Leandro Velasques",
+      "url": "https://www.leandrovelasques.com.ar/"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Leandro Velasques"
+    },
+    "datePublished": "2026-03-18",
+    "dateModified": "2026-03-18",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://www.leandrovelasques.com.ar/blog/posts/canvas-chatgpt.html"
+    }
+  }
+  </script>
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.12)',
+            'card-hover': '0 20px 40px -15px rgba(40, 90, 71, 0.15)',
+          },
+          borderRadius: {
+            'premium': '10px',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-refined-gray text-dark-gray font-sans;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-deep-green;
+      }
+    }
+    .glass-nav {
+      background: rgba(237, 237, 237, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(40, 90, 71, 0.08);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .rounded-premium-btn {
+      border-radius: 10px;
+    }
+    .rounded-premium-card {
+      border-radius: 12px;
+    }
+    .logo-multiply {
+      mix-blend-mode: multiply;
+    }
+    .prose-custom h2 {
+      @apply text-2xl font-bold text-deep-green mt-12 mb-6;
+    }
+    .prose-custom h3 {
+      @apply text-xl font-bold text-deep-green mt-10 mb-4;
+    }
+    .prose-custom p {
+      @apply text-dark-gray/80 leading-relaxed text-lg mb-6;
+    }
+    .prose-custom ul {
+      @apply space-y-3 mb-8 ml-6;
+    }
+    .prose-custom li {
+      @apply text-dark-gray/80 text-lg leading-relaxed list-disc;
+    }
+    .prose-custom blockquote {
+      @apply border-l-4 border-deep-green/30 pl-6 py-2 my-8 bg-white/50 rounded-r-premium-card;
+    }
+    .prose-custom blockquote p {
+      @apply text-deep-green/80 italic font-medium text-lg;
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <a href="/" class="flex items-center gap-2 md:gap-3">
+          <img alt="Logo Triskel" class="h-8 md:h-10 w-auto logo-multiply" src="../../logo_triskel.png" />
+          <div class="flex flex-col">
+            <span
+              class="font-heading font-extrabold text-deep-green tracking-tight text-[1rem] md:text-xl leading-none mt-0.5 md:mt-0">LEANDRO
+              VELASQUES</span>
+            <span
+              class="font-heading text-sm font-semibold text-deep-green/80 mt-1 tracking-tight hidden md:block">Licenciado
+              en Administración</span>
+          </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-10">
+          <div
+            class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider border-r border-deep-green/20 pr-6 mr-2">
+            <a href="/blog/posts/canvas-chatgpt.html" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/blog/posts/canvas-chatgpt.html" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+          </div>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/#beneficios">Beneficios</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/#servicios">Servicios</a>
+          <a class="text-sm font-semibold hover:text-deep-green transition-colors uppercase tracking-wider"
+            href="/blog/">Blog</a>
+          <a class="bg-deep-green text-white px-7 py-3 rounded-premium-btn text-sm font-bold hover:bg-opacity-90 transition-all shadow-premium"
+            href="/#contacto">Contacto</a>
+        </nav>
+        <div class="flex items-center gap-3 md:hidden">
+          <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
+            <a href="/blog/posts/canvas-chatgpt.html" onclick="localStorage.setItem('preferredLang', 'es');"
+              class="text-deep-green font-bold">ES</a>
+            <span class="text-dark-gray/30">|</span>
+            <a href="/en/blog/posts/canvas-chatgpt.html" onclick="localStorage.setItem('preferredLang', 'en');"
+              class="text-dark-gray/60 hover:text-deep-green transition-colors">EN</a>
+          </div>
+          <a class="bg-deep-green text-white px-4 py-2 rounded-premium-btn text-xs font-bold shadow-premium"
+            href="/#contacto">Contacto</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- BREADCRUMB -->
+    <div class="max-w-3xl mx-auto px-6 lg:px-12 pt-8">
+      <nav class="flex items-center gap-2 text-sm text-dark-gray/50 font-medium">
+        <a href="/" class="hover:text-deep-green transition-colors">Inicio</a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <a href="/blog/" class="hover:text-deep-green transition-colors">Blog</a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-deep-green font-semibold">Canvas ChatGPT</span>
+      </nav>
+    </div>
+
+    <!-- ARTICLE HEADER -->
+    <article class="max-w-3xl mx-auto px-6 lg:px-12 pt-12 pb-28 lg:pb-40">
+      <header class="mb-12">
+        <span
+          class="inline-block bg-deep-green/10 text-deep-green px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6">Herramientas
+          IA</span>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-deep-green mb-8">
+          Canvas: La función de ChatGPT que te permite editar más rápido y ordenado
+        </h1>
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-dark-gray/60">
+          <div class="flex items-center gap-3">
+            <img alt="Leandro Velasques" class="w-10 h-10 rounded-full object-cover border-2 border-deep-green/10"
+              src="../../leandro_profile.jpg" />
+            <div>
+              <p class="font-bold text-deep-green text-sm">Leandro Velasques</p>
+              <p class="text-xs text-dark-gray/50">Consultor en IA</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-medium">
+            <span class="flex items-center gap-1"><span
+                class="material-symbols-outlined text-sm">calendar_today</span> 18 Mar, 2026</span>
+            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 4 min
+              de lectura</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIDEO EMBED -->
+      <div class="rounded-premium-card overflow-hidden shadow-2xl mb-14 aspect-video bg-dark-gray/10">
+        <iframe class="w-full h-full" src="https://www.youtube.com/embed/JC2R-0LbDw4"
+          title="Canvas: La función de ChatGPT que te permite editar más rápido y ordenado" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+
+      <!-- ARTICLE BODY -->
+      <div class="prose-custom">
+        <p>
+          Si usás ChatGPT para redactar textos, editar código o crear contenido, hay una función que probablemente
+          todavía no estés aprovechando al máximo: <strong>Canvas</strong>. En este video te cuento cómo funciona y por
+          qué puede cambiar la forma en que trabajás con inteligencia artificial.
+        </p>
+
+        <h2>¿Qué es Canvas?</h2>
+        <p>
+          Canvas es una interfaz visual dentro de ChatGPT que te permite trabajar con documentos de texto y código en un
+          editor dedicado. A diferencia del chat tradicional donde todo ocurre de forma lineal, Canvas te ofrece un
+          espacio de trabajo donde podés editar, reorganizar y refinar tu contenido de manera más intuitiva.
+        </p>
+
+        <blockquote>
+          <p>Canvas convierte a ChatGPT en un verdadero asistente de edición, no solo un generador de texto.</p>
+        </blockquote>
+
+        <h2>Ventajas clave para profesionales</h2>
+        <ul>
+          <li><strong>Edición en contexto:</strong> Podés seleccionar partes del texto y pedirle a ChatGPT que las
+            modifique sin alterar el resto del documento.</li>
+          <li><strong>Organización visual:</strong> Todo tu contenido en un espacio limpio y estructurado, ideal para
+            documentos largos.</li>
+          <li><strong>Iteración rápida:</strong> Refinás tu contenido de forma progresiva, haciendo ajustes puntuales
+            sin repetir prompts completos.</li>
+          <li><strong>Código y texto:</strong> Funciona tanto para redacción profesional como para desarrollo de
+            software.</li>
+        </ul>
+
+        <h2>¿Cómo empezar a usarlo?</h2>
+        <p>
+          En el video te muestro el paso a paso para activar Canvas y los mejores trucos para sacarle el máximo provecho
+          desde el primer uso. Es una de esas funciones que, una vez que la probás, no volvés al modo chat convencional.
+        </p>
+
+        <p>
+          Si querés aprender a usar más herramientas de IA para potenciar tu productividad,
+          <a href="/#contacto" class="text-deep-green font-bold hover:underline">contactame</a> para una sesión de
+          consultoría personalizada.
+        </p>
+      </div>
+
+      <!-- SHARE & BACK -->
+      <div class="mt-16 pt-10 border-t border-deep-green/10">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
+          <a href="/blog/"
+            class="flex items-center gap-2 text-deep-green font-bold hover:gap-3 transition-all text-sm">
+            <span class="material-symbols-outlined text-lg">arrow_back</span>
+            Volver al blog
+          </a>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold uppercase tracking-widest text-dark-gray/40">Compartir:</span>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://www.leandrovelasques.com.ar/blog/posts/canvas-chatgpt.html"
+              target="_blank"
+              class="w-10 h-10 rounded-full border border-deep-green/10 flex items-center justify-center text-deep-green/60 hover:bg-deep-green hover:text-white transition-all">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
+                </path>
+              </svg>
+            </a>
+            <a href="https://wa.me/?text=Canvas%3A%20La%20funci%C3%B3n%20de%20ChatGPT%20que%20te%20permite%20editar%20m%C3%A1s%20r%C3%A1pido%20https%3A%2F%2Fwww.leandrovelasques.com.ar%2Fblog%2Fposts%2Fcanvas-chatgpt.html"
+              target="_blank"
+              class="w-10 h-10 rounded-full border border-deep-green/10 flex items-center justify-center text-deep-green/60 hover:bg-[#25D366] hover:text-white transition-all">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 448 512">
+                <path
+                  d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157z">
+                </path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA BOX -->
+      <div
+        class="mt-16 bg-deep-green rounded-premium-card p-10 lg:p-14 text-white text-center relative overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-60 h-60 bg-light-green/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-60 h-60 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="relative z-10">
+          <h3 class="text-2xl lg:text-3xl font-extrabold text-white mb-4">¿Querés potenciar tu negocio con IA?</h3>
+          <p class="text-white/70 text-lg mb-8 max-w-xl mx-auto">Agendá una videollamada gratuita y te cuento cómo la
+            inteligencia artificial puede transformar tus procesos.</p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7" target="_blank"
+              class="bg-white text-deep-green px-8 py-4 rounded-premium-btn font-extrabold hover:bg-refined-gray transition-all shadow-xl">
+              Agendar videollamada gratis
+            </a>
+            <a href="https://wa.me/5492974059568" target="_blank"
+              class="border-2 border-white/30 text-white px-8 py-4 rounded-premium-btn font-bold hover:bg-white/10 transition-all">
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </article>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-deep-green text-white py-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+        <div class="col-span-1 lg:col-span-2 space-y-10">
+          <a href="/" class="flex items-center gap-4">
+            <img alt="Logo Triskel" class="h-12 w-auto brightness-0 invert" src="../../logo_triskel.png" />
+            <div class="flex flex-col">
+              <span class="font-heading font-extrabold text-2xl tracking-tight leading-none">LEANDRO VELASQUES</span>
+              <span class="font-heading text-xs md:text-sm font-semibold text-white/80 mt-1 tracking-tight">Licenciado
+                en Administración</span>
+            </div>
+          </a>
+          <p class="text-white/60 max-w-sm leading-relaxed text-lg font-medium">
+            Impulsando la frontera de la eficiencia empresarial mediante IA aplicada y automatización avanzada.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Secciones</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors" href="/#beneficios">Beneficios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/#servicios">Servicios</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/blog/">Blog</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="/#contacto">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-white mb-10 uppercase tracking-widest text-xs">Recursos</h4>
+          <ul class="space-y-5 text-white/70 font-medium">
+            <li><a class="hover:text-light-green transition-colors" href="https://wa.me/5492974059568"
+                target="_blank">WhatsApp</a></li>
+            <li><a class="hover:text-light-green transition-colors"
+                href="https://www.linkedin.com/in/leandrojvelasques/" target="_blank">LinkedIn</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="https://www.youtube.com/@Leandro.Velasques"
+                target="_blank">YouTube</a></li>
+            <li><a class="hover:text-light-green transition-colors" href="https://calendar.app.google/7tbZLFQhWg2AtdxJ7"
+                target="_blank">Agenda de Citas</a></li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="pt-16 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm text-white/40 font-medium">
+        <p>© 2026 Leandro Velasques. Todos los derechos reservados.</p>
+        <div class="flex gap-10">
+          <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
+          <a class="hover:text-white transition-colors" href="#">Términos de Servicio</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>

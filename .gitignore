@@ -6,3 +6,6 @@ desktop_preview.html
 node_modules/
 .DS_Store
 *.log
+.vercel
+.env*.local
+_app/

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nodo Sur - Diseño Fiel Optimizado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .hover-img-zoom {
+            overflow: hidden;
+        }
+
+        .hover-img-zoom img {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .group:hover .hover-img-zoom img {
+            transform: scale(1.05);
+        }
+
+        .tag-green {
+            background-color: #5ab18f;
+        }
+
+        .text-brand-nav {
+            color: #72b9cd;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Black Bar -->
+    <div
+        class="bg-[#121212] py-2 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center text-xs font-medium border-b border-black">
+        <div class="hidden md:block w-1/3"></div> <!-- Spacer -->
+        <div class="flex items-center gap-5 justify-end w-full md:w-2/3">
+            <span class="text-[#98c93c]">martes, 10 de marzo de 2026</span>
+            <div class="flex items-center gap-3">
+                <a href="#" class="text-white hover:text-[#98c93c] transition-colors"><svg
+                        class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg></a>
+                <a href="#" class="text-white hover:text-[#98c93c] transition-colors"><svg
+                        class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path
+                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg></a>
+            </div>
+            <div class="w-px h-4 bg-zinc-700"></div>
+            <a href="#" class="text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 opacity-80">
+                <span class="material-symbols-outlined text-[14px]">lock</span> Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Header & Navigation -->
+    <div class="bg-[#f2f6fa]">
+        <div class="max-w-[1200px] mx-auto px-4">
+            <!-- Navbar -->
+            <nav
+                class="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 py-5 text-[13px] font-bold text-brand-nav uppercase tracking-wide">
+                <a href="#" class="hover:text-[#98c93c] transition-colors duration-200">Petróleo</a>
+                <a href="#" class="hover:text-[#98c93c] transition-colors duration-200">Minería</a>
+                <a href="#" class="hover:text-[#98c93c] transition-colors duration-200">Medio Ambiente</a>
+                <a href="#" class="hover:text-[#98c93c] transition-colors duration-200">Turismo</a>
+                <a href="#" class="hover:text-[#98c93c] transition-colors duration-200">PBA</a>
+            </nav>
+
+            <!-- Logo -->
+            <div class="flex justify-center pb-8 pt-2">
+                <a href="#" class="inline-block hover:opacity-90 transition-opacity">
+                    <img src="https://nodosurnoticias.com/wp-content/uploads/2021/08/cropped-LOGO-NODO-SUR-NOTICIAS_Mesa-de-trabajo-1.png"
+                        alt="Nodo Sur Noticias" class="h-16 md:h-24 w-auto object-contain">
+                </a>
+            </div>
+        </div>
+        <!-- Shadow separator -->
+        <div class="h-1 w-full bg-gradient-to-b from-black/5 to-transparent"></div>
+    </div>
+
+    <main class="max-w-[1300px] mx-auto px-4 py-10">
+
+        <!-- Hero Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-12">
+            <!-- Left Large Article -->
+            <article class="lg:col-span-8 relative group cursor-pointer hover-img-zoom rounded-sm overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1544333346-620293309a96?auto=format&fit=crop&q=80&w=1200"
+                    alt="Petróleo" class="w-full h-full min-h-[400px] md:min-h-[500px] object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10"></div>
+
+                <span
+                    class="absolute top-4 left-4 tag-green text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-sm">PETRÓLEO</span>
+
+                <div class="absolute bottom-6 left-6 right-6 md:left-8 md:right-8 text-white">
+                    <h2 class="text-3xl md:text-5xl font-bold leading-[1.1] mb-3 md:mb-4 tracking-tight drop-shadow-md">
+                        Salida de YPF en Comodoro Rivadavia: 118 años de petróleo. Pero, ¿valió la pena?
+                    </h2>
+                    <div class="flex items-center gap-2 text-xs md:text-sm text-zinc-300 font-medium opacity-90">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span> 18/02/2026
+                    </div>
+                </div>
+            </article>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-4 flex flex-col gap-5">
+                <!-- Top Right Article -->
+                <article
+                    class="relative group cursor-pointer hover-img-zoom rounded-sm overflow-hidden h-[220px] md:h-[240px]">
+                    <img src="https://images.unsplash.com/photo-1533035353720-f1c6a75cd8ab?auto=format&fit=crop&q=80&w=800"
+                        alt="Turismo" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+
+                    <span
+                        class="absolute top-4 left-4 tag-green text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-sm">TURISMO</span>
+
+                    <div class="absolute bottom-5 left-5 right-5 text-white">
+                        <h3 class="text-lg md:text-xl font-bold leading-snug mb-2 drop-shadow-md tracking-tight">Turismo
+                            en la Patagonia: naturaleza, ciudades y entretenimiento</h3>
+                        <div class="flex items-center gap-2 text-xs text-zinc-300 font-medium">
+                            <span class="material-symbols-outlined text-[14px]">schedule</span> 10/02/2026
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Bottom Right Row (2 columns) -->
+                <div class="grid grid-cols-2 gap-5 flex-grow">
+                    <!-- Bottom Right 1 -->
+                    <article
+                        class="relative group cursor-pointer hover-img-zoom rounded-sm overflow-hidden h-[200px] md:h-[240px]">
+                        <img src="https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&q=80&w=600"
+                            alt="Tech" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+                        <span
+                            class="absolute top-3 left-3 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">PETRÓLEO</span>
+
+                        <div class="absolute bottom-4 left-4 right-4 text-white">
+                            <h4
+                                class="text-[15px] font-bold leading-snug mb-1 drop-shadow-md tracking-tight line-clamp-3">
+                                Vaca Muerta en 2026: récord de producción, pero ¿quién se queda con los beneficios?</h4>
+                            <div class="flex items-center gap-1.5 text-[10px] text-zinc-300 font-medium">
+                                <span class="material-symbols-outlined text-[12px]">schedule</span> 09/02/2026
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Bottom Right 2 -->
+                    <article
+                        class="relative group cursor-pointer hover-img-zoom rounded-sm overflow-hidden h-[200px] md:h-[240px]">
+                        <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&q=80&w=600"
+                            alt="Avión" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+                        <span
+                            class="absolute top-3 left-3 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm z-10 block max-w-[calc(100%-24px)] leading-tight">ESTA
+                            PASANDO</span>
+
+                        <div class="absolute bottom-4 left-4 right-4 text-white">
+                            <h4
+                                class="text-[15px] font-bold leading-snug mb-1 drop-shadow-md tracking-tight line-clamp-3">
+                                Turismo Patagonia: Banco Chubut y Aerolíneas lanzan cuotas para volar y empujar la
+                                demanda</h4>
+                            <div class="flex items-center gap-1.5 text-[10px] text-zinc-300 font-medium">
+                                <span class="material-symbols-outlined text-[12px]">schedule</span> 18/12/2025
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Column Grid "Esta Pasando" -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-16">
+            <!-- Card 1 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-[16/10] mb-4">
+                    <img src="https://images.unsplash.com/photo-1596328546171-77e37b5f8eae?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover">
+                    <span
+                        class="absolute bottom-3 left-3 tag-green text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-sm">ESTA
+                        PASANDO</span>
+                </div>
+                <h3
+                    class="text-xl font-bold text-zinc-800 leading-[1.3] mb-3 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                    Clima en Comodoro Rivadavia: jornada con cielo algo nublado y ambiente templado</h3>
+                <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                    <span class="material-symbols-outlined text-[14px]">schedule</span> 03/01/2026
+                </div>
+            </article>
+
+            <!-- Card 2 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-[16/10] mb-4">
+                    <img src="https://images.unsplash.com/photo-1562155618-e1a8cb2f0289?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover">
+                    <span
+                        class="absolute bottom-3 left-3 tag-green text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-sm">ESTA
+                        PASANDO</span>
+                </div>
+                <h3
+                    class="text-xl font-bold text-zinc-800 leading-[1.3] mb-3 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                    Reforma laboral, Presupuesto 2026 y aumentos: el día político-económico que impacta en Patagonia
+                </h3>
+                <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                    <span class="material-symbols-outlined text-[14px]">schedule</span> 18/12/2025
+                </div>
+            </article>
+
+            <!-- Card 3 -->
+            <article class="group cursor-pointer flex flex-col h-full">
+                <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-[16/10] mb-4">
+                    <img src="https://images.unsplash.com/photo-1616147424560-64ab5d491129?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover">
+                    <span
+                        class="absolute bottom-3 left-3 tag-green text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-sm">ESTA
+                        PASANDO</span>
+                </div>
+                <h3
+                    class="text-xl font-bold text-zinc-800 leading-[1.3] mb-3 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                    Convocatoria petrolera en Comodoro y clima extremo en Chubut marcan agenda regional</h3>
+                <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                    <span class="material-symbols-outlined text-[14px]">schedule</span> 12/12/2025
+                </div>
+            </article>
+        </div>
+
+
+        <!-- Sections Area (Minería vs Turismo Style Split) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+
+            <!-- Left Half: MINERÍA -->
+            <div>
+                <!-- Custom Header -->
+                <div class="mb-6">
+                    <div class="h-[2px] bg-zinc-900 w-full mb-[14px]"></div>
+                    <h2 class="text-[22px] font-bold text-[#5ab18f] uppercase tracking-wide text-center">Minería</h2>
+                    <div class="h-px bg-zinc-900 w-full mt-[14px]"></div>
+                </div>
+
+                <!-- Featured item (Video Embed style) -->
+                <article
+                    class="relative group cursor-pointer hover-img-zoom rounded-sm overflow-hidden aspect-[16/9] mb-6">
+                    <img src="https://images.unsplash.com/photo-1621619856624-b15c92872323?auto=format&fit=crop&q=80&w=1200"
+                        class="w-full h-full object-cover opacity-90">
+                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div
+                            class="w-16 h-12 bg-[#ff0000] rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-white text-[32px]">play_arrow</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute top-4 left-4 right-4 flex justify-between items-start text-white">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">
+                                <span class="font-bold text-[10px]">NA</span>
+                            </div>
+                            <span class="font-medium text-[15px] drop-shadow-md">¿Es necesario este tipo de
+                                minería?</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <span
+                                class="material-symbols-outlined text-white drop-shadow-md hover:opacity-80">schedule</span>
+                            <span
+                                class="material-symbols-outlined text-white drop-shadow-md hover:opacity-80">share</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-4 left-4">
+                        <span
+                            class="bg-black/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-sm flex items-center gap-1">
+                            Mirar en <span class="font-bold tracking-tighter">YouTube</span>
+                        </span>
+                    </div>
+                </article>
+
+                <!-- Sub items row -->
+                <div class="grid grid-cols-2 gap-5">
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1549419137-97d84814de73?auto=format&fit=crop&q=80&w=500"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">MINERIA</span>
+                        </div>
+                        <h4
+                            class="text-[15px] font-bold text-zinc-800 leading-snug mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Senado acelera un debate caliente: cambios en la Ley de Glaciares...</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[12px]">schedule</span> 18/12/2025
+                        </div>
+                    </article>
+
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1517784648376-0bdfcf21fba1?auto=format&fit=crop&q=80&w=500"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">MINERIA</span>
+                        </div>
+                        <h4
+                            class="text-[15px] font-bold text-zinc-800 leading-snug mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Mendoza aprobó PSJ Cobre Mendocino y proyectos mineros</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[12px]">schedule</span> 27/11/2025
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- Right Half: TURISMO -->
+            <div>
+                <!-- Custom Header -->
+                <div class="mb-6">
+                    <div class="h-[2px] bg-zinc-900 w-full mb-[14px]"></div>
+                    <h2 class="text-[22px] font-bold text-[#5ab18f] uppercase tracking-wide text-center">Turismo</h2>
+                    <div class="h-px bg-zinc-900 w-full mt-[14px]"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-x-5 gap-y-7">
+                    <!-- Item 1 -->
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1533035353720-f1c6a75cd8ab?auto=format&fit=crop&q=80&w=600"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">TURISMO</span>
+                        </div>
+                        <h4
+                            class="text-[16px] font-bold text-zinc-800 leading-[1.3] mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Turismo en la Patagonia: naturaleza, ciudades y entretenimiento</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[13px]">schedule</span> 10/02/2026
+                        </div>
+                    </article>
+
+                    <!-- Item 2 -->
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&q=80&w=600"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">ESTA
+                                PASANDO</span>
+                        </div>
+                        <h4
+                            class="text-[16px] font-bold text-zinc-800 leading-[1.3] mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Turismo Patagonia: Banco Chubut y Aerolíneas lanzan cuotas...</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[13px]">schedule</span> 18/12/2025
+                        </div>
+                    </article>
+
+                    <!-- Item 3 -->
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1621516766093-69022ed3d964?auto=format&fit=crop&q=80&w=600"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">TURISMO</span>
+                        </div>
+                        <h4
+                            class="text-[16px] font-bold text-zinc-800 leading-[1.3] mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Turismo patagónico: perspectivas y destinos emergentes</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[13px]">schedule</span> 11/12/2025
+                        </div>
+                    </article>
+
+                    <!-- Item 4 -->
+                    <article class="group cursor-pointer flex flex-col">
+                        <div class="relative hover-img-zoom rounded-sm overflow-hidden aspect-video mb-3">
+                            <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=600"
+                                class="w-full h-full object-cover">
+                            <span
+                                class="absolute bottom-2 left-2 tag-green text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm shadow-sm">TURISMO</span>
+                        </div>
+                        <h4
+                            class="text-[16px] font-bold text-zinc-800 leading-[1.3] mb-2 group-hover:text-[#5ab18f] transition-colors tracking-tight">
+                            Aerolíneas Argentinas lanza su primer plan de inversiones...</h4>
+                        <div class="mt-auto flex items-center gap-1.5 text-[11px] text-zinc-500 font-medium">
+                            <span class="material-symbols-outlined text-[13px]">schedule</span> 28/11/2025
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Simple Footer to match -->
+    <footer class="bg-[#121212] py-12 mt-12 border-t-[4px] border-[#98c93c]">
+        <div class="max-w-[1300px] mx-auto px-4 text-center">
+            <img src="https://nodosurnoticias.com/wp-content/uploads/2021/08/cropped-LOGO-NODO-SUR-NOTICIAS_Mesa-de-trabajo-1.png"
+                alt="Nodo Sur Noticias" class="h-14 mx-auto mb-6 brightness-0 invert opacity-80">
+            <p class="text-zinc-500 text-xs font-medium max-w-lg mx-auto mb-8">Información estratégica para el
+                desarrollo industrial y económico de la Patagonia. Comprometidos con la verdad y la región.</p>
+            <div
+                class="flex flex-wrap justify-center gap-6 text-xs font-bold text-zinc-400 uppercase tracking-widest mb-10">
+                <a href="#" class="hover:text-white transition-colors">Nosotros</a>
+                <a href="#" class="hover:text-white transition-colors">Contacto</a>
+                <a href="#" class="hover:text-white transition-colors">Publicidad</a>
+                <a href="#" class="hover:text-white transition-colors">Términos</a>
+            </div>
+            <p class="text-[10px] text-zinc-600 font-bold tracking-widest">© 2026 NODO SUR NOTICIAS. REDISEÑO POR
+                LEANDRO VELASQUES AGENCY.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
