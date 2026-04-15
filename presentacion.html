@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Supervivencia - Presentación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#285A47',
+                            light: '#A8D5C1',
+                            gray: '#EDEDED',
+                            text: '#4F4C4D'
+                        }
+                    },
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; background-color: #285A47; }
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+        .slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        /* Navigation dots */
+        .dot { height: 10px; width: 10px; background-color: rgba(255,255,255,0.3); border-radius: 50%; display: inline-block; transition: background-color 0.3s; cursor: pointer; }
+        .dot.active { background-color: #A8D5C1; transform: scale(1.2); }
+    </style>
+</head>
+<body class="text-white h-screen w-screen flex flex-col items-center justify-center relative bg-brand-dark">
+    <!-- Fondos dinámicos / Luces -->
+    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-light opacity-10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-emerald-500 opacity-10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+
+    <!-- Contenedor Principal de Diapositivas -->
+    <div id="presentation-container" class="relative w-full max-w-6xl h-[80vh] flex flex-col items-center justify-center p-8 z-10">
+        
+        <!-- DIAPOSITIVA 1: Portada -->
+        <div class="slide active flex-col items-center text-center w-full" id="slide-1">
+            <h2 class="text-brand-light uppercase tracking-widest text-sm font-semibold mb-4 text-emerald-300">Práctica Profesional Judicial - FCE</h2>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4 leading-tight drop-shadow-md">
+                Manual de <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200">Supervivencia</span> 2026
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-300 mb-12 font-light">Para el Licenciado en Administración</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center">
+                <!-- Speaker 1 -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105">
+                    <!-- Nota: Cambiar el src de la imagen a silvana_profile.jpg cuando esté en el respositorio -->
+                    <img src="./silvana_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Silvana+Youglar&background=A8D5C1&color=285A47&size=128'" alt="Lic. Silvana Youglar" class="w-20 h-20 rounded-full object-cover border-2 border-brand-light shadow-lg">
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold">Lic. Silvana Youglar</h3>
+                        <p class="text-sm text-brand-light break-all opacity-80">www.altagestion.com.ar</p>
+                    </div>
+                </div>
+                <!-- Speaker 2 -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105">
+                    <img src="./leandro_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Leandro+Velasques&background=A8D5C1&color=285A47&size=128'" alt="Lic. Leandro José Velasques" class="w-20 h-20 rounded-full object-cover border-2 border-brand-light shadow-lg">
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold">Lic. Leandro Velasques</h3>
+                        <p class="text-sm text-brand-light break-all opacity-80">www.leandrovelasques.com.ar</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col md:flex-row gap-6 text-sm text-gray-300 font-medium bg-black/20 px-6 py-3 rounded-full glass-card">
+                <span class="flex items-center gap-2"><svg class="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> 16 de Abril, 18 hs</span>
+                <span class="w-px h-5 bg-gray-500 hidden md:block"></span>
+                <span class="flex items-center gap-2"><svg class="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Modalidad Online</span>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 2: PRESENTACIÓN DE LOS INVITADOS -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center w-full" id="slide-2">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-12 text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200 drop-shadow-sm text-center">
+                ¿Quiénes somos y cómo llegamos hasta acá?
+            </h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 w-full max-w-5xl justify-center">
+                
+                <!-- Columna Silvana -->
+                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2">
+                    <div class="flex items-center gap-4 border-b border-gray-300 pb-4">
+                        <img src="./silvana_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Silvana+Youglar&background=A8D5C1&color=285A47&size=128'" class="w-16 h-16 rounded-full object-cover shadow">
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-brand-dark">Lic. Silvana Youglar</h3>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-6 text-brand-text text-left">
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">Presentación</h4>
+                                <p class="text-sm">Breve reseña sobre mi perfil, experiencia y enfoque profesional.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">Presente Actual</h4>
+                                <p class="text-sm">Situación laboral, rol actual y los proyectos principales en los que participo.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">El Recorrido</h4>
+                                <p class="text-sm">Hitos y decisiones clave en la vida laboral post-graduación.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Columna Leandro -->
+                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2">
+                    <div class="flex items-center gap-4 border-b border-gray-300 pb-4">
+                        <img src="./leandro_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Leandro+Velasques&background=A8D5C1&color=285A47&size=128'" class="w-16 h-16 rounded-full object-cover shadow">
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-brand-dark">Lic. Leandro Velasques</h3>
+                        </div>
+                    </div>
+                    
+                    <ul class="space-y-6 text-brand-text text-left">
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">Presentación</h4>
+                                <p class="text-sm">Mis inicios, vocación y perspectiva profesional desde la Licenciatura.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">Presente Actual</h4>
+                                <p class="text-sm">Desempeño desde la Agencia AI, consultoría y desarrollo de sistemas.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-3 bg-brand-light/40 rounded-xl text-brand-dark shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-dark mb-1">El Recorrido</h4>
+                                <p class="text-sm">La experiencia forjada y cómo los distintos proyectos me llevaron hasta aquí.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 3: ROMPEHIELO -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center px-4" id="slide-3">
+            <!-- Contenedor interactivo: Al hacer clic, revela la segunda parte -->
+            <div class="max-w-5xl cursor-pointer group" onclick="this.querySelector('.respuesta').classList.remove('opacity-0', 'translate-y-8')">
+                <h2 class="text-4xl md:text-6xl font-extrabold mb-12 text-white leading-tight drop-shadow-md">
+                    “¿Quién ya sabe a qué se quiere <br> dedicar cuando se reciba?”
+                </h2>
+                
+                <div class="respuesta opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+                    <p class="text-3xl md:text-4xl font-light text-brand-light italic mb-6">
+                        “El día después de recibirte… es igual al día anterior.”
+                    </p>
+                    <p class="text-4xl md:text-6xl font-black text-emerald-400 drop-shadow-lg scale-105">
+                        La diferencia la hacés vos.
+                    </p>
+                </div>
+                
+                <!-- Pista visual discreta para el orador -->
+                <p class="text-gray-400 text-sm mt-16 opacity-30 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                    Haz clic en el cuadro para revelar la frase
+                </p>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 4: DESVENTAJAS -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center bg-gray-100/95 backdrop-blur-md rounded-[3rem] p-12 shadow-2xl" id="slide-4">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-12 text-brand-dark drop-shadow-sm">
+                La cruda realidad: <span class="text-amber-600">Desventajas</span>
+            </h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 w-full max-w-6xl justify-center items-stretch">
+                
+                <!-- Card 1 -->
+                <div class="bg-white rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/3 shadow-xl border-t-8 border-amber-500 transform transition hover:-translate-y-2">
+                    <div class="w-20 h-20 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-2 shadow-inner">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-brand-dark">Ambigüedad</h3>
+                    <p class="text-brand-text text-lg leading-relaxed">Nadie sabe <strong>exactamente</strong> a qué nos dedicamos.</p>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="bg-white rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/3 shadow-xl border-t-8 border-amber-500 transform transition hover:-translate-y-2">
+                    <div class="w-20 h-20 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-2 shadow-inner">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-brand-dark">Demanda Opcional</h3>
+                    <p class="text-brand-text text-lg leading-relaxed">No hay demanda obligatoria de nuestra firma. Por ende, tenemos que saber <strong>vendernos</strong> constantemente.</p>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="bg-white rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/3 shadow-xl border-t-8 border-amber-500 transform transition hover:-translate-y-2">
+                    <div class="w-20 h-20 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-2 shadow-inner">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-brand-dark">Generalistas</h3>
+                    <p class="text-brand-text text-lg leading-relaxed">Sabemos <strong>poco</strong> de mucho... y <strong>mucho</strong> de nada. Nos cuesta enfocar nuestra expertise inicial.</p>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: QUÉ ES UN LICENCIADO -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center w-full" id="slide-5">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200 drop-shadow-sm text-center">
+                ¿Qué somos realmente?
+            </h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 w-full max-w-6xl justify-center items-stretch text-left">
+                
+                <!-- Definición Teórica -->
+                <div class="bg-gray-800/60 rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/2 shadow-xl border-t-4 border-gray-500 backdrop-blur-md opacity-90 transition hover:opacity-100">
+                    <div class="flex items-center gap-3 border-b border-gray-600 pb-4 mb-2">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <h3 class="text-2xl font-bold text-gray-300">Lo que dice el libro</h3>
+                    </div>
+                    <p class="text-gray-300 font-light italic mb-2">“Un profesional formado para analizar, diseñar, gestionar y mejorar el funcionamiento de las organizaciones.”</p>
+                    <ul class="space-y-3 text-gray-400 text-sm mt-2">
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 bg-gray-500 rounded-full"></span> Comprende organizaciones como sistemas</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 bg-gray-500 rounded-full"></span> Integra: finanzas, RRHH, operaciones, MKT</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 bg-gray-500 rounded-full"></span> Toma decisiones basadas en información</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 bg-gray-500 rounded-full"></span> Busca eficiencia, productividad y desarrollo</li>
+                    </ul>
+                </div>
+
+                <!-- Definición Práctica -->
+                <div class="glass-card bg-emerald-900/30 rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-400 transform transition md:scale-105 z-10">
+                    <div class="flex items-center gap-3 border-b border-brand-light/30 pb-4 mb-2">
+                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h3 class="text-3xl font-bold text-white drop-shadow-md">En la Trinchera</h3>
+                    </div>
+                    <p class="text-white text-xl font-medium leading-relaxed drop-shadow-md mb-2">
+                        “Entra a una empresa, <span class="text-emerald-300">detecta problemas</span>... y propone <span class="text-emerald-300">soluciones adecuadas</span> al caso.”
+                    </p>
+                    <div class="mt-auto pt-6 border-t border-brand-light/20">
+                        <p class="text-emerald-100 font-light italic text-lg shadow-sm">
+                            "Es alguien que percibe cómo se conectan todos los elementos, porque entiende a la organización como un todo."
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 6: OPORTUNIDADES -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center bg-gray-100/95 backdrop-blur-md rounded-[3rem] p-12 shadow-2xl" id="slide-6">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-16 text-brand-dark drop-shadow-sm">
+                Tus <span class="text-emerald-500">Caminos</span> Posibles
+            </h2>
+            
+            <div class="flex flex-wrap gap-6 w-full max-w-5xl justify-center items-center px-4">
+                <!-- Empleado -->
+                <div class="bg-white rounded-full py-4 px-8 flex items-center gap-4 shadow-lg border border-gray-200 hover:scale-110 transition cursor-default group hover:border-emerald-400">
+                    <div class="p-3 bg-gray-100 rounded-full group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-700 group-hover:text-brand-dark">Dependencia</span>
+                </div>
+
+                <!-- Independiente -->
+                <div class="bg-white rounded-full py-4 px-8 flex items-center gap-4 shadow-lg border border-gray-200 hover:scale-110 transition cursor-default group hover:border-emerald-400">
+                    <div class="p-3 bg-gray-100 rounded-full group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-700 group-hover:text-brand-dark">Consultoría Freelance</span>
+                </div>
+
+                <!-- Agencia / Emprendimiento -->
+                <div class="bg-white rounded-full py-4 px-8 flex items-center gap-4 shadow-lg border border-gray-200 hover:scale-110 transition cursor-default group hover:border-emerald-400">
+                    <div class="p-3 bg-gray-100 rounded-full group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-700 group-hover:text-brand-dark">Creación de Agencia</span>
+                </div>
+
+                <!-- Docencia -->
+                <div class="bg-white rounded-full py-4 px-8 flex items-center gap-4 shadow-lg border border-gray-200 hover:scale-110 transition cursor-default group hover:border-emerald-400">
+                    <div class="p-3 bg-gray-100 rounded-full group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 14l9-5-9-5-9 5 9 5z" clip-rule="evenodd"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-700 group-hover:text-brand-dark">Docencia</span>
+                </div>
+
+                <!-- Investigación -->
+                <div class="bg-white rounded-full py-4 px-8 flex items-center gap-4 shadow-lg border border-gray-200 hover:scale-110 transition cursor-default group hover:border-emerald-400">
+                    <div class="p-3 bg-gray-100 rounded-full group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-700 group-hover:text-brand-dark">Investigación</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 7: ESTRATEGIA -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center w-full" id="slide-7">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200 drop-shadow-sm text-center max-w-4xl">
+                ¿Cuál debería ser mi estrategia como recién graduado?
+            </h2>
+            <p class="text-emerald-400 text-xl font-light mb-12">Sesión de debate interactivo en vivo</p>
+            
+            <div class="flex flex-col md:flex-row gap-8 w-full max-w-5xl justify-center items-center text-left">
+                
+                <!-- Opinion Silvana -->
+                <div class="bg-gray-800/80 rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/2 shadow-xl border-2 border-emerald-500/50 backdrop-blur-md hover:scale-105 transition duration-300 relative group cursor-pointer">
+                    <div class="flex items-center gap-4 border-b border-gray-600 pb-4 mb-2">
+                        <img src="silvana_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Silvana+Youglar&background=285A47&color=fff&size=100'" alt="Silvana Youglar" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-emerald-400 object-cover shadow-lg">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-100">Lic. Silvana Youglar</h3>
+                            <p class="text-emerald-400 text-sm">AltaGestión Consultora Empresarial</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center py-6 text-emerald-100 gap-4 group-hover:scale-110 transition">
+                        <svg class="w-12 h-12 text-emerald-500 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                        <p class="text-lg font-medium italic text-gray-300 text-center">Debate abierto según el interés de la audiencia...</p>
+                    </div>
+                </div>
+
+                <!-- Opinion Leandro -->
+                <div class="bg-gray-800/80 rounded-3xl p-8 flex flex-col gap-4 w-full md:w-1/2 shadow-xl border-2 border-brand-light/50 backdrop-blur-md hover:scale-105 transition duration-300 relative group cursor-pointer">
+                    <div class="flex items-center gap-4 border-b border-gray-600 pb-4 mb-2">
+                        <img src="leandro_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Leandro+Velasques&background=285A47&color=fff&size=100'" alt="Leandro Velasques" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-light object-cover shadow-lg">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-100">Lic. Leandro Velasques</h3>
+                            <p class="text-brand-light text-sm">Consultor Especializado</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center py-6 text-emerald-100 gap-4 group-hover:scale-110 transition">
+                        <svg class="w-12 h-12 text-brand-light opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                        <p class="text-lg font-medium italic text-gray-300 text-center">Micrófono abierto para consultas en vivo...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 8: SITUACION ACTUAL -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center bg-gray-100/95 backdrop-blur-md rounded-[3rem] p-12 shadow-2xl overflow-hidden relative" id="slide-8">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-12 text-brand-dark drop-shadow-sm max-w-4xl relative z-10 mx-auto leading-tight">
+                Nuevas normativas para los <span class="text-emerald-600">Licenciados en Administración</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl relative z-10">
+                
+                <!-- RT 49 -->
+                <div class="bg-white rounded-3xl p-8 text-left shadow-lg border-t-8 border-brand-dark hover:-translate-y-2 transition duration-300 flex flex-col">
+                    <div class="bg-brand-dark text-white text-xs font-bold px-3 py-1 rounded inline-block mb-6 w-max">RESOLUCIÓN TÉCNICA</div>
+                    <h3 class="text-4xl font-black text-gray-800 mb-4 font-mono tracking-tight">RT 49</h3>
+                    <p class="text-gray-600 font-medium text-lg border-l-4 border-brand-dark pl-4 opacity-90 mt-2">
+                        Plan de negocios y honorarios profesionales.
+                    </p>
+                </div>
+
+                <!-- RT 58 -->
+                <div class="bg-white rounded-3xl p-8 text-left shadow-lg border-t-8 border-emerald-600 hover:-translate-y-2 transition duration-300 flex flex-col">
+                    <div class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded inline-block mb-6 w-max">NUEVO MARCO NORMATIVO</div>
+                    <h3 class="text-4xl font-black text-gray-800 mb-4 font-mono tracking-tight">RT 58</h3>
+                    <p class="text-gray-600 font-medium md:text-lg border-l-4 border-emerald-600 pl-4 opacity-90 leading-tight">
+                        "Normas sobre Encargos Generales para Trabajos Profesionales de Licenciados en Administración."
+                    </p>
+                </div>
+
+                <!-- A nivel local -->
+                <div class="bg-gradient-to-br from-brand-dark to-emerald-900 rounded-3xl p-8 text-left shadow-lg border-t-8 border-brand-light hover:-translate-y-2 transition duration-300 relative overflow-hidden flex flex-col justify-between group">
+                    <div class="bg-brand-light text-brand-dark text-xs font-black px-3 py-1 rounded inline-block mb-6 w-max relative z-10 uppercase tracking-widest shadow-md">A nivel local</div>
+                    <div class="relative z-10 flex-grow pt-4">
+                        <svg class="w-10 h-10 text-emerald-400 mb-4 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <h3 class="text-2xl font-black text-white leading-snug">
+                            Comisión de Lic. en Adm. del Chubut
+                        </h3>
+                    </div>
+                    <svg class="w-40 h-40 text-emerald-500/10 absolute -bottom-6 -right-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" /></svg>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 9: IMPACTO IA -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center w-full" id="slide-9">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-12 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 drop-shadow-lg">
+                El Impacto de la <span class="text-white">IA</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+                
+                <!-- Card 1: Automatización -->
+                <div class="glass-card rounded-[2rem] p-8 border-t-4 border-cyan-500 hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-cyan-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <svg class="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Evolución de Procesos</h3>
+                    <p class="text-gray-300 leading-relaxed font-light">
+                        De lo <span class="text-cyan-400 font-medium">operativo</span> a lo <span class="text-emerald-400 font-medium">estratégico</span>. Automatización total de tareas repetitivas.
+                    </p>
+                </div>
+
+                <!-- Card 2: Asistentes -->
+                <div class="glass-card rounded-[2rem] p-8 border-t-4 border-emerald-500 hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">El Co-piloto Experto</h3>
+                    <p class="text-gray-300 leading-relaxed font-light">
+                        Asistentes inteligentes para el día a día. <span class="text-emerald-400 font-medium">Multiplicación de la productividad</span> del Licenciado.
+                    </p>
+                </div>
+
+                <!-- Card 3: Habilidades -->
+                <div class="glass-card rounded-[2rem] p-8 border-t-4 border-amber-500 hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <svg class="w-10 h-10 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Nuevas Habilidades</h3>
+                    <p class="text-gray-300 leading-relaxed font-light">
+                        Critical thinking, IA Prompting y Curaduría de Datos. <span class="text-amber-400 font-medium">Actualizarse</span> para no quedar fuera del mercado.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 10: CIERRE -->
+        <div class="slide flex-col w-full h-full justify-center items-center text-center" id="slide-10">
+            <h2 class="text-5xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200">CIERRE PARTICIPATIVO</h2>
+            <p class="text-xl text-gray-300 max-w-2xl">¿Dudas? ¿Preguntas? ¡Es el momento!</p>
+        </div>
+
+    </div>
+
+    <!-- Controles de navegación -->
+    <div class="absolute bottom-8 left-0 right-0 flex justify-between items-center px-12 z-20 pointer-events-none">
+        <button onclick="prevSlide()" class="pointer-events-auto p-4 rounded-full glass-card hover:bg-white/20 transition group">
+            <svg class="w-6 h-6 text-white group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        
+        <div class="flex gap-3 pointer-events-auto" id="dots-container">
+            <span class="dot active" onclick="goToSlide(0)"></span>
+            <span class="dot" onclick="goToSlide(1)"></span>
+            <span class="dot" onclick="goToSlide(2)"></span>
+            <span class="dot" onclick="goToSlide(3)"></span>
+            <span class="dot" onclick="goToSlide(4)"></span>
+            <span class="dot" onclick="goToSlide(5)"></span>
+            <span class="dot" onclick="goToSlide(6)"></span>
+            <span class="dot" onclick="goToSlide(7)"></span>
+            <span class="dot" onclick="goToSlide(8)"></span>
+            <span class="dot" onclick="goToSlide(9)"></span>
+        </div>
+
+        <button onclick="nextSlide()" class="pointer-events-auto p-4 rounded-full glass-card hover:bg-white/20 transition group animate-bounce">
+            <svg class="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+
+        function showSlide(index) {
+            // Asegurarse de no salir de los límites reales de slides que tengamos con contenido
+            if(index >= slides.length) index = slides.length - 1;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            slides[index].classList.add('active');
+            if(dots[index]) dots[index].classList.add('active');
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function goToSlide(index) {
+            showSlide(index);
+        }
+
+        // Navegación rápida con las flechas del teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+    </script>
+</body>
+</html>

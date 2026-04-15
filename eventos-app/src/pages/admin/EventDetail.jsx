@@ -217,6 +217,35 @@ export default function EventDetail() {
           </>
         )}
 
+        {/* Presentación especial - Manual de Supervivencia */}
+        {event.title?.toLowerCase().includes('manual de supervivencia') && (() => {
+          const presentacionUrl = `${window.location.protocol}//${window.location.host}/presentacion.html`
+          return (
+            <div className="border-t border-[var(--color-deep-green)]/10 pt-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-3">Presentación Interactiva</p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/presentacion.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  <span className="material-symbols-outlined text-lg">present_to_all</span>
+                  Abrir Presentación
+                </a>
+                <div className="flex items-center gap-2 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] px-3 py-2 flex-1 min-w-0">
+                  <span className="material-symbols-outlined text-base text-[var(--color-deep-green)]">slideshow</span>
+                  <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate flex-1">{presentacionUrl}</p>
+                  <button onClick={() => copyToClipboard(presentacionUrl)} className="btn-ghost !px-2 !py-1 text-xs shrink-0">
+                    <span className="material-symbols-outlined text-base">content_copy</span>
+                    Copiar link
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Status action button */}
         <div className="flex gap-3 pt-2">
           {statusCfg.next && (
