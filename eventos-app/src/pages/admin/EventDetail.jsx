@@ -225,7 +225,7 @@ export default function EventDetail() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-3">Presentación Interactiva</p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="/manual-de-supervivencia.html"
+                  href={`${window.location.origin}/manual-de-supervivencia.html`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary"
