@@ -62,28 +62,34 @@
         
         <!-- DIAPOSITIVA 1: Portada -->
         <div class="slide active flex-col items-center text-center w-full" id="slide-1">
-            <h2 class="text-brand-light uppercase tracking-widest text-sm font-semibold mb-4 text-emerald-300">Práctica Profesional Judicial - FCE</h2>
+            <div class="flex items-center justify-center gap-4 mb-6">
+                <img src="./fce_logo.jpg" alt="FCE" class="h-14 md:h-16 opacity-90 drop-shadow-md brightness-110">
+                <div class="h-10 w-px bg-white/20"></div>
+                <h2 class="text-brand-light uppercase tracking-widest text-xs md:text-sm font-semibold text-emerald-300">Práctica Profesional<br>Judicial - FCE</h2>
+            </div>
+            
             <h1 class="text-5xl md:text-7xl font-extrabold mb-4 leading-tight drop-shadow-md">
                 Manual de <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-emerald-200">Supervivencia</span> 2026
             </h1>
-            <p class="text-xl md:text-2xl text-gray-300 mb-12 font-light">Para el Licenciado en Administración</p>
+            <p class="text-xl md:text-2xl text-gray-300 mb-10 font-light">Para el Licenciado en Administración</p>
             
             <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center">
                 <!-- Speaker 1 -->
-                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105">
-                    <!-- Nota: Cambiar el src de la imagen a silvana_profile.jpg cuando esté en el respositorio -->
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105 relative overflow-hidden group">
                     <img src="./silvana_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Silvana+Youglar&background=A8D5C1&color=285A47&size=128'" alt="Lic. Silvana Youglar" class="w-20 h-20 rounded-full object-cover border-2 border-brand-light shadow-lg">
-                    <div class="text-left">
+                    <div class="text-left flex-1">
                         <h3 class="text-xl font-bold">Lic. Silvana Youglar</h3>
-                        <p class="text-sm text-brand-light break-all opacity-80">www.altagestion.com.ar</p>
+                        <p class="text-sm text-brand-light break-all opacity-80 mb-2">www.altagestion.com.ar</p>
+                        <img src="./alta_gestion_logo.jpg" class="h-8 opacity-90 brightness-110" alt="Alta Gestión">
                     </div>
                 </div>
                 <!-- Speaker 2 -->
-                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105">
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-4 w-full md:w-1/2 transform transition hover:scale-105 relative overflow-hidden group">
                     <img src="./leandro_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Leandro+Velasques&background=A8D5C1&color=285A47&size=128'" alt="Lic. Leandro José Velasques" class="w-20 h-20 rounded-full object-cover border-2 border-brand-light shadow-lg">
-                    <div class="text-left">
+                    <div class="text-left flex-1">
                         <h3 class="text-xl font-bold">Lic. Leandro Velasques</h3>
-                        <p class="text-sm text-brand-light break-all opacity-80">www.leandrovelasques.com.ar</p>
+                        <p class="text-sm text-brand-light break-all opacity-80 mb-2">www.leandrovelasques.com.ar</p>
+                        <img src="./logo_triskel.png" class="h-7 opacity-90 brightness-110" alt="Triskel">
                     </div>
                 </div>
             </div>
@@ -104,11 +110,12 @@
             <div class="flex flex-col md:flex-row gap-8 w-full max-w-5xl justify-center">
                 
                 <!-- Columna Silvana -->
-                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2">
+                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2 relative">
                     <div class="flex items-center gap-4 border-b border-gray-300 pb-4">
                         <img src="./silvana_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Silvana+Youglar&background=A8D5C1&color=285A47&size=128'" class="w-16 h-16 rounded-full object-cover shadow">
                         <div class="text-left">
                             <h3 class="text-2xl font-bold text-brand-dark">Lic. Silvana Youglar</h3>
+                            <img src="./alta_gestion_logo.jpg" class="h-6 mt-1 opacity-80" alt="Alta Gestión">
                         </div>
                     </div>
                     
@@ -144,11 +151,12 @@
                 </div>
 
                 <!-- Columna Leandro -->
-                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2">
+                <div class="bg-gray-100 rounded-3xl p-8 flex flex-col gap-6 w-full md:w-1/2 shadow-2xl border-t-4 border-emerald-500 transform transition hover:-translate-y-2 relative">
                     <div class="flex items-center gap-4 border-b border-gray-300 pb-4">
                         <img src="./leandro_profile.jpg" onerror="this.src='https://ui-avatars.com/api/?name=Leandro+Velasques&background=A8D5C1&color=285A47&size=128'" class="w-16 h-16 rounded-full object-cover shadow">
                         <div class="text-left">
                             <h3 class="text-2xl font-bold text-brand-dark">Lic. Leandro Velasques</h3>
+                            <img src="./logo_triskel.png" class="h-6 mt-1 opacity-80 grayscale hover:grayscale-0 transition" alt="Triskel">
                         </div>
                     </div>
                     
@@ -184,6 +192,15 @@
                 </div>
 
             </div>
+        </div>
+
+        <!-- Footer persistente con logos -->
+        <div class="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-8 opacity-40 hover:opacity-100 transition-opacity duration-500 z-20 pointer-events-none">
+            <img src="./fce_logo.jpg" class="h-8 grayscale brightness-200" alt="FCE">
+            <div class="w-px h-4 bg-white/20"></div>
+            <img src="./alta_gestion_logo.jpg" class="h-6 grayscale brightness-200" alt="Alta Gestión">
+            <div class="w-px h-4 bg-white/20"></div>
+            <img src="./logo_triskel.png" class="h-5 grayscale brightness-200" alt="Triskel">
         </div>
 
         <!-- DIAPOSITIVA 3: ROMPEHIELO -->
