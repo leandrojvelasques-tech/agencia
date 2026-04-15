@@ -219,13 +219,13 @@ export default function EventDetail() {
 
         {/* Presentación especial - Manual de Supervivencia */}
         {event.title?.toLowerCase().includes('manual de supervivencia') && (() => {
-          const presentacionUrl = `${window.location.protocol}//${window.location.host}/presentacion.html`
+          const presentacionUrl = `${window.location.protocol}//${window.location.host}/manual-de-supervivencia.html`
           return (
             <div className="border-t border-[var(--color-deep-green)]/10 pt-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-3">Presentación Interactiva</p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="/presentacion.html"
+                  href="/manual-de-supervivencia.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary"
