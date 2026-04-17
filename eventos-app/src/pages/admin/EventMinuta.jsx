@@ -10,7 +10,9 @@ export default function EventMinuta() {
 
   const [summary, setSummary] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
-  const [observations, setObservations] = useState('')
+  const [warnings, setWarnings] = useState('')
+  const [tasks, setTasks] = useState('')
+  const [nextMeeting, setNextMeeting] = useState('')
   const [includeAttendees, setIncludeAttendees] = useState(true)
   const [includeAbsentees, setIncludeAbsentees] = useState(false)
   const [externalEmails, setExternalEmails] = useState('')
@@ -83,28 +85,38 @@ export default function EventMinuta() {
           />
         </div>
 
-        <div>
-          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-            Observaciones post evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Opcional)</span>
+        <div className="pt-4 border-t border-[var(--color-deep-green)]/10 space-y-4">
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">
+            Observaciones post evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Opcionales)</span>
           </label>
-          <textarea
-            className="form-input min-h-[100px]"
-            placeholder="Avisos, compromisos, tareas pendientes para la próxima reunión, etc."
-            value={observations}
-            onChange={e => setObservations(e.target.value)}
-          />
+          
+          <div>
+             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Avisos y Comentarios Especiales</label>
+             <textarea className="form-input min-h-[60px]" placeholder="Ej: Hubo problemas con el proyector..." value={warnings} onChange={e => setWarnings(e.target.value)} />
+          </div>
+          <div>
+             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Tareas y Compromisos (To-Dos)</label>
+             <textarea className="form-input min-h-[60px]" placeholder="Ej: Martín enviará el presupuesto mañana." value={tasks} onChange={e => setTasks(e.target.value)} />
+          </div>
+          <div>
+             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Próxima Reunión / Tema</label>
+             <textarea className="form-input min-h-[60px]" placeholder="Ej: Próximo martes a las 10hs sobre Marketing." value={nextMeeting} onChange={e => setNextMeeting(e.target.value)} />
+          </div>
         </div>
 
         <div>
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-            Foto del evento <span className="normal-case text-[var(--color-dark-gray)]/30">(URL)</span>
+            Foto del evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Link a imagen)</span>
           </label>
           <input
             className="form-input"
-            placeholder="https://... (URL de la foto)"
+            placeholder="Link directo a la imagen, JPG o PNG..."
             value={photoUrl}
             onChange={e => setPhotoUrl(e.target.value)}
           />
+          <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">
+            <strong>¿Cómo subirla?</strong> Por ahora no se suben fotos directo al sistema por políticas de peso. Tenés que subir la foto a <strong>Google Drive o Google Photos</strong>, configurarla para que "Cualquier persona con el link pueda verla" y pegar acá ese enlace abierto.
+          </p>
           {photoUrl && (
             <img src={photoUrl} alt="Preview" className="mt-3 rounded-[var(--radius-card)] max-h-48 object-cover w-full" onError={e => e.target.style.display = 'none'} />
           )}
@@ -170,6 +182,7 @@ export default function EventMinuta() {
                 value={presentationLink}
                 onChange={e => setPresentationLink(e.target.value)}
               />
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Asegurate de que el permiso diga "Cualquier persona con el enlace puede leer".</p>
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
@@ -226,11 +239,28 @@ export default function EventMinuta() {
               {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí. Los destinatarios leerán esto para entender las conclusiones y próximos pasos.</span>}
             </div>
 
-            {observations && (
+            {(warnings || tasks || nextMeeting) && (
               <div className="mb-8">
-                <h4 className="font-bold text-[var(--color-deep-green)] mb-3 text-sm border-b border-[var(--color-deep-green)]/10 pb-2">Observaciones y Tareas Pendientes</h4>
-                <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700 bg-amber-50 p-4 rounded-[8px] border-l-4 border-amber-400">
-                  {observations}
+                <h4 className="font-bold text-[var(--color-deep-green)] mb-3 text-sm border-b border-[var(--color-deep-green)]/10 pb-2">Observaciones y Siguientes Pasos</h4>
+                <div className="space-y-4 bg-amber-50 p-5 rounded-[8px] border-l-4 border-amber-400">
+                  {warnings && (
+                    <div>
+                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Avisos y Comentarios</p>
+                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{warnings}</div>
+                    </div>
+                  )}
+                  {tasks && (
+                    <div className={warnings ? "pt-4 border-t border-amber-200/50" : ""}>
+                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Tareas y Compromisos</p>
+                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{tasks}</div>
+                    </div>
+                  )}
+                  {nextMeeting && (
+                    <div className={(warnings || tasks) ? "pt-4 border-t border-amber-200/50" : ""}>
+                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Próxima Reunión</p>
+                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{nextMeeting}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
