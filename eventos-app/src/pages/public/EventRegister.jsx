@@ -108,7 +108,7 @@ export default function EventRegister() {
                 <div>
                   <p className="text-sm font-bold text-amber-800 mb-1">¿Continuar sin email?</p>
                   <p className="text-xs text-amber-700 leading-relaxed">
-                    Sin email <strong>no recibirás</strong>: confirmación de inscripción, materiales del evento, minuta posterior ni certificado de participación.
+                    Sin email <strong>no recibirás</strong>: confirmación de inscripción, materiales del evento, ni minuta posterior.
                   </p>
                   <div className="flex gap-2 mt-3">
                     <button type="submit" className="btn-primary !py-2 !px-4 !text-xs !bg-amber-600">

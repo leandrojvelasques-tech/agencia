@@ -10,7 +10,11 @@ export default function EventMinuta() {
 
   const [summary, setSummary] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
-  const [recipients, setRecipients] = useState('attendees')
+  const [includeAttendees, setIncludeAttendees] = useState(true)
+  const [includeAbsentees, setIncludeAbsentees] = useState(false)
+  const [externalEmails, setExternalEmails] = useState('')
+  const [presentationLink, setPresentationLink] = useState('')
+  const [extraFiles, setExtraFiles] = useState('')
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
@@ -113,18 +117,58 @@ export default function EventMinuta() {
 
         <div>
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Destinatarios</label>
-          <div className="space-y-2">
-            {[
-              { value: 'attendees', label: 'Solo asistentes con email' },
-              { value: 'all', label: 'Todos los inscriptos con email' },
-            ].map(opt => (
-              <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-[var(--radius-premium)] border cursor-pointer transition-all ${
-                recipients === opt.value ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5' : 'border-[var(--color-deep-green)]/8'
-              }`}>
-                <input type="radio" name="recipients" value={opt.value} checked={recipients === opt.value} onChange={e => setRecipients(e.target.value)} className="accent-[var(--color-deep-green)]" />
-                <span className="text-sm font-semibold">{opt.label}</span>
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2 bg-[var(--color-refined-gray)]/50 p-4 rounded-[var(--radius-premium)] border border-[var(--color-deep-green)]/5">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={includeAttendees} onChange={e => setIncludeAttendees(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
+                <span className="text-sm font-semibold">Incluir asistentes al evento</span>
               </label>
-            ))}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={includeAbsentees} onChange={e => setIncludeAbsentees(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
+                <span className="text-sm font-semibold">Incluir inscriptos ausentes</span>
+              </label>
+            </div>
+            
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                Emails Adicionales (externos)
+              </label>
+              <input
+                className="form-input"
+                placeholder="email1@ejemplo.com, email2@ejemplo.com"
+                value={externalEmails}
+                onChange={e => setExternalEmails(e.target.value)}
+              />
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">Podés ingresar varios emails separados por coma (ej: personas que no se inscribieron pero quieren el resumen).</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-[var(--color-deep-green)]/10">
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Archivos Adjuntos (Links)</label>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                Link de la Presentación
+              </label>
+              <input
+                className="form-input"
+                placeholder="https://... (URL de Canva, Google Slides o PDF compartido)"
+                value={presentationLink}
+                onChange={e => setPresentationLink(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                Otros Archivos Adicionales
+              </label>
+              <input
+                className="form-input"
+                placeholder="https://... (URL a carpeta de Drive, Dropbox, etc.)"
+                value={extraFiles}
+                onChange={e => setExtraFiles(e.target.value)}
+              />
+            </div>
           </div>
         </div>
       </div>

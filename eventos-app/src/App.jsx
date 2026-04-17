@@ -10,7 +10,6 @@ import EventCreate from './pages/admin/EventCreate'
 import EventDetail from './pages/admin/EventDetail'
 import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
-import EventCertificates from './pages/admin/EventCertificates'
 import EventMinuta from './pages/admin/EventMinuta'
 
 // Public (participant) pages
@@ -58,7 +57,6 @@ export default function App() {
           <Route path="eventos/:id/editar" element={<EventCreate />} />
           <Route path="eventos/:id/participantes" element={<EventParticipants />} />
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
-          <Route path="eventos/:id/certificados" element={<EventCertificates />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
         </Route>
 

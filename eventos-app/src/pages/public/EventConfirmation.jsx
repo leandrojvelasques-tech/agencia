@@ -69,10 +69,13 @@ export default function EventConfirmation() {
               <span className="material-symbols-outlined text-sm text-[var(--color-deep-green)] mt-0.5">notifications</span>
               Te enviaremos un recordatorio antes del evento
             </li>
-            <li className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-sm text-[var(--color-deep-green)] mt-0.5">workspace_premium</span>
-              Al finalizar, recibirás tu certificado de participación
-            </li>
+            <div className="bg-amber-50 p-4 rounded-[var(--radius-premium)] flex items-start gap-3">
+              <span className="material-symbols-outlined text-amber-500 mt-0.5">notification_important</span>
+              <div>
+                <p className="text-sm font-bold text-amber-800 mb-1">Recordatorio</p>
+                <p className="text-xs text-amber-900/70">Asegurate de revisar tu casilla de spam o correo no deseado para encontrar el mail de confirmación.</p>
+              </div>
+            </div>
           </ul>
         </div>
 

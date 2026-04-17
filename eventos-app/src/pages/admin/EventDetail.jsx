@@ -76,7 +76,6 @@ export default function EventDetail() {
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
-    { to: `/admin/eventos/${id}/certificados`, icon: 'workspace_premium', label: 'Certificados', count: stats.certificatesSent },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
   ]
 
@@ -148,12 +147,11 @@ export default function EventDetail() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Inscriptos', value: stats.totalRegistered, icon: 'group', color: 'deep-green' },
           { label: 'Presentes', value: stats.present, icon: 'check_circle', color: 'deep-green' },
           { label: 'Ausentes', value: stats.absent, icon: 'cancel', color: 'dark-gray' },
-          { label: 'Certificados', value: stats.certificatesSent, icon: 'workspace_premium', color: 'deep-green' },
         ].map(stat => (
           <div key={stat.label} className="card p-5 text-center">
             <span className={`material-symbols-outlined text-2xl text-[var(--color-${stat.color})]/30 mb-2 block`}>{stat.icon}</span>
@@ -164,7 +162,7 @@ export default function EventDetail() {
       </div>
 
       {/* Action Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid sm:grid-cols-3 gap-4 mb-6">
         {ACTIONS.map(action => (
           <Link key={action.to} to={action.to} className="card card-interactive p-5 flex items-center gap-4 group">
             <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center group-hover:bg-[var(--color-deep-green)] transition-colors">
