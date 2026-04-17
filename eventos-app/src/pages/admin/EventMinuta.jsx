@@ -117,7 +117,7 @@ export default function EventMinuta() {
     }
 
     try {
-      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook-test/minuta-evento'
+      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/minuta-evento'
       console.log('Enviando a n8n:', payload)
       
       const response = await fetch(webhookUrl, {
