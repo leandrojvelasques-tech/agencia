@@ -1,12 +1,15 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
+import { supabase } from '../../lib/supabase'
 
 export default function EventMinuta() {
   const { id } = useParams()
-  const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual } = useStore()
+  const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual, updateEvent } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isSent, setIsSent] = useState(false)
+  const [sentAt, setSentAt] = useState(null)
 
   const [summary, setSummary] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
@@ -44,7 +47,17 @@ export default function EventMinuta() {
       }
       setLoading(false)
     }
+
+    const checkSentStatus = async () => {
+      const { data } = await supabase.from('event_reports').select('sent, sent_at').eq('event_id', id).maybeSingle()
+      if (data && data.sent) {
+        setIsSent(true)
+        setSentAt(data.sent_at)
+      }
+    }
+
     loadData()
+    checkSentStatus()
   }, [id])
 
   if (loading) return <div className="text-center py-20"><p className="animate-pulse">Cargando...</p></div>
@@ -75,7 +88,6 @@ export default function EventMinuta() {
   }
 
   const handleSend = () => {
-    // In production, this would trigger n8n webhook
     setSent(true)
     localStorage.removeItem(`minuta_draft_${id}`)
   }
@@ -121,9 +133,24 @@ export default function EventMinuta() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-extrabold tracking-tight">Minuta Post-Evento</h1>
-          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title}</p>
+          <p className="text-[15px] max-w-2xl text-[var(--color-dark-gray)]/80 mt-2 mb-6">
+            Redactá el resumen del evento, subí fotos, adjuntos extra o comentarios, y generá la Minuta Final que recibirán los asistentes.
+          </p>
         </div>
       </div>
+
+      {isSent && (
+        <div className="bg-green-50 text-green-800 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between mb-8 shadow-sm border border-green-200 gap-4">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-600 text-3xl">check_circle</span>
+            <div>
+              <span className="font-bold block text-sm">Minuta Enviada {sentAt ? `el ${new Date(sentAt).toLocaleDateString()}` : ''}</span>
+              <span className="text-xs block opacity-80">El evento figura como Finalizado de cara al público.</span>
+            </div>
+          </div>
+          <span className="text-xs bg-white/60 px-3 py-1.5 rounded-full font-semibold border border-green-100">Podés editar y reenviar debajo</span>
+        </div>
+      )}
 
       <div className="card p-6 lg:p-8 space-y-6">
         <div>
@@ -265,24 +292,6 @@ export default function EventMinuta() {
             <span className="material-symbols-outlined text-lg">visibility</span>
             Vista Previa del Email
           </span>
-          {registrations.length > 0 && (
-            <button onClick={async () => {
-               for (const reg of registrations) {
-                 if (reg.participants) {
-                   const isLeo = reg.participants.first_name.includes('Leandro')
-                   const title = isLeo ? 'Lic. Adm. ' : 'C.P. '
-                   let newName = reg.participants.first_name
-                   ['Lic. Adm. ', 'C.P. ', 'Lic. Ec. ', 'Est. '].forEach(t => {
-                     if (newName.startsWith(t)) newName = newName.replace(t, '')
-                   })
-                   await updateParticipantManual(reg.participants.id, { first_name: title + newName })
-                 }
-               }
-               alert('Títulos actualizados automáticamente en la BDD para todos los inscriptos de este evento. Recargá la página (F5) para verlos aplicados.')
-            }} className="btn-ghost !text-[9px] !py-1 !px-2 bg-gray-100 opacity-30 hover:opacity-100">
-               🔧 Fix Títulos
-            </button>
-          )}
         </h3>
         <div className="border border-[var(--color-dark-gray)]/10 rounded-[var(--radius-premium)] overflow-hidden bg-white shadow-sm">
           <div className="bg-[var(--color-refined-gray)]/50 px-4 py-3 border-b border-[var(--color-dark-gray)]/5 flex gap-2 items-center">
@@ -314,8 +323,11 @@ export default function EventMinuta() {
               <img src={photoUrl} alt="Evento" className="w-full h-auto max-h-80 object-cover rounded-[10px] mb-8 shadow-sm grayscale hover:grayscale-0 transition-all duration-700" onError={e => e.target.style.display = 'none'} />
             )}
 
-            <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-700 mb-8 border-l-2 border-[var(--color-deep-green)]/30 pl-5">
-              {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí. Los destinatarios leerán esto para entender las conclusiones y próximos pasos.</span>}
+            <div className="mb-8 mt-2">
+              <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-3 border-b-2 border-gray-100 pb-2">Resumen del Evento</h4>
+              <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-700 border-l-3 border-[var(--color-deep-green)]/30 pl-4 py-1">
+                {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí...</span>}
+              </div>
             </div>
 
             {observations.filter(o => o.trim()).length > 0 && (
@@ -332,23 +344,34 @@ export default function EventMinuta() {
               </div>
             )}
 
-            {(presentationLink || extraFiles) && (
-              <div className="bg-[var(--color-refined-gray)]/30 rounded-[10px] p-6 mb-6 border border-[var(--color-deep-green)]/5">
-                <h4 className="font-bold text-[var(--color-deep-green)] mb-4 text-[11px] uppercase tracking-widest">Materiales del evento</h4>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {presentationLink && (
-                    <a href={presentationLink} onClick={e => e.preventDefault()} className="inline-flex items-center justify-center gap-2 text-sm font-semibold bg-[var(--color-deep-green)] text-white px-5 py-2.5 rounded-[8px] hover:opacity-90 transition-all shadow-premium w-full sm:w-auto">
-                      <span className="material-symbols-outlined text-lg">present_to_all</span>
-                      Ver Presentación
+            {(photoUrl || presentationLink || extraFiles) && (
+              <div className="mt-8 pt-6 border-t border-[var(--color-dark-gray)]/10">
+                <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-4">Materiales del Evento</h4>
+                
+                {presentationLink && (
+                  <div className="mb-3">
+                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
+                      <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                      Ver Presentación Utilizada
                     </a>
-                  )}
-                  {extraFiles && (
-                    <a href={extraFiles} onClick={e => e.preventDefault()} className="inline-flex items-center justify-center gap-2 text-sm font-semibold bg-white text-[var(--color-deep-green)] border border-[var(--color-deep-green)]/20 px-5 py-2.5 rounded-[8px] hover:bg-gray-50 transition-all w-full sm:w-auto">
-                      <span className="material-symbols-outlined text-lg">folder_open</span>
-                      Ver Archivos Adicionales
+                  </div>
+                )}
+                
+                {photoUrl && (
+                  <div className="mb-3">
+                    <a href={photoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
+                      <span className="material-symbols-outlined text-[18px]">photo_library</span>
+                      Ver Álbum / Foto del Evento
                     </a>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {extraFiles && (
+                  <a href={extraFiles} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">folder_open</span>
+                    Ver Archivos Adicionales
+                  </a>
+                )}
               </div>
             )}
             
