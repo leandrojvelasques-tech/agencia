@@ -20,6 +20,7 @@ export default function EventMinuta() {
   const [presentationLink, setPresentationLink] = useState('')
   const [extraFiles, setExtraFiles] = useState('')
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
   const [toast, setToast] = useState('')
 
   useEffect(() => {
@@ -88,14 +89,20 @@ export default function EventMinuta() {
   }
 
   const handleSend = async () => {
-    if (!summary) return;
+    if (!summary) {
+      setToast('El resumen es obligatorio')
+      setTimeout(() => setToast(''), 3000)
+      return
+    }
+    
+    setSending(true)
     
     // Construct payload
     const payload = {
       eventId: id,
-      eventTitle: event.title,
-      eventDate: event.event_date,
-      coordinator: event.coordinator,
+      eventTitle: event?.title || 'Evento',
+      eventDate: event?.event_date,
+      coordinator: event?.coordinator,
       summary,
       observations: observations.filter(o => o.trim()),
       photoUrl,
@@ -111,33 +118,42 @@ export default function EventMinuta() {
 
     try {
       const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook-test/minuta-evento'
-      await fetch(webhookUrl, {
+      console.log('Enviando a n8n:', payload)
+      
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
+
+      if (!response.ok) throw new Error(`Error en n8n: ${response.status}`)
+      
       console.log('Webhook disparado a n8n exitosamente.')
+
+      // Registrar en BDD como enviado SOLO si el webhook respondió bien
+      const { error: dbError } = await supabase.from('event_reports').upsert({
+        event_id: id,
+        summary: summary,
+        photo_url: photoUrl,
+        sent: true,
+        sent_at: new Date().toISOString()
+      }, { onConflict: 'event_id' })
+
+      if(!dbError) {
+        setIsSent(true)
+        setSentAt(new Date().toISOString())
+        await updateEvent(id, { status: 'completed' })
+      }
+      
+      localStorage.removeItem(`minuta_draft_${id}`)
+      setSent(true)
     } catch (err) {
-      console.error('Error enviando webhook:', err)
+      console.error('Error detallado enviando webhook:', err)
+      setToast('Error al enviar: ' + err.message)
+      setTimeout(() => setToast(''), 5000)
+    } finally {
+      setSending(false)
     }
-
-    // Registrar en BDD como enviado
-    const { error } = await supabase.from('event_reports').upsert({
-      event_id: id,
-      summary: summary,
-      photo_url: photoUrl,
-      sent: true,
-      sent_at: new Date().toISOString()
-    }, { onConflict: 'event_id' })
-
-    if(!error) {
-      setIsSent(true)
-      setSentAt(new Date().toISOString())
-      await updateEvent(id, { status: 'completed' })
-    }
-    
-    setSent(true)
-    localStorage.removeItem(`minuta_draft_${id}`)
   }
 
   const handleAddObservation = () => {
@@ -441,9 +457,22 @@ export default function EventMinuta() {
             Guardar Borrador
           </button>
   
-          <button onClick={handleSend} className="btn-primary flex-1 sm:flex-none !py-3 !px-7 flex items-center justify-center gap-2 text-sm whitespace-nowrap" disabled={!summary}>
-            <span className="material-symbols-outlined text-[18px]">send</span>
-            Enviar Oficial
+          <button 
+            onClick={handleSend} 
+            className="btn-primary flex-1 sm:flex-none !py-3 !px-7 flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-50" 
+            disabled={!summary || sending}
+          >
+            {sending ? (
+              <>
+                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                Enviando...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                Enviar Oficial
+              </>
+            )}
           </button>
         </div>
       </div>
