@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore'
 
 export default function EventMinuta() {
   const { id } = useParams()
-  const { getEventById, fetchEventData, registrations, attendance } = useStore()
+  const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -260,9 +260,29 @@ export default function EventMinuta() {
       </div>
 
       <div className="card p-6 lg:p-8 mt-6 mb-6">
-        <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-lg">visibility</span>
-          Vista Previa del Email
+        <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4 flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg">visibility</span>
+            Vista Previa del Email
+          </span>
+          {registrations.length > 0 && (
+            <button onClick={async () => {
+               for (const reg of registrations) {
+                 if (reg.participants) {
+                   const isLeo = reg.participants.first_name.includes('Leandro')
+                   const title = isLeo ? 'Lic. Adm. ' : 'C.P. '
+                   let newName = reg.participants.first_name
+                   ['Lic. Adm. ', 'C.P. ', 'Lic. Ec. ', 'Est. '].forEach(t => {
+                     if (newName.startsWith(t)) newName = newName.replace(t, '')
+                   })
+                   await updateParticipantManual(reg.participants.id, { first_name: title + newName })
+                 }
+               }
+               alert('Títulos actualizados automáticamente en la BDD para todos los inscriptos de este evento. Recargá la página (F5) para verlos aplicados.')
+            }} className="btn-ghost !text-[9px] !py-1 !px-2 bg-gray-100 opacity-30 hover:opacity-100">
+               🔧 Fix Títulos
+            </button>
+          )}
         </h3>
         <div className="border border-[var(--color-dark-gray)]/10 rounded-[var(--radius-premium)] overflow-hidden bg-white shadow-sm">
           <div className="bg-[var(--color-refined-gray)]/50 px-4 py-3 border-b border-[var(--color-dark-gray)]/5 flex gap-2 items-center">
@@ -338,22 +358,23 @@ export default function EventMinuta() {
         </div>
       </div>
 
-      <div className="card p-6 border-t-4 border-t-[var(--color-deep-green)] sticky bottom-6">
-        <h3 className="font-extrabold text-lg mb-4 text-[var(--color-deep-green)]">Acciones</h3>
+      <div className="card p-4 border-t-4 border-t-[var(--color-deep-green)] sticky bottom-6 z-40 shadow-2xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="hidden sm:block">
+          <h3 className="font-extrabold text-base text-[var(--color-deep-green)]">Acciones</h3>
+          {!summary && <p className="text-[10px] text-red-500 font-semibold m-0 mt-0.5">El resumen es obligatorio</p>}
+        </div>
         
-        <button className="btn-secondary w-full mb-3 !py-4 flex text-sm flex-col" onClick={handleSaveDraft}>
-          <div className="flex items-center gap-2 m-auto">
-            <span className="material-symbols-outlined">save</span>
-            <span>Guardar Borrador</span>
-          </div>
-          <span className="text-[10px] opacity-60 mt-1 capitalize-none">Ideal para continuar editando luego</span>
-        </button>
-
-        <button onClick={handleSend} className="btn-primary w-full !py-4 text-sm" disabled={!summary}>
-          <span className="material-symbols-outlined text-lg">send</span>
-          Enviar Minuta Oficial
-        </button>
-        {!summary && <p className="text-[11px] text-center text-red-500 mt-3 font-semibold">El resumen principal es obligatorio para poder enviar.</p>}
+        <div className="flex w-full sm:w-auto gap-3">
+          <button className="btn-secondary flex-1 sm:flex-none !py-3 !px-5 flex items-center justify-center gap-2 text-sm whitespace-nowrap" onClick={handleSaveDraft}>
+            <span className="material-symbols-outlined text-[18px]">save</span>
+            Guardar Borrador
+          </button>
+  
+          <button onClick={handleSend} className="btn-primary flex-1 sm:flex-none !py-3 !px-7 flex items-center justify-center gap-2 text-sm whitespace-nowrap" disabled={!summary}>
+            <span className="material-symbols-outlined text-[18px]">send</span>
+            Enviar Oficial
+          </button>
+        </div>
       </div>
     </div>
   )
