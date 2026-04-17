@@ -173,6 +173,59 @@ export default function EventMinuta() {
         </div>
       </div>
 
+      {/* Live Preview */}
+      <div className="card p-6 lg:p-8 mt-6 mb-6">
+        <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="material-symbols-outlined text-lg">visibility</span>
+          Vista Previa del Email
+        </h3>
+        <div className="border border-[var(--color-dark-gray)]/10 rounded-[var(--radius-premium)] overflow-hidden bg-white shadow-sm">
+          <div className="bg-[var(--color-refined-gray)]/50 px-4 py-3 border-b border-[var(--color-dark-gray)]/5 flex gap-2 items-center">
+             <div className="flex gap-1.5 mr-4">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-green-400/80"></span>
+             </div>
+             <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--color-dark-gray)]/40">Minuta - {event.title}</p>
+          </div>
+          <div className="p-6 md:p-10 max-w-2xl mx-auto font-sans text-gray-800">
+            <h2 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-1">¡Gracias por participar!</h2>
+            <p className="text-sm text-gray-500 mb-8 font-medium">Resumen de: {event.title}</p>
+            
+            {photoUrl && (
+              <img src={photoUrl} alt="Evento" className="w-full h-auto max-h-80 object-cover rounded-[10px] mb-8 shadow-sm grayscale hover:grayscale-0 transition-all duration-700" onError={e => e.target.style.display = 'none'} />
+            )}
+
+            <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-700 mb-8 border-l-2 border-[var(--color-deep-green)]/30 pl-5">
+              {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí. Los destinatarios leerán esto para entender las conclusiones y próximos pasos.</span>}
+            </div>
+
+            {(presentationLink || extraFiles) && (
+              <div className="bg-[var(--color-refined-gray)]/30 rounded-[10px] p-6 mb-6 border border-[var(--color-deep-green)]/5">
+                <h4 className="font-bold text-[var(--color-deep-green)] mb-4 text-[11px] uppercase tracking-widest">Materiales del evento</h4>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {presentationLink && (
+                    <a href={presentationLink} onClick={e => e.preventDefault()} className="inline-flex items-center justify-center gap-2 text-sm font-semibold bg-[var(--color-deep-green)] text-white px-5 py-2.5 rounded-[8px] hover:opacity-90 transition-all shadow-premium w-full sm:w-auto">
+                      <span className="material-symbols-outlined text-lg">present_to_all</span>
+                      Ver Presentación
+                    </a>
+                  )}
+                  {extraFiles && (
+                    <a href={extraFiles} onClick={e => e.preventDefault()} className="inline-flex items-center justify-center gap-2 text-sm font-semibold bg-white text-[var(--color-deep-green)] border border-[var(--color-deep-green)]/20 px-5 py-2.5 rounded-[8px] hover:bg-gray-50 transition-all w-full sm:w-auto">
+                      <span className="material-symbols-outlined text-lg">folder_open</span>
+                      Ver Archivos Adicionales
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            <hr className="border-gray-100 my-8" />
+            <p className="text-xs text-gray-400 text-center font-medium uppercase tracking-widest">Enviado por Leandro Velasques</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-end gap-3 mt-6">
         <Link to={`/admin/eventos/${id}`} className="btn-secondary">Cancelar</Link>
         <button onClick={handleSend} className="btn-primary" disabled={!summary}>
