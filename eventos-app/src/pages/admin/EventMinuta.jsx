@@ -87,7 +87,55 @@ export default function EventMinuta() {
     setTimeout(() => setToast(''), 3000)
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
+    if (!summary) return;
+    
+    // Construct payload
+    const payload = {
+      eventId: id,
+      eventTitle: event.title,
+      eventDate: event.event_date,
+      coordinator: event.coordinator,
+      summary,
+      observations: observations.filter(o => o.trim()),
+      photoUrl,
+      presentationLink,
+      extraFiles: extraFiles ? [extraFiles] : [],
+      attendees: includeAttendees ? attendance.filter(a => a.status === 'present').map(a => `${a.registrations.participants.first_name} ${a.registrations.participants.last_name}`) : [],
+      absentees: includeAbsentees ? attendance.filter(a => a.status !== 'present').map(a => `${a.registrations.participants.first_name} ${a.registrations.participants.last_name}`) : [],
+      emails: [
+        ...attendance.filter(a => a.status === 'present').map(a => a.registrations.participants.email),
+        ...externalEmails.split(',').map(e => e.trim()).filter(e => e)
+      ]
+    }
+
+    try {
+      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/minuta-evento'
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      console.log('Webhook disparado a n8n exitosamente.')
+    } catch (err) {
+      console.error('Error enviando webhook:', err)
+    }
+
+    // Registrar en BDD como enviado
+    const { error } = await supabase.from('event_reports').upsert({
+      event_id: id,
+      summary: summary,
+      photo_url: photoUrl,
+      sent: true,
+      sent_at: new Date().toISOString()
+    }, { onConflict: 'event_id' })
+
+    if(!error) {
+      setIsSent(true)
+      setSentAt(new Date().toISOString())
+      await updateEvent(id, { status: 'completed' })
+    }
+    
     setSent(true)
     localStorage.removeItem(`minuta_draft_${id}`)
   }
