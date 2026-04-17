@@ -4,29 +4,36 @@ import { useStore } from '../../store/useStore'
 
 export default function EventAttendance() {
   const { id } = useParams()
-  const { getEventById, fetchEventData, registrations, attendance, markAttendance, isLoading } = useStore()
+  const { getEventById, fetchEventData, registrations = [], attendance = [], markAttendance } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState(null)
 
   useEffect(() => {
     async function loadData() {
+      if (!id) return
       setLoading(true)
-      const eventData = await getEventById(id)
-      setEvent(eventData)
-      await fetchEventData(id)
-      setLoading(false)
+      try {
+        const eventData = await getEventById(id)
+        setEvent(eventData)
+        if (eventData) {
+          await fetchEventData(id)
+        }
+      } catch (error) {
+        console.error("Error loading event attendance:", error)
+      } finally {
+        setLoading(false)
+      }
     }
     loadData()
-  }, [id])
+  }, [id, getEventById, fetchEventData])
 
   if (loading) return <div className="text-center py-20"><p className="animate-pulse">Cargando...</p></div>
   if (!event) return <div className="text-center py-20"><p>Evento no encontrado</p></div>
 
-  const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'late').length
-  const totalCount = registrations.filter(r => r.status !== 'cancelled').length
+  const presentCount = (attendance || []).filter(a => a.status === 'present' || a.status === 'late').length
+  const totalCount = (registrations || []).filter(r => r.status !== 'cancelled').length
   const attendanceUrl = `${window.location.origin}/evento/${event.slug}/asistencia`
-
-  const [processingId, setProcessingId] = useState(null)
 
   const handleToggle = async (registrationId, currentStatus) => {
     if (processingId === registrationId) return
@@ -34,13 +41,15 @@ export default function EventAttendance() {
     const newStatus = currentStatus === 'present' ? 'absent' : 'present'
     try {
       await markAttendance(registrationId, newStatus, 'admin')
+    } catch (error) {
+      console.error("Error marking attendance:", error)
     } finally {
       setProcessingId(null)
     }
   }
 
   const handleMarkAll = async () => {
-    const promises = registrations
+    const promises = (registrations || [])
       .filter(r => r.status !== 'cancelled')
       .map(r => markAttendance(r.id, 'present', 'admin'))
     
@@ -55,7 +64,9 @@ export default function EventAttendance() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-extrabold tracking-tight">Asistencia</h1>
-          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {presentCount}/{totalCount} presentes ({totalCount > 0 ? Math.round(presentCount/totalCount*100) : 0}%)</p>
+          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">
+            {event.title} · {presentCount}/{totalCount} presentes ({totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0}%)
+          </p>
         </div>
       </div>
 
@@ -73,19 +84,20 @@ export default function EventAttendance() {
       </div>
 
       <div className="space-y-2">
-        {registrations.filter(r => r.status !== 'cancelled').map(reg => {
-          const attn = attendance.find(a => a.registration_id === reg.id)
+        {(registrations || []).filter(r => r.status !== 'cancelled').map(reg => {
+          const attn = (attendance || []).find(a => a.registration_id === reg.id)
           const p = reg.participants
           const status = attn?.status || 'unmarked'
           const isPresent = status === 'present' || status === 'late'
+          const isProcessing = processingId === reg.id
 
           return (
             <div key={reg.id} className="card p-4 flex items-center gap-4">
               <button
                 onClick={() => handleToggle(reg.id, status)}
-                disabled={processingId === reg.id}
+                disabled={isProcessing}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  processingId === reg.id ? 'opacity-50 cursor-not-allowed' : ''
+                  isProcessing ? 'opacity-50 cursor-not-allowed' : ''
                 } ${
                   isPresent
                     ? 'bg-[var(--color-deep-green)] text-white'
@@ -94,8 +106,8 @@ export default function EventAttendance() {
                       : 'bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)]/30 hover:bg-[var(--color-light-green)]/30'
                 }`}
               >
-                <span className={`material-symbols-outlined text-xl ${processingId === reg.id ? 'animate-spin' : ''}`}>
-                  {processingId === reg.id ? 'progress_activity' : (isPresent ? 'check' : status === 'absent' ? 'close' : 'radio_button_unchecked')}
+                <span className={`material-symbols-outlined text-xl ${isProcessing ? 'animate-spin' : ''}`}>
+                  {isProcessing ? 'progress_activity' : (isPresent ? 'check' : (status === 'absent' ? 'close' : 'radio_button_unchecked'))}
                 </span>
               </button>
               <div className="flex-1 min-w-0">
@@ -106,8 +118,8 @@ export default function EventAttendance() {
                   {p?.email || 'Sin email'} {attn?.marked_by === 'self' && '· Auto-registro'}
                 </p>
               </div>
-              <span className={`badge ${isPresent ? 'badge-green' : status === 'absent' ? 'badge-red' : 'badge-gray'}`}>
-                {isPresent ? 'Presente' : status === 'absent' ? 'Ausente' : 'Sin marcar'}
+              <span className={`badge ${isPresent ? 'badge-green' : (status === 'absent' ? 'badge-red' : 'badge-gray')}`}>
+                {isPresent ? 'Presente' : (status === 'absent' ? 'Ausente' : 'Sin marcar')}
               </span>
             </div>
           )

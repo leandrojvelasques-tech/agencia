@@ -32,7 +32,7 @@ export const useStore = create((set, get) => ({
 
   logout: async () => {
     await supabase.auth.signOut()
-    set({ user: null, isAuthenticated: false, events: [], registrations: [], participants: [] })
+    set({ user: null, isAuthenticated: false, events: [], registrations: [], participants: [], attendance: [], certificates: [] })
   },
 
   checkSession: async () => {
