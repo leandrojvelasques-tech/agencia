@@ -120,6 +120,12 @@ export default function EventsDashboard() {
                         {statusCfg.label}
                       </span>
                       <span className="badge badge-gray">{TYPE_LABELS[event.type]}</span>
+                      {event.is_public === false && (
+                        <span className="badge border border-amber-200 bg-amber-50 text-amber-700">
+                          <span className="material-symbols-outlined text-[10px]">visibility_off</span>
+                          PRIVADO
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-lg font-bold text-[var(--color-deep-green)] group-hover:text-[var(--color-deep-green-light)] transition-colors truncate">
                       {event.title}

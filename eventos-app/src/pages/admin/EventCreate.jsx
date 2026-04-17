@@ -28,6 +28,7 @@ export default function EventCreate() {
     registration_mode: 'both',
     max_capacity: '',
     banner_url: '',
+    is_public: true,
   })
   const [saveError, setSaveError] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -72,6 +73,7 @@ export default function EventCreate() {
           setForm({
             ...data,
             max_capacity: data.max_capacity || '',
+            is_public: data.is_public !== false, // default true if undefined
           })
         }
         setLoading(false)
@@ -162,6 +164,25 @@ export default function EventCreate() {
                         : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)] hover:border-[var(--color-deep-green)]/30'
                     }`}>
                     {t === 'charla' ? '🎤 Charla' : '🛠 Taller'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Visibilidad en la web *</label>
+              <div className="flex gap-3">
+                {[
+                  { value: true, label: '🌍 Público', desc: 'Se muestra en el Home' },
+                  { value: false, label: '🔒 Privado', desc: 'Solo acceso por link' },
+                ].map(opt => (
+                  <button key={opt.value.toString()} onClick={() => update('is_public', opt.value)}
+                    className={`flex-1 p-3 rounded-[var(--radius-premium)] text-left border-2 transition-all ${
+                      form.is_public === opt.value
+                        ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                        : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)]'
+                    }`}>
+                    <p className="text-sm font-bold">{opt.label}</p>
+                    <p className="text-[10px] opacity-60 font-medium">{opt.desc}</p>
                   </button>
                 ))}
               </div>

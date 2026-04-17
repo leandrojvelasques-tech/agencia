@@ -110,7 +110,7 @@ export default function EventMinuta() {
     }
 
     try {
-      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/minuta-evento'
+      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook-test/minuta-evento'
       await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
