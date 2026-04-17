@@ -95,9 +95,17 @@ export default function EventMinuta() {
       return
     }
     
-    setSending(true)
+    // Data safety checks
+    if (!event) {
+      setToast('Error: Datos del evento no cargados')
+      setSending(false)
+      return
+    }
+
+    // Construct payload with safety filters
+    const validAttendance = Array.isArray(attendance) ? attendance : []
+    const presentParticipants = validAttendance.filter(a => a.status === 'present')
     
-    // Construct payload
     const payload = {
       eventId: id,
       eventTitle: event?.title || 'Evento',
@@ -108,29 +116,35 @@ export default function EventMinuta() {
       photoUrl,
       presentationLink,
       extraFiles: extraFiles ? [extraFiles] : [],
-      attendees: includeAttendees ? attendance.filter(a => a.status === 'present').map(a => `${a.registrations.participants.first_name} ${a.registrations.participants.last_name}`) : [],
-      absentees: includeAbsentees ? attendance.filter(a => a.status !== 'present').map(a => `${a.registrations.participants.first_name} ${a.registrations.participants.last_name}`) : [],
+      attendees: includeAttendees ? presentParticipants.map(a => `${a.registrations?.participants?.first_name || ''} ${a.registrations?.participants?.last_name || ''}`.trim()) : [],
+      absentees: includeAbsentees ? validAttendance.filter(a => a.status !== 'present').map(a => `${a.registrations?.participants?.first_name || ''} ${a.registrations?.participants?.last_name || ''}`.trim()) : [],
       emails: [
-        ...attendance.filter(a => a.status === 'present').map(a => a.registrations.participants.email),
+        ...presentParticipants.map(a => a.registrations?.participants?.email).filter(Boolean),
         ...externalEmails.split(',').map(e => e.trim()).filter(e => e)
       ]
     }
 
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+
     try {
       const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/minuta-evento'
-      console.log('Enviando a n8n:', payload)
+      console.log('Iniciando fetch a n8n...', payload)
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       })
 
-      if (!response.ok) throw new Error(`Error en n8n: ${response.status}`)
-      
-      console.log('Webhook disparado a n8n exitosamente.')
+      clearTimeout(timeoutId)
 
-      // Registrar en BDD como enviado SOLO si el webhook respondió bien
+      if (!response.ok) throw new Error(`n8n respondió con error ${response.status}`)
+      
+      console.log('¡Respuesta de n8n recibida exitosamente!')
+
+      // Registrar en BDD como enviado
       const { error: dbError } = await supabase.from('event_reports').upsert({
         event_id: id,
         summary: summary,
@@ -148,9 +162,15 @@ export default function EventMinuta() {
       localStorage.removeItem(`minuta_draft_${id}`)
       setSent(true)
     } catch (err) {
-      console.error('Error detallado enviando webhook:', err)
-      setToast('Error al enviar: ' + err.message)
-      setTimeout(() => setToast(''), 5000)
+      clearTimeout(timeoutId)
+      console.error('Error detallado:', err)
+      
+      let errorMsg = err.name === 'AbortError' 
+        ? 'Tiempo de espera agotado (15s). n8n no responde.' 
+        : 'Error: ' + err.message
+
+      setToast(errorMsg)
+      setTimeout(() => setToast(''), 6000)
     } finally {
       setSending(false)
     }
