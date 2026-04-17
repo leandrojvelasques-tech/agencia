@@ -8,7 +8,7 @@ const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note', next: 'Publicar', nextStatus: 'published' },
   published: { label: 'Publicado', color: 'green', icon: 'public', next: 'Iniciar evento', nextStatus: 'in_progress' },
   in_progress: { label: 'En curso', color: 'yellow', icon: 'play_circle', next: 'Finalizar', nextStatus: 'completed' },
-  completed: { label: 'Completado', color: 'green', icon: 'check_circle' },
+  completed: { label: 'Finalizado', color: 'green', icon: 'check_circle' },
   cancelled: { label: 'Cancelado', color: 'red', icon: 'cancel' },
 }
 

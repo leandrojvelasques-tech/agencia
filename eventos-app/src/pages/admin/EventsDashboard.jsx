@@ -8,7 +8,7 @@ const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note' },
   published: { label: 'Publicado', color: 'green', icon: 'public' },
   in_progress: { label: 'En curso', color: 'yellow', icon: 'play_circle' },
-  completed: { label: 'Completado', color: 'green', icon: 'check_circle' },
+  completed: { label: 'Finalizado', color: 'green', icon: 'check_circle' },
   cancelled: { label: 'Cancelado', color: 'red', icon: 'cancel' },
 }
 
@@ -80,7 +80,7 @@ export default function EventsDashboard() {
             <option value="draft">Borrador</option>
             <option value="published">Publicado</option>
             <option value="in_progress">En curso</option>
-            <option value="completed">Completado</option>
+            <option value="completed">Finalizado</option>
             <option value="cancelled">Cancelado</option>
           </select>
         </div>

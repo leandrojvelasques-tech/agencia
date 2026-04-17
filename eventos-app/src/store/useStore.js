@@ -339,18 +339,38 @@ export const useStore = create((set, get) => ({
   },
 
   markAttendance: async (registrationId, status, markedBy = 'admin') => {
-    const { data, error } = await supabase
+    // We first try to find if there's already an attendance record for this registration
+    // This is safer than relying on upsert with null session_id
+    const { data: existing } = await supabase
       .from('attendance')
-      .upsert({
-        registration_id: registrationId,
-        status,
-        marked_by: markedBy,
-        marked_at: new Date().toISOString()
-      }, { onConflict: 'registration_id,session_id' })
-      .select()
-      .single()
+      .select('id')
+      .eq('registration_id', registrationId)
+      .maybeSingle()
 
-    if (!error) {
+    let query
+    if (existing) {
+      query = supabase
+        .from('attendance')
+        .update({
+          status,
+          marked_by: markedBy,
+          marked_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
+    } else {
+      query = supabase
+        .from('attendance')
+        .insert([{
+          registration_id: registrationId,
+          status,
+          marked_by: markedBy,
+          marked_at: new Date().toISOString()
+        }])
+    }
+
+    const { data, error } = await query.select().single()
+
+    if (!error && data) {
       set(state => ({
         attendance: state.attendance.some(a => a.registration_id === registrationId)
           ? state.attendance.map(a => a.registration_id === registrationId ? data : a)

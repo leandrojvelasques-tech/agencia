@@ -26,9 +26,17 @@ export default function EventAttendance() {
   const totalCount = registrations.filter(r => r.status !== 'cancelled').length
   const attendanceUrl = `${window.location.origin}/evento/${event.slug}/asistencia`
 
+  const [processingId, setProcessingId] = useState(null)
+
   const handleToggle = async (registrationId, currentStatus) => {
+    if (processingId === registrationId) return
+    setProcessingId(registrationId)
     const newStatus = currentStatus === 'present' ? 'absent' : 'present'
-    await markAttendance(registrationId, newStatus, 'admin')
+    try {
+      await markAttendance(registrationId, newStatus, 'admin')
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   const handleMarkAll = async () => {
@@ -75,7 +83,10 @@ export default function EventAttendance() {
             <div key={reg.id} className="card p-4 flex items-center gap-4">
               <button
                 onClick={() => handleToggle(reg.id, status)}
+                disabled={processingId === reg.id}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  processingId === reg.id ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isPresent
                     ? 'bg-[var(--color-deep-green)] text-white'
                     : status === 'absent'
@@ -83,8 +94,8 @@ export default function EventAttendance() {
                       : 'bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)]/30 hover:bg-[var(--color-light-green)]/30'
                 }`}
               >
-                <span className="material-symbols-outlined text-xl">
-                  {isPresent ? 'check' : status === 'absent' ? 'close' : 'radio_button_unchecked'}
+                <span className={`material-symbols-outlined text-xl ${processingId === reg.id ? 'animate-spin' : ''}`}>
+                  {processingId === reg.id ? 'progress_activity' : (isPresent ? 'check' : status === 'absent' ? 'close' : 'radio_button_unchecked')}
                 </span>
               </button>
               <div className="flex-1 min-w-0">
