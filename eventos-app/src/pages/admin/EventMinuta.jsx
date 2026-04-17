@@ -50,10 +50,17 @@ export default function EventMinuta() {
     }
 
     const checkSentStatus = async () => {
-      const { data } = await supabase.from('event_reports').select('sent, sent_at').eq('event_id', id).maybeSingle()
+      const { data } = await supabase.from('event_reports').select('*').eq('event_id', id).maybeSingle()
       if (data && data.sent) {
         setIsSent(true)
         setSentAt(data.sent_at)
+        // If we don't have a fresh draft, use the DB values
+        const draft = localStorage.getItem(`minuta_draft_${id}`)
+        if (!draft) {
+          if (data.summary) setSummary(data.summary)
+          if (data.photo_url) setPhotoUrl(data.photo_url)
+          // Note: observations and other fields should be added to the DB schema if needed
+        }
       }
     }
 
@@ -489,8 +496,8 @@ export default function EventMinuta() {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[18px]">send</span>
-                Enviar Oficial
+                <span className="material-symbols-outlined text-[18px]">{isSent ? 'forward_to_inbox' : 'send'}</span>
+                {isSent ? 'Reenviar Corregida' : 'Enviar Oficial'}
               </>
             )}
           </button>
