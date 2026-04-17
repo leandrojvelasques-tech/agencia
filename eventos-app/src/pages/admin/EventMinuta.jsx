@@ -10,6 +10,7 @@ export default function EventMinuta() {
 
   const [summary, setSummary] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
+  const [observations, setObservations] = useState('')
   const [includeAttendees, setIncludeAttendees] = useState(true)
   const [includeAbsentees, setIncludeAbsentees] = useState(false)
   const [externalEmails, setExternalEmails] = useState('')
@@ -79,6 +80,18 @@ export default function EventMinuta() {
             placeholder="Escribí un resumen de los temas tratados, conclusiones y próximos pasos..."
             value={summary}
             onChange={e => setSummary(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+            Observaciones post evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Opcional)</span>
+          </label>
+          <textarea
+            className="form-input min-h-[100px]"
+            placeholder="Avisos, compromisos, tareas pendientes para la próxima reunión, etc."
+            value={observations}
+            onChange={e => setObservations(e.target.value)}
           />
         </div>
 
@@ -190,8 +203,21 @@ export default function EventMinuta() {
           </div>
           <div className="p-6 md:p-10 max-w-2xl mx-auto font-sans text-gray-800">
             <h2 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-1">¡Gracias por participar!</h2>
-            <p className="text-sm text-gray-500 mb-8 font-medium">Resumen de: {event.title}</p>
+            <p className="text-sm text-gray-500 mb-6 font-medium">Resumen de: {event.title}</p>
             
+            <div className="bg-gray-50 border border-gray-100 rounded-[10px] p-5 mb-8 text-sm text-gray-700">
+               <p className="mb-2"><strong>Fecha:</strong> {new Date(event.event_date + 'T12:00:00').toLocaleDateString('es-AR', { dateStyle: 'long' })}</p>
+               <p className="mb-2"><strong>Coordinador:</strong> {event.coordinator}</p>
+               {attendees.length > 0 && (
+                 <div>
+                   <p className="font-bold mb-1">Asistentes:</p>
+                   <p className="text-gray-600 leading-relaxed text-[13px]">
+                     {attendees.map(a => `${a.first_name} ${a.last_name}`).join(', ')}
+                   </p>
+                 </div>
+               )}
+            </div>
+
             {photoUrl && (
               <img src={photoUrl} alt="Evento" className="w-full h-auto max-h-80 object-cover rounded-[10px] mb-8 shadow-sm grayscale hover:grayscale-0 transition-all duration-700" onError={e => e.target.style.display = 'none'} />
             )}
@@ -199,6 +225,15 @@ export default function EventMinuta() {
             <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-700 mb-8 border-l-2 border-[var(--color-deep-green)]/30 pl-5">
               {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí. Los destinatarios leerán esto para entender las conclusiones y próximos pasos.</span>}
             </div>
+
+            {observations && (
+              <div className="mb-8">
+                <h4 className="font-bold text-[var(--color-deep-green)] mb-3 text-sm border-b border-[var(--color-deep-green)]/10 pb-2">Observaciones y Tareas Pendientes</h4>
+                <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700 bg-amber-50 p-4 rounded-[8px] border-l-4 border-amber-400">
+                  {observations}
+                </div>
+              </div>
+            )}
 
             {(presentationLink || extraFiles) && (
               <div className="bg-[var(--color-refined-gray)]/30 rounded-[10px] p-6 mb-6 border border-[var(--color-deep-green)]/5">
