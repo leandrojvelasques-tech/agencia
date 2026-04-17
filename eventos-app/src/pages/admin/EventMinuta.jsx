@@ -17,6 +17,7 @@ export default function EventMinuta() {
   const [presentationLink, setPresentationLink] = useState('')
   const [extraFiles, setExtraFiles] = useState('')
   const [sent, setSent] = useState(false)
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -24,6 +25,23 @@ export default function EventMinuta() {
       const eventData = await getEventById(id)
       setEvent(eventData)
       await fetchEventData(id)
+
+      const draft = localStorage.getItem(`minuta_draft_${id}`)
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft)
+          if (parsed.summary) setSummary(parsed.summary)
+          if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
+          if (parsed.observations) setObservations(parsed.observations)
+          if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
+          if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
+          if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
+          if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
+          if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
+        } catch (e) {
+          console.error("Error loading draft", e)
+        }
+      }
       setLoading(false)
     }
     loadData()
@@ -40,9 +58,26 @@ export default function EventMinuta() {
     .map(r => r.participants)
     .filter(Boolean)
 
+  const handleSaveDraft = () => {
+    const draft = {
+      summary,
+      photoUrl,
+      observations,
+      presentationLink,
+      extraFiles,
+      includeAttendees,
+      includeAbsentees,
+      externalEmails
+    }
+    localStorage.setItem(`minuta_draft_${id}`, JSON.stringify(draft))
+    setToast('Borrador guardado exitosamente en este dispositivo')
+    setTimeout(() => setToast(''), 3000)
+  }
+
   const handleSend = () => {
     // In production, this would trigger n8n webhook
     setSent(true)
+    localStorage.removeItem(`minuta_draft_${id}`)
   }
 
   const handleAddObservation = () => {
@@ -75,6 +110,11 @@ export default function EventMinuta() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {toast && (
+        <div className="fixed top-4 right-4 bg-[var(--color-deep-green)] text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in">
+          {toast}
+        </div>
+      )}
       <div className="flex items-center gap-3 mb-6">
         <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2">
           <span className="material-symbols-outlined text-xl">arrow_back</span>
@@ -219,7 +259,6 @@ export default function EventMinuta() {
         </div>
       </div>
 
-      {/* Live Preview */}
       <div className="card p-6 lg:p-8 mt-6 mb-6">
         <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-lg">visibility</span>
@@ -299,12 +338,22 @@ export default function EventMinuta() {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 mt-6">
-        <Link to={`/admin/eventos/${id}`} className="btn-secondary">Cancelar</Link>
-        <button onClick={handleSend} className="btn-primary" disabled={!summary}>
-          <span className="material-symbols-outlined text-lg">send</span>
-          Enviar Minuta
+      <div className="card p-6 border-t-4 border-t-[var(--color-deep-green)] sticky bottom-6">
+        <h3 className="font-extrabold text-lg mb-4 text-[var(--color-deep-green)]">Acciones</h3>
+        
+        <button className="btn-secondary w-full mb-3 !py-4 flex text-sm flex-col" onClick={handleSaveDraft}>
+          <div className="flex items-center gap-2 m-auto">
+            <span className="material-symbols-outlined">save</span>
+            <span>Guardar Borrador</span>
+          </div>
+          <span className="text-[10px] opacity-60 mt-1 capitalize-none">Ideal para continuar editando luego</span>
         </button>
+
+        <button onClick={handleSend} className="btn-primary w-full !py-4 text-sm" disabled={!summary}>
+          <span className="material-symbols-outlined text-lg">send</span>
+          Enviar Minuta Oficial
+        </button>
+        {!summary && <p className="text-[11px] text-center text-red-500 mt-3 font-semibold">El resumen principal es obligatorio para poder enviar.</p>}
       </div>
     </div>
   )

@@ -9,7 +9,7 @@ export default function EventParticipants() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingParticipant, setEditingParticipant] = useState(null)
-  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+  const [form, setForm] = useState({ title: '', first_name: '', last_name: '', email: '', phone: '', notes: '' })
   const [search, setSearch] = useState('')
 
   useEffect(() => {
@@ -37,15 +37,28 @@ export default function EventParticipants() {
 
   const handleOpenAdd = () => {
     setEditingParticipant(null)
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setForm({ title: '', first_name: '', last_name: '', email: '', phone: '', notes: '' })
     setShowModal(true)
   }
 
   const handleOpenEdit = (reg) => {
     const p = reg.participants
+    // extract potential title from first_name
+    let fName = p.first_name || ''
+    let parsedTitle = ''
+    const titles = ['C.P.', 'Lic. Adm.', 'Lic. Ec.', 'Est.']
+    for (const t of titles) {
+      if (fName.startsWith(t + ' ')) {
+        parsedTitle = t
+        fName = fName.substring(t.length + 1)
+        break
+      }
+    }
+
     setEditingParticipant({ registrationId: reg.id, participantId: p.id })
     setForm({
-      first_name: p.first_name || '',
+      title: parsedTitle,
+      first_name: fName,
       last_name: p.last_name || '',
       email: p.email || '',
       phone: p.phone || '',
@@ -57,13 +70,19 @@ export default function EventParticipants() {
   const handleSave = async () => {
     if (!form.first_name || !form.last_name) return
     
+    const payload = { ...form }
+    if (payload.title) {
+      payload.first_name = `${payload.title} ${payload.first_name}`
+    }
+    delete payload.title
+
     if (editingParticipant) {
-      await updateParticipantManual(editingParticipant.participantId, form)
+      await updateParticipantManual(editingParticipant.participantId, payload)
     } else {
-      await addParticipantManual(id, form)
+      await addParticipantManual(id, payload)
     }
     
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setForm({ title: '', first_name: '', last_name: '', email: '', phone: '', notes: '' })
     setEditingParticipant(null)
     setShowModal(false)
   }
@@ -155,6 +174,16 @@ export default function EventParticipants() {
           <div className="card p-6 lg:p-8 w-full max-w-md animate-fade-in" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl font-bold mb-6">{editingParticipant ? 'Editar Participante' : 'Agregar Participante'}</h2>
             <div className="space-y-4">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Título</label>
+                <select className="form-input !py-2.5" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}>
+                  <option value="">Sin título</option>
+                  <option value="C.P.">Contador (C.P.)</option>
+                  <option value="Lic. Adm.">Licenciado en Administración (Lic. Adm.)</option>
+                  <option value="Lic. Ec.">Licenciado en Economía (Lic. Ec.)</option>
+                  <option value="Est.">Estudiante (Est.)</option>
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Nombre *</label>
