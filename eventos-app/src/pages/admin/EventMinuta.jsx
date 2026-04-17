@@ -10,9 +10,7 @@ export default function EventMinuta() {
 
   const [summary, setSummary] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
-  const [warnings, setWarnings] = useState('')
-  const [tasks, setTasks] = useState('')
-  const [nextMeeting, setNextMeeting] = useState('')
+  const [observations, setObservations] = useState([''])
   const [includeAttendees, setIncludeAttendees] = useState(true)
   const [includeAbsentees, setIncludeAbsentees] = useState(false)
   const [externalEmails, setExternalEmails] = useState('')
@@ -45,6 +43,21 @@ export default function EventMinuta() {
   const handleSend = () => {
     // In production, this would trigger n8n webhook
     setSent(true)
+  }
+
+  const handleAddObservation = () => {
+    setObservations([...observations, ''])
+  }
+
+  const handleObservationChange = (index, value) => {
+    const newObservations = [...observations]
+    newObservations[index] = value
+    setObservations(newObservations)
+  }
+
+  const handleRemoveObservation = (index) => {
+    const newObservations = observations.filter((_, i) => i !== index)
+    setObservations(newObservations.length ? newObservations : [''])
   }
 
   if (sent) {
@@ -90,18 +103,25 @@ export default function EventMinuta() {
             Observaciones post evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Opcionales)</span>
           </label>
           
-          <div>
-             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Avisos y Comentarios Especiales</label>
-             <textarea className="form-input min-h-[60px]" placeholder="Ej: Hubo problemas con el proyector..." value={warnings} onChange={e => setWarnings(e.target.value)} />
-          </div>
-          <div>
-             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Tareas y Compromisos (To-Dos)</label>
-             <textarea className="form-input min-h-[60px]" placeholder="Ej: Martín enviará el presupuesto mañana." value={tasks} onChange={e => setTasks(e.target.value)} />
-          </div>
-          <div>
-             <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-1 block">Próxima Reunión / Tema</label>
-             <textarea className="form-input min-h-[60px]" placeholder="Ej: Próximo martes a las 10hs sobre Marketing." value={nextMeeting} onChange={e => setNextMeeting(e.target.value)} />
-          </div>
+          {observations.map((obs, index) => (
+            <div key={index} className="relative bg-[var(--color-refined-gray)]/30 p-3 rounded-[8px] border border-[var(--color-dark-gray)]/5">
+               <label className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 mb-2 flex justify-between items-center">
+                 <span>Observación {index + 1}</span>
+                 {observations.length > 1 && (
+                    <button type="button" onClick={() => handleRemoveObservation(index)} className="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">delete</span>
+                      Eliminar
+                    </button>
+                 )}
+               </label>
+               <textarea className="form-input min-h-[60px]" placeholder="Avisos, compromisos, temas para la próxima reunión, etc." value={obs} onChange={e => handleObservationChange(index, e.target.value)} />
+            </div>
+          ))}
+
+          <button type="button" onClick={handleAddObservation} className="btn-secondary !text-xs !py-2 w-full border-dashed border-[var(--color-deep-green)]/30 hover:bg-[var(--color-deep-green)]/5">
+             <span className="material-symbols-outlined text-base">add_circle</span>
+             Agregar nueva observación
+          </button>
         </div>
 
         <div>
@@ -239,28 +259,16 @@ export default function EventMinuta() {
               {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí. Los destinatarios leerán esto para entender las conclusiones y próximos pasos.</span>}
             </div>
 
-            {(warnings || tasks || nextMeeting) && (
+            {observations.filter(o => o.trim()).length > 0 && (
               <div className="mb-8">
                 <h4 className="font-bold text-[var(--color-deep-green)] mb-3 text-sm border-b border-[var(--color-deep-green)]/10 pb-2">Observaciones y Siguientes Pasos</h4>
                 <div className="space-y-4 bg-amber-50 p-5 rounded-[8px] border-l-4 border-amber-400">
-                  {warnings && (
-                    <div>
-                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Avisos y Comentarios</p>
-                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{warnings}</div>
+                  {observations.filter(o => o.trim()).map((obs, index) => (
+                    <div key={index} className={index > 0 ? "pt-4 border-t border-amber-200/50" : ""}>
+                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Observación {index + 1}</p>
+                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{obs}</div>
                     </div>
-                  )}
-                  {tasks && (
-                    <div className={warnings ? "pt-4 border-t border-amber-200/50" : ""}>
-                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Tareas y Compromisos</p>
-                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{tasks}</div>
-                    </div>
-                  )}
-                  {nextMeeting && (
-                    <div className={(warnings || tasks) ? "pt-4 border-t border-amber-200/50" : ""}>
-                      <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Próxima Reunión</p>
-                      <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{nextMeeting}</div>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
