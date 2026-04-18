@@ -76,7 +76,7 @@ export default function EventMinuta() {
       const att = attendance.find(a => a.registration_id === r.id)
       return att?.status === 'present' || att?.status === 'late'
     })
-    .map(r => r.participants)
+    .map(r => r.participants || r.participant)
     .filter(Boolean)
 
   const handleSaveDraft = () => {
@@ -110,9 +110,49 @@ export default function EventMinuta() {
     }
 
     // Construct payload with safety filters
-    const validAttendance = Array.isArray(attendance) ? attendance : []
-    const presentParticipants = validAttendance.filter(a => a.status === 'present')
+    // Construct payload with correct data mapping
+    // 1. Obtener asistencia y registros frescos de la store
+    const localAttendance = Array.isArray(attendance) ? attendance : []
+    const localRegistrations = Array.isArray(registrations) ? registrations : []
+
+    // Helper para lidiar con el formato de Supabase (a veces trae array, a veces objeto)
+    const getParticipant = (r) => {
+      let p = r.participants || r.participant
+      if (Array.isArray(p)) return p[0]
+      return p
+    }
+
+    if (localRegistrations.length > 0) {
+      console.log('ESTRUCTURA DE UN REGISTRO:', localRegistrations[0])
+    }
+
+    // 2. Filtrar exactamente como el preview
+    const presentRegs = localRegistrations.filter(r => {
+      const att = localAttendance.find(a => a.registration_id === r.id)
+      return att?.status === 'present' || att?.status === 'late'
+    })
+
+    const absentRegs = localRegistrations.filter(r => {
+      const att = localAttendance.find(a => a.registration_id === r.id)
+      return !att || (att.status !== 'present' && att.status !== 'late')
+    })
     
+    // 3. Extraer emails con helper
+    const attendeeEmails = includeAttendees 
+      ? presentRegs.map(r => getParticipant(r)?.email).filter(Boolean)
+      : []
+    
+    const absenteeEmails = includeAbsentees
+      ? absentRegs.map(r => getParticipant(r)?.email).filter(Boolean)
+      : []
+
+    const externalEmailsList = externalEmails
+      .split(',')
+      .map(e => e.trim())
+      .filter(e => e && e.includes('@'))
+
+    const finalEmails = [...new Set([...attendeeEmails, ...absenteeEmails, ...externalEmailsList])]
+
     const payload = {
       eventId: id,
       eventTitle: event?.title || 'Evento',
@@ -123,12 +163,24 @@ export default function EventMinuta() {
       photoUrl,
       presentationLink,
       extraFiles: extraFiles ? [extraFiles] : [],
-      attendees: includeAttendees ? presentParticipants.map(a => `${a.registrations?.participants?.first_name || ''} ${a.registrations?.participants?.last_name || ''}`.trim()) : [],
-      absentees: includeAbsentees ? validAttendance.filter(a => a.status !== 'present').map(a => `${a.registrations?.participants?.first_name || ''} ${a.registrations?.participants?.last_name || ''}`.trim()) : [],
-      emails: [
-        ...presentParticipants.map(a => a.registrations?.participants?.email).filter(Boolean),
-        ...externalEmails.split(',').map(e => e.trim()).filter(e => e)
-      ]
+      attendees: includeAttendees ? presentRegs.map(r => {
+        const p = getParticipant(r)
+        return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
+      }).filter(Boolean) : [],
+      absentees: includeAbsentees ? absentRegs.map(r => {
+        const p = getParticipant(r)
+        return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
+      }).filter(Boolean) : [],
+      emails: finalEmails
+    }
+
+    console.log('DEBUG MINUTA PAYLOAD:', payload)
+
+    if (payload.emails.length === 0) {
+      setToast('Atención: No hay destinatarios. Verificá que los asistentes tengan email o agregá uno externo.')
+      setTimeout(() => setToast(''), 5000)
+      setSending(false)
+      return
     }
 
     const controller = new AbortController()
