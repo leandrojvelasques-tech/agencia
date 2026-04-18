@@ -153,11 +153,15 @@ export default function EventMinuta() {
 
     const finalEmails = [...new Set([...attendeeEmails, ...absenteeEmails, ...externalEmailsList])]
 
+    const displayCoordinator = event?.coordinator === 'Leandro Velasques' 
+      ? 'Lic. Leandro Velasques' 
+      : event?.coordinator
+
     const payload = {
       eventId: id,
       eventTitle: event?.title || 'Evento',
       eventDate: event?.event_date,
-      coordinator: event?.coordinator,
+      coordinator: displayCoordinator,
       summary,
       observations: observations.filter(o => o.trim()),
       photoUrl,
