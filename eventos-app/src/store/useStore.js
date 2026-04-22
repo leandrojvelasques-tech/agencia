@@ -87,7 +87,7 @@ export const useStore = create((set, get) => ({
   getEventBySlug: async (slug) => {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*, event_materials(*)')
       .or(`slug.eq.${slug},private_link_token.eq.${slug}`)
       .single()
     return data

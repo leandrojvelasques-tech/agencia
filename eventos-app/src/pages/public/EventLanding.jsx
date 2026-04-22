@@ -166,6 +166,42 @@ export default function EventLanding() {
           </div>
         )}
 
+        {/* Materiales */}
+        {event.event_materials && event.event_materials.length > 0 && (
+          <div className="card p-6 mb-8 bg-[var(--color-deep-green)]/5 border-dashed border-[var(--color-deep-green)]/20">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
+              <span className="material-symbols-outlined text-xl">folder_zip</span>
+              Materiales del Evento
+            </h2>
+            <div className="space-y-3">
+              {event.event_materials.map((material, i) => (
+                <a 
+                  key={i} 
+                  href={material.url} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="flex items-center gap-4 p-3 rounded-[var(--radius-premium)] bg-white/50 hover:bg-white transition-all border border-transparent hover:border-[var(--color-deep-green)]/10 group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] group-hover:bg-[var(--color-deep-green)] group-hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-xl">
+                      {material.type === 'presentation' ? 'present_to_all' : 'description'}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-[var(--color-dark-gray)]">{material.title}</p>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-dark-gray)]/40">
+                      {material.type === 'presentation' ? 'Diapositivas' : 'Recurso'}
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined text-[var(--color-dark-gray)]/20 group-hover:text-[var(--color-deep-green)] group-hover:translate-x-1 transition-all">
+                    arrow_forward
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* CTA */}
         {canRegister && (
           <div className="text-center py-6">
