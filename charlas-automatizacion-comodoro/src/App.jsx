@@ -14,8 +14,8 @@ const Footer = () => (
       </div>
     </div>
     <div className="footer-right">
-      <img src="/logos_institucionales.png" alt="Instituciones Organizadoras" className="footer-logo" style={{ height: '35px' }} />
-      <img src="/logo_triskel.png" alt="Triskel" className="footer-logo" style={{ height: '25px', opacity: 0.8 }} />
+      <img src="./logos_institucionales.png" alt="Instituciones Organizadoras" className="footer-logo" style={{ height: '35px' }} />
+      <img src="./logo_triskel.png" alt="Triskel" className="footer-logo" style={{ height: '25px', opacity: 0.8 }} />
     </div>
   </div>
 )
@@ -69,7 +69,7 @@ const Portada = () => (
       className="avatar-container"
       style={{ width: '280px', right: '40px', bottom: '0px', zIndex: 5 }}
     >
-      <img src="/leandro_avatar_3d.png" alt="Leandro Velasques" style={{ width: '100%', height: 'auto' }} />
+      <img src="./leandro_avatar_3d.png" alt="Leandro Velasques" style={{ width: '100%', height: 'auto' }} />
     </motion.div>
   </div>
 )
@@ -260,7 +260,7 @@ const StackHerramientas = () => (
       <div className="grid-2" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         <motion.div whileHover={{ scale: 1.02 }} className="tool-card">
           <div className="tool-icon">
-            <img src="/logo_chatgpt.jpg" alt="ChatGPT" />
+            <img src="./logo_chatgpt.jpg" alt="ChatGPT" />
           </div>
           <div>
             <div className="tool-name">ChatGPT</div>
@@ -270,7 +270,7 @@ const StackHerramientas = () => (
         
         <motion.div whileHover={{ scale: 1.02 }} className="tool-card">
           <div className="tool-icon">
-            <img src="/logo_n8n.png" alt="n8n" />
+            <img src="./logo_n8n.png" alt="n8n" />
           </div>
           <div>
             <div className="tool-name">n8n</div>
@@ -280,7 +280,7 @@ const StackHerramientas = () => (
 
         <motion.div whileHover={{ scale: 1.02 }} className="tool-card">
           <div className="tool-icon">
-            <img src="/logo_antigravity.png" alt="Antigravity" />
+            <img src="./logo_antigravity.png" alt="Antigravity" />
           </div>
           <div>
             <div className="tool-name">Antigravity</div>
@@ -294,7 +294,7 @@ const StackHerramientas = () => (
           style={{ background: 'rgba(40, 90, 71, 0.05)', borderColor: 'var(--primary-green)' }}
         >
           <div className="tool-icon">
-            <img src="/logo_openclaw.png" alt="OpenClaw" />
+            <img src="./logo_openclaw.png" alt="OpenClaw" />
           </div>
           <div>
             <div className="tool-name">OpenClaw</div>
@@ -464,7 +464,7 @@ const QueEsN8N = () => (
       </div>
       <div className="card card-green justify-center items-center" style={{ minHeight: '300px', padding: '25px', position: 'relative', overflow: 'hidden' }}>
         <motion.img 
-          src="/logo_n8n.png" 
+          src="./logo_n8n.png" 
           alt="n8n Logo" 
           style={{ width: '100px', marginBottom: '15px', zIndex: 2 }}
           animate={{ rotate: 360 }}
@@ -672,8 +672,8 @@ const RutaModerna = () => (
              🚀 Ahorro: 70%
           </div>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <img src="/logo_claude.png" alt="Claude" style={{ height: '25px', opacity: 0.9 }} />
-            <img src="/logo_antigravity_v2.png" alt="Antigravity" style={{ height: '25px', opacity: 0.9 }} />
+            <img src="./logo_claude.png" alt="Claude" style={{ height: '25px', opacity: 0.9 }} />
+            <img src="./logo_antigravity_v2.png" alt="Antigravity" style={{ height: '25px', opacity: 0.9 }} />
           </div>
         </div>
       </div>
@@ -721,7 +721,7 @@ const RutaAgente = () => (
           transition={{ duration: 1, type: 'spring' }}
           style={{ position: 'relative' }}
         >
-          <img src="/logo_openclaw_text.png" alt="Open Claw" style={{ width: '280px', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))' }} />
+          <img src="./logo_openclaw_text.png" alt="Open Claw" style={{ width: '280px', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))' }} />
           <motion.div 
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 3, repeat: Infinity }}
@@ -768,7 +768,7 @@ const FrustracionAdministrativa = () => (
       
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <img 
-          src="/leandro_enojado.png" 
+          src="./leandro_enojado.png" 
           alt="Avatar frustrado" 
           style={{ height: '350px', objectFit: 'contain' }}
         />
