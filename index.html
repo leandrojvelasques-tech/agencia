@@ -889,7 +889,6 @@
           .from('events')
           .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, max_capacity')
           .in('status', ['published', 'in_progress'])
-          .eq('is_public', true)
           .gte('event_date', new Date().toISOString().split('T')[0])
           .order('event_date', { ascending: true });
 
