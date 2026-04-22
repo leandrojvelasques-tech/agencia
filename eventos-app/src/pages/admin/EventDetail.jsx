@@ -96,7 +96,10 @@ export default function EventDetail() {
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
         </div>
-        <div className="flex items-center gap-2">
+          <button onClick={() => window.print()} className="btn-ghost">
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+            <span className="hidden sm:inline">Exportar</span>
+          </button>
           <Link to={`/admin/eventos/${id}/editar`} className="btn-ghost">
             <span className="material-symbols-outlined text-lg">edit</span>
             <span className="hidden sm:inline">Editar</span>
@@ -106,6 +109,18 @@ export default function EventDetail() {
           </button>
         </div>
       </div>
+
+      <style>{`
+        @media print {
+          nav, .btn-ghost, .btn-primary, .btn-secondary, .badge, .status-dot, button { display: none !important; }
+          .card { border: 1px solid #eee !important; box-shadow: none !important; break-inside: avoid; }
+          body { background: white !important; }
+          .max-w-5xl { max-width: 100% !important; margin: 0 !important; }
+          h1 { font-size: 24pt !important; }
+          .material-symbols-outlined { color: black !important; }
+          .print-only { display: block !important; }
+        }
+      `}</style>
 
       {/* Event Info Card */}
       <div className="card p-6 lg:p-8 mb-6">
@@ -215,34 +230,80 @@ export default function EventDetail() {
           </>
         )}
 
-        {/* Presentación especial - Manual de Supervivencia */}
-        {event.title?.toLowerCase().includes('manual de supervivencia') && (() => {
-          const presentacionUrl = `${window.location.protocol}//${window.location.host}/manual-de-supervivencia.html`
-          return (
-            <div className="border-t border-[var(--color-deep-green)]/10 pt-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-3">Presentación Interactiva</p>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={`${window.location.origin}/manual-de-supervivencia.html`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary"
-                >
-                  <span className="material-symbols-outlined text-lg">present_to_all</span>
-                  Abrir Presentación
-                </a>
-                <div className="flex items-center gap-2 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] px-3 py-2 flex-1 min-w-0">
-                  <span className="material-symbols-outlined text-base text-[var(--color-deep-green)]">slideshow</span>
-                  <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate flex-1">{presentacionUrl}</p>
-                  <button onClick={() => copyToClipboard(presentacionUrl)} className="btn-ghost !px-2 !py-1 text-xs shrink-0">
-                    <span className="material-symbols-outlined text-base">content_copy</span>
-                    Copiar link
-                  </button>
+        {/* Materiales del Evento */}
+        {event.event_materials && event.event_materials.length > 0 && (
+          <div className="border-t border-[var(--color-deep-green)]/10 pt-6">
+            <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4">Materiales Disponibles</h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {event.event_materials.map((material, i) => (
+                <div key={i} className="flex flex-col gap-3 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)] border border-[var(--color-deep-green)]/5">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-xl text-[var(--color-deep-green)]">
+                      {material.type === 'presentation' ? 'present_to_all' : 'description'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">
+                        {material.type === 'presentation' ? 'Presentación Interactiva' : 'Documento'}
+                      </p>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)] truncate">{material.title}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <a
+                      href={material.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary !py-2 !text-xs flex-1"
+                    >
+                      <span className="material-symbols-outlined text-base">open_in_new</span>
+                      Abrir
+                    </a>
+                    
+                    {material.type === 'presentation' && (
+                      <a
+                        href={material.url.replace('index.html', 'presentacion.pdf')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary !py-2 !text-xs !bg-white hover:!bg-red-50 !text-red-600 !border-red-100"
+                        title="Descargar PDF (si está disponible)"
+                      >
+                        <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                        PDF
+                      </a>
+                    )}
+                    
+                    <button 
+                      onClick={() => copyToClipboard(material.url)} 
+                      className="btn-ghost !p-2 !min-w-0"
+                      title="Copiar link"
+                    >
+                      <span className="material-symbols-outlined text-base">content_copy</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          )
-        })()}
+          </div>
+        )}
+
+        {/* Fallback para Manual de Supervivencia si no está en la DB todavía */}
+        {!event.event_materials?.length && event.title?.toLowerCase().includes('manual de supervivencia') && (
+          <div className="border-t border-[var(--color-deep-green)]/10 pt-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-3">Presentación Interactiva</p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`${window.location.origin}/manual-de-supervivencia.html`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
+                <span className="material-symbols-outlined text-lg">present_to_all</span>
+                Abrir Presentación
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Status action button */}
         <div className="flex gap-3 pt-2">

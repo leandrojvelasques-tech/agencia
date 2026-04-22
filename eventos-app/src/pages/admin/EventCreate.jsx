@@ -29,11 +29,14 @@ export default function EventCreate() {
     max_capacity: '',
     banner_url: '',
     is_public: true,
+    event_materials: [],
   })
   const [saveError, setSaveError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef(null)
+
+  const { saveMaterials } = useStore()
 
   const handleBannerUpload = async (file) => {
     if (!file) return
@@ -74,6 +77,7 @@ export default function EventCreate() {
             ...data,
             max_capacity: data.max_capacity || '',
             is_public: data.is_public !== false, // default true if undefined
+            event_materials: data.event_materials || [],
           })
         }
         setLoading(false)
@@ -93,20 +97,39 @@ export default function EventCreate() {
     }))
   }
 
+  const addMaterial = () => setForm(prev => ({ ...prev, event_materials: [...prev.event_materials, { title: '', url: '', type: 'document' }] }))
+  const removeMaterial = (i) => setForm(prev => ({ ...prev, event_materials: prev.event_materials.filter((_, idx) => idx !== i) }))
+  const updateMaterial = (i, field, value) => {
+    setForm(prev => ({
+      ...prev,
+      event_materials: prev.event_materials.map((item, idx) => idx === i ? { ...item, [field]: value } : item)
+    }))
+  }
+
   const handleSave = async () => {
     setSaveError('')
-    const data = { ...form, max_capacity: form.max_capacity ? Number(form.max_capacity) : null }
+    const { event_materials, ...eventData } = form
+    const data = { ...eventData, max_capacity: eventData.max_capacity ? Number(eventData.max_capacity) : null }
     setLoading(true)
+    
+    let targetEventId = id
     if (existingEvent) {
       await updateEvent(existingEvent.id, data)
-      navigate(`/admin/eventos/${existingEvent.id}`)
     } else {
       const newEvent = await createEvent(data)
       if (newEvent) {
-        navigate(`/admin/eventos/${newEvent.id}`)
+        targetEventId = newEvent.id
       } else {
         setSaveError('Error en base de datos. Si no ejecutaste el archivo supabase-schema.sql, el evento no puede crearse.')
+        setLoading(false)
+        return
       }
+    }
+
+    // Save materials
+    if (targetEventId) {
+      await saveMaterials(targetEventId, event_materials)
+      navigate(`/admin/eventos/${targetEventId}`)
     }
     setLoading(false)
   }
@@ -357,15 +380,68 @@ export default function EventCreate() {
               </div>
             </div>
 
-            {/* Materials placeholder */}
-            <div className="p-5 border border-[var(--color-deep-green)]/8 rounded-[var(--radius-card)] bg-[var(--color-refined-gray)]/40">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-2xl text-[var(--color-dark-gray)]/20">folder_open</span>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--color-dark-gray)]/40">Materiales del evento (PDF, PPT, links)</p>
-                  <p className="text-xs text-[var(--color-dark-gray)]/25 mt-0.5">Disponible en v1.1</p>
-                </div>
+            {/* Materials List */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Lista de Materiales</label>
+                <button onClick={addMaterial} className="btn-ghost text-xs !text-[var(--color-deep-green)]">
+                  <span className="material-symbols-outlined text-base">add</span> Agregar material
+                </button>
               </div>
+
+              {form.event_materials.length === 0 ? (
+                <div className="p-10 text-center border-2 border-dashed border-[var(--color-deep-green)]/10 rounded-[var(--radius-card)]">
+                  <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/10 mb-2 block">folder_open</span>
+                  <p className="text-sm font-medium text-[var(--color-dark-gray)]/30">No hay materiales cargados aún</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {form.event_materials.map((material, i) => (
+                    <div key={i} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/50 border border-[var(--color-deep-green)]/5 relative group">
+                      <button 
+                        onClick={() => removeMaterial(i)} 
+                        className="absolute top-2 right-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined text-base">close</span>
+                      </button>
+                      
+                      <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Título</label>
+                          <input 
+                            className="form-input !py-2 text-xs" 
+                            placeholder="Ej: Diapositivas de la charla" 
+                            value={material.title} 
+                            onChange={e => updateMaterial(i, 'title', e.target.value)} 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Tipo</label>
+                          <select 
+                            className="form-input !py-2 text-xs" 
+                            value={material.type} 
+                            onChange={e => updateMaterial(i, 'type', e.target.value)}
+                          >
+                            <option value="presentation">🎬 Presentación</option>
+                            <option value="document">📄 Documento / PDF</option>
+                            <option value="link">🔗 Link Externo</option>
+                            <option value="video">🎥 Video</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">URL</label>
+                        <input 
+                          className="form-input !py-2 text-xs" 
+                          placeholder="https://..." 
+                          value={material.url} 
+                          onChange={e => updateMaterial(i, 'url', e.target.value)} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

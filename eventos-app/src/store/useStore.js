@@ -78,7 +78,7 @@ export const useStore = create((set, get) => ({
   getEventById: async (id) => {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*, event_materials(*)')
       .eq('id', id)
       .single()
     return data
@@ -420,5 +420,20 @@ export const useStore = create((set, get) => ({
       certificatesSent: data.certificates_sent,
       certificatesPending: data.certificates_pending
     }
+  },
+
+  // Materials
+  saveMaterials: async (eventId, materials) => {
+    // Delete existing materials for this event
+    await supabase.from('event_materials').delete().eq('event_id', eventId)
+    
+    // Insert new materials
+    if (materials.length > 0) {
+      const { data, error } = await supabase
+        .from('event_materials')
+        .insert(materials.map(m => ({ ...m, event_id: eventId })))
+      return { success: !error, data, error }
+    }
+    return { success: true }
   },
 }))
