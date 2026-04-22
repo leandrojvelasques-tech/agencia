@@ -96,6 +96,7 @@ export default function EventDetail() {
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
         </div>
+        <div className="flex items-center gap-2">
           <button onClick={() => window.print()} className="btn-ghost">
             <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
             <span className="hidden sm:inline">Exportar</span>
@@ -110,7 +111,7 @@ export default function EventDetail() {
         </div>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           nav, .btn-ghost, .btn-primary, .btn-secondary, .badge, .status-dot, button { display: none !important; }
           .card { border: 1px solid #eee !important; box-shadow: none !important; break-inside: avoid; }
@@ -120,7 +121,7 @@ export default function EventDetail() {
           .material-symbols-outlined { color: black !important; }
           .print-only { display: block !important; }
         }
-      `}</style>
+      ` }} />
 
       {/* Event Info Card */}
       <div className="card p-6 lg:p-8 mb-6">
