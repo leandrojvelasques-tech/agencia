@@ -314,6 +314,18 @@ export default function EventDetail() {
               {statusCfg.next}
             </button>
           )}
+          {(event.status === 'completed' || event.status === 'cancelled') && (
+            <button onClick={() => handleStatusChange('published')} className="btn-primary">
+              <span className="material-symbols-outlined text-lg">public</span>
+              Restaurar a Publicado
+            </button>
+          )}
+          {event.status !== 'draft' && (
+            <button onClick={() => handleStatusChange('draft')} className="btn-ghost !text-[var(--color-dark-gray)]/60">
+              <span className="material-symbols-outlined text-lg">edit_note</span>
+              Volver a Borrador
+            </button>
+          )}
           {event.status !== 'cancelled' && event.status !== 'completed' && (
             <button onClick={() => handleStatusChange('cancelled')} className="btn-secondary !border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white">
               <span className="material-symbols-outlined text-lg">cancel</span>
