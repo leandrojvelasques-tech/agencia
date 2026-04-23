@@ -312,8 +312,8 @@ const PiramideAutonomia = () => (
     <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Evolución en la Construcción</h1>
     <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1.5rem' }}>Métodos para crear automatizaciones</h2>
     
-    <div className="pyramid-container" style={{ marginTop: '10px' }}>
-      <div className="pyramid-levels" style={{ gap: '10px' }}>
+    <div className="pyramid-container" style={{ marginTop: '10px', width: '100%' }}>
+      <div className="pyramid-levels flex flex-col w-full" style={{ gap: '10px' }}>
         {[
           { level: "Construcción autónoma x agentes", desc: "Autonomía 100%", color: "#e53e3e" },
           { level: "Construcción vía LLM - MCP", desc: "Autonomía 80%", color: "#dd6b20" },
@@ -783,8 +783,8 @@ const PiramideComplejidad = () => (
     <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Evolución de la Automatización</h1>
     <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1rem' }}>Complejidad de implementación</h2>
     
-    <div className="pyramid-container" style={{ marginTop: '5px' }}>
-      <div className="pyramid-levels" style={{ gap: '8px' }}>
+    <div className="pyramid-container" style={{ marginTop: '5px', width: '100%' }}>
+      <div className="pyramid-levels flex flex-col w-full" style={{ gap: '8px' }}>
         {[
           { level: "Agente IA (n8n)", desc: "Autonomía total y toma de decisiones", color: "#e53e3e" },
           { level: "IA + n8n", desc: "Procesamiento inteligente de datos", color: "#dd6b20" },
