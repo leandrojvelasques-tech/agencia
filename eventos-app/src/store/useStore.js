@@ -126,7 +126,10 @@ export const useStore = create((set, get) => ({
         events: state.events.map(e => e.id === id ? updated : e),
         currentEvent: state.currentEvent?.id === id ? updated : state.currentEvent
       }))
+      return { success: true, data: updated }
     }
+    console.error("Supabase Error updating event:", error)
+    return { success: false, error }
   },
 
   deleteEvent: async (id) => {

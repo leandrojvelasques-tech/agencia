@@ -9,7 +9,7 @@ export default function EventRegister() {
   const [event, setEvent] = useState(null)
   const [loadingEvent, setLoadingEvent] = useState(true)
 
-  const [form, setForm] = useState({ title: '', first_name: '', last_name: '', email: '', phone: '' })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showEmailWarning, setShowEmailWarning] = useState(false)
@@ -57,14 +57,7 @@ export default function EventRegister() {
 
     setLoading(true)
     
-    // Prefix title to first_name if selected
-    const payload = { ...form }
-    if (payload.title) {
-       payload.first_name = `${payload.title} ${payload.first_name}`
-    }
-    delete payload.title
-
-    const result = await selfRegister(slug, payload)
+    const result = await selfRegister(slug, form)
     if (result.success) {
       navigate(`/evento/${slug}/confirmacion`)
     } else {
@@ -92,19 +85,6 @@ export default function EventRegister() {
 
         <form onSubmit={handleSubmit} className="card p-6 lg:p-8 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="md:col-span-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                Título <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span>
-              </label>
-              <select className="form-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}>
-                <option value="">Sin título</option>
-                <option value="C.P.">Contador (C.P.)</option>
-                <option value="Lic. Adm.">Licenciado en Administración (Lic. Adm.)</option>
-                <option value="Lic. Ec.">Licenciado en Economía (Lic. Ec.)</option>
-                <option value="Est.">Estudiante Universitario (Est.)</option>
-              </select>
-            </div>
-
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Nombre *</label>
               <input className="form-input" placeholder="Tu nombre" value={form.first_name} onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))} required autoFocus />

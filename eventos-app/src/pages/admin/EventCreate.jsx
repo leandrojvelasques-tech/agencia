@@ -77,7 +77,7 @@ export default function EventCreate() {
           setForm({
             ...data,
             max_capacity: data.max_capacity || '',
-            is_public: data.is_public !== false, // default true if undefined
+            is_public: data.status === 'published' || data.status === 'in_progress',
             event_materials: data.event_materials || [],
           })
         }
@@ -108,43 +108,89 @@ export default function EventCreate() {
   }
 
   const handleSave = async (options = { redirect: true }) => {
+    console.log('Iniciando guardado...', { options, form })
     setSaveError('')
     setSaved(false)
-    const { event_materials, ...eventData } = form
-    const data = { ...eventData, max_capacity: eventData.max_capacity ? Number(eventData.max_capacity) : null }
-    setLoading(true)
     
+    // Separamos materiales y limpiamos datos para el update de la tabla 'events'
+    // IMPORTANTE: Eliminamos campos que NO existen en la DB o son restringidos
+    const { 
+      event_materials, 
+      id: _, 
+      created_at: __, 
+      updated_at: ___,
+      event_stats: ____, 
+      is_public,
+      ...eventData 
+    } = form
+    
+    const data = { 
+      ...eventData, 
+      status: is_public ? 'published' : 'draft',
+      max_capacity: eventData.max_capacity ? Number(eventData.max_capacity) : null 
+    }
+    
+    console.log('Datos preparados para enviar a Supabase:', data)
+    
+    setLoading(true)
     let targetEventId = id
+    
     try {
       if (existingEvent) {
-        await updateEvent(existingEvent.id, data)
+        console.log('Actualizando evento existente:', existingEvent.id)
+        const updateResult = await updateEvent(existingEvent.id, data)
+        
+        if (updateResult && updateResult.success === false) {
+          console.error('Error retornado por updateEvent:', updateResult.error)
+          throw new Error('No se pudo actualizar el evento: ' + (updateResult.error?.message || 'Error desconocido'))
+        }
+        
+        targetEventId = existingEvent.id
       } else {
+        console.log('Creando nuevo evento...')
         const newEvent = await createEvent(data)
         if (newEvent) {
           targetEventId = newEvent.id
+          console.log('Nuevo evento creado con ID:', targetEventId)
         } else {
-          setSaveError('Error en base de datos. Si no ejecutaste el archivo supabase-schema.sql, el evento no puede crearse.')
-          setLoading(false)
-          return
+          throw new Error('No se pudo crear el evento en la base de datos.')
         }
       }
 
-      // Save materials
+      // Guardar materiales
       if (targetEventId) {
-        await saveMaterials(targetEventId, event_materials)
+        console.log('Guardando materiales para el evento:', targetEventId, event_materials)
+        // Limpiamos los materiales de IDs previos para evitar conflictos al re-insertar
+        const cleanMaterials = event_materials.map(({ id: mId, created_at: mcAt, ...m }) => m)
+        const matResult = await saveMaterials(targetEventId, cleanMaterials)
+        
+        if (matResult && matResult.error) {
+          console.error('Error guardando materiales:', matResult.error)
+          throw new Error('El evento se guardó, pero hubo un problema con los materiales: ' + matResult.error.message)
+        }
         
         if (options.redirect) {
           navigate(`/admin/eventos/${targetEventId}`)
         } else {
-          setSaved(true)
-          setTimeout(() => setSaved(false), 3000)
-          // Refresh event data to ensure consistency
+          console.log('Refrescando datos locales...')
           const updated = await getEventById(targetEventId)
-          if (updated) setExistingEvent(updated)
+          if (updated) {
+            setExistingEvent(updated)
+            setForm({
+              ...updated,
+              max_capacity: updated.max_capacity || '',
+              is_public: updated.status === 'published' || updated.status === 'in_progress',
+              event_materials: updated.event_materials || [],
+            })
+            setSaved(true)
+            setTimeout(() => setSaved(false), 3000)
+            console.log('Guardado completado y estado sincronizado.')
+          }
         }
       }
     } catch (err) {
-      setSaveError('Error al guardar: ' + (err.message || err))
+      console.error('Error en handleSave:', err)
+      setSaveError(err.message || 'Error desconocido al guardar')
     } finally {
       setLoading(false)
     }
