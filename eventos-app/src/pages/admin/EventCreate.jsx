@@ -32,6 +32,7 @@ export default function EventCreate() {
     event_materials: [],
   })
   const [saveError, setSaveError] = useState('')
+  const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef(null)
@@ -106,32 +107,47 @@ export default function EventCreate() {
     }))
   }
 
-  const handleSave = async () => {
+  const handleSave = async (options = { redirect: true }) => {
     setSaveError('')
+    setSaved(false)
     const { event_materials, ...eventData } = form
     const data = { ...eventData, max_capacity: eventData.max_capacity ? Number(eventData.max_capacity) : null }
     setLoading(true)
     
     let targetEventId = id
-    if (existingEvent) {
-      await updateEvent(existingEvent.id, data)
-    } else {
-      const newEvent = await createEvent(data)
-      if (newEvent) {
-        targetEventId = newEvent.id
+    try {
+      if (existingEvent) {
+        await updateEvent(existingEvent.id, data)
       } else {
-        setSaveError('Error en base de datos. Si no ejecutaste el archivo supabase-schema.sql, el evento no puede crearse.')
-        setLoading(false)
-        return
+        const newEvent = await createEvent(data)
+        if (newEvent) {
+          targetEventId = newEvent.id
+        } else {
+          setSaveError('Error en base de datos. Si no ejecutaste el archivo supabase-schema.sql, el evento no puede crearse.')
+          setLoading(false)
+          return
+        }
       }
-    }
 
-    // Save materials
-    if (targetEventId) {
-      await saveMaterials(targetEventId, event_materials)
-      navigate(`/admin/eventos/${targetEventId}`)
+      // Save materials
+      if (targetEventId) {
+        await saveMaterials(targetEventId, event_materials)
+        
+        if (options.redirect) {
+          navigate(`/admin/eventos/${targetEventId}`)
+        } else {
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+          // Refresh event data to ensure consistency
+          const updated = await getEventById(targetEventId)
+          if (updated) setExistingEvent(updated)
+        }
+      }
+    } catch (err) {
+      setSaveError('Error al guardar: ' + (err.message || err))
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
 
@@ -143,12 +159,41 @@ export default function EventCreate() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
-        {existingEvent ? 'Editar Evento' : 'Nuevo Evento'}
-      </h1>
-      <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium mb-8">
-        {existingEvent ? 'Modificá los datos del evento' : 'Completá la información para crear un nuevo evento'}
-      </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-1">
+            {existingEvent ? 'Editar Evento' : 'Nuevo Evento'}
+          </h1>
+          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">
+            {existingEvent ? 'Modificá los datos del evento' : 'Completá la información para crear un nuevo evento'}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {saved && (
+            <span className="flex items-center gap-1.5 text-[var(--color-deep-green)] font-bold text-sm animate-fade-in">
+              <span className="material-symbols-outlined text-lg">check_circle</span>
+              Guardado
+            </span>
+          )}
+          {existingEvent && (
+            <button 
+              onClick={() => handleSave({ redirect: false })}
+              className="btn-primary !py-2.5 !px-5 shadow-lg shadow-[var(--color-deep-green)]/20"
+              disabled={loading || !form.title || !form.event_date}
+            >
+              {loading ? (
+                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-lg">save</span>
+                  Guardar ahora
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Stepper */}
       <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
@@ -464,12 +509,18 @@ export default function EventCreate() {
           {/* Botón rápido para guardar cambios sin ir al final (solo en edición) */}
           {existingEvent && step < STEPS.length - 1 && (
             <button 
-              onClick={handleSave} 
+              onClick={() => handleSave({ redirect: false })} 
               className="btn-ghost !text-[var(--color-deep-green)] font-bold border border-[var(--color-deep-green)]/20"
-              disabled={!isStepValid()}
+              disabled={loading || !isStepValid()}
             >
-              <span className="material-symbols-outlined text-lg">save</span>
-              Actualizar ahora
+              {loading ? (
+                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-lg">save</span>
+                  Actualizar ahora
+                </>
+              )}
             </button>
           )}
         </div>
