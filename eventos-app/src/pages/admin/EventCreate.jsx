@@ -455,10 +455,25 @@ export default function EventCreate() {
 
       {/* Navigation */}
       <div className="flex justify-between items-center mt-6">
-        <button onClick={() => step > 0 ? setStep(step - 1) : navigate('/admin/eventos')} className="btn-ghost">
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          {step === 0 ? 'Cancelar' : 'Anterior'}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => step > 0 ? setStep(step - 1) : navigate('/admin/eventos')} className="btn-ghost">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            {step === 0 ? 'Cancelar' : 'Anterior'}
+          </button>
+
+          {/* Botón rápido para guardar cambios sin ir al final (solo en edición) */}
+          {existingEvent && step < STEPS.length - 1 && (
+            <button 
+              onClick={handleSave} 
+              className="btn-ghost !text-[var(--color-deep-green)] font-bold border border-[var(--color-deep-green)]/20"
+              disabled={!isStepValid()}
+            >
+              <span className="material-symbols-outlined text-lg">save</span>
+              Actualizar ahora
+            </button>
+          )}
+        </div>
+
         {step < STEPS.length - 1 ? (
           <button onClick={() => setStep(step + 1)} className="btn-primary" disabled={!isStepValid()}>
             Siguiente

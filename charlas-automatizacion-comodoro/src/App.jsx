@@ -126,20 +126,31 @@ const EjemploInscripcion = () => (
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
-          <div className="automated-box">
+          <div className="automated-box" style={{ marginBottom: '15px' }}>
             <div className="badge">FLOW ⚡</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ background: 'var(--primary-green)', color: 'white', padding: '12px', borderRadius: '50%', display: 'flex', fontSize: '24px' }}>
                 📄
               </div>
               <div>
-                <p style={{ fontBold: 'bold', fontSize: '1.2rem', lineHeight: '1.2', fontWeight: 'bold' }}>Cliente completa formulario</p>
-                <p style={{ color: 'var(--primary-green)', fontWeight: '500' }}>Inscripción instantánea</p>
+                <p style={{ fontBold: 'bold', fontSize: '1.1rem', lineHeight: '1.1', fontWeight: 'bold' }}>Cliente completa formulario</p>
+                <p style={{ color: 'var(--primary-green)', fontWeight: '500', fontSize: '0.9rem' }}>Inscripción instantánea</p>
               </div>
             </div>
           </div>
-          <div className="mt-12 text-center" style={{ color: 'var(--primary-green)', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '40px' }}>
-            <span>¡Sin intervención humana!</span>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '25px', marginTop: '10px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <img 
+                src="./QR Inscripcion.png" 
+                alt="QR Inscripcion" 
+                style={{ height: '130px', width: '130px', border: '5px solid white', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} 
+              />
+              <p style={{ fontSize: '0.75rem', color: 'var(--primary-green)', fontWeight: 'bold', marginTop: '5px' }}>¡PROBALO AHORA!</p>
+            </div>
+            <div style={{ color: 'var(--primary-green)', fontWeight: 'bold', fontSize: '1rem', maxWidth: '150px', lineHeight: '1.2' }}>
+              ⚡ Sin intervención humana
+            </div>
           </div>
         </div>
       </motion.div>
@@ -221,28 +232,35 @@ const ConocerProceso = () => (
   <div className="slide-content">
     <div className="accent-bar" />
     <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Análisis previo antes de automatizar</h1>
-    <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1rem' }}>Conocer en profundidad el proceso que se quiere automatizar</h2>
+    <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1rem' }}>Conocer en profundidad el proceso actual</h2>
 
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
-
-      <div style={{ background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '6px solid var(--primary-green)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <p style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>"No se puede automatizar correctamente algo que no se entiende."</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div style={{ background: 'white', padding: '15px', borderRadius: '12px', borderLeft: '6px solid var(--primary-green)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        <p style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: 0 }}>"No se puede automatizar correctamente algo que no se entiende."</p>
       </div>
       
-      <div className="grid-2" style={{ gap: '20px' }}>
-        <div className="card" style={{ background: 'rgba(255, 255, 255, 0.5)', padding: '20px' }}>
-          <ul className="flex flex-col gap-2" style={{ listStyle: 'none', padding: 0, fontSize: '1rem' }}>
-            <li><b>• Qué está ocurriendo hoy</b></li>
-            <li>• Quiénes intervienen</li>
-            <li>• Qué responsabilidades tiene cada actor</li>
+      <div className="grid-2" style={{ gap: '15px' }}>
+        <div className="card" style={{ background: 'rgba(255, 255, 255, 0.5)', padding: '15px' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px', color: 'var(--primary-green)' }}>1. Entender el HOY</h3>
+          <ul className="flex flex-col gap-1" style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem' }}>
+            <li>• Quiénes intervienen y sus roles</li>
+            <li>• Cómo circula la información</li>
+            <li>• Dónde están los cuellos de botella</li>
           </ul>
         </div>
-        <div className="card" style={{ background: 'rgba(255, 255, 255, 0.5)', padding: '20px' }}>
-          <ul className="flex flex-col gap-2" style={{ listStyle: 'none', padding: 0, fontSize: '1rem' }}>
-            <li><b>• Cómo circula la información</b></li>
-            <li>• Cómo se mueve la documentación</li>
+        <div className="card" style={{ background: 'var(--dark-gray)', color: 'white', padding: '15px' }}>
+          <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80' }}>2. Claridad en el OBJETIVO</h3>
+          <ul className="flex flex-col gap-2" style={{ listStyle: 'none', padding: 0, fontSize: '0.85rem' }}>
+            <li style={{ fontStyle: 'italic', opacity: 0.9 }}>"Quiero que el usuario pueda autoagendarse un turno desde la web"</li>
+            <li style={{ fontStyle: 'italic', opacity: 0.9 }}>"Quiero enviar un audio de WhatsApp, que se guarde en X lugar y luego ocurra Y..."</li>
           </ul>
         </div>
+      </div>
+
+      <div className="card card-green" style={{ padding: '15px' }}>
+        <p style={{ fontSize: '0.9rem', margin: 0 }}>
+          <strong>La precisión en el pedido es la clave:</strong> Cuanto más detallado sea el "input" y el "resultado esperado", más fácil será construir la lógica del workflow.
+        </p>
       </div>
     </div>
   </div>
@@ -309,23 +327,23 @@ const StackHerramientas = () => (
 const PiramideAutonomia = () => (
   <div className="slide-content">
     <div className="accent-bar" />
-    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Evolución en la Construcción</h1>
+    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Análisis previo antes de automatizar</h1>
     <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1.5rem' }}>Métodos para crear automatizaciones</h2>
     
-    <div className="pyramid-container" style={{ marginTop: '10px', width: '100%' }}>
-      <div className="pyramid-levels flex flex-col w-full" style={{ gap: '10px' }}>
+    <div className="pyramid-container" style={{ marginTop: '10px', width: '100%', maxWidth: 'none' }}>
+      <div className="pyramid-levels flex flex-col w-full items-center" style={{ gap: '15px' }}>
         {[
-          { level: "Construcción autónoma x agentes", desc: "Autonomía 100%", color: "#e53e3e" },
-          { level: "Construcción vía LLM - MCP", desc: "Autonomía 80%", color: "#dd6b20" },
-          { level: "Método tradicional o artesanal", desc: "Construyo nodo a nodo", color: "#2f855a" }
+          { level: "Construcción autónoma x agentes", desc: "Autonomía 100%", color: "#e53e3e", width: '50%' },
+          { level: "Construcción vía LLM - MCP", desc: "Autonomía 80%", color: "#dd6b20", width: '75%' },
+          { level: "Método tradicional o artesanal", desc: "Construyo nodo a nodo", color: "#2f855a", width: '100%' }
         ].map((item, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1, type: 'spring', damping: 12 }}
             style={{ 
-              width: '100%', 
+              width: item.width, 
               backgroundColor: item.color,
               padding: '12px 20px',
               borderRadius: '12px',
@@ -335,12 +353,14 @@ const PiramideAutonomia = () => (
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              minHeight: '75px',
-              textAlign: 'center'
+              minHeight: '80px',
+              textAlign: 'center',
+              position: 'relative'
             }}
           >
             <span style={{ fontWeight: 'bold', fontSize: '1.2rem', lineHeight: '1.1' }}>{item.level}</span>
             <span style={{ fontSize: '0.95rem', opacity: 0.95, marginTop: '2px' }}>"{item.desc}"</span>
+            {/* Trapezoid effect using pseudo-elements would be complex here, so we stick to width variation for now */}
           </motion.div>
         ))}
       </div>
@@ -351,7 +371,7 @@ const PiramideAutonomia = () => (
 const CuandoAutomatizar = () => (
   <div className="slide-content">
     <div className="accent-bar" />
-    <h1 style={{ fontSize: '1.8rem' }} className="mb-1">¿Cuándo conviene automatizar?</h1>
+    <h1 style={{ fontSize: '1.8rem' }} className="mb-1">Análisis previo antes de automatizar</h1>
     <h2 style={{ fontSize: '1.3rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1.5rem' }}>Indicadores claves de oportunidad</h2>
     
     <div className="grid-2" style={{ gap: '25px', marginTop: '5px' }}>
@@ -382,11 +402,11 @@ const CuandoAutomatizar = () => (
 const CasosUso = () => (
   <div className="slide-content">
     <div className="accent-bar" />
-    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>¿Cuándo conviene automatizar?</h1>
+    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Análisis previo antes de automatizar</h1>
     <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1.5rem' }}>Ejemplos prácticos de aplicación</h2>
     
     <div className="grid-2" style={{ gap: '30px', marginTop: '10px' }}>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {[
           "Recepción y ordenamiento de documentación",
           "Envío automático de correos por eventos",
@@ -434,11 +454,11 @@ const QueEsN8N = () => (
   <div className="slide-content">
     <div className="accent-bar" />
     <h1 style={{ fontSize: '2rem' }}>¿Qué es n8n?</h1>
-    <h2 className="mb-8">El orquestador de flujos inteligente</h2>
+    <h2 className="mb-4">El orquestador de flujos inteligente</h2>
     
-    <div className="grid-2" style={{ gap: '40px', marginTop: '10px' }}>
-      <div className="flex flex-col gap-4">
-        <ul className="flex flex-col gap-3" style={{ listStyle: 'none', padding: 0 }}>
+    <div className="grid-2" style={{ gap: '40px', marginTop: '0px' }}>
+      <div className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2" style={{ listStyle: 'none', padding: 0 }}>
           {[
             "Plataforma visual 'low-code' open source",
             "Conectar herramientas sin integración",
@@ -454,7 +474,7 @@ const QueEsN8N = () => (
               transition={{ delay: i * 0.1 }}
               key={i} 
               className="step-item" 
-              style={{ padding: '8px 15px', fontSize: '0.9rem' }}
+              style={{ padding: '6px 15px', fontSize: '0.85rem' }}
             >
               <span style={{ color: 'var(--primary-green)', fontWeight: 'bold' }}>✓</span>
               <span>{text}</span>
@@ -462,11 +482,11 @@ const QueEsN8N = () => (
           ))}
         </ul>
       </div>
-      <div className="card card-green justify-center items-center" style={{ minHeight: '300px', padding: '25px', position: 'relative', overflow: 'hidden' }}>
+      <div className="card card-green justify-center items-center" style={{ minHeight: '260px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
         <motion.img 
           src="./logo_n8n.png" 
           alt="n8n Logo" 
-          style={{ width: '100px', marginBottom: '15px', zIndex: 2 }}
+          style={{ width: '90px', marginBottom: '15px', zIndex: 2 }}
           animate={{ rotate: 360 }}
           transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
         />
@@ -493,14 +513,14 @@ const ComoEmpezarN8N = () => (
   <div className="slide-content">
     <div className="accent-bar" />
     <h1 style={{ fontSize: '2rem' }}>¿Cómo empezar con n8n?</h1>
-    <h2 className="mb-12">Opciones de despliegue y costos mensuales</h2>
+    <h2 className="mb-4">Opciones de despliegue y costos mensuales</h2>
     
-    <div className="grid-3" style={{ gap: '30px', marginTop: '10px' }}>
+    <div className="grid-3" style={{ gap: '20px', marginTop: '-15px' }}>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="card card-green" style={{ textAlign: 'center', alignItems: 'center' }}
+        className="card card-green" style={{ textAlign: 'center', alignItems: 'center', padding: '15px' }}
       >
         <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>☁️</div>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>n8n Cloud</h3>
@@ -517,12 +537,12 @@ const ComoEmpezarN8N = () => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="card card-green" style={{ textAlign: 'center', alignItems: 'center', border: '2px solid var(--primary-green)' }}
+        className="card card-green" style={{ textAlign: 'center', alignItems: 'center', border: '2px solid var(--primary-green)', padding: '15px' }}
       >
         <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🚀</div>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>VPS Propio</h3>
-        <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Hetzner / Hostinger</p>
-        <div style={{ fontSize: '1.8rem', fontWeight: '900', margin: '15px 0' }}>USD 5 - 10<small style={{ fontSize: '0.9rem', fontWeight: '500' }}>/mes</small></div>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>n8n Autohospedado (VPS)</h3>
+        <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>Hetzner / Hostinger / DigitalOcean</p>
+        <div style={{ fontSize: '1.8rem', fontWeight: '900', margin: '15px 0' }}>USD 10<small style={{ fontSize: '0.9rem', fontWeight: '500' }}> aprox</small></div>
         <ul style={{ fontSize: '0.75rem', textAlign: 'left', paddingLeft: '15px' }}>
           <li>Sin límites de flujos</li>
           <li>Control total de datos</li>
@@ -534,11 +554,11 @@ const ComoEmpezarN8N = () => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="card card-green" style={{ textAlign: 'center', alignItems: 'center' }}
+        className="card card-green" style={{ textAlign: 'center', alignItems: 'center', padding: '15px' }}
       >
         <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🏠</div>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>Local / Servidor</h3>
-        <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Hardware existente</p>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-green)' }}>n8n Autohospedado (Infra. Propia)</h3>
+        <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>Hardware o servidor local</p>
         <div style={{ fontSize: '1.8rem', fontWeight: '900', margin: '15px 0' }}>GRATIS</div>
         <ul style={{ fontSize: '0.75rem', textAlign: 'left', paddingLeft: '15px' }}>
           <li>Licencia Community $0</li>
@@ -553,35 +573,63 @@ const ComoEmpezarN8N = () => (
 const CostosIA = () => (
   <div className="slide-content">
     <div className="accent-bar" />
-    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Costos de Inteligencia Artificial (API)</h1>
-    <h2 style={{ fontSize: '1.3rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '2rem' }}>El modelo "Pay-as-you-go" (Pagá lo que usás)</h2>
+    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>Costos de Inteligencia Artificial</h1>
+    <h2 style={{ fontSize: '1.2rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '0.8rem' }}>Modelo Pay-as-you-go (Pago por uso)</h2>
     
-    <div className="grid-2" style={{ gap: '30px' }}>
-      <div className="flex flex-col gap-6">
-        <div className="card card-green" style={{ padding: '25px' }}>
-          <h3 style={{ color: 'var(--primary-green)', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>¿Qué es un Token?</h3>
-          <p style={{ fontSize: '0.95rem', lineHeight: '1.5' }}>
-            La IA no lee palabras, lee <strong>tokens</strong>. 1.000 tokens ≈ 750 palabras. 
-            Se cobra por cada interacción (lo que enviás + lo que recibís).
-          </p>
+    <div className="grid-2" style={{ gap: '15px', gridTemplateColumns: '0.8fr 1.2fr' }}>
+      <div className="flex flex-col gap-2">
+        <div className="card card-green" style={{ padding: '12px', gap: '8px' }}>
+          <h3 style={{ fontSize: '0.95rem', color: 'var(--primary-green)', fontWeight: 'bold' }}>¿Cómo se cobra?</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '5px' }}>
+            <div style={{ background: 'white', padding: '8px 10px', borderRadius: '8px', borderLeft: '4px solid #ccc' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Sin IA</span> ➔ <span style={{ color: 'var(--primary-green)', fontWeight: 'bold', fontSize: '0.85rem' }}>$0 costo extra</span>
+              <p style={{ fontSize: '0.7rem', opacity: 0.7, margin: 0 }}>Si el flujo solo mueve datos.</p>
+            </div>
+            <div style={{ background: 'white', padding: '8px 10px', borderRadius: '8px', borderLeft: '4px solid var(--primary-green)' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Con IA</span> ➔ <span style={{ color: 'var(--primary-green)', fontWeight: 'bold', fontSize: '0.85rem' }}>Consumo Tokens</span>
+              <p style={{ fontSize: '0.7rem', opacity: 0.7, margin: 0 }}>Pagás solo por lo que procesás.</p>
+            </div>
+          </div>
         </div>
-        <div className="card card-green" style={{ padding: '25px' }}>
-          <h3 style={{ color: 'var(--primary-green)', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>Precios Promedio</h3>
-          <ul style={{ fontSize: '0.9rem', lineHeight: '1.8', listStyle: 'none', padding: 0 }}>
-            <li>⚡ <strong>Modelos Flash/Mini:</strong> Centavos por millón de tokens.</li>
-            <li>🧠 <strong>Modelos Pro/Turbo:</strong> Entre USD 5 y 15 por millón.</li>
-          </ul>
+        
+        <div style={{ background: 'var(--dark-gray)', color: 'white', padding: '10px 12px', borderRadius: '12px', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.78rem', lineHeight: '1.3', margin: 0 }}>
+            💡 "Es como la luz: si no la prendés, no pagás. Un bot promedio cuesta <strong>~USD 1/mes</strong>."
+          </p>
         </div>
       </div>
       
-      <div className="flex flex-col gap-6 justify-center">
-        <div className="card" style={{ background: 'var(--dark-gray)', color: 'white', padding: '30px', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '15px' }}>💳</div>
-          <h3 style={{ fontSize: '1.4rem', marginBottom: '10px' }}>Sin Costos Fijos</h3>
-          <p style={{ fontSize: '1rem', opacity: 0.9 }}>
-            Si el flujo no se ejecuta, no pagás nada.<br/>
-            Un bot de atención común cuesta menos de <strong>USD 1-2 al mes</strong> en APIs.
-          </p>
+      <div className="card card-green" style={{ padding: '12px', gap: '8px' }}>
+        <h3 style={{ fontSize: '0.95rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '5px' }}>Referencia OpenAI (GPT-5.4)</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {[
+            { name: "GPT-5.4 (Pro)", input: "2.50", cached: "0.25", output: "15.00", color: "#e53e3e" },
+            { name: "GPT-5.4 mini", input: "0.75", cached: "0.075", output: "4.50", color: "var(--primary-green)" },
+            { name: "GPT-5.4 nano", input: "0.20", cached: "0.02", output: "1.25", color: "#2f855a" }
+          ].map((model, i) => (
+            <div key={i} style={{ background: 'white', padding: '8px 10px', borderRadius: '8px', fontSize: '0.75rem' }}>
+              <div style={{ fontWeight: 'bold', color: model.color, marginBottom: '3px' }}>{model.name}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', textAlign: 'center', opacity: 0.8 }}>
+                <div>
+                  <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>Input</div>
+                  <div style={{ fontWeight: 'bold' }}>${model.input}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>Cached</div>
+                  <div style={{ fontWeight: 'bold' }}>${model.cached}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>Output</div>
+                  <div style={{ fontWeight: 'bold' }}>${model.output}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: 'rgba(40, 90, 71, 0.08)', padding: '8px 10px', borderRadius: '8px', fontSize: '0.68rem', lineHeight: '1.4', marginTop: '2px' }}>
+          <div style={{ marginBottom: '3px' }}><strong>📥 Input:</strong> Lo que vos le enviás a la IA (tu pregunta, datos, contexto).</div>
+          <div style={{ marginBottom: '3px' }}><strong>📤 Output:</strong> Lo que la IA te responde (texto generado, análisis, decisiones).</div>
+          <div style={{ opacity: 0.7 }}>💡 El output es más caro porque la IA necesita <em>procesar y razonar</em> para generar cada token de respuesta.</div>
         </div>
       </div>
     </div>
@@ -741,15 +789,20 @@ const MuchasGracias = () => (
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8 }}
+      style={{ width: '100%' }}
     >
-      <h1 style={{ fontSize: '4rem', fontWeight: '900', color: 'var(--primary-green)', marginBottom: '1rem' }}>¡Muchas Gracias!</h1>
-      <h2 style={{ fontSize: '2rem', opacity: 0.6 }}>¿Preguntas?</h2>
+      <h1 style={{ fontSize: '4.5rem', fontWeight: '900', color: 'var(--primary-green)', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>¡Muchas Gracias!</h1>
+      <h2 style={{ fontSize: '2.2rem', opacity: 0.4, fontWeight: '300', marginBottom: '3rem' }}>¿Qué procesos vamos a automatizar hoy?</h2>
       
-      <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '40px', opacity: 0.8 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Leandro Velasques</div>
-          <div style={{ fontSize: '0.9rem' }}>www.leandrovelasques.com.ar</div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '60px' }}>
+        <div style={{ textAlign: 'center', background: 'white', padding: '20px 40px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--dark-gray)' }}>Lic. Leandro Velasques</div>
+          <div style={{ fontSize: '1rem', color: 'var(--primary-green)', fontWeight: '600', marginTop: '5px' }}>www.leandrovelasques.com.ar</div>
         </div>
+      </div>
+
+      <div style={{ marginTop: '40px', opacity: 0.5, fontSize: '0.9rem' }}>
+        Encontrame en LinkedIn como <span style={{ fontWeight: 'bold' }}>leandrojvelasques</span>
       </div>
     </motion.div>
   </div>
@@ -759,46 +812,130 @@ const FrustracionAdministrativa = () => (
   <div className="slide-content justify-center items-center" style={{ textAlign: 'center' }}>
     <div className="accent-bar" />
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
     >
       <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#e53e3e', marginBottom: '0.5rem' }}>La frustración de cualquier administrativo</h1>
       <h2 style={{ fontSize: '1.5rem', opacity: 0.7, marginBottom: '2rem' }}>"Copiar y pegar información en celdas todo el día"</h2>
       
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <img 
-          src="./leandro_enojado.png" 
+      <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+        <motion.img 
+          initial={{ rotate: -5, scale: 0.9 }}
+          animate={{ rotate: 0, scale: 1 }}
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          src="./avatar leandro enojado 1.png" 
           alt="Avatar frustrado" 
           style={{ height: '350px', objectFit: 'contain' }}
         />
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1 }}
+          style={{ 
+            position: 'absolute', 
+            top: '40px', 
+            right: '-120px', 
+            background: 'white', 
+            padding: '15px 25px', 
+            borderRadius: '20px', 
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            fontWeight: 'bold',
+            color: '#e53e3e',
+            fontSize: '1.2rem',
+            border: '2px solid #e53e3e'
+          }}
+        >
+          ¡Basta de esto! 😤
+        </motion.div>
       </div>
     </motion.div>
+  </div>
+)
+
+const CambioParadigma = () => (
+  <div className="slide-content justify-center">
+    <div className="accent-bar" />
+    <h1 style={{ fontSize: '2.2rem', marginBottom: '0.8rem', textAlign: 'center' }}>Hay un cambio de paradigma</h1>
+    
+    <div className="flex flex-col gap-4 items-center">
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '20px', alignItems: 'center', maxWidth: '900px' }}>
+        <motion.img 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          src="./avatar leandro pensando sin fondo.png" 
+          alt="Avatar Leandro Pensando" 
+          style={{ height: '120px', objectFit: 'contain' }}
+        />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card" 
+          style={{ 
+            background: 'var(--dark-gray)', 
+            color: 'white', 
+            padding: '20px 25px', 
+            borderLeft: '8px solid #e53e3e',
+            textAlign: 'center'
+          }}
+        >
+          <p style={{ fontSize: '1.25rem', lineHeight: '1.4', fontWeight: '500', margin: 0 }}>
+            Hoy <strong>no hace falta saber de programación</strong> para programar una automatización ni para desarrollar software.
+          </p>
+        </motion.div>
+      </div>
+
+      <p style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--primary-green)', margin: '5px 0' }}>
+        Lo que realmente hace falta es:
+      </p>
+
+      <div className="grid-3" style={{ gap: '20px', width: '100%', marginTop: '-5px' }}>
+        {[
+          { icon: '🎨', title: 'Creatividad', desc: 'Para imaginar nuevas soluciones' },
+          { icon: '🧩', title: 'Comprender', desc: 'El problema y el proceso de fondo' },
+          { icon: '✍️', title: 'Saber Redactar', desc: 'Prompts claros y precisos' }
+        ].map((item, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 + (i * 0.1) }}
+            className="card card-green" 
+            style={{ textAlign: 'center', padding: '12px' }}
+          >
+            <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>{item.icon}</div>
+            <h3 style={{ fontWeight: 'bold', color: 'var(--primary-green)', fontSize: '1rem' }}>{item.title}</h3>
+            <p style={{ fontSize: '0.75rem', opacity: 0.8 }}>{item.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
   </div>
 )
 
 const PiramideComplejidad = () => (
   <div className="slide-content">
     <div className="accent-bar" />
-    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Evolución de la Automatización</h1>
+    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Análisis previo antes de automatizar</h1>
     <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-green)', fontWeight: 'bold', marginBottom: '1rem' }}>Complejidad de implementación</h2>
     
-    <div className="pyramid-container" style={{ marginTop: '5px', width: '100%' }}>
-      <div className="pyramid-levels flex flex-col w-full" style={{ gap: '8px' }}>
+    <div className="pyramid-container" style={{ marginTop: '5px', width: '100%', maxWidth: 'none' }}>
+      <div className="pyramid-levels flex flex-col w-full items-center" style={{ gap: '12px' }}>
         {[
-          { level: "Agente IA (n8n)", desc: "Autonomía total y toma de decisiones", color: "#e53e3e" },
-          { level: "IA + n8n", desc: "Procesamiento inteligente de datos", color: "#dd6b20" },
-          { level: "n8n (Simple)", desc: "Flujos lógicos tradicionales", color: "#d69e2e" },
-          { level: "GPTs", desc: "Semi-automatización asistida", color: "#38a169" },
-          { level: "Fórmulas y Scripts", desc: "Planillas de cálculo (Excel/Sheets)", color: "#2f855a" }
+          { level: "Agente IA (n8n)", desc: "Autonomía total y toma de decisiones", color: "#e53e3e", width: '40%' },
+          { level: "IA + n8n", desc: "Procesamiento inteligente de datos", color: "#dd6b20", width: '55%' },
+          { level: "n8n (Simple)", desc: "Flujos lógicos tradicionales", color: "#d69e2e", width: '70%' },
+          { level: "GPTs", desc: "Semi-automatización asistida", color: "#38a169", width: '85%' },
+          { level: "Fórmulas y Scripts", desc: "Planillas de cálculo (Excel/Sheets)", color: "#2f855a", width: '100%' }
         ].map((item, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
+            initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05, type: 'spring' }}
             style={{ 
-              width: '100%', 
+              width: item.width, 
               backgroundColor: item.color,
               padding: '10px 15px',
               borderRadius: '10px',
@@ -808,7 +945,7 @@ const PiramideComplejidad = () => (
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 3px 8px rgba(0,0,0,0.1)',
-              minHeight: '60px',
+              minHeight: '55px',
               textAlign: 'center'
             }}
           >
@@ -827,6 +964,7 @@ function App() {
   const slides = [
     <Portada key="portada" />,
     <FrustracionAdministrativa key="frustracion" />,
+    <CambioParadigma key="paradigma" />,
     <EjemploInscripcion key="ejemplo" />,
     <QueEsAutomatizar key="que-es" />,
     <PreguntaFondo key="fondo" />,
@@ -884,6 +1022,32 @@ function App() {
       <div className="nav-container">
         <button onClick={prevSlide} className="nav-button">←</button>
         <button onClick={nextSlide} className="nav-button">→</button>
+      </div>
+
+      {/* Slide Indicators (Dots) */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '15px', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        display: 'flex', 
+        gap: '6px',
+        zIndex: 200 
+      }}>
+        {slides.map((_, i) => (
+          <div 
+            key={i}
+            onClick={() => setCurrentSlide(i)}
+            style={{ 
+              width: currentSlide === i ? '20px' : '6px', 
+              height: '6px', 
+              borderRadius: '3px', 
+              background: currentSlide === i ? 'var(--primary-green)' : 'rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+          />
+        ))}
       </div>
     </div>
   )
