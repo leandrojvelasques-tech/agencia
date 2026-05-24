@@ -56,8 +56,9 @@ export default function EventLanding() {
     )
   }
 
-  const eventDate = new Date(event.event_date + 'T12:00:00')
-  const canRegister = event.status === 'published' && (event.registration_mode === 'self' || event.registration_mode === 'both')
+  const eventDate = new Date(event.event_date + 'T23:59:59')
+  const isPastEvent = eventDate < new Date()
+  const canRegister = event.status === 'published' && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
 
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)]">
@@ -212,7 +213,7 @@ export default function EventLanding() {
           </div>
         )}
 
-        {event.status === 'completed' && (
+        {(event.status === 'completed' || isPastEvent) && (
           <div className="card p-6 text-center bg-[var(--color-light-green)]/15">
             <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] mb-2 block">check_circle</span>
             <p className="text-sm font-semibold text-[var(--color-deep-green)]">Este evento ya finalizó</p>

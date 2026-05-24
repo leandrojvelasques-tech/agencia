@@ -121,6 +121,19 @@
         .logo-multiply {
             mix-blend-mode: multiply;
         }
+        #eventos-carousel-track > a {
+            flex: 0 0 100%;
+        }
+        @media (min-width: 768px) {
+            #eventos-carousel-track > a {
+                flex: 0 0 calc((100% - 24px) / 2);
+            }
+        }
+        @media (min-width: 1024px) {
+            #eventos-carousel-track > a {
+                flex: 0 0 calc((100% - 64px) / 3);
+            }
+        }
     </style>
 </head>
 
@@ -213,8 +226,8 @@
     <section class="py-20 lg:py-28 bg-white" id="eventos">
       <div class="max-w-7xl mx-auto px-6 lg:px-12">
         <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight">Próximos Eventos</h2>
-          <p class="text-xl text-dark-gray/70">Charlas, talleres y capacitaciones abiertas. Inscribíte y participá.</p>
+          <h2 class="text-4xl lg:text-5xl font-extrabold mb-6 tracking-tight">Charlas y Talleres</h2>
+          <p class="text-xl text-dark-gray/70">Algunos de los últimos eventos en los cuales tomé parte durante el 2026</p>
         </div>
         <!-- Loading state -->
         <div id="eventos-loading" class="text-center py-16">
@@ -227,8 +240,23 @@
           <p class="text-lg font-bold text-deep-green/40">No hay eventos programados por el momento</p>
           <p class="text-sm text-dark-gray/40 mt-2">Próximamente publicaremos nuevas charlas y talleres. ¡Mantenete atento!</p>
         </div>
-        <!-- Events grid (dynamically filled) -->
-        <div id="eventos-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden"></div>
+        <!-- Events Carousel Wrapper -->
+        <div id="eventos-carousel-container" class="relative group/carousel hidden">
+          <!-- Track container -->
+          <div class="overflow-hidden py-4 px-1 -my-4 -mx-1">
+            <div id="eventos-carousel-track" class="flex transition-transform duration-500 ease-out gap-6 md:gap-8">
+              <!-- Cards will be dynamically injected here -->
+            </div>
+          </div>
+          
+          <!-- Navigation buttons -->
+          <button id="carousel-prev" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-12 w-12 h-12 bg-white border border-deep-green/10 rounded-full flex items-center justify-center text-deep-green shadow-premium hover:bg-deep-green hover:text-white transition-all disabled:opacity-0 disabled:pointer-events-none z-10" aria-label="Anterior">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button id="carousel-next" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-12 w-12 h-12 bg-white border border-deep-green/10 rounded-full flex items-center justify-center text-deep-green shadow-premium hover:bg-deep-green hover:text-white transition-all disabled:opacity-0 disabled:pointer-events-none z-10" aria-label="Siguiente">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
         <div class="mt-12 text-center">
           <a href="/archivo-eventos.html" class="inline-flex items-center gap-2 text-deep-green font-bold hover:text-deep-green/70 transition-colors group">
             Ver eventos finalizados o eventos anteriores
@@ -882,59 +910,141 @@
 
       const loadingEl = document.getElementById('eventos-loading');
       const emptyEl = document.getElementById('eventos-empty');
-      const gridEl = document.getElementById('eventos-grid');
+      const carouselContainerEl = document.getElementById('eventos-carousel-container');
+      const trackEl = document.getElementById('eventos-carousel-track');
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+
+      let currentIndex = 0;
+      let displayEvents = [];
+
+      function getCardsPerPage() {
+        if (window.innerWidth >= 1024) return 3;
+        if (window.innerWidth >= 768) return 2;
+        return 1;
+      }
+
+      function updateCarousel() {
+        if (displayEvents.length === 0) return;
+        const cards = trackEl.children;
+        const totalCards = cards.length;
+        const cardsPerPage = getCardsPerPage();
+        const maxIndex = Math.max(0, totalCards - cardsPerPage);
+
+        if (currentIndex > maxIndex) currentIndex = maxIndex;
+        if (currentIndex < 0) currentIndex = 0;
+
+        const gap = 32; // Corresponde a gap-8 en md/lg
+        const cardWidth = cards[0] ? cards[0].offsetWidth : 0;
+        const translateAmount = -currentIndex * (cardWidth + gap);
+        trackEl.style.transform = `translateX(${translateAmount}px)`;
+
+        // Control de visibilidad/estado de los botones
+        if (totalCards <= cardsPerPage) {
+          prevBtn.style.opacity = '0';
+          prevBtn.style.pointerEvents = 'none';
+          nextBtn.style.opacity = '0';
+          nextBtn.style.pointerEvents = 'none';
+        } else {
+          prevBtn.style.opacity = currentIndex === 0 ? '0' : '1';
+          prevBtn.style.pointerEvents = currentIndex === 0 ? 'none' : 'auto';
+          
+          nextBtn.style.opacity = currentIndex >= maxIndex ? '0' : '1';
+          nextBtn.style.pointerEvents = currentIndex >= maxIndex ? 'none' : 'auto';
+        }
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateCarousel();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        const cardsPerPage = getCardsPerPage();
+        if (currentIndex < trackEl.children.length - cardsPerPage) {
+          currentIndex++;
+          updateCarousel();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        updateCarousel();
+      });
 
       try {
-        const { data: events, error } = await sb
+        // Consultar eventos activos (published, in_progress) y destacados (show_on_home = true)
+        const { data: allEvents, error } = await sb
           .from('events')
-          .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, max_capacity')
-          .in('status', ['published', 'in_progress'])
-          .gte('event_date', new Date().toISOString().split('T')[0])
-          .order('event_date', { ascending: true });
+          .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, show_on_home')
+          .or('status.in.("published","in_progress"),show_on_home.eq.true')
+          .order('event_date', { ascending: false });
 
         loadingEl.classList.add('hidden');
 
         if (error) throw error;
-        if (!events || events.length === 0) {
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        // Filtrado en memoria
+        const filtered = (allEvents || []).filter(ev => {
+          // Evento activo/futuro
+          if ((ev.status === 'published' || ev.status === 'in_progress') && ev.event_date >= todayStr) {
+            return true;
+          }
+          // Evento finalizado destacado
+          const isPassed = ev.event_date < todayStr;
+          if ((ev.status === 'completed' || isPassed) && ev.show_on_home === true) {
+            return true;
+          }
+          return false;
+        });
+
+        if (filtered.length === 0) {
           emptyEl.classList.remove('hidden');
           return;
         }
 
-        gridEl.classList.remove('hidden');
+        // Ordenamiento óptimo:
+        // 1. Activos/futuros: orden ascendente (más próximo primero)
+        const upcoming = filtered.filter(ev => (ev.status === 'published' || ev.status === 'in_progress') && ev.event_date >= todayStr);
+        upcoming.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
-        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        // 2. Finalizados: orden descendente (más reciente primero)
+        const finished = filtered.filter(ev => !upcoming.includes(ev));
+        finished.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
 
-        events.forEach(ev => {
-          const d = new Date(ev.event_date + 'T12:00:00');
-          const dia = d.getDate();
-          const mes = meses[d.getMonth()];
-          const anio = d.getFullYear();
-          const hora = ev.start_time ? ev.start_time.slice(0,5) : '';
-          const typeBadge = ev.type === 'charla' ? '🎤 Charla' : '🛠 Taller';
-          const isInProgress = ev.status === 'in_progress';
+        displayEvents = [...upcoming, ...finished].slice(0, 6);
 
+        if (displayEvents.length === 0) {
+          emptyEl.classList.remove('hidden');
+          return;
+        }
+
+        carouselContainerEl.classList.remove('hidden');
+
+        displayEvents.forEach(ev => {
           const card = document.createElement('a');
           card.href = '/evento/' + ev.slug;
           card.className = 'group bg-refined-gray/40 rounded-premium-card overflow-hidden border border-deep-green/5 hover:border-deep-green/20 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 flex flex-col';
+          
           card.innerHTML = `
-            ${ev.banner_url ? `<div class="aspect-video overflow-hidden"><img src="${ev.banner_url}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" /></div>` : `<div class="aspect-video bg-gradient-to-br from-deep-green/10 to-light-green/20 flex items-center justify-center"><span class="material-symbols-outlined text-5xl text-deep-green/20">${ev.type === 'charla' ? 'mic' : 'construction'}</span></div>`}
-            <div class="p-6 flex-grow flex flex-col">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-[10px] font-bold uppercase tracking-widest bg-deep-green/8 text-deep-green px-3 py-1 rounded-full">${typeBadge}</span>
-                ${isInProgress ? '<span class="text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-700 px-3 py-1 rounded-full">En curso</span>' : ''}
-              </div>
-              <h3 class="text-lg font-bold text-deep-green mb-2 leading-snug group-hover:text-deep-green/80 transition-colors">${ev.title}</h3>
-              ${ev.subtitle ? `<p class="text-sm text-dark-gray/50 font-medium mb-3">${ev.subtitle}</p>` : ''}
-              <p class="text-sm text-dark-gray/70 leading-relaxed mb-4 flex-grow" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${ev.description_short}</p>
-              <div class="flex items-center gap-4 text-xs text-dark-gray/50 font-semibold mt-auto pt-4 border-t border-deep-green/5">
-                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span>${dia} de ${mes}, ${anio}</span>
-                ${hora ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span>${hora} hs</span>` : ''}
-              </div>
-              ${!isInProgress ? `<div class="mt-4"><span class="inline-flex items-center gap-2 bg-deep-green text-white px-5 py-2.5 rounded-premium-btn text-sm font-bold group-hover:bg-opacity-90 transition-all shadow-premium"><span class="material-symbols-outlined text-lg">how_to_reg</span>Inscribirme</span></div>` : ''}
+            ${ev.banner_url 
+              ? `<div class="aspect-video overflow-hidden"><img src="${ev.banner_url}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" /></div>` 
+              : `<div class="aspect-video bg-gradient-to-br from-deep-green/10 to-light-green/20 flex items-center justify-center"><span class="material-symbols-outlined text-5xl text-deep-green/20">${ev.type === 'charla' ? 'mic' : 'construction'}</span></div>`
+            }
+            <div class="p-6 flex-grow flex flex-col justify-center min-h-[120px]">
+              <p class="text-sm text-dark-gray/80 leading-relaxed font-medium text-center" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${ev.description_short}</p>
             </div>
           `;
-          gridEl.appendChild(card);
+          trackEl.appendChild(card);
         });
+
+        // Asegurar que las tarjetas se redimensionen y calculen el ancho antes de actualizar
+        setTimeout(() => {
+          updateCarousel();
+        }, 100);
 
       } catch (err) {
         console.error('Error loading events:', err);

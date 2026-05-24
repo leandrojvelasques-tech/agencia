@@ -29,6 +29,7 @@ export default function EventCreate() {
     max_capacity: '',
     banner_url: '',
     is_public: true,
+    show_on_home: false,
     event_materials: [],
   })
   const [saveError, setSaveError] = useState('')
@@ -78,6 +79,7 @@ export default function EventCreate() {
             ...data,
             max_capacity: data.max_capacity || '',
             is_public: data.status === 'published' || data.status === 'in_progress',
+            show_on_home: data.show_on_home || false,
             event_materials: data.event_materials || [],
           })
         }
@@ -180,6 +182,7 @@ export default function EventCreate() {
               ...updated,
               max_capacity: updated.max_capacity || '',
               is_public: updated.status === 'published' || updated.status === 'in_progress',
+              show_on_home: updated.show_on_home || false,
               event_materials: updated.event_materials || [],
             })
             setSaved(true)
@@ -289,9 +292,28 @@ export default function EventCreate() {
                   { value: true, label: '🌍 Público', desc: 'Se muestra en el Home' },
                   { value: false, label: '🔒 Privado', desc: 'Solo acceso por link' },
                 ].map(opt => (
-                  <button key={opt.value.toString()} onClick={() => update('is_public', opt.value)}
+                  <button key={opt.value.toString()} type="button" onClick={() => update('is_public', opt.value)}
                     className={`flex-1 p-3 rounded-[var(--radius-premium)] text-left border-2 transition-all ${
                       form.is_public === opt.value
+                        ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                        : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)]'
+                    }`}>
+                    <p className="text-sm font-bold">{opt.label}</p>
+                    <p className="text-[10px] opacity-60 font-medium">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Destacar en Home (Para eventos finalizados)</label>
+              <div class="flex gap-3">
+                {[
+                  { value: true, label: '⭐ Destacar', desc: 'Se muestra en el carrusel de Charlas y Talleres' },
+                  { value: false, label: 'No destacar', desc: 'No se muestra en el carrusel' },
+                ].map(opt => (
+                  <button key={opt.value.toString()} type="button" onClick={() => update('show_on_home', opt.value)}
+                    className={`flex-1 p-3 rounded-[var(--radius-premium)] text-left border-2 transition-all ${
+                      form.show_on_home === opt.value
                         ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
                         : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)]'
                     }`}>

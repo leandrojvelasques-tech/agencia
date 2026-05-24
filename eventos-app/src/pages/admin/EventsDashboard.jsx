@@ -126,6 +126,12 @@ export default function EventsDashboard() {
                           PRIVADO
                         </span>
                       )}
+                      {event.show_on_home && (
+                        <span className="badge border border-yellow-200 bg-yellow-50 text-yellow-700">
+                          <span className="material-symbols-outlined text-[10px]">star</span>
+                          EN HOME
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-lg font-bold text-[var(--color-deep-green)] group-hover:text-[var(--color-deep-green-light)] transition-colors truncate">
                       {event.title}
