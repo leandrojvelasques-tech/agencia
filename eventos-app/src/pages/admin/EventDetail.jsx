@@ -78,6 +78,8 @@ export default function EventDetail() {
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
   ]
+  const materials = event.event_materials?.filter(m => m.type !== 'image') || []
+  const photos = event.event_materials?.filter(m => m.type === 'image') || []
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -232,11 +234,11 @@ export default function EventDetail() {
         )}
 
         {/* Materiales del Evento */}
-        {event.event_materials && event.event_materials.length > 0 && (
+        {materials.length > 0 && (
           <div className="border-t border-[var(--color-deep-green)]/10 pt-6">
             <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4">Materiales Disponibles</h3>
             <div className="grid sm:grid-cols-2 gap-4">
-              {event.event_materials.map((material, i) => (
+              {materials.map((material, i) => (
                 <div key={i} className="flex flex-col gap-3 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)] border border-[var(--color-deep-green)]/5">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-xl text-[var(--color-deep-green)]">
@@ -280,6 +282,33 @@ export default function EventDetail() {
                       title="Copiar link"
                     >
                       <span className="material-symbols-outlined text-base">content_copy</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Fotos del Evento */}
+        {photos.length > 0 && (
+          <div className="border-t border-[var(--color-deep-green)]/10 pt-6">
+            <h3 className="text-sm font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-widest mb-4">Fotos del Evento</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {photos.map((photo, i) => (
+                <div key={i} className="flex flex-col gap-2 p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)] border border-[var(--color-deep-green)]/5">
+                  <div className="aspect-video overflow-hidden rounded-[var(--radius-premium)]">
+                    <img src={photo.url} alt={photo.title || 'Foto'} className="w-full h-full object-cover" />
+                  </div>
+                  {photo.title && (
+                    <p className="text-xs font-semibold text-[var(--color-dark-gray)]/70 text-center truncate">{photo.title}</p>
+                  )}
+                  <div className="flex gap-2 mt-1">
+                    <a href={photo.url} target="_blank" rel="noreferrer" className="btn-primary !py-1.5 !text-[10px] flex-1 text-center">
+                      Ver grande
+                    </a>
+                    <button onClick={() => copyToClipboard(photo.url)} className="btn-ghost !p-1.5 !min-w-0" title="Copiar URL">
+                      <span className="material-symbols-outlined text-sm">content_copy</span>
                     </button>
                   </div>
                 </div>

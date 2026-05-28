@@ -60,6 +60,9 @@ export default function EventLanding() {
   const isPastEvent = eventDate < new Date()
   const canRegister = event.status === 'published' && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
 
+  const materials = event.event_materials?.filter(m => m.type !== 'image') || []
+  const photos = event.event_materials?.filter(m => m.type === 'image') || []
+
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)]">
       {/* Header */}
@@ -168,14 +171,14 @@ export default function EventLanding() {
         )}
 
         {/* Materiales */}
-        {event.event_materials && event.event_materials.length > 0 && (
+        {materials.length > 0 && (
           <div className="card p-6 mb-8 bg-[var(--color-deep-green)]/5 border-dashed border-[var(--color-deep-green)]/20">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
               <span className="material-symbols-outlined text-xl">folder_zip</span>
               Materiales del Evento
             </h2>
             <div className="space-y-3">
-              {event.event_materials.map((material, i) => (
+              {materials.map((material, i) => (
                 <a 
                   key={i} 
                   href={material.url} 
@@ -198,6 +201,35 @@ export default function EventLanding() {
                     arrow_forward
                   </span>
                 </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Galería de Fotos del Evento */}
+        {photos.length > 0 && (
+          <div className="card p-6 mb-8 bg-white shadow-[var(--shadow-premium)]">
+            <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-[var(--color-deep-green)]">
+              <span className="material-symbols-outlined text-xl">photo_library</span>
+              Fotos del Evento
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {photos.map((photo, i) => (
+                <div key={i} className="group rounded-[var(--radius-premium)] overflow-hidden border border-[var(--color-deep-green)]/5 shadow-sm hover:shadow-md transition-all relative flex flex-col bg-[var(--color-refined-gray)]/30">
+                  <div className="aspect-video overflow-hidden">
+                    <img 
+                      src={photo.url} 
+                      alt={photo.title || 'Foto del evento'} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-pointer"
+                      onClick={() => window.open(photo.url, '_blank')}
+                    />
+                  </div>
+                  {photo.title && (
+                    <div className="p-3 bg-white border-t border-[var(--color-deep-green)]/5">
+                      <p className="text-xs font-semibold text-[var(--color-dark-gray)]/85 text-center leading-snug">{photo.title}</p>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

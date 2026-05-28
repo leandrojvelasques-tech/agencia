@@ -36,6 +36,7 @@ export default function EventCreate() {
   const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [uploadingMaterialIndex, setUploadingMaterialIndex] = useState(null)
   const fileInputRef = useRef(null)
 
   const { saveMaterials } = useStore()
@@ -107,6 +108,25 @@ export default function EventCreate() {
       ...prev,
       event_materials: prev.event_materials.map((item, idx) => idx === i ? { ...item, [field]: value } : item)
     }))
+  }
+
+  const handleMaterialFileUpload = async (i, file) => {
+    if (!file) return
+    setUploadingMaterialIndex(i)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `material-${Date.now()}-${i}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName)
+      updateMaterial(i, 'url', publicUrl)
+    } catch (err) {
+      alert('Error al subir el archivo: ' + (err.message || err))
+    } finally {
+      setUploadingMaterialIndex(null)
+    }
   }
 
   const handleSave = async (options = { redirect: true }) => {
@@ -539,18 +559,53 @@ export default function EventCreate() {
                             <option value="document">📄 Documento / PDF</option>
                             <option value="link">🔗 Link Externo</option>
                             <option value="video">🎥 Video</option>
+                            <option value="image">📸 Foto del evento</option>
                           </select>
                         </div>
                       </div>
-                      <div>
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">URL</label>
-                        <input 
-                          className="form-input !py-2 text-xs" 
-                          placeholder="https://..." 
-                          value={material.url} 
-                          onChange={e => updateMaterial(i, 'url', e.target.value)} 
-                        />
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="flex-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">URL</label>
+                          <input 
+                            className="form-input !py-2 text-xs" 
+                            placeholder="https://..." 
+                            value={material.url} 
+                            onChange={e => updateMaterial(i, 'url', e.target.value)} 
+                          />
+                        </div>
+                        <div className="flex flex-col justify-end pt-5">
+                          <input
+                            type="file"
+                            id={`material-file-${i}`}
+                            className="hidden"
+                            accept={material.type === 'image' ? 'image/*' : '*/*'}
+                            onChange={(e) => { const f = e.target.files[0]; if (f) handleMaterialFileUpload(i, f) }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => document.getElementById(`material-file-${i}`)?.click()}
+                            className="btn-secondary !py-2 !px-3 !text-xs whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+                            disabled={uploadingMaterialIndex === i}
+                          >
+                            {uploadingMaterialIndex === i ? (
+                              <>
+                                <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                Subiendo...
+                              </>
+                            ) : (
+                              <>
+                                <span className="material-symbols-outlined text-sm">upload</span>
+                                Subir archivo
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
+                      {material.type === 'image' && material.url && (
+                        <div className="mt-3 rounded-[var(--radius-premium)] overflow-hidden border border-[var(--color-deep-green)]/10 max-w-[200px]">
+                          <img src={material.url} alt="Vista previa" className="w-full h-auto object-cover max-h-32" />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
