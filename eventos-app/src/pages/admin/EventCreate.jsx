@@ -30,6 +30,7 @@ export default function EventCreate() {
     banner_url: '',
     is_public: true,
     show_on_home: false,
+    live_link: '',
     event_materials: [],
   })
   const [saveError, setSaveError] = useState('')
@@ -81,6 +82,7 @@ export default function EventCreate() {
             max_capacity: data.max_capacity || '',
             is_public: data.status === 'published' || data.status === 'in_progress',
             show_on_home: data.show_on_home || false,
+            live_link: data.live_link || '',
             event_materials: data.event_materials || [],
           })
         }
@@ -203,6 +205,7 @@ export default function EventCreate() {
               max_capacity: updated.max_capacity || '',
               is_public: updated.status === 'published' || updated.status === 'in_progress',
               show_on_home: updated.show_on_home || false,
+              live_link: updated.live_link || '',
               event_materials: updated.event_materials || [],
             })
             setSaved(true)
@@ -388,6 +391,16 @@ export default function EventCreate() {
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Duración (min) *</label>
                 <input type="number" className="form-input" value={form.duration_minutes} onChange={e => update('duration_minutes', Number(e.target.value))} min={15} step={15} />
               </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Link de Transmisión / Google Meet <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <input 
+                className="form-input" 
+                placeholder="Ej: https://meet.google.com/abc-defg-hij o link de YouTube Live" 
+                value={form.live_link || ''} 
+                onChange={e => update('live_link', e.target.value)} 
+              />
             </div>
 
             <div>

@@ -142,6 +142,27 @@ export default function EventLanding() {
           )}
         </div>
 
+        {/* Live link banner */}
+        {event.live_link && (
+          <div className="card p-5 mb-8 bg-blue-50/50 border border-blue-100 flex items-center gap-4 animate-fade-in">
+            <div className="w-12 h-12 rounded-[var(--radius-premium)] bg-blue-600 text-white flex items-center justify-center shadow-md">
+              <span className="material-symbols-outlined text-2xl">video_camera_back</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-0.5">Transmisión en Vivo / Videollamada</p>
+              <a 
+                href={event.live_link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-sm font-bold text-blue-700 hover:text-blue-900 transition-all break-all flex items-center gap-1.5 group"
+              >
+                Unirse a Google Meet / Transmisión
+                <span className="material-symbols-outlined text-base group-hover:translate-x-0.5 transition-transform">open_in_new</span>
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Description */}
         <div className="mb-8">
           <p className="text-base text-[var(--color-dark-gray)]/80 leading-relaxed">{event.description_short}</p>

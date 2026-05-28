@@ -230,6 +230,24 @@ export default function EventDetail() {
                 </button>
               </div>
             )}
+
+            {event.live_link && (
+              <div className="flex items-center gap-3 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-3">
+                <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]">video_camera_back</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de transmisión (Meet)</p>
+                  <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{event.live_link}</p>
+                </div>
+                <a href={event.live_link} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-1.5 text-xs flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">open_in_new</span>
+                  Abrir
+                </a>
+                <button onClick={() => copyToClipboard(event.live_link)} className="btn-ghost !px-3 !py-1.5 text-xs">
+                  <span className="material-symbols-outlined text-base">content_copy</span>
+                  Copiar
+                </button>
+              </div>
+            )}
           </>
         )}
 
