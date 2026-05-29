@@ -107,10 +107,10 @@ export const useStore = create((set, get) => ({
 
     if (!error) {
       set(state => ({ events: [data, ...state.events] }))
-      return data
+      return { success: true, data }
     }
     console.error("Supabase Error creating event:", error)
-    return null
+    return { success: false, error }
   },
 
   updateEvent: async (id, data) => {

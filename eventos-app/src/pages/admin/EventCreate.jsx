@@ -172,12 +172,17 @@ export default function EventCreate() {
         targetEventId = existingEvent.id
       } else {
         console.log('Creando nuevo evento...')
-        const newEvent = await createEvent(data)
-        if (newEvent) {
-          targetEventId = newEvent.id
+        const newEventResult = await createEvent(data)
+        if (newEventResult && newEventResult.success) {
+          targetEventId = newEventResult.data.id
           console.log('Nuevo evento creado con ID:', targetEventId)
         } else {
-          throw new Error('No se pudo crear el evento en la base de datos.')
+          const errMsg = newEventResult?.error?.message || newEventResult?.error?.details || 'Error desconocido';
+          const code = newEventResult?.error?.code;
+          if (code === '23505') {
+             throw new Error('Ya existe un evento con este título. El título debe ser único para generar una URL única.');
+          }
+          throw new Error(`Error en base de datos: ${errMsg}`);
         }
       }
 
