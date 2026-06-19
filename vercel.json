@@ -22,6 +22,10 @@
             "destination": "/_app/index.html"
         },
         {
+            "source": "/crm/cliente/:token",
+            "destination": "/_app/index.html"
+        },
+        {
             "source": "/_app/:path*",
             "destination": "/_app/:path*"
         }

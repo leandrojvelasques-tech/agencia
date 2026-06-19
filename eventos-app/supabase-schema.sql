@@ -258,3 +258,64 @@ LEFT JOIN registrations r ON r.event_id = e.id
 LEFT JOIN attendance a ON a.registration_id = r.id
 LEFT JOIN certificates c ON c.registration_id = r.id
 GROUP BY e.id, e.title, e.status, e.event_date;
+
+-- =====================================================
+-- 9. CRM CLIENTS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS crm_clients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    logo_url TEXT,
+    share_token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TRIGGER update_crm_clients_updated_at
+    BEFORE UPDATE ON crm_clients
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- 10. CRM PUBLICATIONS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS crm_publications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES crm_clients(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('post', 'story')),
+    post_format TEXT NOT NULL CHECK (post_format IN ('carrousel', 'reel', 'placa', 'video', 'otro')),
+    territorio TEXT,
+    dimensions TEXT CHECK (dimensions IN ('1080x1080', '1080x1920')),
+    title TEXT NOT NULL,
+    copy TEXT,
+    graphic_url TEXT,
+    status_piece TEXT NOT NULL DEFAULT 'draft' CHECK (status_piece IN ('published', 'pending_assets', 'pending_design', 'ready', 'draft')),
+    status_post TEXT NOT NULL DEFAULT 'scheduled' CHECK (status_post IN ('scheduled', 'published', 'draft')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TRIGGER update_crm_publications_updated_at
+    BEFORE UPDATE ON crm_publications
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable RLS on CRM tables
+ALTER TABLE crm_clients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crm_publications ENABLE ROW LEVEL SECURITY;
+
+-- Admin policies (authenticated users)
+CREATE POLICY "Admin full access crm_clients" ON crm_clients 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admin full access crm_publications" ON crm_publications 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- Public policies (read-only for clients)
+CREATE POLICY "Public read crm_clients" ON crm_clients 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public read crm_publications" ON crm_publications 
+    FOR SELECT USING (true);
+

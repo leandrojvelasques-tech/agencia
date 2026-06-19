@@ -12,11 +12,18 @@ import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
 import EventMinuta from './pages/admin/EventMinuta'
 
+// CRM Pages
+import CrmDashboard from './pages/admin/CrmDashboard'
+import CrmPublicationCreate from './pages/admin/CrmPublicationCreate'
+
 // Public (participant) pages
 import EventLanding from './pages/public/EventLanding'
 import EventRegister from './pages/public/EventRegister'
 import EventConfirmation from './pages/public/EventConfirmation'
 import AttendanceCheck from './pages/public/AttendanceCheck'
+
+// CRM Public Shared Portal
+import CrmClientPortal from './pages/public/CrmClientPortal'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -58,6 +65,11 @@ export default function App() {
           <Route path="eventos/:id/participantes" element={<EventParticipants />} />
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
+          
+          {/* CRM Private Routes */}
+          <Route path="crm" element={<CrmDashboard />} />
+          <Route path="crm/publicacion/nueva" element={<CrmPublicationCreate />} />
+          <Route path="crm/publicacion/:id/editar" element={<CrmPublicationCreate />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -65,6 +77,9 @@ export default function App() {
         <Route path="/evento/:slug/inscripcion" element={<EventRegister />} />
         <Route path="/evento/:slug/confirmacion" element={<EventConfirmation />} />
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
+
+        {/* CRM Client Shared Route */}
+        <Route path="/crm/cliente/:token" element={<CrmClientPortal />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
