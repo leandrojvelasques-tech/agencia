@@ -4,6 +4,24 @@ import { supabase } from '../../lib/supabase'
 
 export default function CrmDashboard() {
   const navigate = useNavigate()
+
+  const isVideoFile = (url, format) => {
+    if (!url) return false
+    const cleanUrl = url.split('?')[0].toLowerCase()
+    if (
+      cleanUrl.endsWith('.mp4') ||
+      cleanUrl.endsWith('.mov') ||
+      cleanUrl.endsWith('.webm') ||
+      cleanUrl.endsWith('.ogg') ||
+      cleanUrl.endsWith('.quicktime')
+    ) {
+      return true
+    }
+    if (format === 'reel' || format === 'video') {
+      return true
+    }
+    return false
+  }
   
   // State
   const [clients, setClients] = useState([])
@@ -448,43 +466,86 @@ export default function CrmDashboard() {
                       </div>
 
                       {/* Day contents */}
-                      <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto max-h-[100px] scrollbar-thin">
-                        {dayPubs.map(pub => {
-                          const isPost = pub.type === 'post'
-                          return (
-                            <div
-                              key={pub.id}
-                              onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
-                              className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card ${
-                                isPost 
-                                  ? 'bg-emerald-50/60 border-emerald-100 hover:bg-emerald-50 hover:border-emerald-300' 
-                                  : 'bg-pink-50/40 border-pink-100 hover:bg-pink-50 hover:border-pink-300'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
-                                  isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                                }`}>
-                                  {isPost ? 'Feed' : 'Story'}
-                                </span>
-                                <span className={`w-2 h-2 rounded-full ${
-                                  pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                  pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                  pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                  pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
-                                }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
-                              </div>
-                              <p className="text-[11px] font-bold text-[var(--color-dark-gray)] truncate group-hover/card:text-[var(--color-deep-green)] transition-colors leading-tight">
-                                {pub.title}
-                              </p>
-                              {pub.territorio && (
-                                <p className="text-[9px] font-medium text-[var(--color-dark-gray)]/50 uppercase tracking-tighter mt-0.5">
-                                  {pub.territorio}
+                      <div className="flex-1 flex flex-col gap-1.5 mt-2">
+                        {(() => {
+                          let storyIndex = 0
+                          return dayPubs.map(pub => {
+                            const isPost = pub.type === 'post'
+                            let displayTitle = pub.title
+                            if (!isPost) {
+                              storyIndex++
+                              displayTitle = `Historia ${storyIndex}: ${pub.title}`
+                            }
+                            return (
+                              <div
+                                key={pub.id}
+                                onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
+                                className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${
+                                  isPost 
+                                    ? 'bg-emerald-50/60 border-emerald-100 hover:bg-emerald-50 hover:border-emerald-300' 
+                                    : 'bg-pink-50/40 border-pink-100 hover:bg-pink-50 hover:border-pink-300'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
+                                    isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
+                                  }`}>
+                                    {isPost ? 'Feed' : 'Story'}
+                                  </span>
+                                  <span className={`w-2 h-2 rounded-full ${
+                                    pub.status_piece === 'published' ? 'bg-emerald-500' :
+                                    pub.status_piece === 'ready' ? 'bg-teal-500' :
+                                    pub.status_piece === 'pending_design' ? 'bg-amber-500' :
+                                    pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
+                                  }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                                </div>
+                                <p className="text-[11px] font-bold text-[var(--color-dark-gray)] truncate group-hover/card:text-[var(--color-deep-green)] transition-colors leading-tight">
+                                  {displayTitle}
                                 </p>
-                              )}
-                            </div>
-                          )
-                        })}
+                                {pub.territorio && (
+                                  <p className="text-[9px] font-medium text-[var(--color-dark-gray)]/50 uppercase tracking-tighter mt-0.5">
+                                    {pub.territorio}
+                                  </p>
+                                )}
+
+                                {/* Hover preview tooltip popover */}
+                                <div className="hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left">
+                                  {pub.graphic_url && (
+                                    <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                      {isVideoFile(pub.graphic_url, pub.post_format) ? (
+                                        <video
+                                          src={pub.graphic_url}
+                                          className="w-full h-full object-cover"
+                                          muted
+                                          loop
+                                          autoPlay
+                                          playsInline
+                                        />
+                                      ) : (
+                                        <img
+                                          src={pub.graphic_url}
+                                          alt={pub.title}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="font-bold text-xs text-[var(--color-deep-green)] line-clamp-1">{displayTitle}</p>
+                                    <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight">
+                                      {pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format}
+                                    </p>
+                                    {pub.copy && (
+                                      <p className="text-[10px] text-[var(--color-dark-gray)]/80 mt-1 line-clamp-3 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap">
+                                        {pub.copy}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })
+                        })()}
                       </div>
                     </div>
                   )

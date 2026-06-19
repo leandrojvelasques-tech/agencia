@@ -93,6 +93,41 @@ export default function CrmPublicationCreate() {
     }
   }
 
+  const [recurrenceMode, setRecurrenceMode] = useState('single') // 'single' | 'weekly'
+  const [endDate, setEndDate] = useState('')
+  const [selectedWeekdays, setSelectedWeekdays] = useState([]) // array of getDay() numbers
+
+  const getRecurringDates = (startDateStr, endDateStr, weekDaysArr) => {
+    const dates = []
+    const start = new Date(startDateStr + 'T00:00:00')
+    const end = new Date(endDateStr + 'T00:00:00')
+    
+    let current = new Date(start)
+    while (current <= end) {
+      const dayOfWeek = current.getDay() // 0 = Sunday, 1 = Monday, etc.
+      if (weekDaysArr.includes(dayOfWeek)) {
+        const y = current.getFullYear()
+        const m = String(current.getMonth() + 1).padStart(2, '0')
+        const d = String(current.getDate()).padStart(2, '0')
+        dates.push(`${y}-${m}-${d}`)
+      }
+      current.setDate(current.getDate() + 1)
+    }
+    return dates
+  }
+
+  // Automatically compute end date to +1 month when switching to weekly mode
+  useEffect(() => {
+    if (recurrenceMode === 'weekly' && date && !endDate) {
+      const d = new Date(date + 'T00:00:00')
+      d.setMonth(d.getMonth() + 1)
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      setEndDate(`${y}-${m}-${day}`)
+    }
+  }, [recurrenceMode, date, endDate])
+
   // Load clients and publication if editing
   useEffect(() => {
     async function init() {
@@ -193,7 +228,6 @@ export default function CrmPublicationCreate() {
 
     const payload = {
       client_id: clientId,
-      date,
       type,
       post_format: postFormat,
       dimensions,
@@ -209,16 +243,53 @@ export default function CrmPublicationCreate() {
       if (isEdit) {
         const { error } = await supabase
           .from('crm_publications')
-          .update(payload)
+          .update({ ...payload, date })
           .eq('id', id)
         if (error) throw error
         showToast('Publicación actualizada correctamente.')
       } else {
-        const { error } = await supabase
-          .from('crm_publications')
-          .insert([payload])
-        if (error) throw error
-        showToast('Publicación programada correctamente.')
+        if (recurrenceMode === 'weekly') {
+          if (selectedWeekdays.length === 0) {
+            showToast('Selecciona al menos un día de la semana para la repetición.', 'error')
+            setLoading(false)
+            return
+          }
+          if (!endDate) {
+            showToast('Selecciona una fecha de fin para la repetición.', 'error')
+            setLoading(false)
+            return
+          }
+          if (endDate < date) {
+            showToast('La fecha de fin no puede ser anterior a la fecha de inicio.', 'error')
+            setLoading(false)
+            return
+          }
+
+          // Generate all matching dates
+          const datesToInsert = getRecurringDates(date, endDate, selectedWeekdays)
+          if (datesToInsert.length === 0) {
+            showToast('No se encontraron fechas válidas en el rango para los días seleccionados.', 'error')
+            setLoading(false)
+            return
+          }
+
+          const payloads = datesToInsert.map(d => ({
+            ...payload,
+            date: d
+          }))
+
+          const { error } = await supabase
+            .from('crm_publications')
+            .insert(payloads)
+          if (error) throw error
+          showToast(`¡Se programaron ${datesToInsert.length} publicaciones correctamente!`)
+        } else {
+          const { error } = await supabase
+            .from('crm_publications')
+            .insert([{ ...payload, date }])
+          if (error) throw error
+          showToast('Publicación programada correctamente.')
+        }
       }
       setTimeout(() => navigate('/admin/crm'), 1000)
     } catch (err) {
@@ -298,18 +369,103 @@ export default function CrmPublicationCreate() {
               </select>
             </div>
 
-            {/* Date */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Fecha de Publicación
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="form-input border border-gray-200 bg-white"
-              />
+            {/* Scheduling Type and Dates */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-4 rounded-premium border border-gray-150">
+              {/* Mode Select */}
+              <div className={isEdit ? "md:col-span-2" : ""}>
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                  Tipo de Programación
+                </label>
+                <select
+                  value={recurrenceMode}
+                  onChange={(e) => setRecurrenceMode(e.target.value)}
+                  disabled={isEdit}
+                  className="form-input border border-gray-200 bg-white"
+                >
+                  <option value="single">Fecha Única</option>
+                  {!isEdit && <option value="weekly">Repetición Semanal (Múltiples días)</option>}
+                </select>
+                {isEdit && (
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    La edición de publicaciones es de fecha única.
+                  </span>
+                )}
+              </div>
+
+              {/* Start Date / Single Date */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                  {recurrenceMode === 'weekly' ? 'Fecha de Inicio' : 'Fecha de Publicación'}
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="form-input border border-gray-200 bg-white"
+                />
+              </div>
+
+              {/* End Date (Weekly only) */}
+              {recurrenceMode === 'weekly' && (
+                <div className="animate-fade-in">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                    Fecha de Fin
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    required
+                    className="form-input border border-gray-200 bg-white"
+                  />
+                </div>
+              )}
+
+              {/* Weekday Selector (Weekly only) */}
+              {recurrenceMode === 'weekly' && (
+                <div className="md:col-span-2 animate-fade-in space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block">
+                    Días de la semana para publicar
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: 'Lunes', value: 1 },
+                      { label: 'Martes', value: 2 },
+                      { label: 'Miércoles', value: 3 },
+                      { label: 'Jueves', value: 4 },
+                      { label: 'Viernes', value: 5 },
+                      { label: 'Sábado', value: 6 },
+                      { label: 'Domingo', value: 0 },
+                    ].map((day) => {
+                      const isSelected = selectedWeekdays.includes(day.value)
+                      return (
+                        <button
+                          type="button"
+                          key={day.value}
+                          onClick={() => {
+                            setSelectedWeekdays((prev) =>
+                              isSelected
+                                ? prev.filter((d) => d !== day.value)
+                                : [...prev, day.value]
+                            )
+                          }}
+                          className={`px-3 py-2 rounded-premium-btn text-xs font-bold border transition-all ${
+                            isSelected
+                              ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)] shadow-sm'
+                              : 'bg-white text-[var(--color-dark-gray)] border-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    Se creará una publicación en el calendario para cada uno de los días de la semana seleccionados que se encuentren dentro del rango.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Type selector (Post vs Story) */}
