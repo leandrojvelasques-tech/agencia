@@ -13,6 +13,24 @@ export default function CrmClientPortal() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedPub, setSelectedPub] = useState(null) // for modal details
 
+  const isVideoFile = (url, format) => {
+    if (!url) return false
+    const cleanUrl = url.split('?')[0].toLowerCase()
+    if (
+      cleanUrl.endsWith('.mp4') ||
+      cleanUrl.endsWith('.mov') ||
+      cleanUrl.endsWith('.webm') ||
+      cleanUrl.endsWith('.ogg') ||
+      cleanUrl.endsWith('.quicktime')
+    ) {
+      return true
+    }
+    if (format === 'reel' || format === 'video') {
+      return true
+    }
+    return false
+  }
+
   // Fetch client and publications
   useEffect(() => {
     async function loadPortalData() {
@@ -357,11 +375,24 @@ export default function CrmClientPortal() {
                     selectedPub.dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
                   }`}>
                     {selectedPub.graphic_url ? (
-                      <img
-                        src={selectedPub.graphic_url}
-                        alt={selectedPub.title}
-                        className="w-full h-full object-cover"
-                      />
+                      isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
+                        <video
+                          key={selectedPub.graphic_url}
+                          src={selectedPub.graphic_url}
+                          controls
+                          loop
+                          autoPlay
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={selectedPub.graphic_url}
+                          alt={selectedPub.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )
                     ) : (
                       <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
                         <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
@@ -401,11 +432,24 @@ export default function CrmClientPortal() {
                 /* Instagram Story Mockup */
                 <div className="bg-gray-950 border-[6px] border-black rounded-[2rem] shadow-xl overflow-hidden w-full max-w-sm aspect-[9/16] relative text-white">
                   {selectedPub.graphic_url ? (
-                    <img
-                      src={selectedPub.graphic_url}
-                      alt={selectedPub.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
+                    isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
+                      <video
+                        key={selectedPub.graphic_url}
+                        src={selectedPub.graphic_url}
+                        controls
+                        loop
+                        autoPlay
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover animate-fade-in"
+                      />
+                    ) : (
+                      <img
+                        src={selectedPub.graphic_url}
+                        alt={selectedPub.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-gray-600 bg-gradient-to-b from-gray-800 to-gray-950">
                       <span className="material-symbols-outlined text-4xl mb-2 text-gray-700">photo_album</span>

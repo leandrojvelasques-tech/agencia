@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
@@ -25,6 +25,73 @@ export default function CrmPublicationCreate() {
   const [loading, setLoading] = useState(false)
   const [fetchingData, setFetchingData] = useState(isEdit)
   const [toast, setToast] = useState(null)
+
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef(null)
+
+  const isVideoFile = (url, format) => {
+    if (!url) return false
+    const cleanUrl = url.split('?')[0].toLowerCase()
+    if (
+      cleanUrl.endsWith('.mp4') ||
+      cleanUrl.endsWith('.mov') ||
+      cleanUrl.endsWith('.webm') ||
+      cleanUrl.endsWith('.ogg') ||
+      cleanUrl.endsWith('.quicktime')
+    ) {
+      return true
+    }
+    if (format === 'reel' || format === 'video') {
+      return true
+    }
+    return false
+  }
+
+  const handleFileUpload = async (file) => {
+    if (!file) return
+    const isVideo = file.type.startsWith('video/')
+    const isImage = file.type.startsWith('image/')
+    
+    if (!isImage && !isVideo) {
+      showToast('Solo se permiten imágenes (JPG, PNG, WEBP, GIF) o videos (MP4, MOV, WEBM).', 'error')
+      return
+    }
+    
+    // Limits: 10 MB for images, 30 MB for videos
+    const limit = isVideo ? 30 * 1024 * 1024 : 10 * 1024 * 1024
+    if (file.size > limit) {
+      showToast(`El archivo supera el límite permitido (${isVideo ? '30 MB' : '10 MB'}).`, 'error')
+      return
+    }
+
+    setUploading(true)
+    setUploadError('')
+    
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `crm-${Date.now()}.${ext}`
+      
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      
+      if (upErr) throw upErr
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('banners')
+        .getPublicUrl(fileName)
+      
+      setGraphicUrl(publicUrl)
+      showToast('Archivo subido correctamente.')
+    } catch (err) {
+      console.error('Error uploading file:', err)
+      setUploadError(err.message || 'Error al subir el archivo.')
+      showToast('Error al subir el archivo.', 'error')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   // Load clients and publication if editing
   useEffect(() => {
@@ -358,19 +425,74 @@ export default function CrmPublicationCreate() {
               />
             </div>
 
-            {/* Graphic Piece URL */}
-            <div className="md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2 flex items-center justify-between">
-                <span>URL de la Pieza Gráfica (Imagen / Video)</span>
-                <span className="text-[10px] text-[var(--color-dark-gray)]/40 font-semibold normal-case">Link de Drive, Canva o Supabase</span>
+            {/* Graphic Piece URL & File Upload */}
+            <div className="md:col-span-2 space-y-3">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-1 flex items-center justify-between">
+                <span>Pieza Gráfica (Imagen / Video)</span>
+                <span className="text-[10px] text-[var(--color-dark-gray)]/40 font-semibold normal-case">Subí un archivo o pegá un link</span>
               </label>
-              <input
-                type="url"
-                value={graphicUrl}
-                onChange={(e) => setGraphicUrl(e.target.value)}
-                placeholder="https://ejemplo.com/tu-diseno.png"
-                className="form-input border border-gray-200 bg-white"
-              />
+
+              {/* Drag and Drop Zone */}
+              <div
+                className={`border-2 border-dashed rounded-premium p-6 text-center transition-all cursor-pointer hover:border-[var(--color-deep-green)]/40 hover:bg-[var(--color-deep-green)]/2 ${
+                  uploading ? 'border-[var(--color-deep-green)]/35 opacity-70' : 'border-gray-200'
+                }`}
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  if (uploading) return
+                  const file = e.dataTransfer.files[0]
+                  if (file) handleFileUpload(file)
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0]
+                    if (file) handleFileUpload(file)
+                  }}
+                />
+                {uploading ? (
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] animate-spin">sync</span>
+                    <p className="text-xs font-bold text-[var(--color-deep-green)] mt-2">Subiendo archivo a Supabase...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-1">
+                    <span className="material-symbols-outlined text-3xl text-gray-400 mb-1.5">upload_file</span>
+                    <p className="text-xs font-semibold text-gray-600">
+                      Arrastrá un archivo o hacé clic para seleccionar
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-1">
+                      Imágenes (máx. 10MB) o Videos (máx. 30MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {uploadError && (
+                <p className="text-[11px] text-red-650 font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs">error</span> {uploadError}
+                </p>
+              )}
+
+              {/* URL Input */}
+              <div>
+                <input
+                  type="url"
+                  value={graphicUrl}
+                  onChange={(e) => setGraphicUrl(e.target.value)}
+                  placeholder="https://ejemplo.com/tu-diseno.png"
+                  className="form-input border border-gray-200 bg-white"
+                />
+                <span className="text-[9px] text-gray-400 font-medium mt-1 block pl-1">
+                  URL del recurso gráfico cargado.
+                </span>
+              </div>
             </div>
 
             {/* Copy / Caption */}
@@ -489,16 +611,34 @@ export default function CrmPublicationCreate() {
                 dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
               }`}>
                 {graphicUrl ? (
-                  <img
-                    src={graphicUrl}
-                    alt="Pieza gráfica"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // fallback for invalid url
-                      e.target.style.display = 'none';
-                      e.target.parentNode.querySelector('.fallback-msg').style.display = 'block';
-                    }}
-                  />
+                  isVideoFile(graphicUrl, postFormat) ? (
+                    <video
+                      key={graphicUrl}
+                      src={graphicUrl}
+                      controls
+                      loop
+                      autoPlay
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const fb = e.target.parentNode.querySelector('.fallback-msg');
+                        if (fb) fb.style.display = 'flex';
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={graphicUrl}
+                      alt="Pieza gráfica"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        const fb = e.target.parentNode.querySelector('.fallback-msg');
+                        if (fb) fb.style.display = 'flex';
+                      }}
+                    />
+                  )
                 ) : null}
                 
                 {/* Fallback placeholder */}
@@ -548,15 +688,34 @@ export default function CrmPublicationCreate() {
             <div className="bg-gray-900 border-[8px] border-black rounded-[2.5rem] shadow-2xl overflow-hidden max-w-sm mx-auto aspect-[9/16] relative text-white animate-slide-in">
               {/* Background graphic */}
               {graphicUrl ? (
-                <img
-                  src={graphicUrl}
-                  alt="Story graphic"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentNode.querySelector('.fallback-msg-story').style.display = 'flex';
-                  }}
-                />
+                isVideoFile(graphicUrl, postFormat) ? (
+                  <video
+                    key={graphicUrl}
+                    src={graphicUrl}
+                    controls
+                    loop
+                    autoPlay
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const fb = e.target.parentNode.querySelector('.fallback-msg-story');
+                      if (fb) fb.style.display = 'flex';
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={graphicUrl}
+                    alt="Story graphic"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const fb = e.target.parentNode.querySelector('.fallback-msg-story');
+                      if (fb) fb.style.display = 'flex';
+                    }}
+                  />
+                )
               ) : null}
 
               {/* Fallback for story */}
