@@ -299,6 +299,7 @@ export default function CrmClientPortal() {
             </button>
           </div>
         </div>
+      </div>
 
         {viewMode === 'feed' ? (
           /* FEED VIEW */
