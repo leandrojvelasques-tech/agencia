@@ -617,6 +617,7 @@ export default function CrmPublicationCreate() {
                 className="form-input border border-gray-200 bg-white"
               >
                 <option value="1080x1080">Cuadrado (1080 x 1080 px)</option>
+                <option value="1080x1350">Vertical / Retrato (1080 x 1350 px)</option>
                 <option value="1080x1920">Vertical / Reel (1080 x 1920 px)</option>
               </select>
             </div>
@@ -918,7 +919,7 @@ export default function CrmPublicationCreate() {
 
               {/* Graphic container (1:1 or 9:16 aspect ratio box) */}
               <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
+                dimensions === '1080x1920' ? 'aspect-[9/16]' : dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
               }`}>
                 {postFormat === 'carrousel' ? (
                   (() => {

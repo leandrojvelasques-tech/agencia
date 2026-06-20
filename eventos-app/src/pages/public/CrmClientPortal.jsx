@@ -472,7 +472,7 @@ export default function CrmClientPortal() {
 
                   {/* Graphic image container */}
                   <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                    selectedPub.dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
+                    selectedPub.dimensions === '1080x1920' ? 'aspect-[9/16]' : selectedPub.dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
                   }`}>
                     {selectedPub.post_format === 'carrousel' ? (
                       (() => {
