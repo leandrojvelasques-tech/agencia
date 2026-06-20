@@ -1,9 +1,32 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { getTerritorioConfig } from '../../lib/crmConfig'
 
 export default function CrmDashboard() {
   const navigate = useNavigate()
+
+  const getGraphicUrls = (urlStr) => {
+    if (!urlStr) return []
+    const trimmed = urlStr.trim()
+    if (trimmed.startsWith('[')) {
+      try {
+        const urls = JSON.parse(trimmed)
+        if (Array.isArray(urls)) return urls
+      } catch (e) {
+        // fallback
+      }
+    }
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map(u => u.trim()).filter(Boolean)
+    }
+    return [trimmed]
+  }
+
+  const getFirstGraphicUrl = (urlStr) => {
+    const urls = getGraphicUrls(urlStr)
+    return urls.length > 0 ? urls[0] : ''
+  }
 
   const isVideoFile = (url, format) => {
     if (!url) return false
@@ -469,80 +492,113 @@ export default function CrmDashboard() {
                       <div className="flex-1 flex flex-col gap-1.5 mt-2">
                         {(() => {
                           let storyIndex = 0
-                          return dayPubs.map(pub => {
+                          return dayPubs.sort((a, b) => {
+                            if (a.type === 'post' && b.type !== 'post') return -1;
+                            if (a.type !== 'post' && b.type === 'post') return 1;
+                            return 0;
+                          }).map(pub => {
                             const isPost = pub.type === 'post'
                             let displayTitle = pub.title
                             if (!isPost) {
                               storyIndex++
                               displayTitle = `Historia ${storyIndex}: ${pub.title}`
                             }
-                            return (
-                              <div
-                                key={pub.id}
-                                onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
-                                className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${
-                                  isPost 
-                                    ? 'bg-emerald-50/60 border-emerald-100 hover:bg-emerald-50 hover:border-emerald-300' 
-                                    : 'bg-pink-50/40 border-pink-100 hover:bg-pink-50 hover:border-pink-300'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
-                                    isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                                  }`}>
-                                    {isPost ? 'Feed' : 'Story'}
-                                  </span>
-                                  <span className={`w-2 h-2 rounded-full ${
-                                    pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                    pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                    pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                    pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
-                                  }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
-                                </div>
-                                <p className="text-[11px] font-bold text-[var(--color-dark-gray)] truncate group-hover/card:text-[var(--color-deep-green)] transition-colors leading-tight">
-                                  {displayTitle}
-                                </p>
-                                {pub.territorio && (
-                                  <p className="text-[9px] font-medium text-[var(--color-dark-gray)]/50 uppercase tracking-tighter mt-0.5">
-                                    {pub.territorio}
-                                  </p>
-                                )}
-
-                                {/* Hover preview tooltip popover */}
-                                <div className="hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left">
-                                  {pub.graphic_url && (
-                                    <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                                      {isVideoFile(pub.graphic_url, pub.post_format) ? (
-                                        <video
-                                          src={pub.graphic_url}
-                                          className="w-full h-full object-cover"
-                                          muted
-                                          loop
-                                          autoPlay
-                                          playsInline
-                                        />
-                                      ) : (
-                                        <img
-                                          src={pub.graphic_url}
-                                          alt={pub.title}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      )}
+                             return (
+                              (() => {
+                                const terrConfig = getTerritorioConfig(pub.territorio)
+                                const cardBgClass = isPost ? terrConfig.color.bg : 'bg-transparent'
+                                const cardBorderClass = isPost ? terrConfig.color.border : 'border-gray-200 border-dashed'
+                                const cardHoverBgClass = isPost ? terrConfig.color.hoverBg : 'hover:bg-gray-50'
+                                const cardHoverBorderClass = isPost ? terrConfig.color.hoverBorder : 'hover:border-gray-300 hover:border-solid'
+                                const textClass = isPost ? (terrConfig.color.text || 'text-[var(--color-dark-gray)]') : 'text-[var(--color-dark-gray)]'
+                                return (
+                                  <div
+                                    key={pub.id}
+                                    onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
+                                    className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${cardHoverBorderClass} ${textClass}`}
+                                  >
+                                    <div className="flex items-center justify-between mb-1">
+                                      <div className="flex items-center gap-1 flex-wrap">
+                                        <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
+                                          isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
+                                        }`}>
+                                          {isPost ? 'Feed' : 'Story'}
+                                        </span>
+                                        {pub.post_format && (
+                                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white text-gray-500 border border-gray-150 uppercase tracking-tighter">
+                                            {pub.post_format === 'carrousel' ? 'Carrusel' :
+                                             pub.post_format === 'reel' ? 'Reel' :
+                                             pub.post_format === 'placa' ? 'Placa' :
+                                             pub.post_format === 'video' ? 'Video' : pub.post_format}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className={`w-2 h-2 rounded-full ${
+                                        pub.status_piece === 'published' ? 'bg-emerald-500' :
+                                        pub.status_piece === 'ready' ? 'bg-teal-500' :
+                                        pub.status_piece === 'pending_design' ? 'bg-amber-500' :
+                                        pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
+                                      }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
                                     </div>
-                                  )}
-                                  <div>
-                                    <p className="font-bold text-xs text-[var(--color-deep-green)] line-clamp-1">{displayTitle}</p>
-                                    <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight">
-                                      {pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format}
+                                    <p className="text-[11px] font-bold truncate leading-tight opacity-90">
+                                      {displayTitle}
                                     </p>
-                                    {pub.copy && (
-                                      <p className="text-[10px] text-[var(--color-dark-gray)]/80 mt-1 line-clamp-3 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap">
-                                        {pub.copy}
+                                    {pub.territorio && (
+                                      <p className="text-[9px] font-bold uppercase tracking-tighter mt-0.5 opacity-75">
+                                        {pub.territorio}
                                       </p>
                                     )}
+
+                                    {/* Hover preview tooltip popover */}
+                                    <div className="hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left">
+                                      {pub.graphic_url && (() => {
+                                        const firstUrl = getFirstGraphicUrl(pub.graphic_url)
+                                        return firstUrl && (
+                                          <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                            {isVideoFile(firstUrl, pub.post_format) ? (
+                                              <video
+                                                src={firstUrl}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                loop
+                                                autoPlay
+                                                playsInline
+                                              />
+                                            ) : (
+                                              <img
+                                                src={firstUrl}
+                                                alt={pub.title}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            )}
+                                          </div>
+                                        )
+                                      })()}
+                                      <div>
+                                        <p className="font-bold text-xs text-[var(--color-deep-green)] line-clamp-1">{displayTitle}</p>
+                                        <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight flex items-center justify-between gap-2">
+                                          <span>{pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format === 'carrousel' ? 'Carrusel' : pub.post_format}</span>
+                                          {pub.territorio && (
+                                            <span className="text-[9px] text-[var(--color-deep-green)] font-bold tracking-tight bg-[var(--color-deep-green)]/5 px-1.5 py-0.5 rounded uppercase">
+                                              {pub.territorio}
+                                            </span>
+                                          )}
+                                        </p>
+                                        {pub.territorio && (
+                                          <p className="text-[9px] text-gray-400 font-medium leading-relaxed italic mt-1 normal-case">
+                                            Eje: {terrConfig.desc}
+                                          </p>
+                                        )}
+                                        {pub.copy && (
+                                          <p className="text-[10px] text-[var(--color-dark-gray)]/80 mt-1 line-clamp-3 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap">
+                                            {pub.copy}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
+                                )
+                              })()
                             )
                           })
                         })()}
@@ -642,9 +698,26 @@ export default function CrmDashboard() {
                           </div>
                         </td>
                         <td>
-                          <span className="text-xs font-bold text-dark-gray/70 uppercase tracking-tight">
-                            {pub.territorio || '-'}
-                          </span>
+                          {pub.territorio ? (
+                            (() => {
+                              const tConf = getTerritorioConfig(pub.territorio)
+                              const isPost = pub.type === 'post'
+                              const badgeClass = isPost ? tConf.color.badge : 'bg-transparent text-gray-500 border-gray-200'
+                              return (
+                                <div className="relative group/terr inline-block">
+                                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full border cursor-help ${badgeClass}`}>
+                                    {pub.territorio}
+                                  </span>
+                                  <div className="hidden group-hover/terr:block absolute z-50 bottom-full left-0 mb-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-[10px] rounded-premium p-2.5 shadow-2xl border border-gray-800 pointer-events-none normal-case leading-relaxed font-normal text-left">
+                                    <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[10px] uppercase tracking-wider">{pub.territorio}</p>
+                                    {tConf.desc}
+                                  </div>
+                                </div>
+                              )
+                            })()
+                          ) : (
+                            <span className="text-xs font-bold text-dark-gray/40">-</span>
+                          )}
                         </td>
                         <td>
                           <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${getPieceStatusBadgeClass(pub.status_piece)}`}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { getTerritorioConfig } from '../../lib/crmConfig'
 
 export default function CrmClientPortal() {
   const { token } = useParams()
@@ -12,6 +13,34 @@ export default function CrmClientPortal() {
   const [errorState, setErrorState] = useState(null)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedPub, setSelectedPub] = useState(null) // for modal details
+
+  const [activeSlide, setActiveSlide] = useState(0)
+
+  useEffect(() => {
+    setActiveSlide(0)
+  }, [selectedPub])
+
+  const getGraphicUrls = (urlStr) => {
+    if (!urlStr) return []
+    const trimmed = urlStr.trim()
+    if (trimmed.startsWith('[')) {
+      try {
+        const urls = JSON.parse(trimmed)
+        if (Array.isArray(urls)) return urls
+      } catch (e) {
+        // fallback
+      }
+    }
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map(u => u.trim()).filter(Boolean)
+    }
+    return [trimmed]
+  }
+
+  const getFirstGraphicUrl = (urlStr) => {
+    const urls = getGraphicUrls(urlStr)
+    return urls.length > 0 ? urls[0] : ''
+  }
 
   const isVideoFile = (url, format) => {
     if (!url) return false
@@ -288,13 +317,22 @@ export default function CrmClientPortal() {
                   <div className="flex-1 flex flex-col gap-1.5 mt-2">
                     {(() => {
                       let storyIndex = 0
-                      return dayPubs.map(pub => {
+                      return dayPubs.sort((a, b) => {
+                        if (a.type === 'post' && b.type !== 'post') return -1;
+                        if (a.type !== 'post' && b.type === 'post') return 1;
+                        return 0;
+                      }).map(pub => {
                         const isPost = pub.type === 'post'
                         let displayTitle = pub.title
                         if (!isPost) {
                           storyIndex++
                           displayTitle = `Historia ${storyIndex}: ${pub.title}`
                         }
+                        const terrConfig = getTerritorioConfig(pub.territorio)
+                        const cardBgClass = isPost ? terrConfig.color.bg : 'bg-transparent'
+                        const cardBorderClass = isPost ? terrConfig.color.border : 'border-gray-200 border-dashed'
+                        const cardHoverBgClass = isPost ? terrConfig.color.hoverBg : 'hover:bg-gray-50'
+                        const textClass = isPost ? (terrConfig.color.text || 'text-[var(--color-dark-gray)]') : 'text-[var(--color-dark-gray)]'
                         return (
                           <div
                             key={pub.id}
@@ -302,18 +340,24 @@ export default function CrmClientPortal() {
                               e.stopPropagation() // prevent double click
                               setSelectedPub(pub)
                             }}
-                            className={`p-2 border rounded text-left transition-all hover:-translate-y-0.5 group/card relative ${
-                              isPost 
-                                ? 'bg-emerald-50/60 border-emerald-100 hover:bg-emerald-50' 
-                                : 'bg-pink-50/40 border-pink-100 hover:bg-pink-50'
-                            }`}
+                            className={`p-2 border rounded text-left transition-all hover:-translate-y-0.5 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${textClass}`}
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
-                                isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                              }`}>
-                                {isPost ? 'Feed' : 'Story'}
-                              </span>
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
+                                  isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
+                                }`}>
+                                  {isPost ? 'Feed' : 'Story'}
+                                </span>
+                                {pub.post_format && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white text-gray-500 border border-gray-150 uppercase tracking-tighter">
+                                    {pub.post_format === 'carrousel' ? 'Carrusel' :
+                                     pub.post_format === 'reel' ? 'Reel' :
+                                     pub.post_format === 'placa' ? 'Placa' :
+                                     pub.post_format === 'video' ? 'Video' : pub.post_format}
+                                  </span>
+                                )}
+                              </div>
                               <span className={`w-2 h-2 rounded-full ${
                                 pub.status_piece === 'published' ? 'bg-emerald-500' :
                                 pub.status_piece === 'ready' ? 'bg-teal-500' :
@@ -321,42 +365,55 @@ export default function CrmClientPortal() {
                                 pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
                               }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
                             </div>
-                            <p className="text-[11px] font-bold text-[var(--color-dark-gray)] truncate group-hover/card:text-[var(--color-deep-green)] transition-colors leading-tight">
+                            <p className="text-[11px] font-bold truncate leading-tight opacity-90">
                               {displayTitle}
                             </p>
                             {pub.territorio && (
-                              <p className="text-[9px] font-medium text-[var(--color-dark-gray)]/50 uppercase tracking-tighter mt-0.5">
+                              <p className="text-[9px] font-bold uppercase tracking-tighter mt-0.5 opacity-75">
                                 {pub.territorio}
                               </p>
                             )}
 
                             {/* Hover preview tooltip popover */}
                             <div className="hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left">
-                              {pub.graphic_url && (
-                                <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                                  {isVideoFile(pub.graphic_url, pub.post_format) ? (
-                                    <video
-                                      src={pub.graphic_url}
-                                      className="w-full h-full object-cover"
-                                      muted
-                                      loop
-                                      autoPlay
-                                      playsInline
-                                    />
-                                  ) : (
-                                    <img
-                                      src={pub.graphic_url}
-                                      alt={pub.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  )}
-                                </div>
-                              )}
+                              {pub.graphic_url && (() => {
+                                const firstUrl = getFirstGraphicUrl(pub.graphic_url)
+                                return firstUrl && (
+                                  <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                    {isVideoFile(firstUrl, pub.post_format) ? (
+                                      <video
+                                        src={firstUrl}
+                                        className="w-full h-full object-cover"
+                                        muted
+                                        loop
+                                        autoPlay
+                                        playsInline
+                                      />
+                                    ) : (
+                                      <img
+                                        src={firstUrl}
+                                        alt={pub.title}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    )}
+                                  </div>
+                                )
+                              })()}
                               <div>
                                 <p className="font-bold text-xs text-[var(--color-deep-green)] line-clamp-1">{displayTitle}</p>
-                                <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight">
-                                  {pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format}
+                                <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight flex items-center justify-between gap-2">
+                                  <span>{pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format === 'carrousel' ? 'Carrusel' : pub.post_format}</span>
+                                  {pub.territorio && (
+                                    <span className="text-[9px] text-[var(--color-deep-green)] font-bold tracking-tight bg-[var(--color-deep-green)]/5 px-1.5 py-0.5 rounded uppercase">
+                                      {pub.territorio}
+                                    </span>
+                                  )}
                                 </p>
+                                {pub.territorio && (
+                                  <p className="text-[9px] text-gray-400 font-medium leading-relaxed italic mt-1 normal-case">
+                                    Eje: {terrConfig.desc}
+                                  </p>
+                                )}
                                 {pub.copy && (
                                   <p className="text-[10px] text-[var(--color-dark-gray)]/80 mt-1 line-clamp-3 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap">
                                     {pub.copy}
@@ -417,37 +474,108 @@ export default function CrmClientPortal() {
                   <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
                     selectedPub.dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
                   }`}>
-                    {selectedPub.graphic_url ? (
-                      isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
-                        <video
-                          key={selectedPub.graphic_url}
-                          src={selectedPub.graphic_url}
-                          controls
-                          loop
-                          autoPlay
-                          muted
-                          playsInline
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={selectedPub.graphic_url}
-                          alt={selectedPub.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )
+                    {selectedPub.post_format === 'carrousel' ? (
+                      (() => {
+                        const carouselUrls = getGraphicUrls(selectedPub.graphic_url)
+                        if (carouselUrls.length === 0) {
+                          return (
+                            <div className="flex flex-col items-center justify-center text-center p-8 text-gray-400">
+                              <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">photo_library</span>
+                              <p className="text-xs font-bold uppercase tracking-wider">Carrusel de imágenes</p>
+                              <p className="text-[10px] mt-1 text-gray-400/80 font-medium">{selectedPub.dimensions || '1080x1080'} px</p>
+                            </div>
+                          )
+                        }
+                        const activeUrl = carouselUrls[activeSlide] || carouselUrls[0]
+                        return (
+                          <div className="relative w-full h-full flex items-center justify-center">
+                            <img
+                              src={activeUrl}
+                              alt={`Carrusel diapositiva ${activeSlide + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            
+                            {carouselUrls.length > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setActiveSlide(prev => (prev === 0 ? carouselUrls.length - 1 : prev - 1))
+                                  }}
+                                  className="absolute left-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                                >
+                                  <span className="material-symbols-outlined text-lg">chevron_left</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setActiveSlide(prev => (prev === carouselUrls.length - 1 ? 0 : prev + 1))
+                                  }}
+                                  className="absolute right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                                >
+                                  <span className="material-symbols-outlined text-lg">chevron_right</span>
+                                </button>
+                                
+                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                  {carouselUrls.map((_, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setActiveSlide(idx)
+                                      }}
+                                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                        idx === activeSlide ? 'bg-white scale-125' : 'bg-white/55 hover:bg-white/80'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                
+                                {/* Slide Counter Indicator */}
+                                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold tracking-wider">
+                                  {activeSlide + 1} / {carouselUrls.length}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })()
                     ) : (
-                      <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
-                        <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
-                          {selectedPub.post_format === 'reel' ? 'movie' : 'image'}
-                        </span>
-                        <p className="text-xs font-bold uppercase tracking-wider">
-                          {selectedPub.post_format === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
-                        </p>
-                        <p className="text-[10px] mt-1 text-gray-400/80">
-                          {selectedPub.dimensions || '1080x1080'} px
-                        </p>
-                      </div>
+                      selectedPub.graphic_url ? (
+                        isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
+                          <video
+                            key={selectedPub.graphic_url}
+                            src={selectedPub.graphic_url}
+                            controls
+                            loop
+                            autoPlay
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={selectedPub.graphic_url}
+                            alt={selectedPub.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
+                          <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
+                            {selectedPub.post_format === 'reel' ? 'movie' : 'image'}
+                          </span>
+                          <p className="text-xs font-bold uppercase tracking-wider">
+                            {selectedPub.post_format === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
+                          </p>
+                          <p className="text-[10px] mt-1 text-gray-400/80">
+                            {selectedPub.dimensions || '1080x1080'} px
+                          </p>
+                        </div>
+                      )
                     )}
                     <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider">
                       {selectedPub.dimensions || '1080x1080'}
@@ -580,9 +708,24 @@ export default function CrmClientPortal() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Temática / Territorio</p>
-                      <p className="text-xs font-bold text-gray-800 mt-0.5 uppercase tracking-tight">
-                        {selectedPub.territorio || '-'}
-                      </p>
+                      {selectedPub.territorio ? (
+                        (() => {
+                          const tConf = getTerritorioConfig(selectedPub.territorio)
+                          return (
+                            <div className="relative group/terr inline-block mt-0.5">
+                              <span className={`text-[10px] font-bold px-2 py-1 rounded-full border cursor-help ${tConf.color.badge}`}>
+                                {selectedPub.territorio}
+                              </span>
+                              <div className="hidden group-hover/terr:block absolute z-50 bottom-full left-0 mb-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-[10px] rounded-premium p-2.5 shadow-2xl border border-gray-800 pointer-events-none normal-case leading-relaxed font-normal text-left">
+                                <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[10px] uppercase tracking-wider">{selectedPub.territorio}</p>
+                                {tConf.desc}
+                              </div>
+                            </div>
+                          )
+                        })()
+                      ) : (
+                        <p className="text-xs font-bold text-gray-850 mt-0.5">-</p>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { TERRITORIOS, getTerritorioConfig } from '../../lib/crmConfig'
 
 export default function CrmPublicationCreate() {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ export default function CrmPublicationCreate() {
   const [postFormat, setPostFormat] = useState('placa') // 'carrousel' | 'reel' | 'placa' | 'video' | 'otro'
   const [dimensions, setDimensions] = useState('1080x1080') // '1080x1080' | '1080x1920'
   const [territorio, setTerritorio] = useState('')
+  const [isTerritorioOpen, setIsTerritorioOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [copy, setCopy] = useState('')
   const [graphicUrl, setGraphicUrl] = useState('')
@@ -29,6 +31,29 @@ export default function CrmPublicationCreate() {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef(null)
+
+  const [activeSlide, setActiveSlide] = useState(0)
+
+  useEffect(() => {
+    setActiveSlide(0)
+  }, [graphicUrl, postFormat])
+
+  const getGraphicUrls = (urlStr) => {
+    if (!urlStr) return []
+    const trimmed = urlStr.trim()
+    if (trimmed.startsWith('[')) {
+      try {
+        const urls = JSON.parse(trimmed)
+        if (Array.isArray(urls)) return urls
+      } catch (e) {
+        // fallback
+      }
+    }
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map(u => u.trim()).filter(Boolean)
+    }
+    return [trimmed]
+  }
 
   const isVideoFile = (url, format) => {
     if (!url) return false
@@ -48,42 +73,64 @@ export default function CrmPublicationCreate() {
     return false
   }
 
-  const handleFileUpload = async (file) => {
-    if (!file) return
-    const isVideo = file.type.startsWith('video/')
-    const isImage = file.type.startsWith('image/')
-    
-    if (!isImage && !isVideo) {
-      showToast('Solo se permiten imágenes (JPG, PNG, WEBP, GIF) o videos (MP4, MOV, WEBM).', 'error')
-      return
+  const handleFileUpload = async (files) => {
+    if (!files) return
+    const fileList = files instanceof FileList ? Array.from(files) : (Array.isArray(files) ? files : [files])
+    if (fileList.length === 0) return
+
+    // Filter and validate files
+    const validFiles = []
+    for (const file of fileList) {
+      const isVideo = file.type.startsWith('video/')
+      const isImage = file.type.startsWith('image/')
+      
+      if (!isImage && !isVideo) {
+        showToast(`Solo se permiten imágenes o videos. Archivo omitido: ${file.name}`, 'error')
+        continue
+      }
+      
+      // Limits: 10 MB for images, 100 MB for videos
+      const limit = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024
+      if (file.size > limit) {
+        showToast(`El archivo "${file.name}" supera el límite permitido (${isVideo ? '100 MB' : '10 MB'}).`, 'error')
+        continue
+      }
+      validFiles.push(file)
     }
-    
-    // Limits: 10 MB for images, 30 MB for videos
-    const limit = isVideo ? 30 * 1024 * 1024 : 10 * 1024 * 1024
-    if (file.size > limit) {
-      showToast(`El archivo supera el límite permitido (${isVideo ? '30 MB' : '10 MB'}).`, 'error')
-      return
-    }
+
+    if (validFiles.length === 0) return
 
     setUploading(true)
     setUploadError('')
     
     try {
-      const ext = file.name.split('.').pop()
-      const fileName = `crm-${Date.now()}.${ext}`
-      
-      const { error: upErr } = await supabase.storage
-        .from('banners')
-        .upload(fileName, file, { upsert: true, contentType: file.type })
-      
-      if (upErr) throw upErr
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('banners')
-        .getPublicUrl(fileName)
-      
-      setGraphicUrl(publicUrl)
-      showToast('Archivo subido correctamente.')
+      const uploadedUrls = []
+      for (const file of validFiles) {
+        const ext = file.name.split('.').pop()
+        const fileName = `crm-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
+        
+        const { error: upErr } = await supabase.storage
+          .from('banners')
+          .upload(fileName, file, { upsert: true, contentType: file.type })
+        
+        if (upErr) throw upErr
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('banners')
+          .getPublicUrl(fileName)
+        
+        uploadedUrls.push(publicUrl)
+      }
+
+      if (postFormat === 'carrousel') {
+        const currentUrls = getGraphicUrls(graphicUrl)
+        const newUrls = [...currentUrls, ...uploadedUrls]
+        setGraphicUrl(JSON.stringify(newUrls))
+        setActiveSlide(currentUrls.length)
+      } else {
+        setGraphicUrl(uploadedUrls[0])
+      }
+      showToast(validFiles.length > 1 ? 'Archivos subidos correctamente.' : 'Archivo subido correctamente.')
     } catch (err) {
       console.error('Error uploading file:', err)
       setUploadError(err.message || 'Error al subir el archivo.')
@@ -468,74 +515,96 @@ export default function CrmPublicationCreate() {
               )}
             </div>
 
-            {/* Type selector (Post vs Story) */}
+            {/* Classification Selector */}
             <div className="md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Canal de Publicación
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-3">
+                Clasificación de Publicación
               </label>
-              <div className="grid grid-cols-2 gap-4">
-                <label className={`border rounded-premium p-4 flex items-center justify-center gap-3 cursor-pointer transition-all ${
-                  type === 'post' 
-                    ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 font-bold text-[var(--color-deep-green)]' 
-                    : 'border-gray-200 hover:bg-gray-50 text-[var(--color-dark-gray)]/70'
-                }`}>
-                  <input
-                    type="radio"
-                    name="type"
-                    value="post"
-                    checked={type === 'post'}
-                    onChange={() => setType('post')}
-                    className="sr-only"
-                  />
-                  <span className="material-symbols-outlined">grid_on</span>
-                  Feed (Post / Reel)
-                </label>
-                <label className={`border rounded-premium p-4 flex items-center justify-center gap-3 cursor-pointer transition-all ${
-                  type === 'story' 
-                    ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 font-bold text-[var(--color-deep-green)]' 
-                    : 'border-gray-200 hover:bg-gray-50 text-[var(--color-dark-gray)]/70'
-                }`}>
-                  <input
-                    type="radio"
-                    name="type"
-                    value="story"
-                    checked={type === 'story'}
-                    onChange={() => setType('story')}
-                    className="sr-only"
-                  />
-                  <span className="material-symbols-outlined">filter_frames</span>
-                  Historia (Story)
-                </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { id: 'post_placa', label: 'Post (Feed)', icon: 'image', desc: 'Placa o video en feed' },
+                  { id: 'post_reel', label: 'Reel', icon: 'movie', desc: 'Video vertical vertical' },
+                  { id: 'post_carrousel', label: 'Carrusel', icon: 'photo_library', desc: 'Múltiples imágenes' },
+                  { id: 'story', label: 'Historia', icon: 'filter_frames', desc: 'Story vertical (24h)' },
+                ].map((opt) => {
+                  let isSelected = false
+                  if (opt.id === 'post_placa') {
+                    isSelected = type === 'post' && (postFormat === 'placa' || postFormat === 'video' || postFormat === 'otro')
+                  } else if (opt.id === 'post_reel') {
+                    isSelected = type === 'post' && postFormat === 'reel'
+                  } else if (opt.id === 'post_carrousel') {
+                    isSelected = type === 'post' && postFormat === 'carrousel'
+                  } else if (opt.id === 'story') {
+                    isSelected = type === 'story'
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      key={opt.id}
+                      onClick={() => {
+                        if (opt.id === 'post_placa') {
+                          setType('post')
+                          setPostFormat('placa')
+                          setDimensions('1080x1080')
+                        } else if (opt.id === 'post_reel') {
+                          setType('post')
+                          setPostFormat('reel')
+                          setDimensions('1080x1920')
+                        } else if (opt.id === 'post_carrousel') {
+                          setType('post')
+                          setPostFormat('carrousel')
+                          setDimensions('1080x1080')
+                        } else if (opt.id === 'story') {
+                          setType('story')
+                          setPostFormat('placa')
+                          setDimensions('1080x1920')
+                        }
+                      }}
+                      className={`border rounded-premium p-4 flex flex-col items-center text-center justify-between cursor-pointer transition-all h-28 ${
+                        isSelected 
+                          ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 font-bold text-[var(--color-deep-green)] ring-1 ring-[var(--color-deep-green)]/15 shadow-sm' 
+                          : 'border-gray-200 hover:bg-gray-50 text-[var(--color-dark-gray)]/70'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-3xl mb-1.5">{opt.icon}</span>
+                      <div>
+                        <p className="text-xs font-bold">{opt.label}</p>
+                        <p className="text-[9px] text-[var(--color-dark-gray)]/40 font-medium mt-0.5">{opt.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* Format selection */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Formato del Contenido
-              </label>
-              <select
-                value={postFormat}
-                onChange={(e) => setPostFormat(e.target.value)}
-                className="form-input border border-gray-200 bg-white"
-              >
-                {type === 'post' ? (
-                  <>
-                    <option value="placa">Placa Única (Imagen)</option>
-                    <option value="carrousel">Carrusel (Imágenes)</option>
-                    <option value="reel">Video Reel (Vertical)</option>
-                    <option value="video">Video Feed</option>
-                    <option value="otro">Otro</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="placa">Placa (Imagen)</option>
-                    <option value="video">Video Corto</option>
-                    <option value="otro">Otro</option>
-                  </>
-                )}
-              </select>
-            </div>
+            {/* Format Refinement selector (only if Post or Story is selected, and not reel/carrousel) */}
+            {((type === 'post' && postFormat !== 'reel' && postFormat !== 'carrousel') || type === 'story') && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                  Formato de {type === 'post' ? 'Post' : 'Historia'}
+                </label>
+                <select
+                  value={postFormat}
+                  onChange={(e) => setPostFormat(e.target.value)}
+                  className="form-input border border-gray-200 bg-white"
+                >
+                  {type === 'post' ? (
+                    <>
+                      <option value="placa">Placa Única (Imagen)</option>
+                      <option value="video">Video Feed</option>
+                      <option value="otro">Otro</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="placa">Placa (Imagen)</option>
+                      <option value="video">Video Corto</option>
+                      <option value="otro">Otro</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            )}
 
             {/* Dimensions */}
             <div>
@@ -557,13 +626,66 @@ export default function CrmPublicationCreate() {
               <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
                 Territorio / Eje temático
               </label>
-              <input
-                type="text"
-                value={territorio}
-                onChange={(e) => setTerritorio(e.target.value)}
-                placeholder="Ej: PROMOCIONES, GASTRONOMIA, SALON"
-                className="form-input border border-gray-200 bg-white"
-              />
+              <div className="relative">
+                {(() => {
+                  const activeConfig = getTerritorioConfig(territorio)
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setIsTerritorioOpen(!isTerritorioOpen)}
+                      className={`form-input border text-left flex items-center justify-between w-full cursor-pointer h-10 px-3 py-2 rounded-premium text-sm font-bold transition-all ${
+                        territorio 
+                          ? `${activeConfig.color.bg} ${activeConfig.color.border} ${activeConfig.color.text}` 
+                          : 'border-gray-200 bg-white text-gray-400'
+                      }`}
+                    >
+                      <span>
+                        {territorio || 'Seleccionar territorio...'}
+                      </span>
+                      <span className="material-symbols-outlined select-none opacity-80">
+                        {isTerritorioOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+                      </span>
+                    </button>
+                  )
+                })()}
+
+                {isTerritorioOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 z-30" 
+                      onClick={() => setIsTerritorioOpen(false)} 
+                    />
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-premium shadow-xl z-40 py-1 max-h-60 overflow-y-auto animate-fade-in flex flex-col gap-0.5">
+                      {TERRITORIOS.map((opt) => (
+                        <div
+                          key={opt.id}
+                          onClick={() => {
+                            setTerritorio(opt.id)
+                            setIsTerritorioOpen(false)
+                          }}
+                          className={`relative group/opt px-4 py-2.5 text-xs font-bold cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 border-black/5 ${opt.color.bg} ${opt.color.text} ${opt.color.hoverBg}`}
+                        >
+                          <span>{opt.label}</span>
+                          
+                          {/* Info Indicator */}
+                          <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                            <span className="material-symbols-outlined text-base cursor-help">info</span>
+                            
+                            {/* Custom Tooltip */}
+                            <div className="hidden group-hover/opt:block absolute bottom-full right-0 md:bottom-auto md:left-full md:top-1/2 md:-translate-y-1/2 mb-2 md:mb-0 md:ml-3 w-72 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-premium p-3.5 shadow-2xl z-50 pointer-events-none transition-all duration-200 border border-gray-850 animate-fade-in text-left">
+                              <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[11px] uppercase tracking-wider">{opt.label}</p>
+                              <p className="font-medium text-gray-200 leading-relaxed text-[11px] normal-case">{opt.desc}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Title */}
@@ -598,18 +720,19 @@ export default function CrmPublicationCreate() {
                 onDrop={(e) => {
                   e.preventDefault()
                   if (uploading) return
-                  const file = e.dataTransfer.files[0]
-                  if (file) handleFileUpload(file)
+                  const files = e.dataTransfer.files
+                  if (files && files.length > 0) handleFileUpload(files)
                 }}
               >
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,video/*"
+                  accept={postFormat === 'carrousel' ? "image/*" : "image/*,video/*"}
+                  multiple={postFormat === 'carrousel'}
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files[0]
-                    if (file) handleFileUpload(file)
+                    const files = e.target.files
+                    if (files && files.length > 0) handleFileUpload(files)
                   }}
                 />
                 {uploading ? (
@@ -621,14 +744,45 @@ export default function CrmPublicationCreate() {
                   <div className="flex flex-col items-center justify-center py-1">
                     <span className="material-symbols-outlined text-3xl text-gray-400 mb-1.5">upload_file</span>
                     <p className="text-xs font-semibold text-gray-600">
-                      Arrastrá un archivo o hacé clic para seleccionar
+                      Arrastrá {postFormat === 'carrousel' ? 'imágenes' : 'un archivo'} o hacé clic para seleccionar
                     </p>
                     <p className="text-[10px] text-gray-400 mt-1">
-                      Imágenes (máx. 10MB) o Videos (máx. 30MB)
+                      {postFormat === 'carrousel' ? 'Imágenes (máx. 10MB c/u)' : 'Imágenes (máx. 10MB) o Videos (máx. 100MB)'}
                     </p>
                   </div>
                 )}
               </div>
+
+              {/* Carousel Thumbnail Gallery */}
+              {postFormat === 'carrousel' && (() => {
+                const carouselUrls = getGraphicUrls(graphicUrl)
+                if (carouselUrls.length === 0) return null
+                return (
+                  <div className="mt-4 p-3 bg-gray-50/50 rounded-premium border border-gray-150 space-y-2">
+                    <p className="text-xs font-bold text-gray-500">Imágenes en el carrusel ({carouselUrls.length})</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {carouselUrls.map((url, idx) => (
+                        <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+                          <img src={url} className="w-full h-full object-cover" alt="" />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const newUrls = carouselUrls.filter((_, i) => i !== idx)
+                              setGraphicUrl(newUrls.length > 0 ? JSON.stringify(newUrls) : '')
+                              setActiveSlide(0)
+                            }}
+                            className="absolute inset-0 bg-red-650/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Eliminar imagen"
+                          >
+                            <span className="material-symbols-outlined text-xl">delete</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {uploadError && (
                 <p className="text-[11px] text-red-650 font-bold flex items-center gap-1">
@@ -766,52 +920,120 @@ export default function CrmPublicationCreate() {
               <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
                 dimensions === '1080x1920' ? 'aspect-[9/16]' : 'aspect-square'
               }`}>
-                {graphicUrl ? (
-                  isVideoFile(graphicUrl, postFormat) ? (
-                    <video
-                      key={graphicUrl}
-                      src={graphicUrl}
-                      controls
-                      loop
-                      autoPlay
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const fb = e.target.parentNode.querySelector('.fallback-msg');
-                        if (fb) fb.style.display = 'flex';
-                      }}
-                    />
+                {postFormat === 'carrousel' ? (
+                  (() => {
+                    const carouselUrls = getGraphicUrls(graphicUrl)
+                    if (carouselUrls.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center text-center p-6 text-gray-400">
+                          <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">photo_library</span>
+                          <p className="text-xs font-bold uppercase tracking-wider">Carrusel de imágenes</p>
+                          <p className="text-[10px] mt-1 text-gray-400/80 font-medium">{dimensions} px</p>
+                        </div>
+                      )
+                    }
+                    const activeUrl = carouselUrls[activeSlide] || carouselUrls[0]
+                    return (
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <img
+                          src={activeUrl}
+                          alt={`Carrusel diapositiva ${activeSlide + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        
+                        {carouselUrls.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setActiveSlide(prev => (prev === 0 ? carouselUrls.length - 1 : prev - 1))
+                              }}
+                              className="absolute left-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                            >
+                              <span className="material-symbols-outlined text-lg">chevron_left</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setActiveSlide(prev => (prev === carouselUrls.length - 1 ? 0 : prev + 1))
+                              }}
+                              className="absolute right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                            >
+                              <span className="material-symbols-outlined text-lg">chevron_right</span>
+                            </button>
+                            
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                              {carouselUrls.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setActiveSlide(idx)
+                                  }}
+                                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                    idx === activeSlide ? 'bg-white scale-125' : 'bg-white/55 hover:bg-white/80'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            
+                            {/* Slide Counter Indicator */}
+                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold tracking-wider">
+                              {activeSlide + 1} / {carouselUrls.length}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })()
+                ) : (
+                  graphicUrl ? (
+                    isVideoFile(graphicUrl, postFormat) ? (
+                      <video
+                        key={graphicUrl}
+                        src={graphicUrl}
+                        controls
+                        loop
+                        autoPlay
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const fb = e.target.parentNode.querySelector('.fallback-msg');
+                          if (fb) fb.style.display = 'flex';
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={graphicUrl}
+                        alt="Pieza gráfica"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const fb = e.target.parentNode.querySelector('.fallback-msg');
+                          if (fb) fb.style.display = 'flex';
+                        }}
+                      />
+                    )
                   ) : (
-                    <img
-                      src={graphicUrl}
-                      alt="Pieza gráfica"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        const fb = e.target.parentNode.querySelector('.fallback-msg');
-                        if (fb) fb.style.display = 'flex';
-                      }}
-                    />
+                    /* Fallback placeholder */
+                    <div className="fallback-msg absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
+                      <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
+                        {postFormat === 'reel' ? 'movie' : 'image'}
+                      </span>
+                      <p className="text-xs font-bold uppercase tracking-wider">
+                        {postFormat === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
+                      </p>
+                      <p className="text-[10px] mt-1 text-gray-400/80 font-medium">
+                        {dimensions} px
+                      </p>
+                    </div>
                   )
-                ) : null}
-                
-                {/* Fallback placeholder */}
-                <div 
-                  className="fallback-msg absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400"
-                  style={{ display: graphicUrl ? 'none' : 'flex' }}
-                >
-                  <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
-                    {postFormat === 'reel' ? 'movie' : 'image'}
-                  </span>
-                  <p className="text-xs font-bold uppercase tracking-wider">
-                    {postFormat === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
-                  </p>
-                  <p className="text-[10px] mt-1 text-gray-400/80 font-medium">
-                    {dimensions} px
-                  </p>
-                </div>
+                )}
 
                 {/* Sizing indicator badge */}
                 <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
