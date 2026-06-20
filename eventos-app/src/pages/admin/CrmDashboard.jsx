@@ -427,6 +427,17 @@ export default function CrmDashboard() {
                   <span className="material-symbols-outlined text-base">format_list_bulleted</span>
                   Vista Tabla
                 </button>
+                <button
+                  onClick={() => setViewMode('feed')}
+                  className={`px-4 py-2 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
+                    viewMode === 'feed'
+                      ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">grid_on</span>
+                  Vista Feed
+                </button>
               </div>
             </div>
           </div>
@@ -607,6 +618,73 @@ export default function CrmDashboard() {
                   )
                 })}
               </div>
+            </div>
+          ) : viewMode === 'feed' ? (
+            /* FEED VIEW */
+            <div className="p-6 max-w-4xl mx-auto">
+              {publications.filter(p => p.type === 'post').length === 0 ? (
+                <div className="py-20 text-center text-dark-gray/40">
+                  <span className="material-symbols-outlined text-4xl block mb-2">grid_off</span>
+                  <p className="text-sm font-bold">No hay publicaciones de Feed para este mes.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-1 md:gap-2">
+                  {publications
+                    .filter(pub => pub.type === 'post')
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map(pub => {
+                      const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null;
+                      const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false;
+                      
+                      return (
+                        <div
+                          key={pub.id}
+                          onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
+                          className="relative aspect-square bg-white border border-gray-100 rounded-sm cursor-pointer group overflow-hidden"
+                        >
+                          {firstUrl ? (
+                            isVideo ? (
+                              <video
+                                src={firstUrl}
+                                className="w-full h-full object-cover"
+                                muted
+                                loop
+                                playsInline
+                                onMouseEnter={(e) => e.target.play()}
+                                onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }}
+                              />
+                            ) : (
+                              <img
+                                src={firstUrl}
+                                alt={pub.title}
+                                className="w-full h-full object-cover"
+                              />
+                            )
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gray-50">
+                              <span className="material-symbols-outlined text-gray-300 text-3xl mb-2">image_not_supported</span>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter line-clamp-3">{pub.title}</p>
+                            </div>
+                          )}
+                          
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-4 text-center">
+                            <p className="text-xs font-bold mb-2 line-clamp-3 leading-snug">{pub.title}</p>
+                            <p className="text-[10px] text-white/80 font-medium bg-black/40 px-2 py-1 rounded">
+                              {pub.date.split('-').reverse().join('/')}
+                            </p>
+                            {pub.post_format === 'carrousel' && (
+                              <span className="material-symbols-outlined absolute top-2 right-2 text-white shadow-sm text-sm">filter_none</span>
+                            )}
+                            {isVideo && (
+                              <span className="material-symbols-outlined absolute top-2 right-2 text-white shadow-sm text-sm">play_circle</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
             </div>
           ) : (
             /* LIST/TABLE VIEW */
