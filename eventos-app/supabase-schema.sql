@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS crm_publications (
     type TEXT NOT NULL CHECK (type IN ('post', 'story')),
     post_format TEXT NOT NULL CHECK (post_format IN ('carrousel', 'reel', 'placa', 'video', 'otro')),
     territorio TEXT,
-    dimensions TEXT CHECK (dimensions IN ('1080x1080', '1080x1920')),
+    dimensions TEXT CHECK (dimensions IN ('1080x1080', '1080x1920', '1080x1350')),
     title TEXT NOT NULL,
     copy TEXT,
     graphic_url TEXT,
