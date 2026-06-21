@@ -82,12 +82,11 @@ export default function CrmClientPortal() {
 
         setClient(clientData)
 
-        // Fetch client publications (filter out draft publications to keep clients seeing only planned/published items)
+        // Fetch client publications (show all publications regardless of status)
         const { data: pubs, error: pErr } = await supabase
           .from('crm_publications')
           .select('*')
           .eq('client_id', clientData.id)
-          .neq('status_post', 'draft') // don't show internal drafts
           .order('date', { ascending: true })
 
         if (pErr) throw pErr
