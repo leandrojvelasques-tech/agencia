@@ -62,6 +62,12 @@ export default function CrmDashboard() {
   // Notification toast
   const [toast, setToast] = useState(null)
 
+  const [selectedPubIds, setSelectedPubIds] = useState([])
+
+  useEffect(() => {
+    setSelectedPubIds([])
+  }, [selectedClientId, viewMode])
+
   // Fetch clients
   useEffect(() => {
     async function loadClients() {
@@ -134,10 +140,29 @@ export default function CrmDashboard() {
         .eq('id', id)
       if (error) throw error
       setPublications(prev => prev.filter(p => p.id !== id))
+      setSelectedPubIds(prev => prev.filter(item => item !== id))
       showToast('Publicación eliminada correctamente.')
     } catch (err) {
       console.error('Error deleting:', err)
       showToast('Error al eliminar la publicación.', 'error')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedPubIds.length === 0) return
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar las ${selectedPubIds.length} publicaciones seleccionadas?`)) return
+    try {
+      const { error } = await supabase
+        .from('crm_publications')
+        .delete()
+        .in('id', selectedPubIds)
+      if (error) throw error
+      setPublications(prev => prev.filter(p => !selectedPubIds.includes(p.id)))
+      setSelectedPubIds([])
+      showToast('Publicaciones eliminadas correctamente.')
+    } catch (err) {
+      console.error('Error bulk deleting:', err)
+      showToast('Error al eliminar las publicaciones.', 'error')
     }
   }
 
@@ -898,6 +923,30 @@ export default function CrmDashboard() {
                 </div>
               </div>
 
+              {selectedPubIds.length > 0 && (
+                <div className="p-4 bg-red-50/70 border-b border-red-100 flex items-center justify-between text-red-900">
+                  <span className="text-xs font-bold flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base text-red-650">check_box</span>
+                    {selectedPubIds.length} publicaciones seleccionadas
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSelectedPubIds([])}
+                      className="px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 rounded-premium-btn transition-colors shadow-sm"
+                    >
+                      Deseleccionar todo
+                    </button>
+                    <button
+                      onClick={handleBulkDelete}
+                      className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-premium-btn flex items-center gap-1.5 shadow-sm transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                      Eliminar Seleccionadas
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {filteredPublications.length === 0 ? (
                 <div className="py-20 text-center text-dark-gray/40">
                   <span className="material-symbols-outlined text-4xl block mb-2">find_in_page</span>
@@ -907,6 +956,26 @@ export default function CrmDashboard() {
                 <table className="data-table">
                   <thead>
                     <tr>
+                      <th className="w-10 text-center">
+                        <input
+                          type="checkbox"
+                          checked={filteredPublications.length > 0 && filteredPublications.every(pub => selectedPubIds.includes(pub.id))}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPubIds(prev => {
+                                const newSelection = [...prev]
+                                filteredPublications.forEach(pub => {
+                                  if (!newSelection.includes(pub.id)) newSelection.push(pub.id)
+                                })
+                                return newSelection
+                              })
+                            } else {
+                              setSelectedPubIds(prev => prev.filter(id => !filteredPublications.some(pub => pub.id === id)))
+                            }
+                          }}
+                          className="rounded text-[var(--color-deep-green)] focus:ring-[var(--color-deep-green)] w-4 h-4 cursor-pointer"
+                        />
+                      </th>
                       <th>Fecha</th>
                       <th>Publicación</th>
                       <th>Canal / Formato</th>
@@ -917,14 +986,28 @@ export default function CrmDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPublications.map(pub => (
-                      <tr key={pub.id}>
-                        <td className="font-bold text-[var(--color-dark-gray)]">
-                          {pub.date.split('-').reverse().join('/')}
-                        </td>
-                        <td>
-                          <div>
-                            <p className="font-bold text-[var(--color-deep-green)]">{pub.title}</p>
+                    {filteredPublications.map(pub => {
+                      const isSelected = selectedPubIds.includes(pub.id)
+                      return (
+                        <tr key={pub.id} className={isSelected ? 'bg-[var(--color-deep-green)]/5' : ''}>
+                          <td className="w-10 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                setSelectedPubIds(prev =>
+                                  prev.includes(pub.id) ? prev.filter(id => id !== pub.id) : [...prev, pub.id]
+                                )
+                              }}
+                              className="rounded text-[var(--color-deep-green)] focus:ring-[var(--color-deep-green)] w-4 h-4 cursor-pointer"
+                            />
+                          </td>
+                          <td className="font-bold text-[var(--color-dark-gray)]">
+                            {pub.date.split('-').reverse().join('/')}
+                          </td>
+                          <td>
+                            <div>
+                              <p className="font-bold text-[var(--color-deep-green)]">{pub.title}</p>
                             {pub.copy && (
                               <p className="text-xs text-dark-gray/60 truncate max-w-xs mt-0.5">{pub.copy}</p>
                             )}
@@ -998,7 +1081,7 @@ export default function CrmDashboard() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               )}
