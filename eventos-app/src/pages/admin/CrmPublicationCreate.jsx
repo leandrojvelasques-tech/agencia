@@ -23,6 +23,7 @@ export default function CrmPublicationCreate() {
   const [graphicUrl, setGraphicUrl] = useState('')
   const [statusPiece, setStatusPiece] = useState('')
   const [statusPost, setStatusPost] = useState('draft')
+  const [notes, setNotes] = useState('')
 
   const [loading, setLoading] = useState(false)
   const [fetchingData, setFetchingData] = useState(isEdit)
@@ -224,6 +225,7 @@ export default function CrmPublicationCreate() {
             setGraphicUrl(pubData.graphic_url || '')
             setStatusPiece(pubData.status_piece)
             setStatusPost(pubData.status_post)
+            setNotes(pubData.notes || '')
           }
         }
       } catch (err) {
@@ -284,6 +286,7 @@ export default function CrmPublicationCreate() {
       graphic_url: graphicUrl || null,
       status_piece: statusPiece,
       status_post: statusPost,
+      notes: notes || null,
     }
 
     try {
@@ -893,6 +896,20 @@ export default function CrmPublicationCreate() {
                 value={statusPiece || ''}
                 onChange={(e) => setStatusPiece(e.target.value)}
                 placeholder="Anotá lo que te falta para esta publicación (ej: Conseguir fotos de la fachada, redactar copy alternativo...)"
+                rows={3}
+                className="form-input border border-gray-200 bg-white resize-y text-xs"
+              />
+            </div>
+
+            {/* Observaciones (Free text observations) */}
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                Observaciones
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Observaciones o anotaciones sobre la publicación..."
                 rows={3}
                 className="form-input border border-gray-200 bg-white resize-y text-xs"
               />

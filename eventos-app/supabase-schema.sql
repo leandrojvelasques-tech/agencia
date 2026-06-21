@@ -290,8 +290,9 @@ CREATE TABLE IF NOT EXISTS crm_publications (
     title TEXT NOT NULL,
     copy TEXT,
     graphic_url TEXT,
-    status_piece TEXT NOT NULL DEFAULT 'draft' CHECK (status_piece IN ('published', 'pending_assets', 'pending_design', 'ready', 'draft')),
+    status_piece TEXT NOT NULL DEFAULT 'draft',
     status_post TEXT NOT NULL DEFAULT 'scheduled' CHECK (status_post IN ('scheduled', 'published', 'draft')),
+    notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

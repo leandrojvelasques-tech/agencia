@@ -1042,6 +1042,18 @@ export default function CrmClientPortal() {
                     </div>
                   </div>
                 )}
+
+                {selectedPub.notes && selectedPub.notes.trim() !== '' && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs text-gray-550">info</span>
+                      Observaciones
+                    </p>
+                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs text-gray-800 leading-relaxed max-h-[150px] overflow-y-auto whitespace-pre-wrap">
+                      {selectedPub.notes}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Feedback via WhatsApp Button */}
