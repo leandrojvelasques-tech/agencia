@@ -210,6 +210,13 @@ export default function CrmClientPortal() {
     )
   }
 
+  const dayPubs = selectedPub ? publications.filter(p => p.date === selectedPub.date).sort((a, b) => {
+    if (a.type === 'post' && b.type !== 'post') return -1;
+    if (a.type !== 'post' && b.type === 'post') return 1;
+    return 0;
+  }) : []
+  const currentIdx = selectedPub ? dayPubs.findIndex(p => p.id === selectedPub.id) : -1
+
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)]">
       {/* Top Navbar */}
@@ -606,6 +613,14 @@ export default function CrmClientPortal() {
                         const cardBorderClass = isPost ? terrConfig.color.border : 'border-gray-200 border-dashed'
                         const cardHoverBgClass = isPost ? terrConfig.color.hoverBg : 'hover:bg-gray-50'
                         const textClass = isPost ? (terrConfig.color.text || 'text-[var(--color-dark-gray)]') : 'text-[var(--color-dark-gray)]'
+                        const dayOfWeek = dayDate.getDay() // 0 = Sunday, 1 = Monday, etc.
+                        let tooltipAlignClass = 'left-1/2 -translate-x-1/2'
+                        if (dayOfWeek === 1 || dayOfWeek === 2) {
+                          tooltipAlignClass = 'left-0 translate-x-0'
+                        } else if (dayOfWeek === 6 || dayOfWeek === 0) {
+                          tooltipAlignClass = 'right-0 left-auto translate-x-0'
+                        }
+
                         return (
                           <div
                             key={pub.id}
@@ -648,7 +663,7 @@ export default function CrmClientPortal() {
                             )}
 
                             {/* Hover preview tooltip popover */}
-                            <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${
+                            <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
                               isPost ? 'w-96' : 'w-64'
                             }`}>
                               {pub.graphic_url && (() => {
@@ -954,6 +969,35 @@ export default function CrmClientPortal() {
             {/* Description & Action details (Right column on desktop) */}
             <div className="md:w-1/2 flex flex-col justify-between py-2">
               <div className="space-y-6">
+                {dayPubs.length > 1 && (
+                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-150 animate-fade-in">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      Publicaciones del día ({currentIdx + 1} de {dayPubs.length})
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          const prevIdx = (currentIdx - 1 + dayPubs.length) % dayPubs.length
+                          setSelectedPub(dayPubs[prevIdx])
+                        }}
+                        className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 border border-gray-250 flex items-center justify-center text-gray-600 transition-colors shadow-sm"
+                        title="Publicación anterior"
+                      >
+                        <span className="material-symbols-outlined text-base">chevron_left</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          const nextIdx = (currentIdx + 1) % dayPubs.length
+                          setSelectedPub(dayPubs[nextIdx])
+                        }}
+                        className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 border border-gray-250 flex items-center justify-center text-gray-600 transition-colors shadow-sm"
+                        title="Siguiente publicación"
+                      >
+                        <span className="material-symbols-outlined text-base">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${getPieceStatusBadgeClass(selectedPub.status_piece)}`}>
                     {getPieceStatusLabel(selectedPub.status_piece)}

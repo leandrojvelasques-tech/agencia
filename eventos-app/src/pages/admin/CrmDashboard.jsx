@@ -606,6 +606,14 @@ export default function CrmDashboard() {
                                 const cardHoverBgClass = isPost ? terrConfig.color.hoverBg : 'hover:bg-gray-50'
                                 const cardHoverBorderClass = isPost ? terrConfig.color.hoverBorder : 'hover:border-gray-300 hover:border-solid'
                                 const textClass = isPost ? (terrConfig.color.text || 'text-[var(--color-dark-gray)]') : 'text-[var(--color-dark-gray)]'
+                                const dayOfWeek = dayDate.getDay() // 0 = Sunday, 1 = Monday, etc.
+                                let tooltipAlignClass = 'left-1/2 -translate-x-1/2'
+                                if (dayOfWeek === 1 || dayOfWeek === 2) {
+                                  tooltipAlignClass = 'left-0 translate-x-0'
+                                } else if (dayOfWeek === 6 || dayOfWeek === 0) {
+                                  tooltipAlignClass = 'right-0 left-auto translate-x-0'
+                                }
+
                                 return (
                                   <div
                                     key={pub.id}
@@ -645,7 +653,7 @@ export default function CrmDashboard() {
                                     )}
 
                                     {/* Hover preview tooltip popover */}
-                                    <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${
+                                    <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
                                       isPost ? 'w-96' : 'w-64'
                                     }`}>
                                       {pub.graphic_url && (() => {
