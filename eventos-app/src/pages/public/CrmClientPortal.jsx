@@ -569,10 +569,13 @@ export default function CrmClientPortal() {
                   }}
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <span className={`text-sm font-bold ${
-                      isToday ? 'bg-[var(--color-deep-green)] text-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm' : 'text-gray-500'
+                    <span className={`text-xs font-bold flex items-center gap-1 ${
+                      isToday ? 'bg-[var(--color-deep-green)] text-white px-2 py-0.5 rounded-full shadow-sm' : 'text-gray-500'
                     }`}>
-                      {dayDate.getDate()}
+                      <span>{dayDate.getDate()}</span>
+                      <span className={`text-[9px] ${isToday ? 'text-white/80' : 'text-gray-400'} font-semibold`}>
+                        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][dayDate.getDay()]}
+                      </span>
                     </span>
                   </div>
 
