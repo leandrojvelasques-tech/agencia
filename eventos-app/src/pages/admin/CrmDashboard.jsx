@@ -425,7 +425,18 @@ export default function CrmDashboard() {
               )}
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+              {selectedClient && (
+                <button
+                  onClick={copyShareLink}
+                  className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
+                  title="Copiar enlace público de solo lectura para el cliente"
+                >
+                  <span className="material-symbols-outlined text-base">share</span>
+                  Compartir (Solo Lectura)
+                </button>
+              )}
+
               {/* View Selector */}
               <div className="p-1 bg-[var(--color-refined-gray)]/80 rounded-premium border border-gray-200 flex items-center">
                 <button

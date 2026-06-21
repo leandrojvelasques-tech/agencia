@@ -653,11 +653,15 @@ export default function CrmClientPortal() {
                             )}
 
                             {/* Hover preview tooltip popover */}
-                            <div className="hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left">
+                            <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${
+                              isPost ? 'w-96' : 'w-72'
+                            }`}>
                               {pub.graphic_url && (() => {
                                 const firstUrl = getFirstGraphicUrl(pub.graphic_url)
                                 return firstUrl && (
-                                  <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                  <div className={`w-full rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center ${
+                                    isPost ? 'h-56' : 'h-32'
+                                  }`}>
                                     {isVideoFile(firstUrl, pub.post_format) ? (
                                       <video
                                         src={firstUrl}
@@ -687,13 +691,15 @@ export default function CrmClientPortal() {
                                     </span>
                                   )}
                                 </p>
-                                {pub.territorio && (
+                                {pub.territorio && !isPost && (
                                   <p className="text-[9px] text-gray-400 font-medium leading-relaxed italic mt-1 normal-case">
                                     Eje: {terrConfig.desc}
                                   </p>
                                 )}
                                 {pub.copy && (
-                                  <p className="text-[10px] text-[var(--color-dark-gray)]/80 mt-1 line-clamp-3 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap">
+                                  <p className={`text-[10px] text-[var(--color-dark-gray)]/80 mt-1 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap ${
+                                    isPost ? '' : 'line-clamp-3'
+                                  }`}>
                                     {pub.copy}
                                   </p>
                                 )}
