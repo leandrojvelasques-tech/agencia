@@ -550,18 +550,13 @@ export default function CrmDashboard() {
                       {/* Day contents */}
                       <div className="flex-1 flex flex-col gap-1.5 mt-2">
                         {(() => {
-                          let storyIndex = 0
                           return dayPubs.sort((a, b) => {
                             if (a.type === 'post' && b.type !== 'post') return -1;
                             if (a.type !== 'post' && b.type === 'post') return 1;
                             return 0;
                           }).map(pub => {
                             const isPost = pub.type === 'post'
-                            let displayTitle = pub.title
-                            if (!isPost) {
-                              storyIndex++
-                              displayTitle = `Historia ${storyIndex}: ${pub.title}`
-                            }
+                            const displayTitle = pub.title
                              return (
                               (() => {
                                 const terrConfig = getTerritorioConfig(pub.territorio)
@@ -583,7 +578,7 @@ export default function CrmDashboard() {
                                         }`}>
                                           {isPost ? 'Feed' : 'Story'}
                                         </span>
-                                        {pub.post_format && (
+                                        {isPost && pub.post_format && (
                                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white text-gray-500 border border-gray-150 uppercase tracking-tighter">
                                             {pub.post_format === 'carrousel' ? 'Carrusel' :
                                              pub.post_format === 'reel' ? 'Reel' :
@@ -610,13 +605,13 @@ export default function CrmDashboard() {
 
                                     {/* Hover preview tooltip popover */}
                                     <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${
-                                      isPost ? 'w-96' : 'w-72'
+                                      isPost ? 'w-96' : 'w-64'
                                     }`}>
                                       {pub.graphic_url && (() => {
                                         const firstUrl = getFirstGraphicUrl(pub.graphic_url)
                                         return firstUrl && (
                                           <div className={`w-full rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center ${
-                                            isPost ? 'h-56' : 'h-32'
+                                            isPost ? 'h-56' : 'h-96'
                                           }`}>
                                             {isVideoFile(firstUrl, pub.post_format) ? (
                                               <video
