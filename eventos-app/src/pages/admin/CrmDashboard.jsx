@@ -148,6 +148,32 @@ export default function CrmDashboard() {
     }
   }
 
+  const handleCompleteTask = async (pub, taskText) => {
+    const currentTasks = pub.status_piece.split('\n').filter(line => line.trim() !== '')
+    const updatedTasks = currentTasks.filter(line => line.trim() !== taskText.trim())
+    const updatedStatusPiece = updatedTasks.join('\n')
+
+    try {
+      const { error } = await supabase
+        .from('crm_publications')
+        .update({ status_piece: updatedStatusPiece })
+        .eq('id', pub.id)
+      
+      if (error) throw error
+      
+      setPublications(prev => prev.map(p => {
+        if (p.id === pub.id) {
+          return { ...p, status_piece: updatedStatusPiece }
+        }
+        return p
+      }))
+      showToast('¡Tarea completada!')
+    } catch (err) {
+      console.error('Error completing task:', err)
+      showToast('Error al completar la tarea.', 'error')
+    }
+  }
+
   const handleBulkDelete = async () => {
     if (selectedPubIds.length === 0) return
     if (!window.confirm(`¿Estás seguro de que deseas eliminar las ${selectedPubIds.length} publicaciones seleccionadas?`)) return
@@ -418,6 +444,10 @@ export default function CrmDashboard() {
                     Hoy
                   </button>
                 </div>
+              ) : viewMode === 'tasks' ? (
+                <h3 className="text-lg font-bold text-[var(--color-deep-green)]">
+                  Tareas Pendientes del Cliente
+                </h3>
               ) : (
                 <h3 className="text-lg font-bold text-[var(--color-deep-green)]">
                   Listado de Contenidos
@@ -482,6 +512,17 @@ export default function CrmDashboard() {
                 >
                   <span className="material-symbols-outlined text-base">view_week</span>
                   Vista Semanal
+                </button>
+                <button
+                  onClick={() => setViewMode('tasks')}
+                  className={`px-4 py-2 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
+                    viewMode === 'tasks'
+                      ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">checklist</span>
+                  Tareas
                 </button>
               </div>
             </div>
@@ -902,6 +943,77 @@ export default function CrmDashboard() {
                     </div>
                   )
                 })
+              })()}
+            </div>
+          ) : viewMode === 'tasks' ? (
+            /* PENDING TASKS VIEW */
+            <div className="p-6 space-y-6 max-w-5xl mx-auto">
+              {(() => {
+                const pubsWithTasks = publications.filter(pub => {
+                  return pub.status_piece &&
+                    !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+                    pub.status_piece.trim() !== ''
+                })
+
+                if (pubsWithTasks.length === 0) {
+                  return (
+                    <div className="py-20 text-center text-dark-gray/40">
+                      <span className="material-symbols-outlined text-4xl block mb-2">checklist_rtl</span>
+                      <p className="text-sm font-bold">¡Buen trabajo! No tenés ninguna tarea pendiente de diseño/material para este cliente.</p>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {pubsWithTasks.map(pub => {
+                      const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
+                      const formattedDate = pub.date.split('-').reverse().join('/')
+                      
+                      return (
+                        <div key={pub.id} className="card p-6 bg-white border border-gray-150 shadow-sm rounded-2xl flex flex-col justify-between hover:shadow-md transition-shadow">
+                          <div>
+                            <div className="flex justify-between items-start gap-4 mb-3">
+                              <div>
+                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                  pub.type === 'post' ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
+                                }`}>
+                                  {pub.type === 'post' ? 'Feed' : 'Story'}
+                                </span>
+                                <h4 className="font-bold text-base text-gray-900 mt-2 leading-snug">{pub.title}</h4>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Fecha: {formattedDate}</p>
+                              </div>
+                              
+                              <Link
+                                to={`/admin/crm/publicacion/${pub.id}/editar`}
+                                className="p-1.5 hover:bg-gray-50 border border-gray-150 rounded text-blue-600 transition-colors flex items-center justify-center"
+                                title="Editar publicación"
+                              >
+                                <span className="material-symbols-outlined text-lg leading-none">edit</span>
+                              </Link>
+                            </div>
+
+                            <div className="space-y-2 mt-4">
+                              {tasksList.map((task, idx) => (
+                                <label
+                                  key={idx}
+                                  className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-150/60 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors text-xs font-semibold text-gray-800"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    onChange={() => handleCompleteTask(pub, task)}
+                                    className="mt-0.5 w-4 h-4 text-[var(--color-deep-green)] bg-white border-gray-300 rounded focus:ring-[var(--color-deep-green)] transition-all cursor-pointer"
+                                  />
+                                  <span>{task}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
               })()}
             </div>
           ) : (
