@@ -946,7 +946,7 @@ export default function CrmDashboard() {
               })()}
             </div>
           ) : viewMode === 'tasks' ? (
-            /* PENDING TASKS VIEW */
+            /* PENDING TASKS VIEW (TABLE LAYOUT) */
             <div className="p-6 space-y-6 max-w-5xl mx-auto">
               {(() => {
                 const pubsWithTasks = publications.filter(pub => {
@@ -965,53 +965,60 @@ export default function CrmDashboard() {
                 }
 
                 return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {pubsWithTasks.map(pub => {
-                      const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
-                      const formattedDate = pub.date.split('-').reverse().join('/')
-                      
-                      return (
-                        <div key={pub.id} className="card p-6 bg-white border border-gray-150 shadow-sm rounded-2xl flex flex-col justify-between hover:shadow-md transition-shadow">
-                          <div>
-                            <div className="flex justify-between items-start gap-4 mb-3">
-                              <div>
-                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                                  pub.type === 'post' ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                                }`}>
-                                  {pub.type === 'post' ? 'Feed' : 'Story'}
-                                </span>
-                                <h4 className="font-bold text-base text-gray-900 mt-2 leading-snug">{pub.title}</h4>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Fecha: {formattedDate}</p>
-                              </div>
-                              
-                              <Link
-                                to={`/admin/crm/publicacion/${pub.id}/editar`}
-                                className="p-1.5 hover:bg-gray-50 border border-gray-150 rounded text-blue-600 transition-colors flex items-center justify-center"
-                                title="Editar publicación"
-                              >
-                                <span className="material-symbols-outlined text-lg leading-none">edit</span>
-                              </Link>
-                            </div>
-
-                            <div className="space-y-2 mt-4">
-                              {tasksList.map((task, idx) => (
-                                <label
-                                  key={idx}
-                                  className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-150/60 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors text-xs font-semibold text-gray-800"
-                                >
+                  <div className="overflow-x-auto border border-gray-150 rounded-2xl bg-white shadow-sm">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th className="w-12 text-center"></th>
+                          <th>Tarea Pendiente</th>
+                          <th>Publicación</th>
+                          <th>Fecha</th>
+                          <th className="text-right w-24">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pubsWithTasks.flatMap(pub => {
+                          const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
+                          return tasksList.map((task, idx) => {
+                            const formattedDate = pub.date.split('-').reverse().join('/')
+                            return (
+                              <tr key={`${pub.id}-${idx}`} className="hover:bg-gray-50/50">
+                                <td className="text-center py-3">
                                   <input
                                     type="checkbox"
                                     onChange={() => handleCompleteTask(pub, task)}
-                                    className="mt-0.5 w-4 h-4 text-[var(--color-deep-green)] bg-white border-gray-300 rounded focus:ring-[var(--color-deep-green)] transition-all cursor-pointer"
+                                    className="w-4 h-4 text-[var(--color-deep-green)] bg-white border-gray-300 rounded focus:ring-[var(--color-deep-green)] transition-all cursor-pointer"
                                   />
-                                  <span>{task}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                                </td>
+                                <td className="font-semibold text-xs text-gray-800 py-3">
+                                  {task}
+                                </td>
+                                <td className="py-3">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
+                                      pub.type === 'post' ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
+                                    }`}>
+                                      {pub.type === 'post' ? 'Feed' : 'Story'}
+                                    </span>
+                                    <span className="font-bold text-xs text-gray-900 leading-snug line-clamp-1">{pub.title}</span>
+                                  </div>
+                                </td>
+                                <td className="text-xs text-gray-500 font-semibold py-3">{formattedDate}</td>
+                                <td className="text-right py-3 pr-4">
+                                  <Link
+                                    to={`/admin/crm/publicacion/${pub.id}/editar`}
+                                    className="inline-flex p-1.5 hover:bg-gray-150 rounded text-blue-600 transition-colors"
+                                    title="Editar publicación"
+                                  >
+                                    <span className="material-symbols-outlined text-lg leading-none">edit</span>
+                                  </Link>
+                                </td>
+                              </tr>
+                            )
+                          })
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )
               })()}
