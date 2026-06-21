@@ -371,7 +371,7 @@ export default function CrmDashboard() {
           {/* View Toolbar */}
           <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              {viewMode === 'calendar' ? (
+              {viewMode === 'calendar' || viewMode === 'weekly' ? (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={prevMonth}
@@ -437,6 +437,17 @@ export default function CrmDashboard() {
                 >
                   <span className="material-symbols-outlined text-base">grid_on</span>
                   Vista Feed
+                </button>
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`px-4 py-2 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
+                    viewMode === 'weekly'
+                      ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">view_week</span>
+                  Vista Semanal
                 </button>
               </div>
             </div>
@@ -685,6 +696,160 @@ export default function CrmDashboard() {
                     })}
                 </div>
               )}
+            </div>
+          ) : viewMode === 'weekly' ? (
+            /* WEEKLY VIEW */
+            <div className="p-6 space-y-10 max-w-5xl mx-auto">
+              {(() => {
+                // Group days into weeks of 7 days
+                const weeks = []
+                for (let i = 0; i < daysArray.length; i += 7) {
+                  weeks.push(daysArray.slice(i, i + 7))
+                }
+
+                // Filter weeks that actually have some publications
+                const weeksWithPubs = weeks.map((weekDaysArray, index) => {
+                  const firstDay = weekDaysArray.find(d => d !== null)
+                  const lastDay = [...weekDaysArray].reverse().find(d => d !== null)
+                  
+                  if (!firstDay || !lastDay) return null
+                  
+                  const weekPubs = publications.filter(pub => {
+                    return weekDaysArray.some(day => day && getLocalDateString(day) === pub.date)
+                  })
+
+                  return {
+                    index,
+                    firstDay,
+                    lastDay,
+                    pubs: weekPubs
+                  }
+                }).filter(w => w !== null && w.pubs.length > 0)
+
+                if (weeksWithPubs.length === 0) {
+                  return (
+                    <div className="py-20 text-center text-dark-gray/40">
+                      <span className="material-symbols-outlined text-4xl block mb-2">grid_off</span>
+                      <p className="text-sm font-bold">No hay publicaciones planificadas para este mes.</p>
+                    </div>
+                  )
+                }
+
+                return weeksWithPubs.map((week) => {
+                  const startStr = `${week.firstDay.getDate()} de ${monthNames[week.firstDay.getMonth()]}`
+                  const endStr = `${week.lastDay.getDate()} de ${monthNames[week.lastDay.getMonth()]}`
+                  
+                  return (
+                    <div key={week.index} className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <h4 className="text-xs font-extrabold uppercase tracking-widest text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 px-4 py-2 rounded-full border border-[var(--color-deep-green)]/10">
+                          Semana del {startStr} al {endStr}
+                        </h4>
+                        <div className="flex-1 h-px bg-gray-200" />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {week.pubs.map(pub => {
+                          const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null
+                          const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
+                          const terrConfig = getTerritorioConfig(pub.territorio)
+                          
+                          return (
+                            <div
+                              key={pub.id}
+                              onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
+                              className="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
+                            >
+                              {/* Card Media Preview */}
+                              <div className={`relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
+                                pub.dimensions === '1080x1920' ? 'aspect-[9/16]' : pub.dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
+                              }`}>
+                                {firstUrl ? (
+                                  isVideo ? (
+                                    <video
+                                      src={firstUrl}
+                                      className="w-full h-full object-cover"
+                                      muted
+                                      loop
+                                      playsInline
+                                      onMouseEnter={(e) => e.target.play()}
+                                      onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }}
+                                    />
+                                  ) : (
+                                    <img
+                                      src={firstUrl}
+                                      alt={pub.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gray-50">
+                                    <span className="material-symbols-outlined text-gray-300 text-4xl mb-2">image_not_supported</span>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Sin Vista Previa</p>
+                                  </div>
+                                )}
+                                
+                                {/* Overlay Indicators */}
+                                <div className="absolute top-3 left-3 flex gap-1.5 z-10">
+                                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider text-white bg-black/60 backdrop-blur-sm`}>
+                                    {pub.type === 'post' ? 'Feed' : 'Story'}
+                                  </span>
+                                  {pub.post_format && (
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/90 text-gray-700 border border-gray-150 uppercase tracking-wider backdrop-blur-sm">
+                                      {pub.post_format === 'carrousel' ? 'Carrusel' :
+                                       pub.post_format === 'reel' ? 'Reel' :
+                                       pub.post_format === 'placa' ? 'Placa' :
+                                       pub.post_format === 'video' ? 'Video' : pub.post_format}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="absolute top-3 right-3 flex gap-1.5 z-10">
+                                  <span className={`w-2.5 h-2.5 rounded-full ${
+                                    pub.status_piece === 'published' ? 'bg-emerald-500' :
+                                    pub.status_piece === 'ready' ? 'bg-teal-500' :
+                                    pub.status_piece === 'pending_design' ? 'bg-amber-500' :
+                                    pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
+                                  }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                                </div>
+
+                                {pub.post_format === 'carrousel' && (
+                                  <span className="material-symbols-outlined absolute bottom-3 right-3 text-white bg-black/50 p-1 rounded backdrop-blur-sm text-sm">filter_none</span>
+                                )}
+                                {isVideo && (
+                                  <span className="material-symbols-outlined absolute bottom-3 right-3 text-white bg-black/50 p-1 rounded backdrop-blur-sm text-sm">play_circle</span>
+                                )}
+                              </div>
+
+                              {/* Card Content */}
+                              <div className="p-5 flex-1 flex flex-col justify-between space-y-3 text-left">
+                                <div>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                    {pub.date.split('-').reverse().join('/')}
+                                  </p>
+                                  <h5 className="font-bold text-sm text-gray-900 group-hover:text-[var(--color-deep-green)] transition-colors mt-1 line-clamp-2">
+                                    {pub.title}
+                                  </h5>
+                                  {pub.territorio && (
+                                    <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
+                                      {pub.territorio}
+                                    </span>
+                                  )}
+                                </div>
+                                {pub.copy && (
+                                  <p className="text-xs text-gray-500 line-clamp-3 bg-gray-50 p-2.5 rounded border border-gray-150/60 font-sans leading-relaxed">
+                                    {pub.copy}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
             </div>
           ) : (
             /* LIST/TABLE VIEW */
