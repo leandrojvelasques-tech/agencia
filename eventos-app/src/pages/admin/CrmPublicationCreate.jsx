@@ -23,7 +23,38 @@ export default function CrmPublicationCreate() {
   const [graphicUrl, setGraphicUrl] = useState('')
   const [statusPiece, setStatusPiece] = useState('')
   const [statusPost, setStatusPost] = useState('draft')
+  const [publicationState, setPublicationState] = useState('design_in_progress')
   const [notes, setNotes] = useState('')
+
+  const handleStateChange = (newVal) => {
+    setPublicationState(newVal)
+    if (newVal === 'design_in_progress') {
+      setStatusPost('draft')
+      if (!statusPiece || statusPiece.trim() === '') {
+        setStatusPiece('Diseño en proceso')
+      }
+    } else if (newVal === 'done_not_programmed') {
+      setStatusPost('draft')
+      setStatusPiece('')
+    } else if (newVal === 'done_programmed') {
+      setStatusPost('scheduled')
+      setStatusPiece('')
+    }
+  }
+
+  const handlePieceStatusTextChange = (text) => {
+    setStatusPiece(text)
+    const hasPending = text && text.trim() !== ''
+    if (hasPending) {
+      setPublicationState('design_in_progress')
+    } else {
+      if (statusPost === 'scheduled' || statusPost === 'published') {
+        setPublicationState('done_programmed')
+      } else {
+        setPublicationState('done_not_programmed')
+      }
+    }
+  }
 
   const [loading, setLoading] = useState(false)
   const [fetchingData, setFetchingData] = useState(isEdit)
@@ -223,9 +254,22 @@ export default function CrmPublicationCreate() {
             setTitle(pubData.title)
             setCopy(pubData.copy || '')
             setGraphicUrl(pubData.graphic_url || '')
-            setStatusPiece(pubData.status_piece)
-            setStatusPost(pubData.status_post)
+            const sp = pubData.status_piece || ''
+            setStatusPiece(sp)
+            setStatusPost(pubData.status_post || 'draft')
             setNotes(pubData.notes || '')
+            
+            const hasPendingTasks = sp && sp.trim() !== ''
+            if (hasPendingTasks) {
+              setPublicationState('design_in_progress')
+            } else {
+              const isProgrammed = pubData.status_post === 'scheduled' || pubData.status_post === 'published'
+              if (isProgrammed) {
+                setPublicationState('done_programmed')
+              } else {
+                setPublicationState('done_not_programmed')
+              }
+            }
           }
         }
       } catch (err) {
@@ -894,7 +938,7 @@ export default function CrmPublicationCreate() {
               </label>
               <textarea
                 value={statusPiece || ''}
-                onChange={(e) => setStatusPiece(e.target.value)}
+                onChange={(e) => handlePieceStatusTextChange(e.target.value)}
                 placeholder="Anotá lo que te falta para esta publicación (ej: Conseguir fotos de la fachada, redactar copy alternativo...)"
                 rows={3}
                 className="form-input border border-gray-200 bg-white resize-y text-xs"
@@ -918,15 +962,16 @@ export default function CrmPublicationCreate() {
             {/* Status of the post scheduling */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Estado de la publicación
+                Estado general de la publicación
               </label>
               <select
-                value={statusPost}
-                onChange={(e) => setStatusPost(e.target.value)}
+                value={publicationState}
+                onChange={(e) => handleStateChange(e.target.value)}
                 className="form-input border border-gray-200 bg-white"
               >
-                <option value="draft">Sin programar en Meta Business</option>
-                <option value="scheduled">Programado en Meta Business</option>
+                <option value="design_in_progress">En proceso de diseño (Gris)</option>
+                <option value="done_not_programmed">Diseño terminado sin programar en Meta (Amarillo)</option>
+                <option value="done_programmed">Diseño terminado y programado en Meta (Verde)</option>
               </select>
             </div>
           </div>
