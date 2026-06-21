@@ -145,23 +145,33 @@ export default function CrmClientPortal() {
     return `${y}-${m}-${d}`
   }
 
-  const getPieceStatusLabel = (status) => {
-    if (!status || status.trim() === '') return 'Lista'
-    if (status === 'published') return 'Publicada'
-    if (status === 'ready') return 'Lista'
-    if (status === 'pending_design') return 'Pend. Diseño'
-    if (status === 'pending_assets') return 'Pend. Material'
-    if (status === 'draft') return 'Borrador'
-    return 'Pendiente'
-  }
-
-  const getPieceStatusBadgeClass = (status) => {
-    const label = getPieceStatusLabel(status)
-    switch (label) {
-      case 'Publicada': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'Lista': return 'bg-teal-100 text-teal-800 border-teal-200'
-      case 'Pendiente': return 'bg-amber-100 text-amber-800 border-amber-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+  const getPublicationState = (pub) => {
+    if (!pub) return { label: 'Pendiente', colorClass: 'bg-gray-400', badgeClass: 'bg-gray-100 text-gray-800 border-gray-200' }
+    const hasPendingTasks = pub.status_piece && pub.status_piece.trim() !== ''
+    if (hasPendingTasks) {
+      return {
+        id: 'design_in_progress',
+        label: 'En proceso de diseño',
+        colorClass: 'bg-gray-400',
+        badgeClass: 'bg-gray-100 text-gray-800 border-gray-200'
+      }
+    } else {
+      const isProgrammed = pub.status_post === 'scheduled' || pub.status_post === 'published'
+      if (isProgrammed) {
+        return {
+          id: 'done_programmed',
+          label: 'Diseño terminado y programado en Meta',
+          colorClass: 'bg-emerald-500',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+        }
+      } else {
+        return {
+          id: 'done_not_programmed',
+          label: 'Diseño terminado sin programar en Meta',
+          colorClass: 'bg-amber-500',
+          badgeClass: 'bg-amber-100 text-amber-850 border-amber-250'
+        }
+      }
     }
   }
 
@@ -494,14 +504,7 @@ export default function CrmClientPortal() {
                               </div>
 
                               <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-                                <span className={`w-2.5 h-2.5 rounded-full ${
-                                  (() => {
-                                    const statusLabel = getPieceStatusLabel(pub.status_piece);
-                                    return statusLabel === 'Publicada' ? 'bg-emerald-500' :
-                                           statusLabel === 'Lista' ? 'bg-teal-500' :
-                                           statusLabel === 'Pendiente' ? 'bg-amber-500' : 'bg-gray-400';
-                                  })()
-                                }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                                <span className={`w-2.5 h-2.5 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
                               </div>
 
                               {pub.post_format === 'carrousel' && (
@@ -646,12 +649,7 @@ export default function CrmClientPortal() {
                                   </span>
                                 )}
                               </div>
-                              <span className={`w-2 h-2 rounded-full ${
-                                pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
-                              }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                               <span className={`w-2 h-2 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
                             </div>
                             <p className="text-[11px] font-bold truncate leading-tight opacity-90">
                               {displayTitle}
@@ -999,8 +997,8 @@ export default function CrmClientPortal() {
                   </div>
                 )}
                 <div>
-                  <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${getPieceStatusBadgeClass(selectedPub.status_piece)}`}>
-                    {getPieceStatusLabel(selectedPub.status_piece)}
+                   <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${getPublicationState(selectedPub).badgeClass}`}>
+                    {getPublicationState(selectedPub).label}
                   </span>
                   <h3 className="text-2xl font-black text-[var(--color-deep-green)] mt-3 leading-snug">
                     {selectedPub.title}

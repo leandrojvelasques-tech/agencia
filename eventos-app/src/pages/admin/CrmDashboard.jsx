@@ -56,8 +56,7 @@ export default function CrmDashboard() {
   
   // Filter states for list view
   const [filterType, setFilterType] = useState('all')
-  const [filterPieceStatus, setFilterPieceStatus] = useState('all')
-  const [filterPostStatus, setFilterPostStatus] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
 
   // Notification toast
   const [toast, setToast] = useState(null)
@@ -228,14 +227,47 @@ export default function CrmDashboard() {
     daysArray.push(new Date(year, month, i))
   }
 
+  const getPublicationState = (pub) => {
+    if (!pub) return { label: 'Pendiente', colorClass: 'bg-gray-400', badgeClass: 'bg-gray-100 text-gray-800 border-gray-200', dotColor: 'bg-gray-400' }
+    const hasPendingTasks = pub.status_piece && pub.status_piece.trim() !== ''
+    if (hasPendingTasks) {
+      return {
+        id: 'design_in_progress',
+        label: 'En proceso de diseño',
+        colorClass: 'bg-gray-400',
+        badgeClass: 'bg-gray-100 text-gray-800 border-gray-200',
+        dotColor: 'bg-gray-400'
+      }
+    } else {
+      const isProgrammed = pub.status_post === 'scheduled' || pub.status_post === 'published'
+      if (isProgrammed) {
+        return {
+          id: 'done_programmed',
+          label: 'Diseño terminado y programado en Meta',
+          colorClass: 'bg-emerald-500',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          dotColor: 'bg-emerald-500'
+        }
+      } else {
+        return {
+          id: 'done_not_programmed',
+          label: 'Diseño terminado sin programar en Meta',
+          colorClass: 'bg-amber-500',
+          badgeClass: 'bg-amber-100 text-amber-850 border-amber-250',
+          dotColor: 'bg-amber-500'
+        }
+      }
+    }
+  }
+
   // Group publication count by status for stats
   const stats = {
     total: publications.length,
     posts: publications.filter(p => p.type === 'post').length,
     stories: publications.filter(p => p.type === 'story').length,
-    publishedPieces: publications.filter(p => p.status_post === 'scheduled' || p.status_post === 'published').length,
-    ready: publications.filter(p => !p.status_piece || p.status_piece.trim() === '' || p.status_piece === 'ready' || p.status_piece === 'published').length,
-    pending: publications.filter(p => p.status_piece && p.status_piece.trim() !== '' && p.status_piece !== 'ready' && p.status_piece !== 'published').length
+    designInProgress: publications.filter(p => getPublicationState(p).id === 'design_in_progress').length,
+    designDoneNotProgrammed: publications.filter(p => getPublicationState(p).id === 'done_not_programmed').length,
+    designDoneProgrammed: publications.filter(p => getPublicationState(p).id === 'done_programmed').length,
   }
 
   // Format date to ISO string local YYYY-MM-DD
@@ -247,34 +279,11 @@ export default function CrmDashboard() {
     return `${y}-${m}-${d}`
   }
 
-  // Helper for status classes
-  const getPieceStatusLabel = (status) => {
-    if (!status || status.trim() === '') return 'Lista'
-    if (status === 'published') return 'Publicada'
-    if (status === 'ready') return 'Lista'
-    if (status === 'pending_design') return 'Pend. Diseño'
-    if (status === 'pending_assets') return 'Pend. Material'
-    if (status === 'draft') return 'Borrador'
-    return 'Pendiente'
-  }
-
-  const getPieceStatusBadgeClass = (status) => {
-    const label = getPieceStatusLabel(status)
-    switch (label) {
-      case 'Publicada': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'Lista': return 'bg-teal-100 text-teal-800 border-teal-200'
-      case 'Pendiente': return 'bg-amber-100 text-amber-800 border-amber-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
   // Filtered publications for List view
   const filteredPublications = publications.filter(pub => {
     if (filterType !== 'all' && pub.type !== filterType) return false
-    if (filterPieceStatus !== 'all' && pub.status_piece !== filterPieceStatus) return false
-    if (filterPostStatus !== 'all') {
-      if (filterPostStatus === 'draft' && pub.status_post !== 'draft') return false
-      if (filterPostStatus === 'scheduled' && pub.status_post !== 'scheduled' && pub.status_post !== 'published') return false
+    if (filterStatus !== 'all') {
+      if (getPublicationState(pub).id !== filterStatus) return false
     }
     return true
   })
@@ -393,21 +402,21 @@ export default function CrmDashboard() {
             <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">distribución de canales</span>
           </div>
           <div className="card p-5 bg-white flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Prog. Meta / Listos</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Diseño Terminado</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-emerald-600">{stats.publishedPieces}</span>
+              <span className="text-3xl font-extrabold text-emerald-600">{stats.designDoneProgrammed}</span>
               <span className="text-xs text-emerald-600/80 font-bold">Prog.</span>
               <span className="text-dark-gray/20">/</span>
-              <span className="text-3xl font-extrabold text-teal-600">{stats.ready}</span>
-              <span className="text-xs text-teal-600/80 font-bold">Listos</span>
+              <span className="text-3xl font-extrabold text-amber-500">{stats.designDoneNotProgrammed}</span>
+              <span className="text-xs text-amber-600/80 font-bold">Sin Prog.</span>
             </div>
-            <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">avances sobre piezas</span>
+            <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">piezas finalizadas</span>
           </div>
           <div className="card p-5 bg-white flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Tareas Pendientes</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">En Proceso de Diseño</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-amber-600">{stats.pending}</span>
-              <span className="text-xs text-amber-650 font-bold">Piezas</span>
+              <span className="text-3xl font-extrabold text-gray-500">{stats.designInProgress}</span>
+              <span className="text-xs text-gray-500/80 font-bold">Piezas</span>
             </div>
             <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">publicaciones con pendientes</span>
           </div>
@@ -636,12 +645,7 @@ export default function CrmDashboard() {
                                           </span>
                                         )}
                                       </div>
-                                      <span className={`w-2 h-2 rounded-full ${
-                                        pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                        pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                        pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                        pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
-                                      }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                                      <span className={`w-2.5 h-2.5 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
                                     </div>
                                     <p className="text-[11px] font-bold truncate leading-tight opacity-90">
                                       {displayTitle}
@@ -835,23 +839,20 @@ export default function CrmDashboard() {
                         <div className="flex-1 h-px bg-gray-200" />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {week.pubs.map(pub => {
                           const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null
                           const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
                           const terrConfig = getTerritorioConfig(pub.territorio)
                           
                           // Precompute status attributes
-                          const statusLabel = getPieceStatusLabel(pub.status_piece)
-                          const hasPending = pub.status_piece &&
-                            !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
-                            pub.status_piece.trim() !== ''
+                          const pubState = getPublicationState(pub)
+                          const hasPending = pub.status_piece && pub.status_piece.trim() !== ''
                           const pendingCount = hasPending ? pub.status_piece.split('\n').filter(Boolean).length : 0
 
                           // Determine dot color
-                          const dotColorClass = statusLabel === 'Publicada' ? 'bg-emerald-500' :
-                                                statusLabel === 'Lista' ? 'bg-teal-500' :
-                                                statusLabel === 'Pendiente' ? 'bg-amber-500' : 'bg-gray-400'
+                          const dotColorClass = pubState.colorClass
+                          const statusLabel = pubState.label
                           
                           return (
                             <div
@@ -1035,7 +1036,7 @@ export default function CrmDashboard() {
             /* LIST/TABLE VIEW */
             <div className="overflow-x-auto">
               {/* Filters toolbar */}
-              <div className="p-4 bg-gray-50/50 border-b border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-gray-50/50 border-b border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/50 block mb-1.5">Canal / Tipo</label>
                   <select
@@ -1049,30 +1050,16 @@ export default function CrmDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/50 block mb-1.5">Estado de la Pieza</label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/50 block mb-1.5">Estado</label>
                   <select
-                    value={filterPieceStatus}
-                    onChange={(e) => setFilterPieceStatus(e.target.value)}
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-premium px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
                   >
                     <option value="all">Todos los estados</option>
-                    <option value="published">Publicada</option>
-                    <option value="ready">Lista para publicar</option>
-                    <option value="pending_design">Pendiente Elaborar Placa</option>
-                    <option value="pending_assets">Pendiente Material / Fotos</option>
-                    <option value="draft">Borrador</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/50 block mb-1.5">Estado de Publicación</label>
-                  <select
-                    value={filterPostStatus}
-                    onChange={(e) => setFilterPostStatus(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-premium px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
-                  >
-                    <option value="all">Todos los estados</option>
-                    <option value="scheduled">Programado en Meta Business</option>
-                    <option value="draft">Sin programar en Meta Business</option>
+                    <option value="design_in_progress">En proceso de diseño</option>
+                    <option value="done_not_programmed">Diseño terminado sin programar en Meta</option>
+                    <option value="done_programmed">Diseño terminado y programado en Meta</option>
                   </select>
                 </div>
               </div>
@@ -1134,8 +1121,7 @@ export default function CrmDashboard() {
                       <th>Publicación</th>
                       <th>Canal / Formato</th>
                       <th>Territorio</th>
-                      <th>Estado Pieza</th>
-                      <th>Estado Post</th>
+                      <th>Estado</th>
                       <th className="text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -1200,17 +1186,10 @@ export default function CrmDashboard() {
                           )}
                         </td>
                         <td>
-                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${getPieceStatusBadgeClass(pub.status_piece)}`}>
-                            {getPieceStatusLabel(pub.status_piece)}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`status-dot ${
-                              (pub.status_post === 'scheduled' || pub.status_post === 'published') ? 'status-dot-green' : 'status-dot-gray'
-                            }`} />
-                            <span className="text-xs font-semibold text-dark-gray/80">
-                              {(pub.status_post === 'scheduled' || pub.status_post === 'published') ? 'Programado en Meta Business' : 'Sin programar en Meta Business'}
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${getPublicationState(pub).colorClass}`} />
+                            <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${getPublicationState(pub).badgeClass}`}>
+                              {getPublicationState(pub).label}
                             </span>
                           </div>
                         </td>
