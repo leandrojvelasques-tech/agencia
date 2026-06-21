@@ -22,7 +22,7 @@ export default function CrmPublicationCreate() {
   const [copy, setCopy] = useState('')
   const [graphicUrl, setGraphicUrl] = useState('')
   const [statusPiece, setStatusPiece] = useState('')
-  const [statusPost, setStatusPost] = useState('scheduled')
+  const [statusPost, setStatusPost] = useState('draft')
 
   const [loading, setLoading] = useState(false)
   const [fetchingData, setFetchingData] = useState(isEdit)
@@ -908,9 +908,8 @@ export default function CrmPublicationCreate() {
                 onChange={(e) => setStatusPost(e.target.value)}
                 className="form-input border border-gray-200 bg-white"
               >
-                <option value="draft">Borrador</option>
-                <option value="scheduled">Programado en Calendario</option>
-                <option value="published">Publicado / Subido</option>
+                <option value="draft">Sin programar en Meta Business</option>
+                <option value="scheduled">Programado en Meta Business</option>
               </select>
             </div>
           </div>

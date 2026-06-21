@@ -207,7 +207,7 @@ export default function CrmDashboard() {
     total: publications.length,
     posts: publications.filter(p => p.type === 'post').length,
     stories: publications.filter(p => p.type === 'story').length,
-    publishedPieces: publications.filter(p => p.status_post === 'published').length,
+    publishedPieces: publications.filter(p => p.status_post === 'scheduled' || p.status_post === 'published').length,
     ready: publications.filter(p => !p.status_piece || p.status_piece.trim() === '' || p.status_piece === 'ready' || p.status_piece === 'published').length,
     pending: publications.filter(p => p.status_piece && p.status_piece.trim() !== '' && p.status_piece !== 'ready' && p.status_piece !== 'published').length
   }
@@ -246,7 +246,10 @@ export default function CrmDashboard() {
   const filteredPublications = publications.filter(pub => {
     if (filterType !== 'all' && pub.type !== filterType) return false
     if (filterPieceStatus !== 'all' && pub.status_piece !== filterPieceStatus) return false
-    if (filterPostStatus !== 'all' && pub.status_post !== filterPostStatus) return false
+    if (filterPostStatus !== 'all') {
+      if (filterPostStatus === 'draft' && pub.status_post !== 'draft') return false
+      if (filterPostStatus === 'scheduled' && pub.status_post !== 'scheduled' && pub.status_post !== 'published') return false
+    }
     return true
   })
 
@@ -364,10 +367,10 @@ export default function CrmDashboard() {
             <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">distribución de canales</span>
           </div>
           <div className="card p-5 bg-white flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Listos / Publicados</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Prog. Meta / Listos</span>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-3xl font-extrabold text-emerald-600">{stats.publishedPieces}</span>
-              <span className="text-xs text-emerald-600/80 font-bold">Pub.</span>
+              <span className="text-xs text-emerald-600/80 font-bold">Prog.</span>
               <span className="text-dark-gray/20">/</span>
               <span className="text-3xl font-extrabold text-teal-600">{stats.ready}</span>
               <span className="text-xs text-teal-600/80 font-bold">Listos</span>
@@ -929,9 +932,8 @@ export default function CrmDashboard() {
                     className="w-full bg-white border border-gray-200 rounded-premium px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
                   >
                     <option value="all">Todos los estados</option>
-                    <option value="scheduled">Programado</option>
-                    <option value="published">Publicado</option>
-                    <option value="draft">Borrador</option>
+                    <option value="scheduled">Programado en Meta Business</option>
+                    <option value="draft">Sin programar en Meta Business</option>
                   </select>
                 </div>
               </div>
@@ -1066,12 +1068,10 @@ export default function CrmDashboard() {
                         <td>
                           <div className="flex items-center gap-1.5">
                             <span className={`status-dot ${
-                              pub.status_post === 'published' ? 'status-dot-green' :
-                              pub.status_post === 'scheduled' ? 'status-dot-yellow' : 'status-dot-gray'
+                              (pub.status_post === 'scheduled' || pub.status_post === 'published') ? 'status-dot-green' : 'status-dot-gray'
                             }`} />
-                            <span className="text-xs font-semibold capitalize text-dark-gray/80">
-                              {pub.status_post === 'scheduled' ? 'Programado' :
-                               pub.status_post === 'published' ? 'Publicado' : 'Borrador'}
+                            <span className="text-xs font-semibold text-dark-gray/80">
+                              {(pub.status_post === 'scheduled' || pub.status_post === 'published') ? 'Programado en Meta Business' : 'Sin programar en Meta Business'}
                             </span>
                           </div>
                         </td>
