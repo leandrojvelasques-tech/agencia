@@ -794,7 +794,7 @@ export default function CrmPublicationCreate() {
               {/* URL Input */}
               <div>
                 <input
-                  type="url"
+                  type="text"
                   value={graphicUrl}
                   onChange={(e) => setGraphicUrl(e.target.value)}
                   placeholder="https://ejemplo.com/tu-diseno.png"
