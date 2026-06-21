@@ -765,19 +765,59 @@ export default function CrmPublicationCreate() {
                       {carouselUrls.map((url, idx) => (
                         <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
                           <img src={url} className="w-full h-full object-cover" alt="" />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              const newUrls = carouselUrls.filter((_, i) => i !== idx)
-                              setGraphicUrl(newUrls.length > 0 ? JSON.stringify(newUrls) : '')
-                              setActiveSlide(0)
-                            }}
-                            className="absolute inset-0 bg-red-650/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Eliminar imagen"
-                          >
-                            <span className="material-symbols-outlined text-xl">delete</span>
-                          </button>
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const newUrls = [...carouselUrls]
+                                  const temp = newUrls[idx - 1]
+                                  newUrls[idx - 1] = newUrls[idx]
+                                  newUrls[idx] = temp
+                                  setGraphicUrl(JSON.stringify(newUrls))
+                                  setActiveSlide(idx - 1)
+                                }}
+                                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                                title="Mover izquierda"
+                              >
+                                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                              </button>
+                            )}
+                            
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const newUrls = carouselUrls.filter((_, i) => i !== idx)
+                                setGraphicUrl(newUrls.length > 0 ? JSON.stringify(newUrls) : '')
+                                setActiveSlide(0)
+                              }}
+                              className="w-7 h-7 rounded-full bg-red-650/80 hover:bg-red-650 text-white flex items-center justify-center transition-colors"
+                              title="Eliminar imagen"
+                            >
+                              <span className="material-symbols-outlined text-sm">delete</span>
+                            </button>
+
+                            {idx < carouselUrls.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const newUrls = [...carouselUrls]
+                                  const temp = newUrls[idx + 1]
+                                  newUrls[idx + 1] = newUrls[idx]
+                                  newUrls[idx] = temp
+                                  setGraphicUrl(JSON.stringify(newUrls))
+                                  setActiveSlide(idx + 1)
+                                }}
+                                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                                title="Mover derecha"
+                              >
+                                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
