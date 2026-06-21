@@ -21,7 +21,7 @@ export default function CrmPublicationCreate() {
   const [title, setTitle] = useState('')
   const [copy, setCopy] = useState('')
   const [graphicUrl, setGraphicUrl] = useState('')
-  const [statusPiece, setStatusPiece] = useState('draft')
+  const [statusPiece, setStatusPiece] = useState('')
   const [statusPost, setStatusPost] = useState('scheduled')
 
   const [loading, setLoading] = useState(false)
@@ -883,22 +883,19 @@ export default function CrmPublicationCreate() {
               </div>
             </div>
 
-            {/* Status of the piece */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Estado de la Pieza
+            {/* Tareas Pendientes (Free text notes) */}
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2 flex items-center justify-between">
+                <span>Tareas Pendientes</span>
+                <span className="text-[10px] text-gray-400 font-semibold normal-case">Vacío = Listo / Sin pendientes</span>
               </label>
-              <select
-                value={statusPiece}
+              <textarea
+                value={statusPiece || ''}
                 onChange={(e) => setStatusPiece(e.target.value)}
-                className="form-input border border-gray-200 bg-white"
-              >
-                <option value="draft">Borrador / Ideas sin armar</option>
-                <option value="pending_assets">Pendiente recibir fotos y info</option>
-                <option value="pending_design">Pendiente diseñar placa / editar</option>
-                <option value="ready">Lista (Aprobada por cliente)</option>
-                <option value="published">Publicada en Redes</option>
-              </select>
+                placeholder="Anotá lo que te falta para esta publicación (ej: Conseguir fotos de la fachada, redactar copy alternativo...)"
+                rows={3}
+                className="form-input border border-gray-200 bg-white resize-y text-xs"
+              />
             </div>
 
             {/* Status of the post scheduling */}

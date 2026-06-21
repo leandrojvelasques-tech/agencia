@@ -145,23 +145,23 @@ export default function CrmClientPortal() {
     return `${y}-${m}-${d}`
   }
 
-  const getPieceStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'published': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'ready': return 'bg-teal-100 text-teal-800 border-teal-200'
-      case 'pending_design': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'pending_assets': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'draft': default: return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
+  const getPieceStatusLabel = (status) => {
+    if (!status || status.trim() === '') return 'Lista'
+    if (status === 'published') return 'Publicada'
+    if (status === 'ready') return 'Lista'
+    if (status === 'pending_design') return 'Pend. Diseño'
+    if (status === 'pending_assets') return 'Pend. Material'
+    if (status === 'draft') return 'Borrador'
+    return 'Pendiente'
   }
 
-  const getPieceStatusLabel = (status) => {
-    switch (status) {
-      case 'published': return 'Publicada'
-      case 'ready': return 'Lista'
-      case 'pending_design': return 'Pend. Diseño'
-      case 'pending_assets': return 'Pend. Material'
-      case 'draft': default: return 'Borrador'
+  const getPieceStatusBadgeClass = (status) => {
+    const label = getPieceStatusLabel(status)
+    switch (label) {
+      case 'Publicada': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      case 'Lista': return 'bg-teal-100 text-teal-800 border-teal-200'
+      case 'Pendiente': return 'bg-amber-100 text-amber-800 border-amber-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -488,10 +488,12 @@ export default function CrmClientPortal() {
 
                               <div className="absolute top-3 right-3 flex gap-1.5 z-10">
                                 <span className={`w-2.5 h-2.5 rounded-full ${
-                                  pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                  pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                  pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                  pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
+                                  (() => {
+                                    const statusLabel = getPieceStatusLabel(pub.status_piece);
+                                    return statusLabel === 'Publicada' ? 'bg-emerald-500' :
+                                           statusLabel === 'Lista' ? 'bg-teal-500' :
+                                           statusLabel === 'Pendiente' ? 'bg-amber-500' : 'bg-gray-400';
+                                  })()
                                 }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
                               </div>
 
@@ -512,11 +514,21 @@ export default function CrmClientPortal() {
                                 <h5 className="font-bold text-sm text-gray-900 group-hover:text-[var(--color-deep-green)] transition-colors mt-1 line-clamp-2">
                                   {pub.title}
                                 </h5>
-                                {pub.territorio && (
-                                  <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
-                                    {pub.territorio}
-                                  </span>
-                                )}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {pub.territorio && (
+                                    <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
+                                      {pub.territorio}
+                                    </span>
+                                  )}
+                                  {pub.status_piece &&
+                                   !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+                                   pub.status_piece.trim() !== '' && (
+                                    <span className="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full px-2 py-0.5 items-center gap-1 mt-2">
+                                      <span className="material-symbols-outlined text-[10px] leading-none">assignment_late</span>
+                                      {pub.status_piece.split('\n').filter(line => line.trim() !== '').length} pendientes
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               {pub.copy && (
                                 <p className="text-xs text-gray-500 line-clamp-3 bg-gray-50 p-2.5 rounded border border-gray-150/60 font-sans leading-relaxed">
@@ -1002,6 +1014,25 @@ export default function CrmClientPortal() {
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Texto de Publicación (Copy)</p>
                     <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-[180px] overflow-y-auto">
                       {selectedPub.copy}
+                    </div>
+                  </div>
+                )}
+
+                {selectedPub.status_piece &&
+                 !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(selectedPub.status_piece) &&
+                 selectedPub.status_piece.trim() !== '' && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs text-amber-600">assignment_late</span>
+                      Tareas Pendientes
+                    </p>
+                    <div className="bg-amber-50/50 border border-amber-200/60 p-4 rounded-xl text-xs text-amber-900 space-y-1.5 max-h-[150px] overflow-y-auto">
+                      {selectedPub.status_piece.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <span className="material-symbols-outlined text-[14px] leading-none mt-0.5 text-amber-600 select-none">radio_button_unchecked</span>
+                          <span className="leading-tight font-medium">{line}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

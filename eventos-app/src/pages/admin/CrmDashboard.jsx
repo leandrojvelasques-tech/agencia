@@ -207,11 +207,9 @@ export default function CrmDashboard() {
     total: publications.length,
     posts: publications.filter(p => p.type === 'post').length,
     stories: publications.filter(p => p.type === 'story').length,
-    publishedPieces: publications.filter(p => p.status_piece === 'published').length,
-    pendingDesign: publications.filter(p => p.status_piece === 'pending_design').length,
-    pendingAssets: publications.filter(p => p.status_piece === 'pending_assets').length,
-    ready: publications.filter(p => p.status_piece === 'ready').length,
-    drafts: publications.filter(p => p.status_piece === 'draft').length
+    publishedPieces: publications.filter(p => p.status_post === 'published').length,
+    ready: publications.filter(p => !p.status_piece || p.status_piece.trim() === '' || p.status_piece === 'ready' || p.status_piece === 'published').length,
+    pending: publications.filter(p => p.status_piece && p.status_piece.trim() !== '' && p.status_piece !== 'ready' && p.status_piece !== 'published').length
   }
 
   // Format date to ISO string local YYYY-MM-DD
@@ -224,23 +222,23 @@ export default function CrmDashboard() {
   }
 
   // Helper for status classes
-  const getPieceStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'published': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
-      case 'ready': return 'bg-teal-100 text-teal-800 border-teal-200'
-      case 'pending_design': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'pending_assets': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'draft': default: return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
+  const getPieceStatusLabel = (status) => {
+    if (!status || status.trim() === '') return 'Lista'
+    if (status === 'published') return 'Publicada'
+    if (status === 'ready') return 'Lista'
+    if (status === 'pending_design') return 'Pend. Diseño'
+    if (status === 'pending_assets') return 'Pend. Material'
+    if (status === 'draft') return 'Borrador'
+    return 'Pendiente'
   }
 
-  const getPieceStatusLabel = (status) => {
-    switch (status) {
-      case 'published': return 'Publicada'
-      case 'ready': return 'Lista'
-      case 'pending_design': return 'Pend. Diseño'
-      case 'pending_assets': return 'Pend. Material'
-      case 'draft': default: return 'Borrador'
+  const getPieceStatusBadgeClass = (status) => {
+    const label = getPieceStatusLabel(status)
+    switch (label) {
+      case 'Publicada': return 'bg-emerald-100 text-emerald-800 border-emerald-200'
+      case 'Lista': return 'bg-teal-100 text-teal-800 border-teal-200'
+      case 'Pendiente': return 'bg-amber-100 text-amber-800 border-amber-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -377,15 +375,12 @@ export default function CrmDashboard() {
             <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">avances sobre piezas</span>
           </div>
           <div className="card p-5 bg-white flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Faltante Diseño / Assets</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Tareas Pendientes</span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-amber-600">{stats.pendingDesign}</span>
-              <span className="text-xs text-amber-600/80 font-bold">Dis.</span>
-              <span className="text-dark-gray/20">/</span>
-              <span className="text-3xl font-extrabold text-orange-600">{stats.pendingAssets}</span>
-              <span className="text-xs text-orange-600/80 font-bold">Mat.</span>
+              <span className="text-3xl font-extrabold text-amber-600">{stats.pending}</span>
+              <span className="text-xs text-amber-650 font-bold">Piezas</span>
             </div>
-            <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">piezas pendientes</span>
+            <span className="text-xs text-[var(--color-dark-gray)]/60 mt-1">publicaciones con pendientes</span>
           </div>
         </div>
       )}
@@ -782,6 +777,18 @@ export default function CrmDashboard() {
                           const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
                           const terrConfig = getTerritorioConfig(pub.territorio)
                           
+                          // Precompute status attributes
+                          const statusLabel = getPieceStatusLabel(pub.status_piece)
+                          const hasPending = pub.status_piece &&
+                            !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+                            pub.status_piece.trim() !== ''
+                          const pendingCount = hasPending ? pub.status_piece.split('\n').filter(Boolean).length : 0
+
+                          // Determine dot color
+                          const dotColorClass = statusLabel === 'Publicada' ? 'bg-emerald-500' :
+                                                statusLabel === 'Lista' ? 'bg-teal-500' :
+                                                statusLabel === 'Pendiente' ? 'bg-amber-500' : 'bg-gray-400'
+                          
                           return (
                             <div
                               key={pub.id}
@@ -833,12 +840,7 @@ export default function CrmDashboard() {
                                 </div>
 
                                 <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-                                  <span className={`w-2.5 h-2.5 rounded-full ${
-                                    pub.status_piece === 'published' ? 'bg-emerald-500' :
-                                    pub.status_piece === 'ready' ? 'bg-teal-500' :
-                                    pub.status_piece === 'pending_design' ? 'bg-amber-500' :
-                                    pub.status_piece === 'pending_assets' ? 'bg-orange-500' : 'bg-gray-400'
-                                  }`} title={`Pieza: ${getPieceStatusLabel(pub.status_piece)}`} />
+                                  <span className={`w-2.5 h-2.5 rounded-full ${dotColorClass}`} title={`Pieza: ${statusLabel}`} />
                                 </div>
 
                                 {pub.post_format === 'carrousel' && (
@@ -858,11 +860,19 @@ export default function CrmDashboard() {
                                   <h5 className="font-bold text-sm text-gray-900 group-hover:text-[var(--color-deep-green)] transition-colors mt-1 line-clamp-2">
                                     {pub.title}
                                   </h5>
-                                  {pub.territorio && (
-                                    <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
-                                      {pub.territorio}
-                                    </span>
-                                  )}
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {pub.territorio && (
+                                      <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
+                                        {pub.territorio}
+                                      </span>
+                                    )}
+                                    {hasPending && (
+                                      <span className="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full px-2 py-0.5 items-center gap-1 mt-2">
+                                        <span className="material-symbols-outlined text-[10px] leading-none">assignment_late</span>
+                                        {pendingCount} pendientes
+                                      </span>
+                                     )}
+                                  </div>
                                 </div>
                                 {pub.copy && (
                                   <p className="text-xs text-gray-500 line-clamp-3 bg-gray-50 p-2.5 rounded border border-gray-150/60 font-sans leading-relaxed">
@@ -1084,7 +1094,8 @@ export default function CrmDashboard() {
                           </div>
                         </td>
                       </tr>
-                    )})}
+                      )
+                    })}
                   </tbody>
                 </table>
               )}
