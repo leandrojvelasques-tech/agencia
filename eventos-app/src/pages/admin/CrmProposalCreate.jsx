@@ -16,7 +16,7 @@ export default function CrmProposalCreate() {
   const [error, setError] = useState('')
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [uploadError, setUploadError] = useState('')
-
+  const [showPreview, setShowPreview] = useState(false)
   const [form, setForm] = useState({
     client_id: '',
     title: '',
@@ -48,7 +48,7 @@ export default function CrmProposalCreate() {
         // Fetch clients
         const { data: clientsData, error: cErr } = await supabase
           .from('crm_clients')
-          .select('id, name, company')
+          .select('id, name, company, email, phone')
           .order('name')
         
         if (cErr) throw cErr
@@ -662,22 +662,304 @@ export default function CrmProposalCreate() {
           <Link to="/admin/crm/presupuestos" className="btn-ghost">
             Cancelar
           </Link>
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-lg">save</span>
-                {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
-              </>
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="btn-secondary !py-2.5 !px-5 text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-base">visibility</span>
+              Vista Preliminar
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-lg">save</span>
+                  {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
+
+      {/* PREVIEW MODAL */}
+      {showPreview && (() => {
+        const selectedClient = clients.find(c => c.id === form.client_id)
+        const mockCrmClient = selectedClient ? {
+          name: selectedClient.name,
+          company: selectedClient.company,
+          email: selectedClient.email || '',
+          phone: selectedClient.phone || ''
+        } : null
+
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
+            {/* Admin Header Banner */}
+            <div className="w-full max-w-4xl mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined">visibility</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="bg-white/20 hover:bg-white/35 text-white font-bold text-xs py-1.5 px-4 rounded-lg transition-all"
+              >
+                Cerrar Vista Previa
+              </button>
+            </div>
+
+            {/* Landing Content Wrapper */}
+            <div className="w-full max-w-4xl bg-[var(--color-refined-gray)] rounded-2xl overflow-hidden shadow-2xl border border-gray-100 pb-12 relative text-left">
+              
+              {/* Header */}
+              <div className="glass-nav sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100">
+                <div className="max-w-4xl mx-auto px-6 flex items-center justify-between h-16">
+                  <div className="flex items-center gap-2">
+                    <img src="https://www.leandrovelasques.com.ar/logo_triskel.png" alt="Logo" className="h-7 w-auto" style={{ mixBlendMode: 'multiply' }} />
+                    <span className="font-heading font-extrabold text-[var(--color-deep-green)] text-sm tracking-tight">LEANDRO VELASQUES</span>
+                  </div>
+                  <button 
+                    type="button"
+                    disabled
+                    className="btn-secondary !py-2 !px-4 !text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm opacity-50 cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                    Imprimir / Guardar PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-w-4xl mx-auto px-6 py-8 lg:py-12">
+                {/* Status Alert */}
+                <div className="p-4 mb-6 rounded-2xl border border-amber-200 bg-amber-50/50 text-amber-800 flex items-start gap-3">
+                  <span className="material-symbols-outlined text-2xl text-amber-500">info</span>
+                  <div>
+                    <p className="text-sm font-bold">Borrador de Propuesta</p>
+                    <p className="text-xs text-amber-700/80 mt-0.5 leading-relaxed">
+                      Esta es una vista preliminar en tiempo real de cómo el cliente revisará la propuesta comercial en su navegador.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Corporate Header Info */}
+                <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                    <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">{form.title || 'Propuesta Comercial Sin Título'}</h1>
+                    {form.subtitle && (
+                      <p className="text-sm md:text-base text-[var(--color-dark-gray)]/65 font-medium leading-snug">{form.subtitle}</p>
+                    )}
+                    <div className="flex gap-2 pt-1.5">
+                      <span className="badge badge-yellow">⏳ Pendiente de revisión</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t md:border-t-0 md:border-l border-[var(--color-deep-green)]/8 pt-4 md:pt-0 md:pl-6 space-y-2 min-w-[200px]">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40">Fecha de emisión</p>
+                      <p className="text-xs font-semibold">{new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                    </div>
+                    {form.valid_until && (
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40">Válido hasta</p>
+                        <p className="text-xs font-semibold text-amber-700">{new Date(form.valid_until + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PDF Download Section */}
+                {form.pdf_url && (
+                  <div className="card p-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]">picture_as_pdf</span>
+                      <div>
+                        <h3 className="text-sm font-extrabold text-[var(--color-dark-gray)]">Propuesta Técnica Completa (Documentación)</h3>
+                        <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">Accede a las especificaciones detalladas del diagnóstico y propuesta técnica de 15 páginas.</p>
+                      </div>
+                    </div>
+                    <a 
+                      href={form.pdf_url} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="btn-primary !py-2.5 !px-6 !text-xs whitespace-nowrap inline-flex items-center justify-center gap-1.5 shadow-md shadow-[var(--color-deep-green)]/10"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      Ver Propuesta PDF
+                    </a>
+                  </div>
+                )}
+
+                {/* Client & Vendor Details */}
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">person</span>
+                      Propuesta preparada para:
+                    </h2>
+                    {mockCrmClient ? (
+                      <div className="space-y-1 text-xs">
+                        <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{mockCrmClient.name}</p>
+                        {mockCrmClient.company && <p className="font-semibold text-[var(--color-dark-gray)]/65">{mockCrmClient.company}</p>}
+                        {mockCrmClient.email && <p className="text-[var(--color-dark-gray)]/50">{mockCrmClient.email}</p>}
+                        {mockCrmClient.phone && <p className="text-[var(--color-dark-gray)]/50">{mockCrmClient.phone}</p>}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[var(--color-dark-gray)]/40 italic">Ningún cliente seleccionado</p>
+                    )}
+                  </div>
+
+                  <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">apartment</span>
+                      Proveedor:
+                    </h2>
+                    <div className="space-y-1 text-xs">
+                      <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
+                      <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
+                      <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
+                      <p className="text-[var(--color-dark-gray)]/50">Trelew, Chubut, Argentina</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* STAGES & ACTIVITIES TABLE DETAILS */}
+                <div className="space-y-6 mb-6">
+                  {form.items && form.items.length > 0 ? (
+                    form.items.map((stage, idx) => (
+                      <div key={idx} className="card bg-white border border-[var(--color-deep-green)]/5 shadow-sm overflow-hidden">
+                        {/* Stage Header */}
+                        <div className="p-4 bg-[var(--color-deep-green)] text-white flex justify-between items-center flex-wrap gap-2">
+                          <h2 className="text-sm font-extrabold uppercase tracking-wide">{stage.title || `ETAPA ${idx + 1}`}</h2>
+                          <span className="text-base font-extrabold font-mono">
+                            ${Number(stage.amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+
+                        {/* Activities Table */}
+                        {stage.activities && stage.activities.length > 0 && (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100 text-[var(--color-dark-gray)]/50 uppercase tracking-wider font-bold">
+                                  <th className="p-3 w-16 text-center">Cód</th>
+                                  <th className="p-3 w-1/3">Actividades</th>
+                                  <th className="p-3">Descripción</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100 font-medium">
+                                {stage.activities.map((act, aIdx) => (
+                                  <tr key={aIdx} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="p-3 text-center font-extrabold text-[var(--color-deep-green)]">{act.code}</td>
+                                    <td className="p-3 text-[var(--color-dark-gray)] font-bold">{act.name || '—'}</td>
+                                    <td className="p-3 text-[var(--color-dark-gray)]/70 font-normal leading-relaxed">{act.description || '—'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-[var(--color-dark-gray)]/30 text-center py-6">No hay etapas configuradas.</p>
+                  )}
+                </div>
+
+                {/* PAYMENT SCHEDULE PLAN */}
+                <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">
+                  <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-xl">payments</span>
+                    Plan de Pagos de la Propuesta
+                  </h2>
+                  
+                  <div className="space-y-3.5 text-xs font-semibold text-[var(--color-dark-gray)]">
+                    <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
+                      <div>
+                        <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar el proyecto)</p>
+                        <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Se abona al momento de firmar y dar inicio a las actividades.</p>
+                      </div>
+                      <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
+                        ${(Number(totalAmount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 bg-[var(--color-refined-gray)]/40 p-4 rounded-lg border border-gray-100">
+                      <p className="font-bold text-[var(--color-dark-gray)] uppercase tracking-wider text-[10px] mb-2">Desglose de cuotas por finalización de etapas (50% restante):</p>
+                      {form.items && form.items.map((stage, idx) => (
+                        <div key={idx} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
+                          <div>
+                            <p className="font-bold text-[var(--color-dark-gray)]/85">{stage.title || `ETAPA ${idx + 1}`}</p>
+                            <p className="text-[9px] text-[var(--color-dark-gray)]/45">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
+                          </div>
+                          <span className="font-mono font-bold text-[var(--color-dark-gray)]">
+                            ${(Number(stage.amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
+                      <span>Total del Presupuesto Comercial:</span>
+                      <span className="text-lg font-extrabold text-[var(--color-deep-green)] font-mono">
+                        ${Number(totalAmount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* BANK TRANSFER PAYMENT DETAILS */}
+                <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">account_balance</span>
+                    Información para Transferencia Bancaria
+                  </h2>
+                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs font-semibold text-[var(--color-dark-gray)]/70">
+                    <div><strong>Banco:</strong> {form.payment_details.banco}</div>
+                    <div><strong>Titular:</strong> {form.payment_details.nombre}</div>
+                    <div><strong>CBU:</strong> <span className="font-mono font-bold text-[var(--color-dark-gray)]">{form.payment_details.cbu}</span></div>
+                    <div><strong>Alias:</strong> <span className="font-bold text-[var(--color-deep-green)]">{form.payment_details.alias}</span></div>
+                    <div><strong>CUIT/CUIL:</strong> <span className="font-mono">{form.payment_details.cuit}</span></div>
+                    <div><strong>Cuenta:</strong> {form.payment_details.cuenta}</div>
+                  </div>
+                </div>
+
+                {/* Terms and Conditions */}
+                {form.terms_conditions && (
+                  <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">gavel</span>
+                      Términos Comerciales & Condiciones
+                    </h2>
+                    <p className="text-xs text-[var(--color-dark-gray)]/65 font-medium leading-relaxed whitespace-pre-wrap">
+                      {form.terms_conditions}
+                    </p>
+                  </div>
+                )}
+
+                {/* Simulated Client Actions */}
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 opacity-50 pointer-events-none">
+                  <button type="button" className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto">
+                    <span className="material-symbols-outlined text-lg">cancel</span>
+                    Rechazar / Solicitar ajuste
+                  </button>
+                  <button type="button" className="btn-primary !py-3.5 !px-10 text-sm w-full sm:w-auto shadow-lg shadow-[var(--color-deep-green)]/20">
+                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                    Aprobar Presupuesto
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
