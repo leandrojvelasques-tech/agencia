@@ -43,6 +43,8 @@ export default function CrmProposalsDashboard() {
       return (
         p.title.toLowerCase().includes(q) ||
         p.subtitle?.toLowerCase().includes(q) ||
+        (p.client_name && p.client_name.toLowerCase().includes(q)) ||
+        (p.client_company && p.client_company.toLowerCase().includes(q)) ||
         p.crm_clients?.name?.toLowerCase().includes(q) ||
         p.crm_clients?.company?.toLowerCase().includes(q)
       )
@@ -135,6 +137,8 @@ export default function CrmProposalsDashboard() {
         <div className="space-y-4">
           {filtered.map((proposal, i) => {
             const statusCfg = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft
+            const clientDisplayName = proposal.client_name || proposal.crm_clients?.name
+            const clientDisplayCompany = proposal.client_company || proposal.crm_clients?.company
             return (
               <div 
                 key={proposal.id}
@@ -146,9 +150,9 @@ export default function CrmProposalsDashboard() {
                       <span className={`status-dot status-dot-${statusCfg.color}`} />
                       {statusCfg.label}
                     </span>
-                    {proposal.crm_clients && (
+                    {clientDisplayName && (
                       <span className="badge badge-gray text-xs font-semibold">
-                        👤 {proposal.crm_clients.name} {proposal.crm_clients.company ? `(${proposal.crm_clients.company})` : ''}
+                        👤 {clientDisplayName} {clientDisplayCompany ? `(${clientDisplayCompany})` : ''}
                       </span>
                     )}
                     {proposal.valid_until && (

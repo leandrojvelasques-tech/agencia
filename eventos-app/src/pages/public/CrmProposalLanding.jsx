@@ -300,12 +300,12 @@ export default function CrmProposalLanding() {
               <span className="material-symbols-outlined text-sm">person</span>
               Propuesta preparada para:
             </h2>
-            {proposal.crm_clients ? (
+            {(proposal.client_name || proposal.crm_clients) ? (
               <div className="space-y-1 text-xs">
-                <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{proposal.crm_clients.name}</p>
-                {proposal.crm_clients.company && <p className="font-semibold text-[var(--color-dark-gray)]/65">{proposal.crm_clients.company}</p>}
-                {proposal.crm_clients.email && <p className="text-[var(--color-dark-gray)]/50">{proposal.crm_clients.email}</p>}
-                {proposal.crm_clients.phone && <p className="text-[var(--color-dark-gray)]/50">{proposal.crm_clients.phone}</p>}
+                <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{proposal.client_name || proposal.crm_clients?.name}</p>
+                {(proposal.client_company || proposal.crm_clients?.company) && <p className="font-semibold text-[var(--color-dark-gray)]/65">{proposal.client_company || proposal.crm_clients?.company}</p>}
+                {(proposal.client_email || proposal.crm_clients?.email) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_email || proposal.crm_clients?.email}</p>}
+                {(proposal.client_phone || proposal.crm_clients?.phone) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_phone || proposal.crm_clients?.phone}</p>}
               </div>
             ) : (
               <p className="text-xs text-[var(--color-dark-gray)]/40">Cliente no especificado</p>
@@ -326,49 +326,6 @@ export default function CrmProposalLanding() {
           </div>
         </div>
 
-        {/* STAGES & ACTIVITIES TABLE DETAILS */}
-        <div className="space-y-6 mb-6">
-          {proposal.items && proposal.items.length > 0 ? (
-            proposal.items.map((stage, idx) => (
-              <div key={idx} className="card bg-white border border-[var(--color-deep-green)]/5 shadow-sm overflow-hidden">
-                {/* Stage Header */}
-                <div className="p-4 bg-[var(--color-deep-green)] text-white flex justify-between items-center flex-wrap gap-2">
-                  <h2 className="text-sm font-extrabold uppercase tracking-wide">{stage.title}</h2>
-                  <span className="text-base font-extrabold font-mono">
-                    ${Number(stage.amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-
-                {/* Activities Table */}
-                {stage.activities && stage.activities.length > 0 && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100 text-[var(--color-dark-gray)]/50 uppercase tracking-wider font-bold">
-                          <th className="p-3 w-16 text-center">Cód</th>
-                          <th className="p-3 w-1/3">Actividades</th>
-                          <th className="p-3">Descripción</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 font-medium">
-                        {stage.activities.map((act, aIdx) => (
-                          <tr key={aIdx} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="p-3 text-center font-extrabold text-[var(--color-deep-green)]">{act.code}</td>
-                            <td className="p-3 text-[var(--color-dark-gray)] font-bold">{act.name}</td>
-                            <td className="p-3 text-[var(--color-dark-gray)]/70 font-normal leading-relaxed">{act.description || '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-[var(--color-dark-gray)]/30 text-center py-6">No hay etapas configuradas en esta propuesta.</p>
-          )}
-        </div>
-
         {/* PAYMENT SCHEDULE PLAN */}
         <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">
           <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
@@ -387,19 +344,14 @@ export default function CrmProposalLanding() {
               </span>
             </div>
 
-            <div className="space-y-2 bg-[var(--color-refined-gray)]/40 p-4 rounded-lg border border-gray-100">
-              <p className="font-bold text-[var(--color-dark-gray)] uppercase tracking-wider text-[10px] mb-2">Desglose de cuotas por finalización de etapas (50% restante):</p>
-              {proposal.items && proposal.items.map((stage, idx) => (
-                <div key={idx} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
-                  <div>
-                    <p className="font-bold text-[var(--color-dark-gray)]/85">{stage.title}</p>
-                    <p className="text-[9px] text-[var(--color-dark-gray)]/45">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
-                  </div>
-                  <span className="font-mono font-bold text-[var(--color-dark-gray)]">
-                    ${(Number(stage.amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-              ))}
+            <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
+              <div>
+                <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar las etapas acordadas)</p>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
+              </div>
+              <span className="font-mono font-bold text-[var(--color-dark-gray)]">
+                ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+              </span>
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
