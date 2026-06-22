@@ -15,6 +15,8 @@ import EventMinuta from './pages/admin/EventMinuta'
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
 import CrmPublicationCreate from './pages/admin/CrmPublicationCreate'
+import CrmProposalsDashboard from './pages/admin/CrmProposalsDashboard'
+import CrmProposalCreate from './pages/admin/CrmProposalCreate'
 
 // Public (participant) pages
 import EventLanding from './pages/public/EventLanding'
@@ -25,6 +27,7 @@ import EventParticipantsPublic from './pages/public/EventParticipantsPublic'
 
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
+import CrmProposalLanding from './pages/public/CrmProposalLanding'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -71,6 +74,9 @@ export default function App() {
           <Route path="crm" element={<CrmDashboard />} />
           <Route path="crm/publicacion/nueva" element={<CrmPublicationCreate />} />
           <Route path="crm/publicacion/:id/editar" element={<CrmPublicationCreate />} />
+          <Route path="crm/presupuestos" element={<CrmProposalsDashboard />} />
+          <Route path="crm/presupuestos/nuevo" element={<CrmProposalCreate />} />
+          <Route path="crm/presupuestos/:id/editar" element={<CrmProposalCreate />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -82,6 +88,7 @@ export default function App() {
 
         {/* CRM Client Shared Route */}
         <Route path="/crm/cliente/:token" element={<CrmClientPortal />} />
+        <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />

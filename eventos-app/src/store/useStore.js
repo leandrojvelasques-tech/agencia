@@ -12,6 +12,7 @@ export const useStore = create((set, get) => ({
   participants: [],
   attendance: [],
   certificates: [],
+  proposals: [],
 
   // Auth
   login: async (email, password) => {
@@ -467,5 +468,76 @@ export const useStore = create((set, get) => ({
       return { success: !error, data, error }
     }
     return { success: true }
+  },
+
+  // Proposals / Budgets
+  fetchProposals: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('crm_proposals')
+      .select('*, crm_clients(*)')
+      .order('created_at', { ascending: false })
+    
+    if (!error) {
+      set({ proposals: data || [] })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  fetchProposalByToken: async (token) => {
+    const { data, error } = await supabase
+      .from('crm_proposals')
+      .select('*, crm_clients(*)')
+      .eq('share_token', token)
+      .maybeSingle()
+    return data
+  },
+
+  createProposal: async (proposalData) => {
+    const { data, error } = await supabase
+      .from('crm_proposals')
+      .insert([proposalData])
+      .select()
+      .single()
+    
+    if (!error && data) {
+      set(state => ({ proposals: [data, ...state.proposals] }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  updateProposal: async (id, proposalData) => {
+    const { data, error } = await supabase
+      .from('crm_proposals')
+      .update(proposalData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (!error && data) {
+      // Re-fetch all or update state manually with client info preserved
+      set(state => ({
+        proposals: state.proposals.map(p => p.id === id ? { ...p, ...data } : p)
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  deleteProposal: async (id) => {
+    const { error } = await supabase
+      .from('crm_proposals')
+      .delete()
+      .eq('id', id)
+    
+    if (!error) {
+      set(state => ({
+        proposals: state.proposals.filter(p => p.id !== id)
+      }))
+      return { success: true }
+    }
+    return { success: false, error }
   },
 }))

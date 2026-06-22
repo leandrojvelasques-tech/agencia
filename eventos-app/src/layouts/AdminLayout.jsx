@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore'
 const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
+  { to: '/admin/crm/presupuestos', icon: 'payments', label: 'Presupuestos' },
 ]
 
 export default function AdminLayout() {
