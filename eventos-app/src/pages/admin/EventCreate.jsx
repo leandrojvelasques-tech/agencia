@@ -574,8 +574,8 @@ export default function EventCreate() {
                 {form.agenda.map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input type="time" className="form-input !w-28 !py-2.5 text-sm" value={item.time} onChange={e => updateAgenda(i, 'time', e.target.value)} />
-                    <input className="form-input !py-2.5 text-sm w-1/4" placeholder="Bloque (Sintesis)" value={item.block || ''} onChange={e => updateAgenda(i, 'block', e.target.value)} />
-                    <input className="form-input !py-2.5 text-sm flex-1" placeholder="Detalle completo" value={item.topic} onChange={e => updateAgenda(i, 'topic', e.target.value)} />
+                    <input className="form-input !py-2.5 text-sm !w-48" placeholder="Tema (Corto)" value={item.block || ''} onChange={e => updateAgenda(i, 'block', e.target.value)} />
+                    <input className="form-input !py-2.5 text-sm flex-1" placeholder="Detalle (Largo)" value={item.topic} onChange={e => updateAgenda(i, 'topic', e.target.value)} />
                     {form.agenda.length > 1 && (
                       <button onClick={() => removeAgendaItem(i)} className="text-red-400 hover:text-red-600 transition-colors p-1">
                         <span className="material-symbols-outlined text-lg">close</span>
