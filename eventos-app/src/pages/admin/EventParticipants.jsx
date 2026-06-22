@@ -9,7 +9,7 @@ export default function EventParticipants() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingParticipant, setEditingParticipant] = useState(null)
-  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
   const [search, setSearch] = useState('')
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function EventParticipants() {
 
   const handleOpenAdd = () => {
     setEditingParticipant(null)
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
     setShowModal(true)
   }
 
@@ -49,7 +49,8 @@ export default function EventParticipants() {
       last_name: p.last_name || '',
       email: p.email || '',
       phone: p.phone || '',
-      notes: p.notes || ''
+      notes: p.notes || '',
+      attendance_mode: reg.attendance_mode || 'presencial'
     })
     setShowModal(true)
   }
@@ -60,12 +61,15 @@ export default function EventParticipants() {
     const payload = { ...form }
 
     if (editingParticipant) {
-      await updateParticipantManual(editingParticipant.participantId, payload)
+      await updateParticipantManual(editingParticipant.participantId, {
+        ...payload,
+        registrationId: editingParticipant.registrationId
+      })
     } else {
       await addParticipantManual(id, payload)
     }
     
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '' })
+    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
     setEditingParticipant(null)
     setShowModal(false)
   }
@@ -105,13 +109,14 @@ export default function EventParticipants() {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Teléfono</th>
+                <th>Modalidad</th>
                 <th>Origen</th>
                 <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
+                <tr><td colSpan={6} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
               ) : filtered.map(r => (
                 <tr key={r.id}>
                   <td className="font-semibold text-[var(--color-dark-gray)]">
@@ -133,6 +138,11 @@ export default function EventParticipants() {
                     )}
                   </td>
                   <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
+                  <td>
+                    <span className={`badge ${r.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
+                      {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
+                    </span>
+                  </td>
                   <td><span className="badge badge-gray">{r.source === 'manual' ? 'Manual' : 'Autoinscripción'}</span></td>
                   <td className="text-center">
                     <div className="flex items-center justify-center gap-1">
@@ -174,6 +184,13 @@ export default function EventParticipants() {
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Teléfono</label>
                 <input className="form-input !py-2.5" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Modalidad *</label>
+                <select className="form-input !py-2.5" value={form.attendance_mode} onChange={e => setForm(p => ({ ...p, attendance_mode: e.target.value }))}>
+                  <option value="presencial">🏫 Presencial</option>
+                  <option value="virtual">💻 Virtual</option>
+                </select>
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Observaciones</label>

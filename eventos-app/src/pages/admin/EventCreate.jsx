@@ -24,9 +24,10 @@ export default function EventCreate() {
     event_date: '',
     start_time: '',
     duration_minutes: 120,
-    agenda: [{ time: '', topic: '' }],
+    agenda: [{ time: '', block: '', topic: '' }],
     registration_mode: 'both',
-    max_capacity: '',
+    max_capacity_presencial: '',
+    max_capacity_virtual: '',
     banner_url: '',
     is_public: true,
     show_on_home: false,
@@ -79,7 +80,8 @@ export default function EventCreate() {
           setExistingEvent(data)
           setForm({
             ...data,
-            max_capacity: data.max_capacity || '',
+            max_capacity_presencial: data.max_capacity_presencial || '',
+            max_capacity_virtual: data.max_capacity_virtual || '',
             is_public: data.status === 'published' || data.status === 'in_progress',
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
@@ -94,7 +96,7 @@ export default function EventCreate() {
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
 
-  const addAgendaItem = () => setForm(prev => ({ ...prev, agenda: [...prev.agenda, { time: '', topic: '' }] }))
+  const addAgendaItem = () => setForm(prev => ({ ...prev, agenda: [...prev.agenda, { time: '', block: '', topic: '' }] }))
   const removeAgendaItem = (i) => setForm(prev => ({ ...prev, agenda: prev.agenda.filter((_, idx) => idx !== i) }))
   const updateAgenda = (i, field, value) => {
     setForm(prev => ({
@@ -145,13 +147,15 @@ export default function EventCreate() {
       updated_at: ___,
       event_stats: ____, 
       is_public,
+      max_capacity, // ignore old property
       ...eventData 
     } = form
     
     const data = { 
       ...eventData, 
       status: is_public ? 'published' : 'draft',
-      max_capacity: eventData.max_capacity ? Number(eventData.max_capacity) : null 
+      max_capacity_presencial: eventData.max_capacity_presencial ? Number(eventData.max_capacity_presencial) : null,
+      max_capacity_virtual: eventData.max_capacity_virtual ? Number(eventData.max_capacity_virtual) : null
     }
     
     console.log('Datos preparados para enviar a Supabase:', data)
@@ -207,7 +211,8 @@ export default function EventCreate() {
             setExistingEvent(updated)
             setForm({
               ...updated,
-              max_capacity: updated.max_capacity || '',
+              max_capacity_presencial: updated.max_capacity_presencial || '',
+              max_capacity_virtual: updated.max_capacity_virtual || '',
               is_public: updated.status === 'published' || updated.status === 'in_progress',
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
@@ -378,95 +383,9 @@ export default function EventCreate() {
                 <input className="form-input" placeholder="Ej: UTN Trelew" value={form.organizer} onChange={e => update('organizer', e.target.value)} />
               </div>
             </div>
-          </div>
-        )}
 
-        {step === 1 && (
-          <div className="space-y-5">
-            <div className="grid sm:grid-cols-3 gap-5">
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Fecha *</label>
-                <input type="date" className="form-input" value={form.event_date} onChange={e => update('event_date', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Hora de inicio *</label>
-                <input type="time" className="form-input" value={form.start_time} onChange={e => update('start_time', e.target.value)} />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Duración (min) *</label>
-                <input type="number" className="form-input" value={form.duration_minutes} onChange={e => update('duration_minutes', Number(e.target.value))} min={15} step={15} />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Link de Transmisión / Google Meet <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
-              <input 
-                className="form-input" 
-                placeholder="Ej: https://meet.google.com/abc-defg-hij o link de YouTube Live" 
-                value={form.live_link || ''} 
-                onChange={e => update('live_link', e.target.value)} 
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Agenda / Programa</label>
-                <button onClick={addAgendaItem} className="btn-ghost text-xs !text-[var(--color-deep-green)]">
-                  <span className="material-symbols-outlined text-base">add</span> Agregar ítem
-                </button>
-              </div>
-              <div className="space-y-2">
-                {form.agenda.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input type="time" className="form-input !w-28 !py-2.5 text-sm" value={item.time} onChange={e => updateAgenda(i, 'time', e.target.value)} />
-                    <input className="form-input !py-2.5 text-sm flex-1" placeholder="Tema o actividad" value={item.topic} onChange={e => updateAgenda(i, 'topic', e.target.value)} />
-                    {form.agenda.length > 1 && (
-                      <button onClick={() => removeAgendaItem(i)} className="text-red-400 hover:text-red-600 transition-colors p-1">
-                        <span className="material-symbols-outlined text-lg">close</span>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-5">
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Modalidad de inscripción *</label>
-              <div className="space-y-2">
-                {[
-                  { value: 'manual', label: 'Solo carga manual', desc: 'Solo el admin carga participantes' },
-                  { value: 'self', label: 'Solo autoinscripción', desc: 'Participantes se inscriben por link privado' },
-                  { value: 'both', label: 'Ambas modalidades', desc: 'Autoinscripción + carga manual' },
-                ].map(opt => (
-                  <label key={opt.value} className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
-                    form.registration_mode === opt.value
-                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
-                      : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
-                  }`}>
-                    <input type="radio" name="reg_mode" value={opt.value} checked={form.registration_mode === opt.value} onChange={e => update('registration_mode', e.target.value)} className="mt-1 accent-[var(--color-deep-green)]" />
-                    <div>
-                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">{opt.label}</p>
-                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">{opt.desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad máxima <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
-              <input type="number" className="form-input !w-40" placeholder="Ej: 40" value={form.max_capacity} onChange={e => update('max_capacity', e.target.value)} min={1} />
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-6">
             {/* Banner Upload */}
-            <div>
+            <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Banner del evento <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
 
               {/* Preview */}
@@ -474,6 +393,7 @@ export default function EventCreate() {
                 <div className="relative mb-4 rounded-[var(--radius-card)] overflow-hidden border border-[var(--color-deep-green)]/10 group">
                   <img src={form.banner_url} alt="Banner preview" className="w-full h-48 object-cover" />
                   <button
+                    type="button"
                     onClick={() => update('banner_url', '')}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Quitar banner"
@@ -530,6 +450,101 @@ export default function EventCreate() {
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="space-y-5">
+            <div className="grid sm:grid-cols-3 gap-5">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Fecha *</label>
+                <input type="date" className="form-input" value={form.event_date} onChange={e => update('event_date', e.target.value)} />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Hora de inicio *</label>
+                <input type="time" className="form-input" value={form.start_time} onChange={e => update('start_time', e.target.value)} />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Duración (min) *</label>
+                <input type="number" className="form-input" value={form.duration_minutes} onChange={e => update('duration_minutes', Number(e.target.value))} min={15} step={15} />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Link de Transmisión / Google Meet <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <input 
+                className="form-input" 
+                placeholder="Ej: https://meet.google.com/abc-defg-hij o link de YouTube Live" 
+                value={form.live_link || ''} 
+                onChange={e => update('live_link', e.target.value)} 
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Agenda / Programa</label>
+                <button onClick={addAgendaItem} className="btn-ghost text-xs !text-[var(--color-deep-green)]">
+                  <span className="material-symbols-outlined text-base">add</span> Agregar ítem
+                </button>
+              </div>
+              <div className="space-y-2">
+                {form.agenda.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input type="time" className="form-input !w-28 !py-2.5 text-sm" value={item.time} onChange={e => updateAgenda(i, 'time', e.target.value)} />
+                    <input className="form-input !py-2.5 text-sm w-1/4" placeholder="Bloque (Sintesis)" value={item.block || ''} onChange={e => updateAgenda(i, 'block', e.target.value)} />
+                    <input className="form-input !py-2.5 text-sm flex-1" placeholder="Detalle completo" value={item.topic} onChange={e => updateAgenda(i, 'topic', e.target.value)} />
+                    {form.agenda.length > 1 && (
+                      <button onClick={() => removeAgendaItem(i)} className="text-red-400 hover:text-red-600 transition-colors p-1">
+                        <span className="material-symbols-outlined text-lg">close</span>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-5">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Modalidad de inscripción *</label>
+              <div className="space-y-2">
+                {[
+                  { value: 'manual', label: 'Solo carga manual', desc: 'Solo el admin carga participantes' },
+                  { value: 'self', label: 'Solo autoinscripción', desc: 'Participantes se inscriben por link privado' },
+                  { value: 'both', label: 'Ambas modalidades', desc: 'Autoinscripción + carga manual' },
+                ].map(opt => (
+                  <label key={opt.value} className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
+                    form.registration_mode === opt.value
+                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                      : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
+                  }`}>
+                    <input type="radio" name="reg_mode" value={opt.value} checked={form.registration_mode === opt.value} onChange={e => update('registration_mode', e.target.value)} className="mt-1 accent-[var(--color-deep-green)]" />
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">{opt.label}</p>
+                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">{opt.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad Presencial <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
+                <input type="number" className="form-input w-full" placeholder="Ej: 20" value={form.max_capacity_presencial} onChange={e => update('max_capacity_presencial', e.target.value)} min={1} />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad Virtual <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
+                <input type="number" className="form-input w-full" placeholder="Ej: 100" value={form.max_capacity_virtual} onChange={e => update('max_capacity_virtual', e.target.value)} min={1} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-6">
+            {/* Materials List */}
 
             {/* Materials List */}
             <div className="space-y-4">

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { supabase } from '../../lib/supabase'
 
 const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note', next: 'Publicar', nextStatus: 'published' },
@@ -19,6 +20,7 @@ export default function EventDetail() {
   const [event, setEvent] = useState(null)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [modalityCounts, setModalityCounts] = useState({ presencial: 0, virtual: 0 })
 
   useEffect(() => {
     async function loadData() {
@@ -27,6 +29,20 @@ export default function EventDetail() {
       const statsData = await getEventStats(id)
       setEvent(eventData)
       setStats(statsData)
+
+      if (eventData) {
+        // Query registrations to count by modality
+        const { data: regs } = await supabase
+          .from('registrations')
+          .select('attendance_mode')
+          .eq('event_id', eventData.id)
+          .neq('status', 'cancelled')
+          
+        const pCount = regs?.filter(r => r.attendance_mode === 'presencial').length || 0
+        const vCount = regs?.filter(r => r.attendance_mode === 'virtual').length || 0
+        setModalityCounts({ presencial: pCount, virtual: vCount })
+      }
+
       setLoading(false)
     }
     loadData()
@@ -171,10 +187,22 @@ export default function EventDetail() {
           { label: 'Presentes', value: stats.present, icon: 'check_circle', color: 'deep-green' },
           { label: 'Ausentes', value: stats.absent, icon: 'cancel', color: 'dark-gray' },
         ].map(stat => (
-          <div key={stat.label} className="card p-5 text-center">
-            <span className={`material-symbols-outlined text-2xl text-[var(--color-${stat.color})]/30 mb-2 block`}>{stat.icon}</span>
-            <p className="text-3xl font-extrabold text-[var(--color-deep-green)]">{stat.value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mt-1">{stat.label}</p>
+          <div key={stat.label} className="card p-5 text-center flex flex-col justify-between min-h-[140px]">
+            <div>
+              <span className={`material-symbols-outlined text-2xl text-[var(--color-${stat.color})]/30 mb-2 block`}>{stat.icon}</span>
+              <p className="text-3xl font-extrabold text-[var(--color-deep-green)]">{stat.value}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mt-1">{stat.label}</p>
+            </div>
+            {stat.label === 'Inscriptos' && (
+              <div className="flex justify-center gap-4 mt-2 pt-2 border-t border-[var(--color-deep-green)]/8 text-xs font-semibold">
+                <span className="text-[var(--color-dark-gray)]/60" title="Inscriptos presenciales / Capacidad">
+                  🏫 {modalityCounts.presencial} {event.max_capacity_presencial ? `/ ${event.max_capacity_presencial}` : ''}
+                </span>
+                <span className="text-[var(--color-dark-gray)]/60" title="Inscriptos virtuales / Capacidad">
+                  💻 {modalityCounts.virtual} {event.max_capacity_virtual ? `/ ${event.max_capacity_virtual}` : ''}
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -68,6 +68,7 @@ export default function CrmDashboard() {
   const [toast, setToast] = useState(null)
 
   const [selectedPubIds, setSelectedPubIds] = useState([])
+  const [draggedOverDate, setDraggedOverDate] = useState(null)
 
   const getExportedPublications = () => {
     const todayStr = getLocalDateString(new Date())
@@ -162,6 +163,29 @@ export default function CrmDashboard() {
     const url = `${window.location.origin}/crm/cliente/${selectedClient.share_token}`
     navigator.clipboard.writeText(url)
     showToast('¡Enlace del cliente copiado al portapapeles!')
+  }
+
+  // Move / Reschedule publication
+  const handleMovePublication = async (pubId, targetDateStr) => {
+    try {
+      const { error } = await supabase
+        .from('crm_publications')
+        .update({ date: targetDateStr })
+        .eq('id', pubId)
+      
+      if (error) throw error
+      
+      setPublications(prev => prev.map(p => {
+        if (p.id === pubId) {
+          return { ...p, date: targetDateStr }
+        }
+        return p
+      }))
+      showToast('Publicación reprogramada correctamente.')
+    } catch (err) {
+      console.error('Error rescheduling publication:', err)
+      showToast('Error al reprogramar la publicación.', 'error')
+    }
   }
 
   // Delete publication
@@ -619,8 +643,29 @@ export default function CrmDashboard() {
                   return (
                     <div
                       key={`day-${dateStr}`}
-                      className={`min-h-[140px] bg-white border rounded-premium p-3 flex flex-col justify-between hover:shadow-md transition-shadow group/day relative ${
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                      }}
+                      onDragEnter={() => {
+                        setDraggedOverDate(dateStr);
+                      }}
+                      onDragLeave={() => {
+                        if (draggedOverDate === dateStr) {
+                          setDraggedOverDate(null);
+                        }
+                      }}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        setDraggedOverDate(null);
+                        const pubId = e.dataTransfer.getData('text/plain');
+                        if (pubId) {
+                          handleMovePublication(pubId, dateStr);
+                        }
+                      }}
+                      className={`min-h-[140px] bg-white border rounded-premium p-3 flex flex-col justify-between hover:shadow-md transition-all group/day relative ${
                         isToday ? 'border-[var(--color-deep-green)] ring-1 ring-[var(--color-deep-green)]/20' : 'border-gray-200'
+                      } ${
+                        draggedOverDate === dateStr ? 'bg-emerald-50/50 border-emerald-400 scale-[1.01] z-10 shadow-md' : ''
                       }`}
                     >
                       <div className="flex justify-between items-center mb-2">
@@ -672,8 +717,12 @@ export default function CrmDashboard() {
                                 return (
                                   <div
                                     key={pub.id}
+                                    draggable="true"
+                                    onDragStart={(e) => {
+                                      e.dataTransfer.setData('text/plain', pub.id);
+                                    }}
                                     onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
-                                    className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${cardHoverBorderClass} ${textClass}`}
+                                    className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${cardHoverBorderClass} ${textClass} active:scale-95 active:opacity-50`}
                                   >
                                     <div className="flex items-center justify-between mb-1">
                                       <div className="flex items-center gap-1 flex-wrap">

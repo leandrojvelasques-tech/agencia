@@ -179,12 +179,17 @@ export default function EventLanding() {
               Agenda
             </h2>
             <div className="space-y-3">
-              {event.agenda.filter(a => a.topic).map((item, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1.5 rounded-[var(--radius-premium)] whitespace-nowrap min-w-[60px] text-center">
-                    {item.time || '—'}
-                  </span>
-                  <p className="text-sm text-[var(--color-dark-gray)] font-medium pt-1.5">{item.topic}</p>
+              {event.agenda.filter(a => a.topic || a.block).map((item, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
+                  <div className="flex-shrink-0 w-full sm:w-24">
+                    <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1.5 rounded-[var(--radius-premium)] whitespace-nowrap text-center block">
+                      {item.time || '—'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0 pt-0 sm:pt-1">
+                    {item.block && <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/60 mb-1">{item.block}</p>}
+                    <p className="text-sm text-[var(--color-dark-gray)] font-medium">{item.topic}</p>
+                  </div>
                 </div>
               ))}
             </div>

@@ -207,21 +207,22 @@ export const useStore = create((set, get) => ({
   },
 
   addParticipantManual: async (eventId, participantData) => {
+    const { attendance_mode = 'presencial', ...pData } = participantData
     // 1. Check/Create Participant
     let participantId
     const { data: existing } = await supabase
       .from('participants')
       .select('id')
-      .eq('email', participantData.email)
+      .eq('email', pData.email)
       .maybeSingle()
 
     if (existing) {
       participantId = existing.id
-      await supabase.from('participants').update(participantData).eq('id', participantId)
+      await supabase.from('participants').update(pData).eq('id', participantId)
     } else {
       const { data: novel } = await supabase
         .from('participants')
-        .insert([participantData])
+        .insert([pData])
         .select()
         .single()
       participantId = novel.id
@@ -234,7 +235,8 @@ export const useStore = create((set, get) => ({
         event_id: eventId,
         participant_id: participantId,
         source: 'manual',
-        status: 'registered'
+        status: 'registered',
+        attendance_mode
       }])
       .select('*, participants(*)')
       .single()
@@ -248,18 +250,25 @@ export const useStore = create((set, get) => ({
   },
 
   updateParticipantManual: async (participantId, data) => {
+    const { registrationId, attendance_mode, ...pData } = data
     const { data: updated, error } = await supabase
       .from('participants')
-      .update(data)
+      .update(pData)
       .eq('id', participantId)
       .select()
       .single()
 
     if (!error) {
+      if (attendance_mode && registrationId) {
+        await supabase
+          .from('registrations')
+          .update({ attendance_mode })
+          .eq('id', registrationId)
+      }
       set(state => ({
         registrations: state.registrations.map(r => 
           r.participants?.id === participantId 
-            ? { ...r, participants: updated } 
+            ? { ...r, participants: updated, attendance_mode: attendance_mode || r.attendance_mode } 
             : r
         )
       }))
@@ -288,20 +297,38 @@ export const useStore = create((set, get) => ({
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
+    const { attendance_mode = 'presencial', ...pData } = participantData
+
+    // Check capacity for chosen modality
+    const maxCap = attendance_mode === 'presencial' ? event.max_capacity_presencial : event.max_capacity_virtual;
+    if (maxCap !== null && maxCap !== undefined && maxCap !== '') {
+      const { count, error: countErr } = await supabase
+        .from('registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', event.id)
+        .eq('attendance_mode', attendance_mode)
+        .neq('status', 'cancelled')
+      
+      if (!countErr && count >= Number(maxCap)) {
+        return { success: false, error: `Disculpas, los cupos para la modalidad ${attendance_mode} están agotados.` }
+      }
+    }
+
     // 1. Participant
     let participantId
     const { data: existing } = await supabase
       .from('participants')
       .select('id')
-      .eq('email', participantData.email)
+      .eq('email', pData.email)
       .maybeSingle()
 
     if (existing) {
       participantId = existing.id
+      await supabase.from('participants').update(pData).eq('id', participantId)
     } else {
       const { data: novel, error: pErr } = await supabase
         .from('participants')
-        .insert([participantData])
+        .insert([pData])
         .select()
         .single()
       if (pErr) return { success: false, error: 'Error al registrar datos' }
@@ -315,7 +342,8 @@ export const useStore = create((set, get) => ({
         event_id: event.id,
         participant_id: participantId,
         source: 'self_registration',
-        status: 'confirmed'
+        status: 'confirmed',
+        attendance_mode
       }])
       .select()
       .single()
@@ -325,7 +353,7 @@ export const useStore = create((set, get) => ({
       return { success: false, error: 'Error al procesar la inscripción' }
     }
 
-    return { success: true, registration, participant: participantData }
+    return { success: true, registration, participant: pData }
   },
 
   // Attendance
