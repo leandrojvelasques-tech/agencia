@@ -31,7 +31,10 @@ export default function EventLanding() {
     )
   }
 
-  if (!event || event.status === 'draft') {
+  const searchParams = new URLSearchParams(window.location.search)
+  const isPreview = searchParams.get('preview') === 'true'
+
+  if (!event || (event.status === 'draft' && !isPreview)) {
     return (
       <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
         <div className="text-center animate-fade-in">

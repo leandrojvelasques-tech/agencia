@@ -232,6 +232,79 @@ export default function EventCreate() {
     }
   }
 
+  const handlePreview = async () => {
+    setSaveError('')
+    if (!form.title || !form.event_date) {
+      setSaveError('Para ver la vista previa, debés al menos ingresar un título y la fecha en las primeras etapas.')
+      return
+    }
+
+    setLoading(true)
+    
+    const { 
+      event_materials, 
+      id: _, 
+      created_at: __, 
+      updated_at: ___,
+      event_stats: ____, 
+      is_public,
+      max_capacity,
+      ...eventData 
+    } = form
+    
+    const data = { 
+      ...eventData, 
+      status: is_public ? 'published' : 'draft',
+      max_capacity_presencial: eventData.max_capacity_presencial ? Number(eventData.max_capacity_presencial) : null,
+      max_capacity_virtual: eventData.max_capacity_virtual ? Number(eventData.max_capacity_virtual) : null
+    }
+
+    let targetEventId = id
+    try {
+      let savedSlug = form.slug
+      if (existingEvent) {
+        await updateEvent(existingEvent.id, data)
+        targetEventId = existingEvent.id
+        savedSlug = existingEvent.slug
+      } else {
+        const newEventResult = await createEvent(data)
+        if (newEventResult && newEventResult.success) {
+          targetEventId = newEventResult.data.id
+          savedSlug = newEventResult.data.slug
+        } else {
+          throw new Error(newEventResult?.error?.message || 'Error al guardar el evento para la vista previa')
+        }
+      }
+
+      if (targetEventId) {
+        const cleanMaterials = event_materials.map(({ id: mId, created_at: mcAt, ...m }) => m)
+        await saveMaterials(targetEventId, cleanMaterials)
+        
+        const updated = await getEventById(targetEventId)
+        if (updated) {
+          setExistingEvent(updated)
+          setForm({
+            ...updated,
+            max_capacity_presencial: updated.max_capacity_presencial || '',
+            max_capacity_virtual: updated.max_capacity_virtual || '',
+            is_public: updated.status === 'published' || updated.status === 'in_progress',
+            show_on_home: updated.show_on_home || false,
+            live_link: updated.live_link || '',
+            event_materials: updated.event_materials || [],
+          })
+          savedSlug = updated.slug
+        }
+      }
+
+      if (savedSlug) {
+        window.open(`/evento/${savedSlug}?preview=true`, '_blank')
+      }
+    } catch (err) {
+      setSaveError('Error al guardar para vista previa: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const isStepValid = () => {
     if (step === 0) return form.title && form.description_short && form.coordinator
@@ -252,6 +325,16 @@ export default function EventCreate() {
         </div>
         
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handlePreview}
+            className="btn-secondary !py-2.5 !px-5 shadow-lg shadow-[var(--color-dark-gray)]/5"
+            disabled={loading || !form.title || !form.event_date}
+            title="Guarda los cambios y abre una vista previa"
+          >
+            <span className="material-symbols-outlined text-lg">visibility</span>
+            Vista Previa
+          </button>
           {saved && (
             <span className="flex items-center gap-1.5 text-[var(--color-deep-green)] font-bold text-sm animate-fade-in">
               <span className="material-symbols-outlined text-lg">check_circle</span>
@@ -679,6 +762,16 @@ export default function EventCreate() {
               )}
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={handlePreview}
+            className="btn-ghost !text-[var(--color-deep-green)] font-bold border border-[var(--color-deep-green)]/20"
+            disabled={loading || !form.title || !form.event_date}
+          >
+            <span className="material-symbols-outlined text-lg">visibility</span>
+            Vista Previa
+          </button>
         </div>
 
         {step < STEPS.length - 1 ? (
