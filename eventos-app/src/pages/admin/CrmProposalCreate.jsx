@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
@@ -7,12 +7,15 @@ export default function CrmProposalCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { createProposal, updateProposal } = useStore()
+  const fileInputRef = useRef(null)
 
   // Local State
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadingEvent, setLoadingEvent] = useState(id ? true : false)
   const [error, setError] = useState('')
+  const [uploadingPdf, setUploadingPdf] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   const [form, setForm] = useState({
     client_id: '',
@@ -21,6 +24,7 @@ export default function CrmProposalCreate() {
     valid_until: '',
     status: 'draft',
     terms_conditions: 'Términos y condiciones comerciales:\n- Forma de pago: 50% al momento de iniciar el proyecto y 50% luego de la capacitación y entrega de manual de usuario (al finalizar cada etapa).\n- Validez del presupuesto: 15 días.',
+    pdf_url: '',
     items: [{ 
       id: `stage_${Date.now()}`, 
       title: 'ETAPA 1: Sistema de gestión documental', 
@@ -67,6 +71,7 @@ export default function CrmProposalCreate() {
               valid_until: proposal.valid_until || '',
               status: proposal.status || 'draft',
               terms_conditions: proposal.terms_conditions || '',
+              pdf_url: proposal.pdf_url || '',
               items: proposal.items && proposal.items.length > 0
                 ? proposal.items.map((stage, idx) => ({
                     ...stage,
@@ -114,6 +119,34 @@ export default function CrmProposalCreate() {
     }))
   }
 
+  const handlePdfUpload = async (file) => {
+    if (!file) return
+    if (file.type !== 'application/pdf') {
+      setUploadError('Solo se permiten archivos PDF')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('El archivo no puede superar los 10 MB')
+      return
+    }
+    setUploadError('')
+    setUploadingPdf(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `proposal-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('proposals')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('proposals').getPublicUrl(fileName)
+      update('pdf_url', publicUrl)
+    } catch (err) {
+      setUploadError('Error al subir el PDF: ' + (err.message || err))
+    } finally {
+      setUploadingPdf(false)
+    }
+  }
+
   // Stages CRUD
   const addStage = () => {
     const nextStageNum = form.items.length + 1
@@ -143,7 +176,7 @@ export default function CrmProposalCreate() {
     }))
   }
 
-  // Activities CRUD (Nested inside a Stage)
+  // Activities CRUD
   const addActivity = (stageId) => {
     setForm(prev => ({
       ...prev,
@@ -213,7 +246,7 @@ export default function CrmProposalCreate() {
       return
     }
 
-    // Clean stages and activities IDs for clean database JSON storage
+    // Clean stages and activities IDs for database JSON storage
     const cleanedStages = form.items.map(({ id: _, activities, ...stage }) => ({
       ...stage,
       amount: Number(stage.amount),
@@ -227,6 +260,7 @@ export default function CrmProposalCreate() {
       valid_until: form.valid_until || null,
       status: form.status,
       terms_conditions: form.terms_conditions || null,
+      pdf_url: form.pdf_url || null,
       items: cleanedStages,
       total_amount: totalAmount,
       payment_details: form.payment_details
@@ -353,6 +387,55 @@ export default function CrmProposalCreate() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* PDF Uploader Card */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Documento de la Propuesta Técnica Detallada (PDF)</label>
+          
+          {form.pdf_url ? (
+            <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--color-deep-green)]/20 bg-[var(--color-deep-green)]/5">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[var(--color-deep-green)]">picture_as_pdf</span>
+                <a href={form.pdf_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-[var(--color-deep-green)] hover:underline truncate max-w-md">
+                  Ver Propuesta PDF cargada
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => update('pdf_url', '')}
+                className="text-red-400 hover:text-red-600 p-1 flex items-center justify-center"
+                title="Eliminar PDF"
+              >
+                <span className="material-symbols-outlined text-lg">delete</span>
+              </button>
+            </div>
+          ) : (
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".pdf,application/pdf"
+                onChange={e => { const f = e.target.files[0]; if (f) handlePdfUpload(f) }}
+              />
+              <div
+                onClick={() => !uploadingPdf && fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-[var(--radius-premium)] p-6 text-center cursor-pointer transition-all hover:border-[var(--color-deep-green)]/40 hover:bg-[var(--color-deep-green)]/2 ${
+                  uploadingPdf ? 'border-[var(--color-deep-green)]/35 opacity-70' : 'border-[var(--color-deep-green)]/15'
+                }`}
+              >
+                <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/20 mb-2 block">upload_file</span>
+                <p className="text-xs font-bold text-[var(--color-dark-gray)]/60">
+                  {uploadingPdf ? 'Subiendo PDF...' : 'Subir archivo PDF de la propuesta técnica (15 págs.)'}
+                </p>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Límite de tamaño: 10MB</p>
+              </div>
+            </div>
+          )}
+          {uploadError && (
+            <p className="text-xs font-bold text-red-500">{uploadError}</p>
+          )}
         </div>
 
         {/* PROJECT STAGES & ACTIVITIES DYNAMIC SECTION */}

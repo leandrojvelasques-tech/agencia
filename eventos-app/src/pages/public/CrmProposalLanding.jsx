@@ -271,6 +271,28 @@ export default function CrmProposalLanding() {
           </div>
         </div>
 
+        {/* PDF Download Section */}
+        {proposal.pdf_url && (
+          <div className="card p-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 no-print">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]">picture_as_pdf</span>
+              <div>
+                <h3 className="text-sm font-extrabold text-[var(--color-dark-gray)]">Propuesta Técnica Completa (Documentación)</h3>
+                <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">Accede a las especificaciones detalladas del diagnóstico y propuesta técnica de 15 páginas.</p>
+              </div>
+            </div>
+            <a 
+              href={proposal.pdf_url} 
+              target="_blank" 
+              rel="noreferrer"
+              className="btn-primary !py-2.5 !px-6 !text-xs whitespace-nowrap inline-flex items-center justify-center gap-1.5 shadow-md shadow-[var(--color-deep-green)]/10"
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              Ver Propuesta PDF
+            </a>
+          </div>
+        )}
+
         {/* Client & Vendor Details */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
