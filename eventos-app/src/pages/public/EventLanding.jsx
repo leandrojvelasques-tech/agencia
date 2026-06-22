@@ -4,6 +4,12 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
+const ensureAbsoluteUrl = (url) => {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('mailto:') || url.startsWith('tel:')) return url
+  return `https://${url}`
+}
+
 export default function EventLanding() {
   const { slug } = useParams()
   const { getEventBySlug } = useStore()
@@ -154,7 +160,7 @@ export default function EventLanding() {
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-0.5">Transmisión en Vivo / Videollamada</p>
               <a 
-                href={event.live_link} 
+                href={ensureAbsoluteUrl(event.live_link)} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-sm font-bold text-blue-700 hover:text-blue-900 transition-all break-all flex items-center gap-1.5 group"
@@ -210,7 +216,7 @@ export default function EventLanding() {
               {materials.map((material, i) => (
                 <a 
                   key={i} 
-                  href={material.url} 
+                  href={ensureAbsoluteUrl(material.url)} 
                   target="_blank" 
                   rel="noreferrer"
                   className="flex items-center gap-4 p-3 rounded-[var(--radius-premium)] bg-white/50 hover:bg-white transition-all border border-transparent hover:border-[var(--color-deep-green)]/10 group"
