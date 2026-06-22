@@ -243,46 +243,25 @@ export default function EventRegister() {
                 Información Adicional (Opcional)
               </h3>
 
-              {/* Matriculado */}
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Matriculado</label>
-                <select 
-                  className="form-input text-sm" 
-                  value={survey.matriculado} 
-                  onChange={e => setSurvey(s => ({ ...s, matriculado: e.target.value, consejo: e.target.value === 'Matriculado' ? s.consejo : '' }))}
-                >
-                  <option value="">Seleccione una opción</option>
-                  <option value="Matriculado">Matriculado / a</option>
-                  <option value="No matriculado">No matriculado / a</option>
-                </select>
-              </div>
-
-              {survey.matriculado === 'Matriculado' && (
-                <div className="animate-fade-in">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Indique el consejo donde está matriculado</label>
-                  <input 
-                    type="text" 
-                    className="form-input text-sm" 
-                    placeholder="Ej: CPCECABA" 
-                    value={survey.consejo} 
-                    onChange={e => setSurvey(s => ({ ...s, consejo: e.target.value }))} 
-                  />
-                </div>
-              )}
-
               {/* Profesión */}
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Profesión</label>
                 <select 
                   className="form-input text-sm" 
                   value={survey.profesion} 
-                  onChange={e => setSurvey(s => ({ 
-                    ...s, 
-                    profesion: e.target.value,
-                    profesion_estudiante_carrera: e.target.value === 'Estudiante Universitario' ? s.profesion_estudiante_carrera : '',
-                    profesion_estudiante_univ: e.target.value === 'Estudiante Universitario' ? s.profesion_estudiante_univ : '',
-                    profesion_otro: e.target.value === 'Otro' ? s.profesion_otro : ''
-                  }))}
+                  onChange={e => {
+                    const newProf = e.target.value
+                    const showMat = ['Contador Publico', 'Licenciado en Administración', 'Licenciado en Economia'].includes(newProf)
+                    setSurvey(s => ({ 
+                      ...s, 
+                      profesion: newProf,
+                      matriculado: showMat ? s.matriculado : '',
+                      consejo: showMat ? s.consejo : '',
+                      profesion_estudiante_carrera: newProf === 'Estudiante Universitario' ? s.profesion_estudiante_carrera : '',
+                      profesion_estudiante_univ: newProf === 'Estudiante Universitario' ? s.profesion_estudiante_univ : '',
+                      profesion_otro: newProf === 'Otro' ? s.profesion_otro : ''
+                    }))
+                  }}
                 >
                   <option value="">Seleccione su profesión</option>
                   <option value="Contador Publico">Contador Público</option>
@@ -328,6 +307,37 @@ export default function EventRegister() {
                     value={survey.profesion_otro} 
                     onChange={e => setSurvey(s => ({ ...s, profesion_otro: e.target.value }))} 
                   />
+                </div>
+              )}
+
+              {/* Matriculado (Solo para Contadores o Licenciados) */}
+              {['Contador Publico', 'Licenciado en Administración', 'Licenciado en Economia'].includes(survey.profesion) && (
+                <div className="animate-fade-in space-y-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Matriculado</label>
+                    <select 
+                      className="form-input text-sm" 
+                      value={survey.matriculado} 
+                      onChange={e => setSurvey(s => ({ ...s, matriculado: e.target.value, consejo: e.target.value === 'Matriculado' ? s.consejo : '' }))}
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Matriculado">Matriculado / a</option>
+                      <option value="No matriculado">No matriculado / a</option>
+                    </select>
+                  </div>
+
+                  {survey.matriculado === 'Matriculado' && (
+                    <div className="animate-fade-in">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Indique el consejo donde está matriculado</label>
+                      <input 
+                        type="text" 
+                        className="form-input text-sm" 
+                        placeholder="Ej: CPCECABA" 
+                        value={survey.consejo} 
+                        onChange={e => setSurvey(s => ({ ...s, consejo: e.target.value }))} 
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
