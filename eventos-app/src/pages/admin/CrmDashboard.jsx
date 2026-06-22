@@ -58,10 +58,45 @@ export default function CrmDashboard() {
   const [filterType, setFilterType] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
 
+  // Export report states
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [exportDateRange, setExportDateRange] = useState('all_month') // 'all_month' | 'rest_of_month'
+  const [exportStatusFilter, setExportStatusFilter] = useState('all') // 'all' | 'pending'
+  const [exportTypeFilter, setExportTypeFilter] = useState('all') // 'all' | 'post' | 'story'
+
   // Notification toast
   const [toast, setToast] = useState(null)
 
   const [selectedPubIds, setSelectedPubIds] = useState([])
+
+  const getExportedPublications = () => {
+    const todayStr = getLocalDateString(new Date())
+    return publications.filter(pub => {
+      // Month filter: must match selected month and year
+      const pubDate = new Date(pub.date + 'T00:00:00')
+      if (pubDate.getFullYear() !== year || pubDate.getMonth() !== month) return false
+
+      // Date range filter
+      if (exportDateRange === 'rest_of_month' && pub.date < todayStr) return false
+
+      // Status filter
+      if (exportStatusFilter === 'pending') {
+        if (getPublicationState(pub).id !== 'design_in_progress') return false
+      }
+
+      // Type filter
+      if (exportTypeFilter !== 'all' && pub.type !== exportTypeFilter) return false
+
+      return true
+    }).sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  const handlePrintReport = () => {
+    setIsExportModalOpen(false)
+    setTimeout(() => {
+      window.print()
+    }, 300)
+  }
 
   useEffect(() => {
     setSelectedPubIds([])
@@ -425,7 +460,8 @@ export default function CrmDashboard() {
 
       {/* Main View Area */}
       {selectedClient && (
-        <div className="card bg-white overflow-hidden">
+        <>
+          <div className="card bg-white overflow-hidden">
           {/* View Toolbar */}
           <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -466,14 +502,24 @@ export default function CrmDashboard() {
 
             <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
               {selectedClient && (
-                <button
-                  onClick={copyShareLink}
-                  className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
-                  title="Copiar enlace público de solo lectura para el cliente"
-                >
-                  <span className="material-symbols-outlined text-base">share</span>
-                  Compartir (Solo Lectura)
-                </button>
+                <>
+                  <button
+                    onClick={copyShareLink}
+                    className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
+                    title="Copiar enlace público de solo lectura para el cliente"
+                  >
+                    <span className="material-symbols-outlined text-base">share</span>
+                    Compartir (Solo Lectura)
+                  </button>
+                  <button
+                    onClick={() => setIsExportModalOpen(true)}
+                    className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
+                    title="Exportar reporte de publicaciones a PDF"
+                  >
+                    <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                    Exportar PDF / Reporte
+                  </button>
+                </>
               )}
 
               {/* View Selector */}
@@ -1220,6 +1266,192 @@ export default function CrmDashboard() {
             </div>
           )}
         </div>
+      {/* Export Configurations Modal */}
+      {isExportModalOpen && (
+        <div className="modal-overlay animate-fade-in" onClick={() => setIsExportModalOpen(false)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-150 p-6 relative text-left animate-slide-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsExportModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors z-20"
+            >
+              <span className="material-symbols-outlined text-xl leading-none">close</span>
+            </button>
+
+            <h3 className="text-lg font-bold text-[var(--color-deep-green)] mb-1">Exportar Reporte PDF</h3>
+            <p className="text-xs text-gray-550 mb-6">Configurá el reporte de publicaciones antes de generar el archivo PDF.</p>
+
+            <div className="space-y-4">
+              {/* Date Range Selection */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-650 block mb-2">Rango de fechas</label>
+                <select
+                  value={exportDateRange}
+                  onChange={(e) => setExportDateRange(e.target.value)}
+                  className="w-full bg-white border border-gray-250 rounded-premium px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                >
+                  <option value="all_month">Todo el mes ({monthNames[month]} {year})</option>
+                  <option value="rest_of_month">Lo que resta del mes (desde hoy)</option>
+                </select>
+              </div>
+
+              {/* Status Filter Selection */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-650 block mb-2">Filtrar por estado</label>
+                <select
+                  value={exportStatusFilter}
+                  onChange={(e) => setExportStatusFilter(e.target.value)}
+                  className="w-full bg-white border border-gray-250 rounded-premium px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                >
+                  <option value="all">Todas las publicaciones</option>
+                  <option value="pending">Solo con tareas pendientes (En proceso de diseño)</option>
+                </select>
+              </div>
+
+              {/* Format Filter Selection */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-650 block mb-2">Filtrar por canal</label>
+                <select
+                  value={exportTypeFilter}
+                  onChange={(e) => setExportTypeFilter(e.target.value)}
+                  className="w-full bg-white border border-gray-250 rounded-premium px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                >
+                  <option value="all">Todos los formatos</option>
+                  <option value="post">Feed (Post / Reel)</option>
+                  <option value="story">Historia (Story)</option>
+                </select>
+              </div>
+
+              <div className="pt-2 text-[10px] text-gray-450 font-medium">
+                Se exportarán {getExportedPublications().length} publicaciones al reporte final.
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsExportModalOpen(false)}
+                  className="btn-secondary text-xs px-4 py-2"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintReport}
+                  disabled={getExportedPublications().length === 0}
+                  className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-sm">print</span>
+                  Imprimir / PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden print layout */}
+      <div className="hidden print:block w-full text-black p-8 bg-white text-xs font-sans leading-relaxed">
+        {/* Print Header */}
+        <div className="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-gray-900">Leandro Velasques</h1>
+            <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">Agencia de IA & Automatización</p>
+          </div>
+          <div className="text-right">
+            <h2 className="text-base font-bold text-gray-800">Reporte de Publicaciones</h2>
+            <p className="text-[10px] text-gray-500 font-semibold uppercase">
+              Cliente: {selectedClient?.name} · {monthNames[month]} {year}
+            </p>
+            <p className="text-[9px] text-gray-400 font-medium">Generado el: {new Date().toLocaleDateString('es-AR')}</p>
+          </div>
+        </div>
+
+        {/* Filters Summary */}
+        <div className="mb-4 p-3 bg-gray-100 rounded border border-gray-300 flex justify-between text-[10px] font-medium text-gray-600">
+          <span>Rango: {exportDateRange === 'all_month' ? 'Todo el mes' : 'Lo que resta del mes'}</span>
+          <span>Estado: {exportStatusFilter === 'all' ? 'Todas las publicaciones' : 'Solo tareas pendientes'}</span>
+          <span>Canal: {exportTypeFilter === 'all' ? 'Todos' : exportTypeFilter === 'post' ? 'Feed' : 'Historias'}</span>
+        </div>
+
+        {/* Content list */}
+        {getExportedPublications().length === 0 ? (
+          <p className="text-center py-10 text-gray-500 font-semibold">No se encontraron publicaciones con los filtros aplicados.</p>
+        ) : (
+          <div className="space-y-6">
+            {getExportedPublications().map((pub, idx) => {
+              const pubState = getPublicationState(pub)
+              return (
+                <div key={pub.id} className="border border-gray-300 rounded p-4 space-y-3 break-inside-avoid">
+                  {/* Top line */}
+                  <div className="flex justify-between items-start border-b border-gray-200 pb-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-500 mr-2">#{idx + 1}</span>
+                      <span className="text-xs font-bold text-gray-900">{pub.date.split('-').reverse().join('/')}</span>
+                      <span className="ml-3 text-[10px] font-bold text-gray-700 uppercase">
+                        {pub.type === 'post' ? 'Feed' : 'Story'} ({pub.post_format || 'placa'})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {pub.territorio && (
+                        <span className="text-[9px] font-bold border border-gray-300 px-1.5 py-0.5 rounded uppercase">
+                          {pub.territorio}
+                        </span>
+                      )}
+                      <span className="text-[9px] font-bold border border-gray-300 px-1.5 py-0.5 rounded uppercase">
+                        {pubState.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Body title & Copy */}
+                  <div>
+                    <h4 className="font-bold text-xs text-gray-900">{pub.title}</h4>
+                    {pub.copy ? (
+                      <p className="mt-1.5 text-[10px] text-gray-700 bg-gray-50 p-2 rounded border border-gray-200 font-mono whitespace-pre-wrap leading-relaxed">
+                        {pub.copy}
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-[10px] italic text-gray-400">Sin copy redactado.</p>
+                    )}
+                  </div>
+
+                  {/* Pending tasks / Notes */}
+                  {(pub.status_piece && pub.status_piece.trim() !== '') || (pub.notes && pub.notes.trim() !== '') ? (
+                    <div className="grid grid-cols-2 gap-4 pt-1 text-[10px]">
+                      {pub.status_piece && pub.status_piece.trim() !== '' && (
+                        <div className="space-y-1">
+                          <p className="font-bold text-gray-600 uppercase tracking-wider text-[8px]">Tareas Pendientes</p>
+                          <div className="border border-gray-200 p-2 rounded bg-gray-50 space-y-1 text-gray-700">
+                            {pub.status_piece.split('\n').filter(Boolean).map((task, tidx) => (
+                              <div key={tidx} className="flex items-start gap-1">
+                                <span>•</span>
+                                <span className="leading-tight">{task}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {pub.notes && pub.notes.trim() !== '' && (
+                        <div className="space-y-1">
+                          <p className="font-bold text-gray-600 uppercase tracking-wider text-[8px]">Observaciones</p>
+                          <p className="border border-gray-200 p-2 rounded bg-gray-50 text-gray-700 whitespace-pre-wrap leading-tight">
+                            {pub.notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+      </>
       )}
     </div>
   )
