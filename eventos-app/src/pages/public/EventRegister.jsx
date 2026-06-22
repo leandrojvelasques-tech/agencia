@@ -68,13 +68,22 @@ export default function EventRegister() {
     return <div className="min-h-screen flex items-center justify-center p-4">Cargando...</div>
   }
 
-  if (!event || event.status !== 'published') {
+  const eventDate = event ? new Date(event.event_date + 'T23:59:59') : new Date()
+  const isPastEvent = event && eventDate < new Date()
+  const canRegister = event && event.status === 'published' && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
+
+  if (!event || !canRegister) {
     return (
       <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
-        <div className="text-center">
+        <div className="text-center animate-fade-in max-w-md bg-white p-8 rounded-2xl border border-gray-100 shadow-xl">
           <span className="material-symbols-outlined text-6xl text-[var(--color-dark-gray)]/20 mb-4 block">event_busy</span>
           <h1 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-2">Inscripción no disponible</h1>
-          <p className="text-[var(--color-dark-gray)]/60">Este evento no acepta inscripciones en este momento.</p>
+          <p className="text-[var(--color-dark-gray)]/60 text-sm leading-relaxed mb-6">
+            Este evento no acepta inscripciones públicas en este momento.
+          </p>
+          <Link to={event ? `/evento/${slug}` : '/'} className="btn-primary inline-flex justify-center w-full">
+            Volver al evento
+          </Link>
         </div>
       </div>
     )

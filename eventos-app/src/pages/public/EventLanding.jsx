@@ -280,6 +280,16 @@ export default function EventLanding() {
           </div>
         )}
 
+        {!canRegister && event.status === 'published' && !isPastEvent && event.registration_mode === 'manual' && (
+          <div className="card p-6 text-center bg-[var(--color-deep-green)]/5 border border-dashed border-[var(--color-deep-green)]/20 rounded-[var(--radius-card)] max-w-md mx-auto">
+            <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] mb-2 block">lock</span>
+            <p className="text-sm font-bold text-[var(--color-dark-gray)]">Inscripción cerrada al público</p>
+            <p className="text-xs text-[var(--color-dark-gray)]/60 mt-1 leading-relaxed">
+              El acceso a este evento es exclusivo mediante invitación privada. Si recibiste una invitación, puedes registrarte a través del enlace que te fue enviado.
+            </p>
+          </div>
+        )}
+
         {(event.status === 'completed' || isPastEvent) && (
           <div className="card p-6 text-center bg-[var(--color-light-green)]/15">
             <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] mb-2 block">check_circle</span>

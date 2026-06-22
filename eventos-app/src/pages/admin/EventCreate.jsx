@@ -408,7 +408,7 @@ export default function EventCreate() {
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Visibilidad en la web *</label>
               <div className="flex gap-3">
                 {[
-                  { value: true, label: '🌍 Público', desc: 'Se muestra en el Home' },
+                  { value: true, label: '🌍 Público', desc: 'Se muestra en el Home (puedes cerrar inscripciones en el Paso 3)' },
                   { value: false, label: '🔒 Privado', desc: 'Solo acceso por link' },
                 ].map(opt => (
                   <button key={opt.value.toString()} type="button" onClick={() => update('is_public', opt.value)}
