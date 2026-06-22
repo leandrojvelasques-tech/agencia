@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase'
 export default function CrmProposalCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { createProposal, updateProposal, getEventById } = useStore() // useStore functions
+  const { createProposal, updateProposal } = useStore()
 
   // Local State
   const [clients, setClients] = useState([])
@@ -20,8 +20,21 @@ export default function CrmProposalCreate() {
     subtitle: '',
     valid_until: '',
     status: 'draft',
-    terms_conditions: 'Términos y condiciones comerciales:\n- Forma de pago: 50% de anticipo y 50% al finalizar el desarrollo.\n- Validez del presupuesto: 15 días.\n- Plazo de entrega estimado: A convenir según alcance.',
-    items: [{ id: `item_${Date.now()}`, concept: '', description: '', qty: 1, price: 0 }]
+    terms_conditions: 'Términos y condiciones comerciales:\n- Forma de pago: 50% al momento de iniciar el proyecto y 50% luego de la capacitación y entrega de manual de usuario (al finalizar cada etapa).\n- Validez del presupuesto: 15 días.',
+    items: [{ 
+      id: `stage_${Date.now()}`, 
+      title: 'ETAPA 1: Sistema de gestión documental', 
+      amount: 0, 
+      activities: [{ id: `act_${Date.now()}`, code: '1.1', name: '', description: '' }] 
+    }],
+    payment_details: {
+      banco: 'Banco ICBC',
+      nombre: 'LEANDRO JOSE VELASQUES',
+      cbu: '0150846601000134863268',
+      alias: 'LEANDRO.TANGO',
+      cuit: '20309551665',
+      cuenta: 'CA $ 00150846000113486326'
+    }
   })
 
   // Load clients and proposal if editing
@@ -55,8 +68,27 @@ export default function CrmProposalCreate() {
               status: proposal.status || 'draft',
               terms_conditions: proposal.terms_conditions || '',
               items: proposal.items && proposal.items.length > 0
-                ? proposal.items.map((it, idx) => ({ ...it, id: it.id || `item_${Date.now()}_${idx}` }))
-                : [{ id: `item_${Date.now()}`, concept: '', description: '', qty: 1, price: 0 }]
+                ? proposal.items.map((stage, idx) => ({
+                    ...stage,
+                    id: stage.id || `stage_${Date.now()}_${idx}`,
+                    activities: stage.activities
+                      ? stage.activities.map((act, aIdx) => ({ ...act, id: act.id || `act_${Date.now()}_${idx}_${aIdx}` }))
+                      : [{ id: `act_${Date.now()}`, code: `${idx + 1}.1`, name: '', description: '' }]
+                  }))
+                : [{ 
+                    id: `stage_${Date.now()}`, 
+                    title: 'ETAPA 1: Sistema de gestión documental', 
+                    amount: 0, 
+                    activities: [{ id: `act_${Date.now()}`, code: '1.1', name: '', description: '' }] 
+                  }],
+              payment_details: proposal.payment_details || {
+                banco: 'Banco ICBC',
+                nombre: 'LEANDRO JOSE VELASQUES',
+                cbu: '0150846601000134863268',
+                alias: 'LEANDRO.TANGO',
+                cuit: '20309551665',
+                cuenta: 'CA $ 00150846000113486326'
+              }
             })
           }
         }
@@ -71,38 +103,102 @@ export default function CrmProposalCreate() {
   }, [id])
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
-
-  // Items CRUD helpers
-  const addItem = () => {
+  
+  const updatePaymentDetails = (field, value) => {
     setForm(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item_${Date.now()}`, concept: '', description: '', qty: 1, price: 0 }]
+      payment_details: {
+        ...prev.payment_details,
+        [field]: value
+      }
     }))
   }
 
-  const removeItem = (itemId) => {
+  // Stages CRUD
+  const addStage = () => {
+    const nextStageNum = form.items.length + 1
+    setForm(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        id: `stage_${Date.now()}`,
+        title: `ETAPA ${nextStageNum}: `,
+        amount: 0,
+        activities: [{ id: `act_${Date.now()}`, code: `${nextStageNum}.1`, name: '', description: '' }]
+      }]
+    }))
+  }
+
+  const removeStage = (stageId) => {
     if (form.items.length <= 1) return
     setForm(prev => ({
       ...prev,
-      items: prev.items.filter(it => it.id !== itemId)
+      items: prev.items.filter(st => st.id !== stageId)
     }))
   }
 
-  const updateItem = (itemId, field, value) => {
+  const updateStage = (stageId, field, value) => {
     setForm(prev => ({
       ...prev,
-      items: prev.items.map(it => {
-        if (it.id === itemId) {
-          const updated = { ...it, [field]: value }
-          return updated
+      items: prev.items.map(st => st.id === stageId ? { ...st, [field]: value } : st)
+    }))
+  }
+
+  // Activities CRUD (Nested inside a Stage)
+  const addActivity = (stageId) => {
+    setForm(prev => ({
+      ...prev,
+      items: prev.items.map(st => {
+        if (st.id === stageId) {
+          const nextActNum = st.activities.length + 1
+          const stageIndex = prev.items.findIndex(s => s.id === stageId) + 1
+          return {
+            ...st,
+            activities: [...st.activities, {
+              id: `act_${Date.now()}`,
+              code: `${stageIndex}.${nextActNum}`,
+              name: '',
+              description: ''
+            }]
+          }
         }
-        return it
+        return st
       })
     }))
   }
 
-  // Calculate totals
-  const subtotal = form.items.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0)
+  const removeActivity = (stageId, actId) => {
+    setForm(prev => ({
+      ...prev,
+      items: prev.items.map(st => {
+        if (st.id === stageId) {
+          if (st.activities.length <= 1) return st
+          return {
+            ...st,
+            activities: st.activities.filter(act => act.id !== actId)
+          }
+        }
+        return st
+      })
+    }))
+  }
+
+  const updateActivity = (stageId, actId, field, value) => {
+    setForm(prev => ({
+      ...prev,
+      items: prev.items.map(st => {
+        if (st.id === stageId) {
+          return {
+            ...st,
+            activities: st.activities.map(act => act.id === actId ? { ...act, [field]: value } : act)
+          }
+        }
+        return st
+      })
+    }))
+  }
+
+  // Calculate total sum of stages
+  const totalAmount = form.items.reduce((sum, stage) => sum + Number(stage.amount || 0), 0)
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -117,10 +213,11 @@ export default function CrmProposalCreate() {
       return
     }
 
-    const cleanedItems = form.items.map(({ id: _, ...item }) => ({
-      ...item,
-      qty: Number(item.qty),
-      price: Number(item.price)
+    // Clean stages and activities IDs for clean database JSON storage
+    const cleanedStages = form.items.map(({ id: _, activities, ...stage }) => ({
+      ...stage,
+      amount: Number(stage.amount),
+      activities: activities.map(({ id: __, ...act }) => act)
     }))
 
     const proposalData = {
@@ -130,8 +227,9 @@ export default function CrmProposalCreate() {
       valid_until: form.valid_until || null,
       status: form.status,
       terms_conditions: form.terms_conditions || null,
-      items: cleanedItems,
-      total_amount: subtotal
+      items: cleanedStages,
+      total_amount: totalAmount,
+      payment_details: form.payment_details
     }
 
     setLoading(true)
@@ -161,7 +259,7 @@ export default function CrmProposalCreate() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link to="/admin/crm/presupuestos" className="p-2 hover:bg-[var(--color-deep-green)]/5 rounded-lg text-[var(--color-dark-gray)] transition-all">
@@ -172,7 +270,7 @@ export default function CrmProposalCreate() {
             {id ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
           </h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">
-            Completa los detalles comerciales para enviar la propuesta.
+            Completa los detalles de las etapas de desarrollo y plan de actividades.
           </p>
         </div>
       </div>
@@ -213,7 +311,7 @@ export default function CrmProposalCreate() {
             <input
               type="text"
               className="form-input"
-              placeholder="Ej: Desarrollo Web y Branding para Marca"
+              placeholder="Ej: Sistema de Gestión Documental para el Consejo"
               value={form.title}
               onChange={e => update('title', e.target.value)}
               required
@@ -225,7 +323,7 @@ export default function CrmProposalCreate() {
             <input
               type="text"
               className="form-input"
-              placeholder="Ej: Propuesta técnica y comercial"
+              placeholder="Ej: Propuesta de consultoría y desarrollo tecnológico"
               value={form.subtitle}
               onChange={e => update('subtitle', e.target.value)}
             />
@@ -257,103 +355,213 @@ export default function CrmProposalCreate() {
           </div>
         </div>
 
-        {/* Pricing Items Card */}
-        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--color-deep-green)]/8 pb-2">
-            <h3 className="text-sm font-bold text-[var(--color-deep-green)]">Conceptos Presupuestados</h3>
+        {/* PROJECT STAGES & ACTIVITIES DYNAMIC SECTION */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--color-deep-green)]/10 pb-2">
+            <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] uppercase tracking-wider">Etapas y Actividades</h2>
             <button
               type="button"
-              onClick={addItem}
+              onClick={addStage}
               className="btn-ghost text-xs !text-[var(--color-deep-green)] flex items-center gap-1"
             >
-              <span className="material-symbols-outlined text-base">add</span> Agregar concepto
+              <span className="material-symbols-outlined text-base">add_box</span> Agregar nueva etapa
             </button>
           </div>
 
-          <div className="space-y-4">
-            {form.items.map((item, index) => (
-              <div 
-                key={item.id} 
-                className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/40 border border-[var(--color-deep-green)]/5 space-y-3 relative group"
-              >
-                {form.items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(item.id)}
-                    className="absolute top-2 right-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                    title="Quitar concepto"
-                  >
-                    <span className="material-symbols-outlined text-base">close</span>
-                  </button>
-                )}
+          {form.items.map((stage, sIdx) => (
+            <div 
+              key={stage.id} 
+              className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4 relative group"
+            >
+              {form.items.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeStage(stage.id)}
+                  className="absolute top-3 right-3 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                  title="Eliminar Etapa Completa"
+                >
+                  <span className="material-symbols-outlined text-base">delete</span>
+                </button>
+              )}
 
-                <div className="grid sm:grid-cols-12 gap-3">
-                  <div className="sm:col-span-6">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Concepto / Servicio *</label>
-                    <input
-                      type="text"
-                      className="form-input !py-1.5 text-xs font-semibold"
-                      placeholder="Ej: Desarrollo de Landing Page"
-                      value={item.concept}
-                      onChange={e => updateItem(item.id, 'concept', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Cant. *</label>
-                    <input
-                      type="number"
-                      className="form-input !py-1.5 text-xs text-center"
-                      value={item.qty}
-                      onChange={e => updateItem(item.id, 'qty', Number(e.target.value))}
-                      min={1}
-                      required
-                    />
-                  </div>
-                  <div className="sm:col-span-4">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Precio Unitario ($) *</label>
-                    <input
-                      type="number"
-                      className="form-input !py-1.5 text-xs text-right font-mono"
-                      placeholder="0.00"
-                      value={item.price || ''}
-                      onChange={e => updateItem(item.id, 'price', Number(e.target.value))}
-                      min={0}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Descripción del entregable (Opcional)</label>
-                  <textarea
-                    className="form-input !py-1.5 text-xs min-h-[50px]"
-                    placeholder="Ej: Diseño de UI UX en Figma, maquetación adaptativa, SEO básico..."
-                    value={item.description}
-                    onChange={e => updateItem(item.id, 'description', e.target.value)}
+              {/* Stage Header Info */}
+              <div className="grid sm:grid-cols-12 gap-4 border-b border-[var(--color-deep-green)]/5 pb-4">
+                <div className="sm:col-span-8">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Nombre de la Etapa *</label>
+                  <input
+                    type="text"
+                    className="form-input !py-1.5 text-xs font-bold text-[var(--color-deep-green)]"
+                    placeholder={`Ej: ETAPA ${sIdx + 1}: Sistema de gestión de resoluciones`}
+                    value={stage.title}
+                    onChange={e => updateStage(stage.id, 'title', e.target.value)}
+                    required
                   />
                 </div>
-
-                <div className="text-right text-xs font-bold text-[var(--color-dark-gray)]/70">
-                  Subtotal: <span className="font-mono">${(Number(item.qty || 0) * Number(item.price || 0)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                <div className="sm:col-span-4">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Presupuesto Etapa ($) *</label>
+                  <input
+                    type="number"
+                    className="form-input !py-1.5 text-xs text-right font-mono font-bold"
+                    placeholder="0.00"
+                    value={stage.amount || ''}
+                    onChange={e => updateStage(stage.id, 'amount', Number(e.target.value))}
+                    min={0}
+                    required
+                  />
                 </div>
               </div>
-            ))}
-          </div>
 
-          <div className="border-t border-[var(--color-deep-green)]/8 pt-4 flex justify-between items-center">
-            <span className="text-sm font-extrabold text-[var(--color-dark-gray)]/75">Total General:</span>
+              {/* Stage Activities Nested List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Tabla de actividades de la Etapa</span>
+                  <button
+                    type="button"
+                    onClick={() => addActivity(stage.id)}
+                    className="btn-ghost !p-1 text-[11px] !text-[var(--color-deep-green)] flex items-center gap-0.5"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span> Añadir actividad
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {stage.activities.map((act) => (
+                    <div 
+                      key={act.id} 
+                      className="grid sm:grid-cols-12 gap-2.5 p-3 rounded-lg bg-[var(--color-refined-gray)]/30 border border-gray-100 relative group/act"
+                    >
+                      <div className="sm:col-span-2">
+                        <input
+                          type="text"
+                          className="form-input !py-1 text-xs text-center font-bold"
+                          placeholder="Cod (e.g. 1.1)"
+                          value={act.code}
+                          onChange={e => updateActivity(stage.id, act.id, 'code', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="sm:col-span-4">
+                        <input
+                          type="text"
+                          className="form-input !py-1 text-xs font-semibold"
+                          placeholder="Nombre de la actividad"
+                          value={act.name}
+                          onChange={e => updateActivity(stage.id, act.id, 'name', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="sm:col-span-5">
+                        <input
+                          type="text"
+                          className="form-input !py-1 text-xs"
+                          placeholder="Breve descripción de tareas"
+                          value={act.description}
+                          onChange={e => updateActivity(stage.id, act.id, 'description', e.target.value)}
+                        />
+                      </div>
+                      <div className="sm:col-span-1 flex items-center justify-center">
+                        {stage.activities.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeActivity(stage.id, act.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors p-1"
+                            title="Quitar Actividad"
+                          >
+                            <span className="material-symbols-outlined text-base">remove_circle</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Subtotal General */}
+          <div className="card p-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 flex justify-between items-center">
+            <span className="text-sm font-extrabold text-[var(--color-dark-gray)]/75">Suma Total del Presupuesto (Todas las etapas):</span>
             <span className="text-2xl font-extrabold text-[var(--color-deep-green)] font-mono">
-              ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
+          </div>
+        </div>
+
+        {/* BANK TRANSFER PAYMENT DETAILS CARD */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-lg">account_balance</span>
+            Datos para la Transferencia Bancaria
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Banco *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.banco}
+                onChange={e => updatePaymentDetails('banco', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Titular de la cuenta *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.nombre}
+                onChange={e => updatePaymentDetails('nombre', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CBU *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5 font-mono"
+                value={form.payment_details.cbu}
+                onChange={e => updatePaymentDetails('cbu', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Alias *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.alias}
+                onChange={e => updatePaymentDetails('alias', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CUIT/CUIL *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5 font-mono"
+                value={form.payment_details.cuit}
+                onChange={e => updatePaymentDetails('cuit', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Número de Cuenta *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.cuenta}
+                onChange={e => updatePaymentDetails('cuenta', e.target.value)}
+                required
+              />
+            </div>
           </div>
         </div>
 
         {/* Terms and Conditions Card */}
         <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
-          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones</label>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones Comerciales</label>
           <textarea
-            className="form-input min-h-[140px] text-xs font-semibold leading-relaxed"
+            className="form-input min-h-[120px] text-xs font-semibold leading-relaxed"
             placeholder="Condiciones del presupuesto comercial..."
             value={form.terms_conditions}
             onChange={e => update('terms_conditions', e.target.value)}

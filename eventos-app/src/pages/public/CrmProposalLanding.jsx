@@ -146,9 +146,18 @@ export default function CrmProposalLanding() {
   const isAccepted = proposal.status === 'accepted'
   const isRejected = proposal.status === 'rejected'
 
+  // Default bank details if database doesn't have it
+  const bankDetails = proposal.payment_details || {
+    banco: 'Banco ICBC',
+    nombre: 'LEANDRO JOSE VELASQUES',
+    cbu: '0150846601000134863268',
+    alias: 'LEANDRO.TANGO',
+    cuit: '20309551665',
+    cuenta: 'CA $ 00150846000113486326'
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)] pb-16 relative">
-      {/* Dynamic CSS styles for clean printing print layout */}
       <style>{`
         @media print {
           body {
@@ -199,7 +208,7 @@ export default function CrmProposalLanding() {
 
       <main className="max-w-4xl mx-auto px-6 py-8 lg:py-12 animate-fade-in print-container">
         
-        {/* Upper Status Alert */}
+        {/* Status Alerts */}
         {isAccepted && (
           <div className="p-4 mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-800 flex items-start gap-3 no-print">
             <span className="material-symbols-outlined text-2xl text-emerald-600">check_circle</span>
@@ -295,47 +304,104 @@ export default function CrmProposalLanding() {
           </div>
         </div>
 
-        {/* Scope and Table of Concepts */}
-        <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-6">
+        {/* STAGES & ACTIVITIES TABLE DETAILS */}
+        <div className="space-y-6 mb-6">
+          {proposal.items && proposal.items.length > 0 ? (
+            proposal.items.map((stage, idx) => (
+              <div key={idx} className="card bg-white border border-[var(--color-deep-green)]/5 shadow-sm overflow-hidden">
+                {/* Stage Header */}
+                <div className="p-4 bg-[var(--color-deep-green)] text-white flex justify-between items-center flex-wrap gap-2">
+                  <h2 className="text-sm font-extrabold uppercase tracking-wide">{stage.title}</h2>
+                  <span className="text-base font-extrabold font-mono">
+                    ${Number(stage.amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                {/* Activities Table */}
+                {stage.activities && stage.activities.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100 text-[var(--color-dark-gray)]/50 uppercase tracking-wider font-bold">
+                          <th className="p-3 w-16 text-center">Cód</th>
+                          <th className="p-3 w-1/3">Actividades</th>
+                          <th className="p-3">Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 font-medium">
+                        {stage.activities.map((act, aIdx) => (
+                          <tr key={aIdx} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="p-3 text-center font-extrabold text-[var(--color-deep-green)]">{act.code}</td>
+                            <td className="p-3 text-[var(--color-dark-gray)] font-bold">{act.name}</td>
+                            <td className="p-3 text-[var(--color-dark-gray)]/70 font-normal leading-relaxed">{act.description || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-[var(--color-dark-gray)]/30 text-center py-6">No hay etapas configuradas en esta propuesta.</p>
+          )}
+        </div>
+
+        {/* PAYMENT SCHEDULE PLAN */}
+        <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">
           <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
             <span className="material-symbols-outlined text-xl">payments</span>
-            Desglose Comercial y Entregables
+            Plan de Pagos de la Propuesta
           </h2>
+          
+          <div className="space-y-3.5 text-xs font-semibold text-[var(--color-dark-gray)]">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
+              <div>
+                <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar el proyecto)</p>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Se abona al momento de firmar y dar inicio a las actividades.</p>
+              </div>
+              <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
+                ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
 
-          <div className="space-y-4">
-            {proposal.items && proposal.items.length > 0 ? (
-              proposal.items.map((item, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-4 rounded-xl bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
-                  <div className="flex-1 space-y-1">
-                    <h3 className="text-sm font-extrabold text-[var(--color-dark-gray)]">
-                      {item.concept}
-                    </h3>
-                    {item.description && (
-                      <p className="text-xs text-[var(--color-dark-gray)]/60 font-medium whitespace-pre-wrap leading-relaxed">
-                        {item.description}
-                      </p>
-                    )}
+            <div className="space-y-2 bg-[var(--color-refined-gray)]/40 p-4 rounded-lg border border-gray-100">
+              <p className="font-bold text-[var(--color-dark-gray)] uppercase tracking-wider text-[10px] mb-2">Desglose de cuotas por finalización de etapas (50% restante):</p>
+              {proposal.items && proposal.items.map((stage, idx) => (
+                <div key={idx} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
+                  <div>
+                    <p className="font-bold text-[var(--color-dark-gray)]/85">{stage.title}</p>
+                    <p className="text-[9px] text-[var(--color-dark-gray)]/45">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
                   </div>
-                  <div className="flex items-center gap-4 text-right self-end sm:self-start">
-                    <div className="text-xs text-[var(--color-dark-gray)]/40 font-semibold whitespace-nowrap">
-                      {item.qty} x ${Number(item.price).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-sm font-bold text-[var(--color-deep-green)] font-mono whitespace-nowrap">
-                      ${(Number(item.qty) * Number(item.price)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                  </div>
+                  <span className="font-mono font-bold text-[var(--color-dark-gray)]">
+                    ${(Number(stage.amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-[var(--color-dark-gray)]/30 text-center py-6">No hay conceptos cargados en esta propuesta.</p>
-            )}
-          </div>
+              ))}
+            </div>
 
-          <div className="border-t border-[var(--color-deep-green)]/8 pt-4 flex justify-between items-center">
-            <span className="text-sm font-extrabold text-[var(--color-dark-gray)]/75">Total Propuesto:</span>
-            <span className="text-2xl font-extrabold text-[var(--color-deep-green)] font-mono">
-              ${Number(proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
+            <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
+              <span>Total del Presupuesto Comercial:</span>
+              <span className="text-lg font-extrabold text-[var(--color-deep-green)] font-mono">
+                ${Number(proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* BANK TRANSFER PAYMENT DETAILS */}
+        <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-sm">account_balance</span>
+            Información para Transferencia Bancaria
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs font-semibold text-[var(--color-dark-gray)]/70">
+            <div><strong>Banco:</strong> {bankDetails.banco}</div>
+            <div><strong>Titular:</strong> {bankDetails.nombre}</div>
+            <div><strong>CBU:</strong> <span className="font-mono font-bold text-[var(--color-dark-gray)]">{bankDetails.cbu}</span></div>
+            <div><strong>Alias:</strong> <span className="font-bold text-[var(--color-deep-green)]">{bankDetails.alias}</span></div>
+            <div><strong>CUIT/CUIL:</strong> <span className="font-mono">{bankDetails.cuit}</span></div>
+            <div><strong>Cuenta:</strong> {bankDetails.cuenta}</div>
           </div>
         </div>
 
@@ -352,7 +418,7 @@ export default function CrmProposalLanding() {
           </div>
         )}
 
-        {/* Dynamic Interactive Approval Footer */}
+        {/* Interactive Approval Actions */}
         {!isAccepted && !isRejected && !isPastValidity && (
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 no-print">
             <button
@@ -449,7 +515,7 @@ export default function CrmProposalLanding() {
                   required
                 />
                 <label htmlFor="chk-terms" className="text-xs text-[var(--color-dark-gray)]/65 cursor-pointer leading-tight">
-                  Acepto comenzar la contratación bajo los conceptos y términos y condiciones detallados en este presupuesto.
+                  Acepto comenzar la contratación bajo los conceptos, plan de pagos y términos y condiciones detallados en este presupuesto.
                 </label>
               </div>
 
