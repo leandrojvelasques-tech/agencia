@@ -102,14 +102,8 @@ export default function EventRegister() {
     e.preventDefault()
     setError('')
 
-    if (!form.first_name || !form.last_name) {
-      setError('Nombre y apellido son obligatorios')
-      return
-    }
-
-    // Show email warning if no email
-    if (!form.email && !showEmailWarning) {
-      setShowEmailWarning(true)
+    if (!form.first_name || !form.last_name || !form.email || !form.phone || !form.attendance_mode) {
+      setError('Todos los campos marcados con (*) son obligatorios')
       return
     }
 
@@ -159,39 +153,16 @@ export default function EventRegister() {
 
           <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-              Email <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional pero recomendado)</span>
+              Email *
             </label>
-            <input type="email" className="form-input" placeholder="tu@email.com" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setShowEmailWarning(false) }} />
+            <input type="email" className="form-input" placeholder="tu@email.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
           </div>
-
-          {/* Email Warning */}
-          {showEmailWarning && !form.email && (
-            <div className="bg-amber-50 border border-amber-200 rounded-[var(--radius-premium)] p-4 animate-fade-in">
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-xl text-amber-600 mt-0.5">warning</span>
-                <div>
-                  <p className="text-sm font-bold text-amber-800 mb-1">¿Continuar sin email?</p>
-                  <p className="text-xs text-amber-700 leading-relaxed">
-                    Sin email <strong>no recibirás</strong>: confirmación de inscripción, materiales del evento, ni minuta posterior.
-                  </p>
-                  <div className="flex gap-2 mt-3">
-                    <button type="submit" className="btn-primary !py-2 !px-4 !text-xs !bg-amber-600">
-                      Continuar sin email
-                    </button>
-                    <button type="button" onClick={() => setShowEmailWarning(false)} className="btn-ghost !py-2 !px-4 !text-xs">
-                      Agregar email
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-              Teléfono <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span>
+              Teléfono *
             </label>
-            <input type="tel" className="form-input" placeholder="+54 9 ..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
+            <input type="tel" className="form-input" placeholder="+54 9 ..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} required />
           </div>
 
           {/* Attendance Mode Selector */}
