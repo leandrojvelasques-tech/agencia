@@ -159,20 +159,34 @@ export default function EventParticipantsPublic() {
                       <div className="flex flex-col">
                         <span>{p.first_name} {p.last_name}</span>
                         {p.survey_responses && (
-                          <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-0.5 shadow-sm">
-                            {p.survey_responses.matriculado && <div><strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {p.survey_responses.matriculado}{p.survey_responses.consejo ? ` (${p.survey_responses.consejo})` : ''}</div>}
-                            {p.survey_responses.profesion && (
-                              <div><strong className="text-[var(--color-deep-green)]">Profesión:</strong> {p.survey_responses.profesion}
-                                {p.survey_responses.profesion === 'Estudiante Universitario' && p.survey_responses.profesion_estudiante_carrera && ` (${p.survey_responses.profesion_estudiante_carrera} en ${p.survey_responses.profesion_estudiante_univ})`}
-                                {p.survey_responses.profesion === 'Otro' && p.survey_responses.profesion_otro && ` (${p.survey_responses.profesion_otro})`}
-                              </div>
-                            )}
-                            {p.survey_responses.empleo && (
-                              <div><strong className="text-[var(--color-deep-green)]">Empleo:</strong> {p.survey_responses.empleo}
-                                {p.survey_responses.empleo === 'Dependiente' && p.survey_responses.empleo_empresa && ` (${p.survey_responses.empleo_empresa})`}
-                                {p.survey_responses.empleo === 'Independiente' && p.survey_responses.empleo_actividad && ` (${p.survey_responses.empleo_actividad})`}
-                                {p.survey_responses.empleo === 'Otro' && p.survey_responses.empleo_otro && ` (${p.survey_responses.empleo_otro})`}
-                              </div>
+                          <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-1 shadow-sm">
+                            {p.survey_responses.matriculado || p.survey_responses.profesion || p.survey_responses.empleo ? (
+                              <>
+                                {p.survey_responses.matriculado && <div><strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {p.survey_responses.matriculado}{p.survey_responses.consejo ? ` (${p.survey_responses.consejo})` : ''}</div>}
+                                {p.survey_responses.profesion && (
+                                  <div><strong className="text-[var(--color-deep-green)]">Profesión:</strong> {p.survey_responses.profesion}
+                                    {p.survey_responses.profesion === 'Estudiante Universitario' && p.survey_responses.profesion_estudiante_carrera && ` (${p.survey_responses.profesion_estudiante_carrera} en ${p.survey_responses.profesion_estudiante_univ})`}
+                                    {p.survey_responses.profesion === 'Otro' && p.survey_responses.profesion_otro && ` (${p.survey_responses.profesion_otro})`}
+                                  </div>
+                                )}
+                                {p.survey_responses.empleo && (
+                                  <div><strong className="text-[var(--color-deep-green)]">Empleo:</strong> {p.survey_responses.empleo}
+                                    {p.survey_responses.empleo === 'Dependiente' && p.survey_responses.empleo_empresa && ` (${p.survey_responses.empleo_empresa})`}
+                                    {p.survey_responses.empleo === 'Independiente' && p.survey_responses.empleo_actividad && ` (${p.survey_responses.empleo_actividad})`}
+                                    {p.survey_responses.empleo === 'Otro' && p.survey_responses.empleo_otro && ` (${p.survey_responses.empleo_otro})`}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              Object.entries(p.survey_responses).map(([label, val]) => {
+                                if (val === undefined || val === null || val === '') return null
+                                const dispVal = typeof val === 'boolean' ? (val ? 'Sí' : 'No') : val
+                                return (
+                                  <div key={label}>
+                                    <strong className="text-[var(--color-deep-green)]">{label}:</strong> {dispVal}
+                                  </div>
+                                )
+                              })
                             )}
                           </div>
                         )}
