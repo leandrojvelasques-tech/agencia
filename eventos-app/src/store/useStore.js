@@ -297,7 +297,7 @@ export const useStore = create((set, get) => ({
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
-    const { attendance_mode = 'presencial', ...pData } = participantData
+    const { attendance_mode = 'presencial', survey_responses = null, ...pData } = participantData
 
     // Check capacity for chosen modality
     const maxCap = attendance_mode === 'presencial' ? event.max_capacity_presencial : event.max_capacity_virtual;
@@ -343,7 +343,8 @@ export const useStore = create((set, get) => ({
         participant_id: participantId,
         source: 'self_registration',
         status: 'confirmed',
-        attendance_mode
+        attendance_mode,
+        survey_responses
       }])
       .select()
       .single()

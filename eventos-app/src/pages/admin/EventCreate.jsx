@@ -33,6 +33,7 @@ export default function EventCreate() {
     show_on_home: false,
     live_link: '',
     event_materials: [],
+    has_survey: false,
   })
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -86,6 +87,7 @@ export default function EventCreate() {
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
             event_materials: data.event_materials || [],
+            has_survey: data.has_survey || false,
           })
         }
         setLoading(false)
@@ -291,6 +293,7 @@ export default function EventCreate() {
             show_on_home: updated.show_on_home || false,
             live_link: updated.live_link || '',
             event_materials: updated.event_materials || [],
+            has_survey: updated.has_survey || false,
           })
           savedSlug = updated.slug
         }
@@ -621,6 +624,28 @@ export default function EventCreate() {
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad Virtual <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
                 <input type="number" className="form-input w-full" placeholder="Ej: 100" value={form.max_capacity_virtual} onChange={e => update('max_capacity_virtual', e.target.value)} min={1} />
               </div>
+            </div>
+            {/* Encuesta Opcional */}
+            <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Encuesta para Participantes</label>
+              <label className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
+                form.has_survey
+                  ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                  : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
+              }`}>
+                <input 
+                  type="checkbox" 
+                  checked={form.has_survey || false} 
+                  onChange={e => update('has_survey', e.target.checked)} 
+                  className="mt-1 accent-[var(--color-deep-green)] rounded" 
+                />
+                <div>
+                  <p className="text-sm font-bold text-[var(--color-dark-gray)]">Activar Encuesta de Perfil Profesional</p>
+                  <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">
+                    Solicita a los participantes al registrarse responder sobre su matrícula, profesión y empleo actual (datos opcionales para conocer mejor a tu audiencia).
+                  </p>
+                </div>
+              </label>
             </div>
           </div>
         )}
