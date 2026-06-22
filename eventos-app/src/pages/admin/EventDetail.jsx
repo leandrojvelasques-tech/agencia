@@ -89,6 +89,29 @@ export default function EventDetail() {
     navigator.clipboard.writeText(text)
   }
 
+  const handleResetToken = async () => {
+    if (window.confirm('¿Estás seguro de que querés restablecer el enlace de seguimiento? El enlace anterior dejará de funcionar inmediatamente.')) {
+      setLoading(true)
+      try {
+        const newToken = Array.from({length: 32}, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('')
+        const { error } = await supabase
+          .from('events')
+          .update({ private_link_token: newToken })
+          .eq('id', event.id)
+        
+        if (error) throw error
+        
+        const updated = await getEventById(id)
+        setEvent(updated)
+        alert('Enlace de seguimiento restablecido correctamente.')
+      } catch (err) {
+        alert('Error al restablecer el enlace: ' + err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
@@ -239,10 +262,30 @@ export default function EventDetail() {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de inscripción</p>
                 <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{eventUrl}</p>
               </div>
-              <button onClick={() => copyToClipboard(eventUrl)} className="btn-ghost !px-3 !py-1.5 text-xs">
+              <button onClick={() => { copyToClipboard(eventUrl); alert('Copiado al portapapeles'); }} className="btn-ghost !px-3 !py-1.5 text-xs">
                 <span className="material-symbols-outlined text-base">content_copy</span>
                 Copiar
               </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-3 border border-[var(--color-deep-green)]/10">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="material-symbols-outlined text-lg text-emerald-600">visibility</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de seguimiento (Consejo / Externo)</p>
+                  <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{`${window.location.origin}/evento/${event.slug}/inscritos?token=${event.private_link_token}`}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button onClick={() => { copyToClipboard(`${window.location.origin}/evento/${event.slug}/inscritos?token=${event.private_link_token}`); alert('Copiado al portapapeles'); }} className="btn-ghost !px-3 !py-1.5 text-xs">
+                  <span className="material-symbols-outlined text-base">content_copy</span>
+                  Copiar
+                </button>
+                <button onClick={handleResetToken} className="btn-ghost !px-3 !py-1.5 text-xs text-red-500 hover:bg-red-50" title="Restablecer enlace de seguridad">
+                  <span className="material-symbols-outlined text-base">lock_reset</span>
+                  Restablecer
+                </button>
+              </div>
             </div>
 
             {event.attendance_link_token && (

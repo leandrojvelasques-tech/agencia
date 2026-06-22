@@ -21,6 +21,7 @@ import EventLanding from './pages/public/EventLanding'
 import EventRegister from './pages/public/EventRegister'
 import EventConfirmation from './pages/public/EventConfirmation'
 import AttendanceCheck from './pages/public/AttendanceCheck'
+import EventParticipantsPublic from './pages/public/EventParticipantsPublic'
 
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/evento/:slug/inscripcion" element={<EventRegister />} />
         <Route path="/evento/:slug/confirmacion" element={<EventConfirmation />} />
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
+        <Route path="/evento/:slug/inscritos" element={<EventParticipantsPublic />} />
 
         {/* CRM Client Shared Route */}
         <Route path="/crm/cliente/:token" element={<CrmClientPortal />} />
