@@ -699,6 +699,17 @@ export default function CrmDashboard() {
                   <span className="material-symbols-outlined text-base">checklist</span>
                   Tareas
                 </button>
+                <button
+                  onClick={() => setViewMode('events')}
+                  className={`px-4 py-2 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
+                    viewMode === 'events'
+                      ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">star</span>
+                  Fechas Claves
+                </button>
               </div>
             </div>
           </div>
