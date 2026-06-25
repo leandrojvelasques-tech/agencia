@@ -322,11 +322,11 @@ export default function CrmPublicationCreate() {
     const payload = {
       client_id: clientId,
       type,
-      post_format: postFormat,
+      post_format: type === 'post' ? postFormat : 'placa',
       dimensions,
-      territorio: territorio || null,
+      territorio: type === 'post' ? (territorio || null) : null,
       title,
-      copy: copy || null,
+      copy: type === 'post' ? (copy || null) : null,
       graphic_url: graphicUrl || null,
       status_piece: statusPiece,
       status_post: statusPost,
@@ -645,30 +645,20 @@ export default function CrmPublicationCreate() {
               </div>
             </div>
 
-            {/* Format Refinement selector (only if Post or Story is selected, and not reel/carrousel) */}
-            {((type === 'post' && postFormat !== 'reel' && postFormat !== 'carrousel') || type === 'story') && (
+            {/* Format Refinement selector (only if Post is selected, and not reel/carrousel) */}
+            {(type === 'post' && postFormat !== 'reel' && postFormat !== 'carrousel') && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                  Formato de {type === 'post' ? 'Post' : 'Historia'}
+                  Formato de Post
                 </label>
                 <select
                   value={postFormat}
                   onChange={(e) => setPostFormat(e.target.value)}
                   className="form-input border border-gray-200 bg-white"
                 >
-                  {type === 'post' ? (
-                    <>
-                      <option value="placa">Placa Única (Imagen)</option>
-                      <option value="video">Video Feed</option>
-                      <option value="otro">Otro</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="placa">Placa (Imagen)</option>
-                      <option value="video">Video Corto</option>
-                      <option value="otro">Otro</option>
-                    </>
-                  )}
+                  <option value="placa">Placa Única (Imagen)</option>
+                  <option value="video">Video Feed</option>
+                  <option value="otro">Otro</option>
                 </select>
               </div>
             )}
@@ -690,71 +680,73 @@ export default function CrmPublicationCreate() {
             </div>
 
             {/* Territorio */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Territorio / Eje temático
-              </label>
-              <div className="relative">
-                {(() => {
-                  const activeConfig = getTerritorioConfig(territorio)
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => setIsTerritorioOpen(!isTerritorioOpen)}
-                      className={`form-input border text-left flex items-center justify-between w-full cursor-pointer h-10 px-3 py-2 rounded-premium text-sm font-bold transition-all ${
-                        territorio 
-                          ? `${activeConfig.color.bg} ${activeConfig.color.border} ${activeConfig.color.text}` 
-                          : 'border-gray-200 bg-white text-gray-400'
-                      }`}
-                    >
-                      <span>
-                        {territorio || 'Seleccionar territorio...'}
-                      </span>
-                      <span className="material-symbols-outlined select-none opacity-80">
-                        {isTerritorioOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-                      </span>
-                    </button>
-                  )
-                })()}
+            {type === 'post' && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                  Territorio / Eje temático
+                </label>
+                <div className="relative">
+                  {(() => {
+                    const activeConfig = getTerritorioConfig(territorio)
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setIsTerritorioOpen(!isTerritorioOpen)}
+                        className={`form-input border text-left flex items-center justify-between w-full cursor-pointer h-10 px-3 py-2 rounded-premium text-sm font-bold transition-all ${
+                          territorio 
+                            ? `${activeConfig.color.bg} ${activeConfig.color.border} ${activeConfig.color.text}` 
+                            : 'border-gray-200 bg-white text-gray-400'
+                        }`}
+                      >
+                        <span>
+                          {territorio || 'Seleccionar territorio...'}
+                        </span>
+                        <span className="material-symbols-outlined select-none opacity-80">
+                          {isTerritorioOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+                        </span>
+                      </button>
+                    )
+                  })()}
 
-                {isTerritorioOpen && (
-                  <>
-                    {/* Backdrop */}
-                    <div 
-                      className="fixed inset-0 z-30" 
-                      onClick={() => setIsTerritorioOpen(false)} 
-                    />
-                    
-                    {/* Dropdown Menu */}
-                    <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-premium shadow-xl z-40 py-1 max-h-60 overflow-y-auto animate-fade-in flex flex-col gap-0.5">
-                      {TERRITORIOS.map((opt) => (
-                        <div
-                          key={opt.id}
-                          onClick={() => {
-                            setTerritorio(opt.id)
-                            setIsTerritorioOpen(false)
-                          }}
-                          className={`relative group/opt px-4 py-2.5 text-xs font-bold cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 border-black/5 ${opt.color.bg} ${opt.color.text} ${opt.color.hoverBg}`}
-                        >
-                          <span>{opt.label}</span>
-                          
-                          {/* Info Indicator */}
-                          <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-                            <span className="material-symbols-outlined text-base cursor-help">info</span>
+                  {isTerritorioOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div 
+                        className="fixed inset-0 z-30" 
+                        onClick={() => setIsTerritorioOpen(false)} 
+                      />
+                      
+                      {/* Dropdown Menu */}
+                      <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-premium shadow-xl z-40 py-1 max-h-60 overflow-y-auto animate-fade-in flex flex-col gap-0.5">
+                        {TERRITORIOS.map((opt) => (
+                          <div
+                            key={opt.id}
+                            onClick={() => {
+                              setTerritorio(opt.id)
+                              setIsTerritorioOpen(false)
+                            }}
+                            className={`relative group/opt px-4 py-2.5 text-xs font-bold cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 border-black/5 ${opt.color.bg} ${opt.color.text} ${opt.color.hoverBg}`}
+                          >
+                            <span>{opt.label}</span>
                             
-                            {/* Custom Tooltip */}
-                            <div className="hidden group-hover/opt:block absolute bottom-full right-0 md:bottom-auto md:left-full md:top-1/2 md:-translate-y-1/2 mb-2 md:mb-0 md:ml-3 w-72 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-premium p-3.5 shadow-2xl z-50 pointer-events-none transition-all duration-200 border border-gray-850 animate-fade-in text-left">
-                              <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[11px] uppercase tracking-wider">{opt.label}</p>
-                              <p className="font-medium text-gray-200 leading-relaxed text-[11px] normal-case">{opt.desc}</p>
+                            {/* Info Indicator */}
+                            <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                              <span className="material-symbols-outlined text-base cursor-help">info</span>
+                              
+                              {/* Custom Tooltip */}
+                              <div className="hidden group-hover/opt:block absolute bottom-full right-0 md:bottom-auto md:left-full md:top-1/2 md:-translate-y-1/2 mb-2 md:mb-0 md:ml-3 w-72 bg-gray-900/95 backdrop-blur-sm text-white text-xs rounded-premium p-3.5 shadow-2xl z-50 pointer-events-none transition-all duration-200 border border-gray-850 animate-fade-in text-left">
+                                <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[11px] uppercase tracking-wider">{opt.label}</p>
+                                <p className="font-medium text-gray-200 leading-relaxed text-[11px] normal-case">{opt.desc}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Title */}
             <div>
@@ -914,21 +906,23 @@ export default function CrmPublicationCreate() {
             </div>
 
             {/* Copy / Caption */}
-            <div className="md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                Copy / Texto de la publicación
-              </label>
-              <textarea
-                value={copy}
-                onChange={(e) => setCopy(e.target.value)}
-                placeholder="Escribí el texto de la publicación y los hashtags correspondientes..."
-                rows={5}
-                className="form-input border border-gray-200 bg-white resize-y font-mono text-xs"
-              />
-              <div className="text-right text-[10px] font-bold text-[var(--color-dark-gray)]/40 mt-1">
-                {copy.length} caracteres
+            {type === 'post' && (
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
+                  Copy / Texto de la publicación
+                </label>
+                <textarea
+                  value={copy}
+                  onChange={(e) => setCopy(e.target.value)}
+                  placeholder="Escribí el texto de la publicación y los hashtags correspondientes..."
+                  rows={5}
+                  className="form-input border border-gray-200 bg-white resize-y font-mono text-xs"
+                />
+                <div className="text-right text-[10px] font-bold text-[var(--color-dark-gray)]/40 mt-1">
+                  {copy.length} caracteres
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Tareas Pendientes (Free text notes) */}
             <div className="md:col-span-2">
