@@ -71,6 +71,10 @@ export default function CrmDashboard() {
   const [selectedPubIds, setSelectedPubIds] = useState([])
   const [draggedOverDate, setDraggedOverDate] = useState(null)
 
+  // Important event form states
+  const [newEventDate, setNewEventDate] = useState(new Date().toISOString().split('T')[0])
+  const [newEventTitle, setNewEventTitle] = useState('')
+
   const getExportedPublications = () => {
     const todayStr = getLocalDateString(new Date())
     return publications.filter(pub => {
@@ -237,7 +241,7 @@ export default function CrmDashboard() {
   }
 
   const handleDeleteImportantEvent = async (e, evtId) => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     if (!window.confirm('¿Deseas eliminar este evento clave?')) return
     try {
       const { error } = await supabase
@@ -250,6 +254,47 @@ export default function CrmDashboard() {
     } catch (err) {
       console.error(err)
       showToast('Error al eliminar el evento clave.', 'error')
+    }
+  }
+
+  const handleAddImportantEventFromForm = async (e) => {
+    e.preventDefault()
+    if (!newEventDate || !newEventTitle.trim()) {
+      showToast('Por favor, ingresá una fecha y una descripción.', 'error')
+      return
+    }
+    try {
+      const { data, error } = await supabase
+        .from('crm_important_events')
+        .insert({
+          client_id: selectedClientId,
+          date: newEventDate,
+          title: newEventTitle.trim()
+        })
+        .select()
+      if (error) throw error
+      setImportantEvents(prev => [...prev, ...data])
+      setNewEventTitle('')
+      showToast('Fecha clave agregada correctamente.')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al agregar la fecha clave.', 'error')
+    }
+  }
+
+  const handleUpdateImportantEvent = async (evtId, newTitle) => {
+    if (!newTitle || !newTitle.trim()) return
+    try {
+      const { error } = await supabase
+        .from('crm_important_events')
+        .update({ title: newTitle.trim() })
+        .eq('id', evtId)
+      if (error) throw error
+      setImportantEvents(prev => prev.map(x => x.id === evtId ? { ...x, title: newTitle.trim() } : x))
+      showToast('Fecha clave actualizada.')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al actualizar la fecha clave.', 'error')
     }
   }
 
@@ -563,6 +608,10 @@ export default function CrmDashboard() {
               ) : viewMode === 'tasks' ? (
                 <h3 className="text-lg font-bold text-[var(--color-deep-green)]">
                   Tareas Pendientes del Cliente
+                </h3>
+              ) : viewMode === 'events' ? (
+                <h3 className="text-lg font-bold text-[var(--color-deep-green)]">
+                  Fechas Claves del Cliente
                 </h3>
               ) : (
                 <h3 className="text-lg font-bold text-[var(--color-deep-green)]">
@@ -1211,6 +1260,133 @@ export default function CrmDashboard() {
                   </div>
                 )
               })()}
+            </div>
+          ) : viewMode === 'events' ? (
+            /* KEY DATES / IMPORTANT EVENTS MANAGER VIEW */
+            <div className="p-6 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+              {/* Form to add new key date */}
+              <div className="md:col-span-1 bg-white rounded-2xl border border-gray-150 p-5 shadow-sm space-y-4 h-fit">
+                <div>
+                  <h4 className="font-bold text-sm text-[var(--color-deep-green)] flex items-center gap-2">
+                    <span className="material-symbols-outlined text-base">star_rate</span>
+                    Nueva Fecha Clave
+                  </h4>
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    Cargá fechas importantes del mes (ej: Día del Padre, efemérides, partidos) para tenerlas presentes al diseñar.
+                  </p>
+                </div>
+                
+                <form onSubmit={handleAddImportantEventFromForm} className="space-y-3.5">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/60 block mb-1">Fecha</label>
+                    <input
+                      type="date"
+                      required
+                      value={newEventDate}
+                      onChange={(e) => setNewEventDate(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-premium px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-dark-gray/60 block mb-1">Descripción / Nombre del Evento</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej: Día del Padre, Argentina vs Jordania"
+                      value={newEventTitle}
+                      onChange={(e) => setNewEventTitle(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-premium px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className="w-full btn-primary text-xs py-2.5 flex items-center justify-center gap-2 mt-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    Cargar Fecha Clave
+                  </button>
+                </form>
+              </div>
+
+              {/* List of existing key dates */}
+              <div className="md:col-span-2 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                  <h4 className="font-bold text-sm text-[var(--color-deep-green)] flex items-center gap-2">
+                    <span className="material-symbols-outlined text-base">event_note</span>
+                    Fechas Registradas
+                  </h4>
+                  <span className="text-[11px] font-bold bg-[var(--color-deep-green)]/5 text-[var(--color-deep-green)] px-2.5 py-1 rounded-full border border-[var(--color-deep-green)]/15">
+                    {importantEvents.length} {importantEvents.length === 1 ? 'fecha' : 'fechas'} en total
+                  </span>
+                </div>
+
+                {importantEvents.length === 0 ? (
+                  <div className="py-16 text-center text-dark-gray/40 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
+                    <span className="material-symbols-outlined text-4xl block mb-2 text-gray-300">event_busy</span>
+                    <p className="text-xs font-bold">No hay fechas claves cargadas para este cliente.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+                    {importantEvents
+                      .sort((a, b) => a.date.localeCompare(b.date))
+                      .map(evt => {
+                        const dateObj = new Date(evt.date + 'T00:00:00');
+                        const dayNum = dateObj.getDate();
+                        const monthName = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][dateObj.getMonth()];
+                        const weekdayName = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][dateObj.getDay()];
+                        
+                        return (
+                          <div 
+                            key={evt.id} 
+                            className="bg-white rounded-premium border border-gray-150 p-3.5 flex items-center justify-between gap-4 hover:shadow-sm transition-all"
+                          >
+                            <div className="flex items-center gap-3.5 min-w-0">
+                              {/* Calendar Badge */}
+                              <div className="w-11 h-11 rounded-premium bg-amber-50 border border-amber-250/50 flex flex-col items-center justify-center flex-shrink-0">
+                                <span className="text-[8px] font-extrabold text-amber-700 uppercase tracking-tighter leading-none">{monthName}</span>
+                                <span className="text-base font-black text-amber-900 leading-none mt-0.5">{dayNum}</span>
+                              </div>
+                              
+                              <div className="min-w-0">
+                                <span className="text-[9px] font-bold text-amber-800 uppercase tracking-wider bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 inline-block mb-1">
+                                  {weekdayName}
+                                </span>
+                                <p className="font-bold text-sm text-gray-800 truncate" title={evt.title}>
+                                  {evt.title}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const newTitle = window.prompt('Editar descripción de la fecha clave:', evt.title)
+                                  if (newTitle !== null) {
+                                    handleUpdateImportantEvent(evt.id, newTitle)
+                                  }
+                                }}
+                                className="p-2 hover:bg-gray-100 text-blue-600 rounded-premium-btn transition-colors"
+                                title="Editar descripción"
+                              >
+                                <span className="material-symbols-outlined text-lg leading-none">edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteImportantEvent(e, evt.id)}
+                                className="p-2 hover:bg-red-50 text-red-600 rounded-premium-btn transition-colors"
+                                title="Eliminar fecha clave"
+                              >
+                                <span className="material-symbols-outlined text-lg leading-none">delete</span>
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             /* LIST/TABLE VIEW */
