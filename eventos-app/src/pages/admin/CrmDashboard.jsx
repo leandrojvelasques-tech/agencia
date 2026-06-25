@@ -218,6 +218,64 @@ export default function CrmDashboard() {
     }
   }
 
+  const handleCyclePublicationState = async (e, pub) => {
+    e.stopPropagation() // Prevent navigating to edit page
+    
+    const currentState = getPublicationState(pub).id
+    let nextState = 'design_in_progress'
+    let nextStatusPost = 'draft'
+    let nextStatusPiece = pub.status_piece || 'Diseño en proceso'
+
+    if (currentState === 'design_in_progress') {
+      nextState = 'done_not_programmed'
+      nextStatusPost = 'draft'
+      nextStatusPiece = ''
+    } else if (currentState === 'done_not_programmed') {
+      nextState = 'done_programmed'
+      nextStatusPost = 'scheduled'
+      nextStatusPiece = ''
+    } else {
+      nextState = 'design_in_progress'
+      nextStatusPost = 'draft'
+      if (!pub.status_piece || pub.status_piece.trim() === '') {
+        nextStatusPiece = 'Diseño en proceso'
+      }
+    }
+
+    try {
+      const { error } = await supabase
+        .from('crm_publications')
+        .update({
+          status_post: nextStatusPost,
+          status_piece: nextStatusPiece
+        })
+        .eq('id', pub.id)
+
+      if (error) throw error
+
+      setPublications(prev => prev.map(p => {
+        if (p.id === pub.id) {
+          return {
+            ...p,
+            status_post: nextStatusPost,
+            status_piece: nextStatusPiece
+          }
+        }
+        return p
+      }))
+      
+      const stateLabels = {
+        design_in_progress: 'En proceso de diseño (Gris)',
+        done_not_programmed: 'Diseño terminado sin programar (Amarillo)',
+        done_programmed: 'Diseño terminado y programado (Verde)'
+      }
+      showToast(`Estado actualizado: ${stateLabels[nextState]}`)
+    } catch (err) {
+      console.error('Error updating state:', err)
+      showToast('Error al actualizar el estado de la publicación.', 'error')
+    }
+  }
+
   const handleAddImportantEvent = async (dateStr) => {
     const title = window.prompt('Ingresá el nombre del evento importante o fecha clave (ej: Día del Padre, Partido de Argentina):')
     if (!title || !title.trim()) return
@@ -884,7 +942,12 @@ export default function CrmDashboard() {
                                           </span>
                                         )}
                                       </div>
-                                      <span className={`w-2.5 h-2.5 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleCyclePublicationState(e, pub)}
+                                        className={`w-3.5 h-3.5 rounded-full ${getPublicationState(pub).colorClass} border border-white hover:scale-125 transition-transform cursor-pointer shadow-sm`}
+                                        title={`${getPublicationState(pub).label} (Haz clic para cambiar de color/estado)`}
+                                      />
                                     </div>
                                     <p className="text-[11px] font-bold truncate leading-tight opacity-90">
                                       {displayTitle}
@@ -1144,7 +1207,12 @@ export default function CrmDashboard() {
                                 </div>
 
                                 <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-                                  <span className={`w-2.5 h-2.5 rounded-full ${dotColorClass}`} title={`Pieza: ${statusLabel}`} />
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleCyclePublicationState(e, pub)}
+                                    className={`w-3.5 h-3.5 rounded-full ${dotColorClass} border border-white hover:scale-125 transition-transform cursor-pointer shadow-sm`}
+                                    title={`Pieza: ${statusLabel} (Haz clic para cambiar de color/estado)`}
+                                  />
                                 </div>
 
                                 {pub.post_format === 'carrousel' && (
