@@ -684,6 +684,7 @@ export default function EventCreate() {
                           </button>
                         )}
                       </div>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/50 p-3 rounded-[var(--radius-premium)] border border-[var(--color-deep-green)]/5">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Hora de Inicio</label>
