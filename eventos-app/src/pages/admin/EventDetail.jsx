@@ -1,9 +1,10 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
+import html2canvas from 'html2canvas'
 
 const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note', next: 'Publicar', nextStatus: 'published' },
@@ -27,6 +28,9 @@ export default function EventDetail() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [modalityCounts, setModalityCounts] = useState({ presencial: 0, virtual: 0 })
+  const [showFlyerModal, setShowFlyerModal] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const flyerRef = useRef(null)
 
   useEffect(() => {
     async function loadData() {
@@ -117,6 +121,30 @@ export default function EventDetail() {
       }
     }
   }
+  const downloadFlyer = async () => {
+    if (!flyerRef.current) return
+    setExporting(true)
+    try {
+      // Delay for QR code image to render
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      const canvas = await html2canvas(flyerRef.current, {
+        useCORS: true,
+        scale: 1, // Full size is 1080x1920
+        logging: false,
+        backgroundColor: '#022c22'
+      })
+      
+      const link = document.createElement('a')
+      link.download = `flyer-${event.slug}.jpg`
+      link.href = canvas.toDataURL('image/jpeg', 0.95)
+      link.click()
+    } catch (err) {
+      alert('Error al generar el flyer: ' + err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
@@ -145,6 +173,10 @@ export default function EventDetail() {
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowFlyerModal(true)} className="btn-primary flex items-center gap-1.5 shadow-[var(--shadow-premium)]">
+            <span className="material-symbols-outlined text-lg">campaign</span>
+            <span>Flyer 1080x1920</span>
+          </button>
           <button onClick={() => window.print()} className="btn-ghost">
             <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
             <span className="hidden sm:inline">Exportar</span>
@@ -459,6 +491,181 @@ export default function EventDetail() {
           )}
         </div>
       </div>
+
+      {/* Hidden 1080x1920 flyer target for html2canvas */}
+      <div 
+        ref={flyerRef}
+        style={{
+          width: '1080px',
+          height: '1920px',
+          position: 'fixed',
+          left: '-9999px',
+          top: '-9999px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '90px 80px',
+          background: 'linear-gradient(135deg, #022c22 0%, #064e3b 50%, #022c22 100%)',
+          color: '#ffffff',
+          fontFamily: "'Outfit', 'Inter', sans-serif",
+          boxSizing: 'border-box',
+          zIndex: -100
+        }}
+      >
+        {/* Top Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img src="https://www.leandrovelasques.com.ar/logo_triskel.png" alt="Logo" style={{ height: '70px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
+            <span style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '4px', color: '#10b981' }}>LEANDRO VELASQUES</span>
+          </div>
+          <span style={{ 
+            fontSize: '22px', 
+            fontWeight: 800, 
+            textTransform: 'uppercase', 
+            letterSpacing: '2px', 
+            padding: '10px 24px', 
+            borderRadius: '40px', 
+            border: '2px solid #10b981',
+            color: '#10b981'
+          }}>
+            {event.type === 'charla' ? '🎤 Charla' : '🛠 Taller'}
+          </span>
+        </div>
+
+        {/* Central Content */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', margin: '80px 0' }}>
+          <h1 style={{ 
+            fontSize: '72px', 
+            fontWeight: 900, 
+            lineHeight: 1.15, 
+            letterSpacing: '-2px', 
+            margin: 0,
+            background: 'linear-gradient(to right, #ffffff, #a7f3d0)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            {event.title}
+          </h1>
+          {event.subtitle && (
+            <p style={{ fontSize: '32px', color: '#a7f3d0', fontWeight: 500, margin: 0, lineHeight: 1.4 }}>
+              {event.subtitle}
+            </p>
+          )}
+          <div style={{ height: '4px', width: '150px', background: '#10b981', borderRadius: '2px' }} />
+          <p style={{ fontSize: '24px', color: '#e2e8f0', margin: 0, lineHeight: 1.6, opacity: 0.9 }}>
+            {event.description_short}
+          </p>
+        </div>
+
+        {/* Details and QR Grid */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '2px solid rgba(16, 185, 129, 0.2)', paddingTop: '60px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#10b981' }}>calendar_today</span>
+              <div>
+                <p style={{ fontSize: '18px', textTransform: 'uppercase', letterSpacing: '2px', color: '#a7f3d0', margin: '0 0 5px 0', fontWeight: 700 }}>Fecha</p>
+                <p style={{ fontSize: '28px', fontWeight: 800, margin: 0 }}>{format(eventDate, "EEEE d 'de' MMMM", { locale: es })}</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#10b981' }}>schedule</span>
+              <div>
+                <p style={{ fontSize: '18px', textTransform: 'uppercase', letterSpacing: '2px', color: '#a7f3d0', margin: '0 0 5px 0', fontWeight: 700 }}>Horario</p>
+                <p style={{ fontSize: '28px', fontWeight: 800, margin: 0 }}>{event.start_time} hs <span style={{ fontSize: '22px', opacity: 0.7 }}>· {event.duration_minutes} min</span></p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#10b981' }}>person</span>
+              <div>
+                <p style={{ fontSize: '18px', textTransform: 'uppercase', letterSpacing: '2px', color: '#a7f3d0', margin: '0 0 5px 0', fontWeight: 700 }}>Coordinador</p>
+                <p style={{ fontSize: '28px', fontWeight: 800, margin: 0 }}>{event.coordinator}</p>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', background: 'rgba(255, 255, 255, 0.05)', padding: '30px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(eventUrl)}`} 
+              alt="QR Code" 
+              style={{ width: '220px', height: '220px', borderRadius: '12px', border: '8px solid white' }}
+            />
+            <p style={{ fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: '#10b981', margin: 0 }}>Escaneá para Inscribirte</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Flyer Modal */}
+      {showFlyerModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[var(--radius-card)] max-w-md w-full p-6 shadow-2xl animate-fade-in flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h2 className="text-lg font-bold text-[var(--color-dark-gray)]">Flyer Promocional (1080x1920)</h2>
+              <button onClick={() => setShowFlyerModal(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            {/* Flyer Aspect Ratio Preview */}
+            <div className="aspect-[9/16] w-full max-h-[50vh] bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 rounded-[var(--radius-premium)] shadow-inner p-6 flex flex-col justify-between text-white overflow-hidden select-none">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-heading font-black text-[10px] tracking-widest text-emerald-400">L. VELASQUES</span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-emerald-400 text-emerald-400">
+                  {event.type === 'charla' ? '🎤 Charla' : '🛠 Taller'}
+                </span>
+              </div>
+              
+              <div className="flex flex-col gap-2 my-4">
+                <h3 className="text-xl font-black leading-tight text-white line-clamp-2">{event.title}</h3>
+                {event.subtitle && <p className="text-xs text-emerald-200 font-medium line-clamp-1">{event.subtitle}</p>}
+                <p className="text-[10px] text-gray-200 line-clamp-3 leading-relaxed opacity-85">{event.description_short}</p>
+              </div>
+              
+              <div className="flex justify-between items-end border-t border-emerald-400/20 pt-3">
+                <div className="flex flex-col gap-2 text-[10px]">
+                  <div className="flex items-center gap-1 text-white">
+                    <span className="material-symbols-outlined text-xs text-emerald-400">calendar_today</span>
+                    <span>{format(eventDate, "d 'de' MMMM", { locale: es })}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-white">
+                    <span className="material-symbols-outlined text-xs text-emerald-400">schedule</span>
+                    <span>{event.start_time} hs</span>
+                  </div>
+                </div>
+                <div className="bg-white/5 p-1.5 rounded border border-emerald-400/10 flex flex-col items-center">
+                  <div className="w-12 h-12 bg-white rounded flex items-center justify-center p-0.5">
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(eventUrl)}`} alt="QR" className="w-full h-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-2">
+              <button 
+                onClick={downloadFlyer} 
+                className="btn-primary flex-1 py-3 text-sm flex items-center justify-center gap-2"
+                disabled={exporting}
+              >
+                {exporting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                    Generando imagen...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-lg">download</span>
+                    Descargar Imagen (JPG)
+                  </>
+                )}
+              </button>
+              <button onClick={() => setShowFlyerModal(false)} className="btn-secondary py-3 text-sm">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
