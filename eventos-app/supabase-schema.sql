@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS participants (
     last_name TEXT NOT NULL,
     email TEXT,
     phone TEXT,
+    telegram TEXT,
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

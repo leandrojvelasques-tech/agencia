@@ -35,22 +35,22 @@ module.exports = async (req, res) => {
       // Buscamos el title y lo reemplazamos
       html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
       
-      // Inyectamos las meta tags antes de cerrar el </head>
+      // Inyectamos las meta tags justo después de abrir <head> para que los scrapers las procesen inmediatamente
       const metaTags = `
   <!-- SEO & Social Meta Tags -->
   <meta name="description" content="${desc.replace(/"/g, '&quot;')}">
   <meta property="og:title" content="${title.replace(/"/g, '&quot;')}">
   <meta property="og:description" content="${desc.replace(/"/g, '&quot;')}">
-  <meta property="og:image" content="${img}">
+  <meta property="og:image" content="${encodeURI(img)}">
   <meta property="og:url" content="${url}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}">
   <meta name="twitter:description" content="${desc.replace(/"/g, '&quot;')}">
-  <meta name="twitter:image" content="${img}">
+  <meta name="twitter:image" content="${encodeURI(img)}">
       `;
       
-      html = html.replace('</head>', `${metaTags}\n</head>`);
+      html = html.replace('<head>', `<head>\n${metaTags}`);
     }
 
     res.setHeader('Content-Type', 'text/html');

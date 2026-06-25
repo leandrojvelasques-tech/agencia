@@ -13,6 +13,12 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelado', color: 'red', icon: 'cancel' },
 }
 
+const ensureAbsoluteUrl = (url) => {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('mailto:') || url.startsWith('tel:')) return url
+  return `https://${url}`
+}
+
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -114,6 +120,7 @@ export default function EventDetail() {
 
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
+    { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas', count: null },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
   ]
@@ -231,7 +238,7 @@ export default function EventDetail() {
       </div>
 
       {/* Action Cards */}
-      <div className="grid sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {ACTIONS.map(action => (
           <Link key={action.to} to={action.to} className="card card-interactive p-5 flex items-center gap-4 group">
             <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center group-hover:bg-[var(--color-deep-green)] transition-colors">
@@ -309,7 +316,7 @@ export default function EventDetail() {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de transmisión (Meet)</p>
                   <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{event.live_link}</p>
                 </div>
-                <a href={event.live_link} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-1.5 text-xs flex items-center gap-1">
+                <a href={ensureAbsoluteUrl(event.live_link)} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-1.5 text-xs flex items-center gap-1">
                   <span className="material-symbols-outlined text-base">open_in_new</span>
                   Abrir
                 </a>
@@ -343,7 +350,7 @@ export default function EventDetail() {
                   
                   <div className="flex gap-2">
                     <a
-                      href={material.url}
+                      href={ensureAbsoluteUrl(material.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-primary !py-2 !text-xs flex-1"
@@ -354,7 +361,7 @@ export default function EventDetail() {
                     
                     {material.type === 'presentation' && (
                       <a
-                        href={material.url.replace('index.html', 'presentacion.pdf')}
+                        href={ensureAbsoluteUrl(material.url).replace('index.html', 'presentacion.pdf')}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-secondary !py-2 !text-xs !bg-white hover:!bg-red-50 !text-red-600 !border-red-100"

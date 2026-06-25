@@ -5,6 +5,31 @@ import { supabase } from '../../lib/supabase'
 
 const STEPS = ['Información', 'Fecha y Agenda', 'Inscripción', 'Materiales', 'Encuesta']
 
+const normalizeAgenda = (agenda) => {
+  if (!agenda || !Array.isArray(agenda) || agenda.length === 0) {
+    return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }]
+  }
+  // Check if it's already in the new format (each item has a title and a blocks array)
+  if ('blocks' in agenda[0]) {
+    return agenda.map(c => ({
+      title: c.title || '',
+      start_time: c.start_time || '',
+      end_time: c.end_time || '',
+      break_duration: c.break_duration || 0,
+      blocks: Array.isArray(c.blocks) ? c.blocks.map(b => ({
+        title: b.title || '',
+        description: b.description || ''
+      })) : [{ title: 'Bloque 1', description: '' }]
+    }))
+  }
+  // If it's the old format [{ time, block, topic }]
+  const blocks = agenda.map((item, idx) => ({
+    title: item.block || `Bloque ${idx + 1}`,
+    description: item.topic || ''
+  }))
+  return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks }]
+}
+
 export default function EventCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -24,7 +49,7 @@ export default function EventCreate() {
     event_date: '',
     start_time: '',
     duration_minutes: 120,
-    agenda: [{ time: '', block: '', topic: '' }],
+    agenda: [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }],
     registration_mode: 'both',
     max_capacity_presencial: '',
     max_capacity_virtual: '',
@@ -82,6 +107,7 @@ export default function EventCreate() {
           setExistingEvent(data)
           setForm({
             ...data,
+            agenda: normalizeAgenda(data.agenda),
             max_capacity_presencial: data.max_capacity_presencial || '',
             max_capacity_virtual: data.max_capacity_virtual || '',
             is_public: data.status === 'published' || data.status === 'in_progress',
@@ -100,14 +126,64 @@ export default function EventCreate() {
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
 
-  const addAgendaItem = () => setForm(prev => ({ ...prev, agenda: [...prev.agenda, { time: '', block: '', topic: '' }] }))
-  const removeAgendaItem = (i) => setForm(prev => ({ ...prev, agenda: prev.agenda.filter((_, idx) => idx !== i) }))
-  const updateAgenda = (i, field, value) => {
-    setForm(prev => ({
+  const addClass = () => setForm(prev => {
+    const nextAgenda = Array.isArray(prev.agenda) ? [...prev.agenda] : []
+    const newClassNum = nextAgenda.length + 1
+    return {
       ...prev,
-      agenda: prev.agenda.map((item, idx) => idx === i ? { ...item, [field]: value } : item)
-    }))
-  }
+      agenda: [...nextAgenda, { title: `Clase ${newClassNum}`, start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }]
+    }
+  })
+
+  const removeClass = (classIdx) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.filter((_, idx) => idx !== classIdx)
+  }))
+
+  const updateClassTitle = (classIdx, value) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => idx === classIdx ? { ...c, title: value } : c)
+  }))
+
+  const updateClassField = (classIdx, field, value) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => idx === classIdx ? { ...c, [field]: value } : c)
+  }))
+
+  const addBlock = (classIdx) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => {
+      if (idx !== classIdx) return c
+      const nextBlocks = Array.isArray(c.blocks) ? c.blocks : []
+      const newBlockNum = nextBlocks.length + 1
+      return {
+        ...c,
+        blocks: [...nextBlocks, { title: `Bloque ${newBlockNum}`, description: '' }]
+      }
+    })
+  }))
+
+  const removeBlock = (classIdx, blockIdx) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => {
+      if (idx !== classIdx) return c
+      return {
+        ...c,
+        blocks: c.blocks.filter((_, bIdx) => bIdx !== blockIdx)
+      }
+    })
+  }))
+
+  const updateBlock = (classIdx, blockIdx, field, value) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => {
+      if (idx !== classIdx) return c
+      return {
+        ...c,
+        blocks: c.blocks.map((b, bIdx) => bIdx === blockIdx ? { ...b, [field]: value } : b)
+      }
+    })
+  }))
 
   const addMaterial = () => setForm(prev => ({ ...prev, event_materials: [...prev.event_materials, { title: '', url: '', type: 'document' }] }))
   const removeMaterial = (i) => setForm(prev => ({ ...prev, event_materials: prev.event_materials.filter((_, idx) => idx !== i) }))
@@ -569,23 +645,111 @@ export default function EventCreate() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Agenda / Programa</label>
-                <button onClick={addAgendaItem} className="btn-ghost text-xs !text-[var(--color-deep-green)]">
-                  <span className="material-symbols-outlined text-base">add</span> Agregar ítem
+              <div className="flex items-center justify-between mb-3 border-b border-[var(--color-deep-green)]/10 pb-2">
+                <label className="text-[12px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]">Agenda / Programa por Clases y Bloques</label>
+                <button type="button" onClick={addClass} className="btn-secondary !py-1.5 !px-3 !text-xs">
+                  <span className="material-symbols-outlined text-base">add</span> Nueva Clase
                 </button>
               </div>
-              <div className="space-y-2">
-                {form.agenda.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input type="time" className="form-input !w-28 !py-2.5 text-sm" value={item.time} onChange={e => updateAgenda(i, 'time', e.target.value)} />
-                    <input className="form-input !py-2.5 text-sm !w-48" placeholder="Tema (Corto)" value={item.block || ''} onChange={e => updateAgenda(i, 'block', e.target.value)} />
-                    <input className="form-input !py-2.5 text-sm flex-1" placeholder="Detalle (Largo)" value={item.topic} onChange={e => updateAgenda(i, 'topic', e.target.value)} />
-                    {form.agenda.length > 1 && (
-                      <button onClick={() => removeAgendaItem(i)} className="text-red-400 hover:text-red-600 transition-colors p-1">
-                        <span className="material-symbols-outlined text-lg">close</span>
-                      </button>
-                    )}
+              <div className="space-y-6">
+                {form.agenda.map((c, classIdx) => (
+                  <div key={classIdx} className="p-4 rounded-[var(--radius-card)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/10 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 flex items-center gap-2">
+                        <span className="text-xs font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/10 px-2 py-1 rounded">Clase</span>
+                        <input
+                          className="form-input !py-2 text-sm font-bold flex-1"
+                          placeholder="Ej: Clase 1: Introducción a la IA"
+                          value={c.title || ''}
+                          onChange={e => updateClassTitle(classIdx, e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => addBlock(classIdx)}
+                          className="btn-ghost text-xs !text-[var(--color-deep-green)] !py-1.5"
+                          title="Agregar Bloque a esta Clase"
+                        >
+                          <span className="material-symbols-outlined text-base">add_box</span> + Bloque
+                        </button>
+                        {form.agenda.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeClass(classIdx)}
+                            className="text-red-500 hover:text-red-700 transition-colors p-1"
+                            title="Eliminar Clase"
+                          >
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                          </button>
+                        )}
+                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/50 p-3 rounded-[var(--radius-premium)] border border-[var(--color-deep-green)]/5">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Hora de Inicio</label>
+                        <input
+                          type="time"
+                          className="form-input !py-1.5 !px-3 text-xs"
+                          value={c.start_time || ''}
+                          onChange={e => updateClassField(classIdx, 'start_time', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Hora de Fin</label>
+                        <input
+                          type="time"
+                          className="form-input !py-1.5 !px-3 text-xs"
+                          value={c.end_time || ''}
+                          onChange={e => updateClassField(classIdx, 'end_time', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Duración del Break (min)</label>
+                        <input
+                          type="number"
+                          placeholder="Sin break"
+                          className="form-input !py-1.5 !px-3 text-xs"
+                          value={c.break_duration || ''}
+                          onChange={e => updateClassField(classIdx, 'break_duration', e.target.value ? Number(e.target.value) : 0)}
+                          min={0}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pl-4 border-l-2 border-[var(--color-deep-green)]/10">
+                      {(c.blocks || []).map((b, blockIdx) => (
+                        <div key={blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-white border border-[var(--color-deep-green)]/5 relative group space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <input
+                              className="form-input !py-1.5 !px-3 text-xs font-semibold !w-48 bg-[var(--color-refined-gray)]/50"
+                              placeholder="Nombre (ej: Bloque 1)"
+                              value={b.title || ''}
+                              onChange={e => updateBlock(classIdx, blockIdx, 'title', e.target.value)}
+                            />
+                            {c.blocks.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeBlock(classIdx, blockIdx)}
+                                className="text-red-400 hover:text-red-600 transition-colors p-1"
+                                title="Eliminar Bloque"
+                              >
+                                <span className="material-symbols-outlined text-base">close</span>
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Descripción General (Visible al cliente)</label>
+                            <textarea
+                              className="form-input !py-2 !px-3 text-xs min-h-[60px]"
+                              placeholder="Qué aprenderá el cliente en este bloque..."
+                              value={b.description || ''}
+                              onChange={e => updateBlock(classIdx, blockIdx, 'description', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

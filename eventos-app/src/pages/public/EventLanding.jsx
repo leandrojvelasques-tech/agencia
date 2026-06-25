@@ -181,26 +181,71 @@ export default function EventLanding() {
         </div>
 
         {/* Agenda */}
-        {event.agenda && event.agenda.length > 0 && event.agenda[0].topic && (
+        {event.agenda && event.agenda.length > 0 && (
           <div className="card p-6 mb-8">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b border-[var(--color-deep-green)]/10 pb-2">
               <span className="material-symbols-outlined text-xl text-[var(--color-deep-green)]">list_alt</span>
-              Agenda
+              Agenda / Programa
             </h2>
-            <div className="space-y-3">
-              {event.agenda.filter(a => a.topic || a.block).map((item, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
-                  <div className="flex-shrink-0 w-full sm:w-24">
-                    <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1.5 rounded-[var(--radius-premium)] whitespace-nowrap text-center block">
-                      {item.time || '—'}
-                    </span>
+            <div className="space-y-6">
+              {/* Check if new format (nested classes/blocks) */}
+              {event.agenda[0] && 'blocks' in event.agenda[0] ? (
+                event.agenda.map((c, classIdx) => (
+                  <div key={classIdx} className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-deep-green)]/5 pb-1">
+                      <h3 className="text-md font-bold text-[var(--color-deep-green)] flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[var(--color-deep-green)]"></span>
+                        {c.title}
+                      </h3>
+                      {(c.start_time || c.end_time) && (
+                        <span className="text-xs font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 px-2.5 py-1 rounded-full flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          {c.start_time || '—'}{c.end_time ? ` - ${c.end_time}` : ''} hs
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-3 pl-4 border-l border-[var(--color-deep-green)]/10">
+                      {(c.blocks || []).map((b, blockIdx) => (
+                        <div key={blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
+                          <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-1">
+                            {b.title || `Bloque ${blockIdx + 1}`}
+                          </p>
+                          {b.description ? (
+                            <p className="text-sm text-[var(--color-dark-gray)]/85 font-medium leading-relaxed">
+                              {b.description}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-[var(--color-dark-gray)]/40 italic">Sin descripción general</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {c.break_duration > 0 && (
+                      <div className="flex items-center gap-2.5 bg-[var(--color-light-green)]/15 border border-[var(--color-deep-green)]/10 rounded-[var(--radius-premium)] p-3 my-3 ml-4">
+                        <span className="material-symbols-outlined text-md text-[var(--color-deep-green)]">coffee</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]">☕ Break / Receso ({c.break_duration} min)</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0 pt-0 sm:pt-1">
-                    {item.block && <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/60 mb-1">{item.block}</p>}
-                    <p className="text-sm text-[var(--color-dark-gray)] font-medium">{item.topic}</p>
-                  </div>
+                ))
+              ) : (
+                /* Old format fallback */
+                <div className="space-y-3">
+                  {event.agenda.filter(a => a.topic || a.block).map((item, i) => (
+                    <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
+                      <div className="flex-shrink-0 w-full sm:w-24">
+                        <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1.5 rounded-[var(--radius-premium)] whitespace-nowrap text-center block">
+                          {item.time || '—'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0 pt-0 sm:pt-1">
+                        {item.block && <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/60 mb-1">{item.block}</p>}
+                        <p className="text-sm text-[var(--color-dark-gray)] font-medium">{item.topic}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}

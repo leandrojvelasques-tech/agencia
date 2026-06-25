@@ -2,6 +2,79 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 
+const renderRegistrationInfo = (responses) => {
+  if (!responses) return null;
+  const isEc = responses.profesion === 'Profesional de Ciencias Económicas';
+  const isEst = responses.profesion === 'Estudiante Universitario';
+  const isOtro = responses.profesion === 'Otro';
+
+  const knownKeys = [
+    'profesion', 'profesion_carrera', 'esta_matriculado', 'matriculado', 'consejo',
+    'profesion_estudiante_carrera', 'profesion_estudiante_univ', 'profesion_otro'
+  ];
+  const otherResponses = Object.entries(responses).filter(([k]) => !knownKeys.includes(k));
+
+  return (
+    <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-1 shadow-sm">
+      <div>
+        <strong className="text-[var(--color-deep-green)]">Profesión/Ocupación:</strong> {responses.profesion || '—'}
+      </div>
+      {isEc && (
+        <>
+          {responses.profesion_carrera && (
+            <div>
+              <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_carrera}
+            </div>
+          )}
+          {responses.esta_matriculado && (
+            <div>
+              <strong className="text-[var(--color-deep-green)]">Matriculado:</strong> {responses.esta_matriculado}
+              {responses.esta_matriculado === 'Sí' && responses.consejo && ` en ${responses.consejo}`}
+            </div>
+          )}
+          {responses.matriculado && (
+            <div>
+              <strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {responses.matriculado}
+            </div>
+          )}
+        </>
+      )}
+      {isEst && (
+        <>
+          {responses.profesion_estudiante_carrera && (
+            <div>
+              <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_estudiante_carrera}
+            </div>
+          )}
+          {responses.profesion_estudiante_univ && (
+            <div>
+              <strong className="text-[var(--color-deep-green)]">Universidad:</strong> {responses.profesion_estudiante_univ}
+            </div>
+          )}
+        </>
+      )}
+      {isOtro && responses.profesion_otro && (
+        <div>
+          <strong className="text-[var(--color-deep-green)]">Detalle:</strong> {responses.profesion_otro}
+        </div>
+      )}
+      {otherResponses.length > 0 && (
+        <div className="mt-1 pt-1 border-t border-[var(--color-deep-green)]/10 space-y-0.5">
+          {otherResponses.map(([label, val]) => {
+            if (val === undefined || val === null || val === '') return null;
+            const dispVal = typeof val === 'boolean' ? (val ? 'Sí' : 'No') : val;
+            return (
+              <div key={label}>
+                <strong className="text-[var(--color-deep-green)]">{label}:</strong> {dispVal}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function EventParticipants() {
   const { id } = useParams()
   const { getEventById, fetchEventData, registrations, addParticipantManual, updateParticipantManual, deleteRegistration, isLoading } = useStore()
@@ -11,6 +84,11 @@ export default function EventParticipants() {
   const [editingParticipant, setEditingParticipant] = useState(null)
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
   const [search, setSearch] = useState('')
+
+  // Tab State
+  const searchParams = new URLSearchParams(window.location.search)
+  const initialTab = searchParams.get('tab') === 'survey' ? 'survey' : 'list'
+  const [activeTab, setActiveTab] = useState(initialTab)
 
   useEffect(() => {
     async function loadData() {
@@ -80,8 +158,61 @@ export default function EventParticipants() {
     }
   }
 
+  // Calculate survey statistics
+  const surveyQuestions = event.has_survey ? event.survey_questions || [] : []
+  const surveyStats = {}
+  
+  if (event.has_survey && surveyQuestions.length > 0) {
+    surveyQuestions.forEach(q => {
+      const counts = {}
+      registrations.forEach(r => {
+        const ans = r.survey_responses?.[q.label]
+        const displayAns = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : (ans || 'Sin responder')
+        counts[displayAns] = (counts[displayAns] || 0) + 1
+      })
+      surveyStats[q.label] = counts
+    })
+  }
+
+  // Export survey/registration data to CSV
+  const exportToCSV = () => {
+    if (registrations.length === 0) return
+
+    const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Modalidad', 'Fecha Registro']
+    surveyQuestions.forEach(q => headers.push(q.label))
+
+    const rows = registrations.map(r => {
+      const row = [
+        r.participants?.first_name || '',
+        r.participants?.last_name || '',
+        r.participants?.email || '',
+        r.participants?.phone || '',
+        r.attendance_mode || '',
+        r.registered_at ? format(new Date(r.registered_at), "yyyy-MM-dd HH:mm", { locale: es }) : ''
+      ]
+
+      surveyQuestions.forEach(q => {
+        const ans = r.survey_responses?.[q.label]
+        const displayAns = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : (ans || '')
+        row.push(displayAns)
+      })
+
+      return row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',')
+    })
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `inscriptos_${event.slug || 'evento'}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2">
           <span className="material-symbols-outlined text-xl">arrow_back</span>
@@ -90,108 +221,214 @@ export default function EventParticipants() {
           <h1 className="text-2xl font-extrabold tracking-tight">Participantes</h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {registrations.length} inscriptos</p>
         </div>
-        <button onClick={handleOpenAdd} className="btn-primary">
-          <span className="material-symbols-outlined text-lg">person_add</span>
-          <span className="hidden sm:inline">Agregar</span>
+        <div className="flex items-center gap-2">
+          {activeTab === 'survey' && surveyQuestions.length > 0 && (
+            <button onClick={exportToCSV} className="btn-secondary">
+              <span className="material-symbols-outlined text-lg">download</span>
+              <span className="hidden sm:inline">Exportar CSV</span>
+            </button>
+          )}
+          <button onClick={handleOpenAdd} className="btn-primary">
+            <span className="material-symbols-outlined text-lg">person_add</span>
+            <span className="hidden sm:inline">Agregar</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-[var(--color-deep-green)]/8 mb-6">
+        <button
+          onClick={() => setActiveTab('list')}
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+            activeTab === 'list'
+              ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
+              : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">groups</span>
+          Lista de Inscriptos
+        </button>
+        <button
+          onClick={() => setActiveTab('survey')}
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+            activeTab === 'survey'
+              ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
+              : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">assignment</span>
+          Respuestas de Encuesta
         </button>
       </div>
 
-      <div className="card p-4 mb-4 flex items-center gap-2">
-        <span className="material-symbols-outlined text-lg text-[var(--color-dark-gray)]/40">search</span>
-        <input type="text" className="flex-1 bg-transparent border-none outline-none text-sm font-medium placeholder:text-[var(--color-dark-gray)]/30" placeholder="Buscar participante..." value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
+      {/* Tab 1: List of Participants */}
+      {activeTab === 'list' && (
+        <>
+          <div className="card p-4 mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg text-[var(--color-dark-gray)]/40">search</span>
+            <input 
+              type="text" 
+              className="flex-1 bg-transparent border-none outline-none text-sm font-medium placeholder:text-[var(--color-dark-gray)]/30" 
+              placeholder="Buscar participante..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+          </div>
 
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Modalidad</th>
-                <th>Origen</th>
-                <th className="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
-              ) : filtered.map(r => (
-                <tr key={r.id}>
-                  <td className="font-semibold text-[var(--color-dark-gray)]">
-                    <div className="flex flex-col">
-                      <span>{r.participants?.first_name} {r.participants?.last_name}</span>
-                      <span className={`text-[10px] uppercase tracking-wider font-bold ${r.status === 'confirmed' ? 'text-green-600' : r.status === 'cancelled' ? 'text-red-500' : 'text-amber-500'}`}>
-                        {r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}
-                      </span>
-                      {r.survey_responses && (
-                        <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-1 shadow-sm">
-                          {r.survey_responses.matriculado || r.survey_responses.profesion || r.survey_responses.empleo ? (
-                            <>
-                              {r.survey_responses.matriculado && <div><strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {r.survey_responses.matriculado}{r.survey_responses.consejo ? ` (${r.survey_responses.consejo})` : ''}</div>}
-                              {r.survey_responses.profesion && (
-                                <div><strong className="text-[var(--color-deep-green)]">Profesión:</strong> {r.survey_responses.profesion}
-                                  {r.survey_responses.profesion === 'Estudiante Universitario' && r.survey_responses.profesion_estudiante_carrera && ` (${r.survey_responses.profesion_estudiante_carrera} en ${r.survey_responses.profesion_estudiante_univ})`}
-                                  {r.survey_responses.profesion === 'Otro' && r.survey_responses.profesion_otro && ` (${r.survey_responses.profesion_otro})`}
-                                </div>
-                              )}
-                              {r.survey_responses.empleo && (
-                                <div><strong className="text-[var(--color-deep-green)]">Empleo:</strong> {r.survey_responses.empleo}
-                                  {r.survey_responses.empleo === 'Dependiente' && r.survey_responses.empleo_empresa && ` (${r.survey_responses.empleo_empresa})`}
-                                  {r.survey_responses.empleo === 'Independiente' && r.survey_responses.empleo_actividad && ` (${r.survey_responses.empleo_actividad})`}
-                                  {r.survey_responses.empleo === 'Otro' && r.survey_responses.empleo_otro && ` (${r.survey_responses.empleo_otro})`}
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            Object.entries(r.survey_responses).map(([label, val]) => {
-                              if (val === undefined || val === null || val === '') return null
-                              const dispVal = typeof val === 'boolean' ? (val ? 'Sí' : 'No') : val
-                              return (
-                                <div key={label}>
-                                  <strong className="text-[var(--color-deep-green)]">{label}:</strong> {dispVal}
-                                </div>
-                              )
-                            })
-                          )}
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Modalidad</th>
+                    <th>Origen</th>
+                    <th className="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
+                  ) : filtered.map(r => (
+                    <tr key={r.id}>
+                      <td className="font-semibold text-[var(--color-dark-gray)]">
+                        <div className="flex flex-col">
+                          <span>{r.participants?.first_name} {r.participants?.last_name}</span>
+                          <span className={`text-[10px] uppercase tracking-wider font-bold ${r.status === 'confirmed' ? 'text-green-600' : r.status === 'cancelled' ? 'text-red-500' : 'text-amber-500'}`}>
+                            {r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}
+                          </span>
+                          {renderRegistrationInfo(r.survey_responses)}
                         </div>
+                      </td>
+                      <td>
+                        {r.participants?.email ? (
+                          <span className="text-sm">{r.participants.email}</span>
+                        ) : (
+                          <span className="text-xs text-amber-600 font-semibold flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">warning</span>
+                            Sin email
+                          </span>
+                        )}
+                      </td>
+                      <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
+                      <td>
+                        <span className={`badge ${r.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
+                          {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
+                        </span>
+                      </td>
+                      <td><span className="badge badge-gray">{r.source === 'manual' ? 'Manual' : 'Autoinscripción'}</span></td>
+                      <td className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => handleOpenEdit(r)} className="btn-ghost !p-1.5 text-blue-600 hover:bg-blue-50" title="Editar">
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                          </button>
+                          <button onClick={() => handleDelete(r)} className="btn-ghost !p-1.5 text-red-600 hover:bg-red-50" title="Eliminar">
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Tab 2: Survey Answers */}
+      {activeTab === 'survey' && (
+        <div className="space-y-6">
+          {!event.has_survey || surveyQuestions.length === 0 ? (
+            <div className="card p-8 text-center bg-gray-50/50 border-dashed border border-gray-200">
+              <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/20 mb-2 block">assignment_late</span>
+              <p className="text-sm font-semibold text-[var(--color-dark-gray)]/60">Este evento no cuenta con una encuesta de inscripción.</p>
+              <p className="text-xs text-[var(--color-dark-gray)]/40 mt-1">Habilita la encuesta al editar el evento y agrega preguntas personalizadas.</p>
+            </div>
+          ) : (
+            <>
+              {/* Stats Aggregates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {surveyQuestions.map(q => {
+                  const counts = surveyStats[q.label] || {}
+                  const total = Object.values(counts).reduce((a, b) => a + b, 0)
+                  return (
+                    <div key={q.label} className="card p-5">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 border-b border-[var(--color-deep-green)]/5 pb-2">
+                        {q.label}
+                      </h3>
+                      <div className="space-y-2">
+                        {Object.entries(counts).map(([ans, count]) => {
+                          const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                          return (
+                            <div key={ans} className="flex items-center justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                              <span className="truncate max-w-[70%]" title={ans}>{ans}</span>
+                              <div className="flex items-center gap-2 flex-1 justify-end ml-4">
+                                <div className="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden hidden sm:block">
+                                  <div className="bg-[var(--color-deep-green)] h-full" style={{ width: `${pct}%` }} />
+                                </div>
+                                <span className="bg-[var(--color-deep-green)]/8 text-[var(--color-deep-green)] px-2 py-0.5 rounded font-bold whitespace-nowrap">
+                                  {count} ({pct}%)
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Matrix Table */}
+              <div className="card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Participante</th>
+                        <th>Email</th>
+                        {surveyQuestions.map(q => (
+                          <th key={q.label} className="whitespace-nowrap min-w-[150px]">{q.label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {registrations.length === 0 ? (
+                        <tr>
+                          <td colSpan={2 + surveyQuestions.length} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">
+                            No hay respuestas registradas
+                          </td>
+                        </tr>
+                      ) : (
+                        registrations.map(r => (
+                          <tr key={r.id}>
+                            <td className="font-semibold text-[var(--color-dark-gray)]">
+                              {r.participants?.first_name} {r.participants?.last_name}
+                            </td>
+                            <td className="text-xs text-[var(--color-dark-gray)]/60">{r.participants?.email || '—'}</td>
+                            {surveyQuestions.map(q => {
+                              const ans = r.survey_responses?.[q.label]
+                              const displayAns = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : (ans || '—')
+                              return (
+                                <td key={q.label} className="text-sm font-medium text-[var(--color-dark-gray)]/80">
+                                  {displayAns}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    {r.participants?.email ? (
-                      <span className="text-sm">{r.participants.email}</span>
-                    ) : (
-                      <span className="text-xs text-amber-600 font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">warning</span>
-                        Sin email
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
-                  <td>
-                    <span className={`badge ${r.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
-                      {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
-                    </span>
-                  </td>
-                  <td><span className="badge badge-gray">{r.source === 'manual' ? 'Manual' : 'Autoinscripción'}</span></td>
-                  <td className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => handleOpenEdit(r)} className="btn-ghost !p-1.5 text-blue-600 hover:bg-blue-50" title="Editar">
-                        <span className="material-symbols-outlined text-lg">edit</span>
-                      </button>
-                      <button onClick={() => handleDelete(r)} className="btn-ghost !p-1.5 text-red-600 hover:bg-red-50" title="Eliminar">
-                        <span className="material-symbols-outlined text-lg">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Add/Edit Participant Modal */}
       {showModal && (
