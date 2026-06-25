@@ -222,8 +222,11 @@ export default function EventLanding() {
                     </div>
                     {c.break_duration > 0 && (
                       <div className="flex items-center gap-2.5 bg-[var(--color-light-green)]/15 border border-[var(--color-deep-green)]/10 rounded-[var(--radius-premium)] p-3 my-3 ml-4">
-                        <span className="material-symbols-outlined text-md text-[var(--color-deep-green)]">coffee</span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]">☕ Break / Receso ({c.break_duration} min)</span>
+                        <div className="flex items-center gap-1.5 text-[var(--color-deep-green)]">
+                          <span className="material-symbols-outlined text-md">coffee</span>
+                          <span className="text-base select-none">🧉 🥐</span>
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]">Break / Receso ({c.break_duration} min)</span>
                       </div>
                     )}
                   </div>
