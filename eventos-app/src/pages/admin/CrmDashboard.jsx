@@ -50,6 +50,7 @@ export default function CrmDashboard() {
   const [clients, setClients] = useState([])
   const [selectedClientId, setSelectedClientId] = useState('')
   const [publications, setPublications] = useState([])
+  const [importantEvents, setImportantEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState('calendar') // 'calendar' | 'list'
@@ -139,8 +140,16 @@ export default function CrmDashboard() {
           .order('date', { ascending: true })
         if (error) throw error
         setPublications(data || [])
+
+        // Fetch all important events for this client
+        const { data: eventsData, error: eventsErr } = await supabase
+          .from('crm_important_events')
+          .select('*')
+          .eq('client_id', selectedClientId)
+        if (eventsErr) throw eventsErr
+        setImportantEvents(eventsData || [])
       } catch (err) {
-        console.error('Error loading publications:', err)
+        console.error('Error loading publications or events:', err)
         showToast('Error al cargar la grilla de publicaciones.', 'error')
       } finally {
         setLoading(false)
@@ -203,6 +212,44 @@ export default function CrmDashboard() {
     } catch (err) {
       console.error('Error deleting:', err)
       showToast('Error al eliminar la publicación.', 'error')
+    }
+  }
+
+  const handleAddImportantEvent = async (dateStr) => {
+    const title = window.prompt('Ingresá el nombre del evento importante o fecha clave (ej: Día del Padre, Partido de Argentina):')
+    if (!title || !title.trim()) return
+    try {
+      const { data, error } = await supabase
+        .from('crm_important_events')
+        .insert({
+          client_id: selectedClientId,
+          date: dateStr,
+          title: title.trim()
+        })
+        .select()
+      if (error) throw error
+      setImportantEvents(prev => [...prev, ...data])
+      showToast('Evento clave agregado.')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al agregar el evento clave.', 'error')
+    }
+  }
+
+  const handleDeleteImportantEvent = async (e, evtId) => {
+    e.stopPropagation()
+    if (!window.confirm('¿Deseas eliminar este evento clave?')) return
+    try {
+      const { error } = await supabase
+        .from('crm_important_events')
+        .delete()
+        .eq('id', evtId)
+      if (error) throw error
+      setImportantEvents(prev => prev.filter(x => x.id !== evtId))
+      showToast('Evento clave eliminado.')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al eliminar el evento clave.', 'error')
     }
   }
 
@@ -638,6 +685,7 @@ export default function CrmDashboard() {
 
                   const dateStr = getLocalDateString(dayDate)
                   const dayPubs = publications.filter(p => p.date === dateStr)
+                  const dayEvents = importantEvents.filter(e => e.date === dateStr)
                   const isToday = new Date().toDateString() === dayDate.toDateString()
 
                   return (
@@ -678,15 +726,52 @@ export default function CrmDashboard() {
                           </span>
                         </span>
                         
-                        {/* Quick create button visible on hover */}
-                        <Link
-                          to={`/admin/crm/publicacion/nueva?client_id=${selectedClientId}&date=${dateStr}`}
-                          className="opacity-0 group-hover/day:opacity-100 p-1 text-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/5 rounded transition-all"
-                          title="Programar post en este día"
-                        >
-                          <span className="material-symbols-outlined text-base">add</span>
-                        </Link>
+                        {/* Quick actions visible on hover */}
+                        <div className="opacity-0 group-hover/day:opacity-100 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleAddImportantEvent(dateStr); }}
+                            className="p-1 text-amber-600 hover:bg-amber-50 rounded transition-all"
+                            title="Agregar evento clave / fecha importante"
+                          >
+                            <span className="material-symbols-outlined text-base">star</span>
+                          </button>
+                          <Link
+                            to={`/admin/crm/publicacion/nueva?client_id=${selectedClientId}&date=${dateStr}`}
+                            className="p-1 text-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/5 rounded transition-all"
+                            title="Programar post en este día"
+                          >
+                            <span className="material-symbols-outlined text-base">add</span>
+                          </Link>
+                        </div>
                       </div>
+
+                      {/* Important events list */}
+                      {dayEvents.length > 0 && (
+                        <div className="space-y-1 mb-2">
+                          {dayEvents.map(evt => (
+                            <div 
+                              key={evt.id} 
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/60 rounded-premium px-1.5 py-1 flex items-center justify-between gap-1 group/evt select-none"
+                              title="Fecha clave / Evento importante"
+                            >
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className="material-symbols-outlined text-[12px] text-amber-600 flex-shrink-0">star</span>
+                                <span className="truncate">{evt.title}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteImportantEvent(e, evt.id)}
+                                className="opacity-0 group-hover/evt:opacity-100 text-amber-600 hover:text-amber-950 p-0.5 rounded transition-all leading-none"
+                                title="Eliminar evento clave"
+                              >
+                                <span className="material-symbols-outlined text-[12px]">close</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       {/* Day contents */}
                       <div className="flex-1 flex flex-col gap-1.5 mt-2">

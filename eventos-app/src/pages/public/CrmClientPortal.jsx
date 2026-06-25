@@ -9,6 +9,7 @@ export default function CrmClientPortal() {
   // State
   const [client, setClient] = useState(null)
   const [publications, setPublications] = useState([])
+  const [importantEvents, setImportantEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorState, setErrorState] = useState(null)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -91,6 +92,15 @@ export default function CrmClientPortal() {
 
         if (pErr) throw pErr
         setPublications(pubs || [])
+
+        // Fetch client important events
+        const { data: eventsData, error: eventsErr } = await supabase
+          .from('crm_important_events')
+          .select('*')
+          .eq('client_id', clientData.id)
+        
+        if (eventsErr) throw eventsErr
+        setImportantEvents(eventsData || [])
       } catch (err) {
         console.error('Error loading client portal:', err)
         setErrorState('Hubo un inconveniente al cargar el calendario. Por favor, intentá nuevamente.')
@@ -575,6 +585,7 @@ export default function CrmClientPortal() {
 
               const dateStr = getLocalDateString(dayDate)
               const dayPubs = publications.filter(p => p.date === dateStr)
+              const dayEvents = importantEvents.filter(e => e.date === dateStr)
               const isToday = new Date().toDateString() === dayDate.toDateString()
 
               return (
@@ -599,6 +610,22 @@ export default function CrmClientPortal() {
                       </span>
                     </span>
                   </div>
+
+                  {/* Important events list */}
+                  {dayEvents.length > 0 && (
+                    <div className="space-y-1 mb-2">
+                      {dayEvents.map(evt => (
+                        <div 
+                          key={evt.id} 
+                          className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/60 rounded-premium px-1.5 py-1 flex items-center gap-1 select-none text-left"
+                          title="Fecha clave / Evento importante"
+                        >
+                          <span className="material-symbols-outlined text-[12px] text-amber-600 flex-shrink-0">star</span>
+                          <span className="truncate">{evt.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Day items list */}
                   <div className="flex-1 flex flex-col gap-1.5 mt-2">

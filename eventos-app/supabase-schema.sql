@@ -321,3 +321,23 @@ CREATE POLICY "Public read crm_clients" ON crm_clients
 CREATE POLICY "Public read crm_publications" ON crm_publications 
     FOR SELECT USING (true);
 
+-- =====================================================
+-- 11. CRM IMPORTANT EVENTS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS crm_important_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID REFERENCES crm_clients(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    title TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE crm_important_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin full access crm_important_events" ON crm_important_events 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Public read crm_important_events" ON crm_important_events 
+    FOR SELECT USING (true);
+
+
