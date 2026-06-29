@@ -266,6 +266,19 @@ export default function EventLanding() {
           </div>
         )}
 
+        {/* Requisitos del Evento */}
+        {event.requirements && (
+          <div className="card p-6 mb-8 bg-amber-50/60 border border-amber-300/30">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-amber-700">
+              <span className="material-symbols-outlined text-xl">checklist</span>
+              Requisitos
+            </h2>
+            <div className="text-sm text-[var(--color-dark-gray)]/85 font-medium leading-relaxed whitespace-pre-line">
+              {event.requirements}
+            </div>
+          </div>
+        )}
+
         {/* Presentaciones y Clases del Evento (Comentado temporalmente por solicitud del usuario)
         {presentations.length > 0 && (
           <div className="card p-6 mb-8 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15">

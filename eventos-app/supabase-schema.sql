@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS events (
     agenda JSONB DEFAULT '[]'::jsonb,
     banner_url TEXT,
     registration_mode TEXT NOT NULL DEFAULT 'both' CHECK (registration_mode IN ('manual', 'self', 'both')),
+    requirements TEXT,
     status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'in_progress', 'completed', 'cancelled')),
     max_capacity INTEGER,
     private_link_token TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),

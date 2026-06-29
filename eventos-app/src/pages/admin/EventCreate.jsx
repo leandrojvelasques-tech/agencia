@@ -44,6 +44,7 @@ export default function EventCreate() {
     subtitle: '',
     description_short: '',
     description_extended: '',
+    requirements: '',
     coordinator: 'Leandro Velasques',
     organizer: '',
     event_date: '',
@@ -67,6 +68,73 @@ export default function EventCreate() {
   const [uploadError, setUploadError] = useState('')
   const [uploadingMaterialIndex, setUploadingMaterialIndex] = useState(null)
   const fileInputRef = useRef(null)
+
+  const [associatedPresentations, setAssociatedPresentations] = useState([])
+  const [availablePresentations, setAvailablePresentations] = useState([])
+
+  useEffect(() => {
+    if (id) {
+      async function loadPresentations() {
+        try {
+          // Fetch associated presentations
+          const { data: assoc } = await supabase
+            .from('crm_presentations')
+            .select('id, title')
+            .eq('event_id', id)
+          setAssociatedPresentations(assoc || [])
+
+          // Fetch available (unlinked) presentations
+          const { data: avail } = await supabase
+            .from('crm_presentations')
+            .select('id, title')
+            .is('event_id', null)
+          setAvailablePresentations(avail || [])
+        } catch (err) {
+          console.error('Error loading presentations:', err)
+        }
+      }
+      loadPresentations()
+    }
+  }, [id])
+
+  const handleLinkPresentation = async (presId) => {
+    if (!presId) return
+    try {
+      const { error } = await supabase
+        .from('crm_presentations')
+        .update({ event_id: id })
+        .eq('id', presId)
+      if (error) throw error
+      
+      const linked = availablePresentations.find(p => p.id === presId)
+      if (linked) {
+        setAssociatedPresentations(prev => [...prev, linked])
+        setAvailablePresentations(prev => prev.filter(p => p.id !== presId))
+      }
+    } catch (err) {
+      console.error('Error linking presentation:', err)
+      alert('Error al asociar la presentación.')
+    }
+  }
+
+  const handleUnlinkPresentation = async (presId) => {
+    try {
+      const { error } = await supabase
+        .from('crm_presentations')
+        .update({ event_id: null })
+        .eq('id', presId)
+      if (error) throw error
+      
+      const unlinked = associatedPresentations.find(p => p.id === presId)
+      if (unlinked) {
+        setAvailablePresentations(prev => [...prev, unlinked])
+        setAssociatedPresentations(prev => prev.filter(p => p.id !== presId))
+      }
+    } catch (err) {
+      console.error('Error unlinking presentation:', err)
+      alert('Error al desasociar la presentación.')
+    }
+  }
 
   const { saveMaterials } = useStore()
 
@@ -537,6 +605,11 @@ export default function EventCreate() {
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Descripción extendida <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
               <textarea className="form-input min-h-[120px]" placeholder="Detalle completo del evento" value={form.description_extended} onChange={e => update('description_extended', e.target.value)} />
             </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Requisitos <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <textarea className="form-input min-h-[100px]" placeholder="Ej: Traer notebook · Exclusivo para matriculados · Conocimientos básicos de Excel" value={form.requirements || ''} onChange={e => update('requirements', e.target.value)} />
+              <p className="text-xs text-[var(--color-dark-gray)]/30 mt-1">Se muestra debajo de la agenda en la landing del evento</p>
+            </div>
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Coordinador *</label>
@@ -894,6 +967,92 @@ export default function EventCreate() {
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Associated Slide Decks / Classes */}
+            <div className="border-t border-[var(--color-deep-green)]/15 pt-6 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Clases / Diapositivas Asociadas</label>
+                  <p className="text-[10px] text-[var(--color-dark-gray)]/45">Asociá diapositivas 16:9 creadas en el Presentador a este evento.</p>
+                </div>
+                {id ? (
+                  <Link
+                    to={`/admin/crm/presentaciones/nueva?event_id=${id}`}
+                    target="_blank"
+                    className="btn-ghost text-xs !text-[var(--color-deep-green)] flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-base">add</span> Nueva Diapositiva
+                  </Link>
+                ) : null}
+              </div>
+
+              {!id ? (
+                <div className="p-6 text-center border border-dashed border-[var(--color-deep-green)]/10 rounded-[var(--radius-card)] bg-gray-50/50">
+                  <p className="text-xs text-[var(--color-dark-gray)]/45 italic">Primero debés crear y guardar el evento para poder asociarle diapositivas.</p>
+                </div>
+              ) : associatedPresentations.length === 0 ? (
+                <div className="p-8 text-center border border-dashed border-[var(--color-deep-green)]/10 rounded-[var(--radius-card)] bg-gray-50/50">
+                  <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/10 mb-2 block">present_to_all</span>
+                  <p className="text-xs font-semibold text-[var(--color-dark-gray)]/40">No hay diapositivas de clase asociadas a este evento</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {associatedPresentations.map((pres) => (
+                    <div key={pres.id} className="p-3.5 rounded-[var(--radius-premium)] bg-white border border-gray-200 shadow-sm flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[var(--color-deep-green)]">slideshow</span>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--color-dark-gray)]">{pres.title}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/admin/crm/presentaciones/${pres.id}/editar`}
+                          target="_blank"
+                          className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-250 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-xs leading-none">edit</span>
+                          Editar
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleUnlinkPresentation(pres.id)}
+                          className="px-2.5 py-1.5 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold rounded-lg flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-xs leading-none">link_off</span>
+                          Desvincular
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {id && availablePresentations.length > 0 && (
+                <div className="mt-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/50 border border-[var(--color-deep-green)]/10 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[var(--color-deep-green)] text-lg">link</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-[var(--color-dark-gray)]">Vincular presentación existente</p>
+                  </div>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleLinkPresentation(e.target.value)
+                        e.target.value = ''
+                      }
+                    }}
+                    className="bg-white border border-gray-300 rounded-lg text-xs font-semibold px-3 py-1.5 text-gray-600 outline-none focus:border-[var(--color-deep-green)] cursor-pointer"
+                  >
+                    <option value="">-- Seleccionar para vincular --</option>
+                    {availablePresentations.map(pres => (
+                      <option key={pres.id} value={pres.id}>
+                        {pres.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>
