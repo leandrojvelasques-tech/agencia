@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { supabase } from '../../lib/supabase'
 
 const ensureAbsoluteUrl = (url) => {
   if (!url) return ''
@@ -15,12 +16,24 @@ export default function EventLanding() {
   const { getEventBySlug } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [presentations, setPresentations] = useState([])
 
   useEffect(() => {
     async function loadEvent() {
       setLoading(true)
       const data = await getEventBySlug(slug)
       setEvent(data)
+      if (data) {
+        try {
+          const { data: presData } = await supabase
+            .from('crm_presentations')
+            .select('id, title')
+            .eq('event_id', data.id)
+          setPresentations(presData || [])
+        } catch (err) {
+          console.error('Error loading presentations:', err)
+        }
+      }
       setLoading(false)
     }
     loadEvent()
@@ -252,6 +265,40 @@ export default function EventLanding() {
             </div>
           </div>
         )}
+
+        {/* Presentaciones y Clases del Evento (Comentado temporalmente por solicitud del usuario)
+        {presentations.length > 0 && (
+          <div className="card p-6 mb-8 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
+              <span className="material-symbols-outlined text-xl">slideshow</span>
+              Clases y Diapositivas
+            </h2>
+            <div className="space-y-3">
+              {presentations.map((pres) => (
+                <Link
+                  key={pres.id}
+                  to={`/presentacion/${pres.id}`}
+                  target="_blank"
+                  className="flex items-center gap-4 p-3.5 rounded-[var(--radius-premium)] bg-white hover:bg-white transition-all border border-transparent hover:border-[var(--color-deep-green)]/10 group shadow-sm animate-fade-in"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] group-hover:bg-[var(--color-deep-green)] group-hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-xl">present_to_all</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-[var(--color-dark-gray)]">{pres.title}</p>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-dark-gray)]/45">
+                      Ver diapositivas de clase
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined text-[var(--color-dark-gray)]/20 group-hover:text-[var(--color-deep-green)] group-hover:translate-x-1 transition-all">
+                    arrow_forward
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        */}
 
         {/* Materiales */}
         {materials.length > 0 && (
