@@ -426,13 +426,26 @@ export default function CrmDashboard() {
   startDayIndex = startDayIndex === 0 ? 6 : startDayIndex - 1 // Shift so Monday is 0, Sunday is 6
 
   const daysArray = []
-  // Fill leading empty days
-  for (let i = 0; i < startDayIndex; i++) {
-    daysArray.push(null)
+  // Fill leading days of the previous month
+  const prevMonthDate = new Date(year, month - 1, 1)
+  const prevYear = prevMonthDate.getFullYear()
+  const prevMonthVal = prevMonthDate.getMonth()
+  const prevTotalDays = new Date(prevYear, prevMonthVal + 1, 0).getDate()
+  
+  for (let i = startDayIndex - 1; i >= 0; i--) {
+    daysArray.push(new Date(prevYear, prevMonthVal, prevTotalDays - i))
   }
   // Fill month days
   for (let i = 1; i <= totalDays; i++) {
     daysArray.push(new Date(year, month, i))
+  }
+  // Fill trailing days of the next month to complete the last week
+  const nextMonthDate = new Date(year, month + 1, 1)
+  const nextYear = nextMonthDate.getFullYear()
+  const nextMonthVal = nextMonthDate.getMonth()
+  const remainingCells = (7 - (daysArray.length % 7)) % 7
+  for (let i = 1; i <= remainingCells; i++) {
+    daysArray.push(new Date(nextYear, nextMonthVal, i))
   }
 
   const getPublicationState = (pub) => {
@@ -827,7 +840,9 @@ export default function CrmDashboard() {
                           handleMovePublication(pubId, dateStr);
                         }
                       }}
-                      className={`min-h-[140px] bg-white border rounded-premium p-3 flex flex-col justify-between hover:shadow-md transition-all group/day relative ${
+                      className={`min-h-[140px] border rounded-premium p-3 flex flex-col justify-between hover:shadow-md hover:z-20 transition-all group/day relative ${
+                        dayDate.getMonth() === month ? 'bg-white' : 'bg-[var(--color-refined-gray)]/45'
+                      } ${
                         isToday ? 'border-[var(--color-deep-green)] ring-1 ring-[var(--color-deep-green)]/20' : 'border-gray-200'
                       } ${
                         draggedOverDate === dateStr ? 'bg-emerald-50/50 border-emerald-400 scale-[1.01] z-10 shadow-md' : ''
@@ -835,7 +850,11 @@ export default function CrmDashboard() {
                     >
                       <div className="flex justify-between items-center mb-2">
                         <span className={`text-xs font-bold flex items-center gap-1 ${
-                          isToday ? 'bg-[var(--color-deep-green)] text-white px-2 py-0.5 rounded-full shadow-sm' : 'text-[var(--color-dark-gray)]'
+                          isToday 
+                            ? 'bg-[var(--color-deep-green)] text-white px-2 py-0.5 rounded-full shadow-sm' 
+                            : dayDate.getMonth() === month 
+                              ? 'text-[var(--color-dark-gray)]' 
+                              : 'text-[var(--color-dark-gray)]/40'
                         }`}>
                           <span>{dayDate.getDate()}</span>
                           <span className={`text-[9px] ${isToday ? 'text-white/80' : 'text-gray-400'} font-semibold`}>
@@ -915,6 +934,8 @@ export default function CrmDashboard() {
                                 } else if (dayOfWeek === 6 || dayOfWeek === 0) {
                                   tooltipAlignClass = 'right-0 left-auto translate-x-0'
                                 }
+                                const isFirstRow = idx < 7
+                                const tooltipPositionClass = isFirstRow ? 'top-full mt-2' : 'bottom-full mb-2'
 
                                 return (
                                   <div
@@ -924,7 +945,7 @@ export default function CrmDashboard() {
                                       e.dataTransfer.setData('text/plain', pub.id);
                                     }}
                                     onClick={() => navigate(`/admin/crm/publicacion/${pub.id}/editar`)}
-                                    className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${cardHoverBorderClass} ${textClass} active:scale-95 active:opacity-50`}
+                                    className={`p-2 border rounded text-left cursor-pointer transition-all hover:-translate-y-0.5 hover:z-50 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${cardHoverBorderClass} ${textClass} active:scale-95 active:opacity-50`}
                                   >
                                     <div className="flex items-center justify-between mb-1">
                                       <div className="flex items-center gap-1 flex-wrap">
@@ -959,7 +980,7 @@ export default function CrmDashboard() {
                                     )}
 
                                     {/* Hover preview tooltip popover */}
-                                    <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 bottom-full mb-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
+                                    <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 ${tooltipPositionClass} bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
                                       isPost ? 'w-96' : 'w-64'
                                     }`}>
                                       {pub.graphic_url && (() => {

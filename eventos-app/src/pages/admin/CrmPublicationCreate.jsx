@@ -322,7 +322,7 @@ export default function CrmPublicationCreate() {
     const payload = {
       client_id: clientId,
       type,
-      post_format: type === 'post' ? postFormat : 'placa',
+      post_format: postFormat,
       dimensions,
       territorio: type === 'post' ? (territorio || null) : null,
       title,
@@ -645,11 +645,11 @@ export default function CrmPublicationCreate() {
               </div>
             </div>
 
-            {/* Format Refinement selector (only if Post is selected, and not reel/carrousel) */}
-            {(type === 'post' && postFormat !== 'reel' && postFormat !== 'carrousel') && (
+            {/* Format Refinement selector */}
+            {((type === 'post' && postFormat !== 'reel' && postFormat !== 'carrousel') || type === 'story') && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-2">
-                  Formato de Post
+                  {type === 'story' ? 'Formato de Historia' : 'Formato de Post'}
                 </label>
                 <select
                   value={postFormat}
@@ -657,7 +657,7 @@ export default function CrmPublicationCreate() {
                   className="form-input border border-gray-200 bg-white"
                 >
                   <option value="placa">Placa Única (Imagen)</option>
-                  <option value="video">Video Feed</option>
+                  <option value="video">{type === 'story' ? 'Video Story' : 'Video Feed'}</option>
                   <option value="otro">Otro</option>
                 </select>
               </div>
