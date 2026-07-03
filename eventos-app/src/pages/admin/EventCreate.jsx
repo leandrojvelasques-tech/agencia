@@ -393,8 +393,8 @@ export default function EventCreate() {
             setExistingEvent(updated)
             setForm({
               ...updated,
-              max_capacity_presencial: updated.max_capacity_presencial || '',
-              max_capacity_virtual: updated.max_capacity_virtual || '',
+              max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
+              max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
               is_public: updated.status === 'published' || updated.status === 'in_progress',
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
@@ -468,8 +468,8 @@ export default function EventCreate() {
           setExistingEvent(updated)
           setForm({
             ...updated,
-            max_capacity_presencial: updated.max_capacity_presencial || '',
-            max_capacity_virtual: updated.max_capacity_virtual || '',
+            max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
+            max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
             is_public: updated.status === 'published' || updated.status === 'in_progress',
             show_on_home: updated.show_on_home || false,
             live_link: updated.live_link || '',
