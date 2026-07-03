@@ -518,8 +518,6 @@ export default function EventRegister() {
 
             {(survey.profesion === 'Profesional de Ciencias Económicas' || cat === 'matriculado_chubut' || cat === 'matriculado_otro') && (
               <div className="space-y-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 animate-fade-in">
-                {survey.profesion === 'Profesional de Ciencias Económicas' && (
-                  <>
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
                         Carrera *
@@ -537,23 +535,23 @@ export default function EventRegister() {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                        ¿Está matriculado? *
-                      </label>
-                      <select
-                        className="form-input text-sm"
-                        value={survey.esta_matriculado || ''}
-                        onChange={e => setSurvey(s => ({ ...s, esta_matriculado: e.target.value, matriculado: '', consejo: '' }))}
-                        required
-                      >
-                        <option value="">Selecciona una opción</option>
-                        <option value="Sí">Sí</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
-                  </>
-                )}
+                    {survey.profesion === 'Profesional de Ciencias Económicas' && (
+                      <div>
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                          ¿Está matriculado? *
+                        </label>
+                        <select
+                          className="form-input text-sm"
+                          value={survey.esta_matriculado || ''}
+                          onChange={e => setSurvey(s => ({ ...s, esta_matriculado: e.target.value, matriculado: '', consejo: '' }))}
+                          required
+                        >
+                          <option value="">Selecciona una opción</option>
+                          <option value="Sí">Sí</option>
+                          <option value="No">No</option>
+                        </select>
+                      </div>
+                    )}
 
                  {survey.esta_matriculado === 'Sí' && (
                   <div className="space-y-4 animate-fade-in">
