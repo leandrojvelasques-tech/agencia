@@ -155,7 +155,7 @@ export default function EventParticipantsPublic() {
   const exportToCSV = () => {
     if (participants.length === 0) return
 
-    const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Modalidad', 'Fecha Registro']
+    const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Modalidad', 'Fecha Elegida', 'Fecha Registro']
     surveyQuestions.forEach(q => headers.push(q.label))
 
     const rows = participants.map(p => {
@@ -165,6 +165,7 @@ export default function EventParticipantsPublic() {
         p.email || '',
         p.phone || '',
         p.attendance_mode || '',
+        p.selected_date || '',
         p.registered_at ? format(new Date(p.registered_at), "yyyy-MM-dd HH:mm", { locale: es }) : ''
       ]
 
@@ -257,6 +258,65 @@ export default function EventParticipantsPublic() {
           </div>
         </div>
 
+        {event && (
+          <div className="card p-5 mb-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] mb-3 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-base">analytics</span>
+              Cupos Libres y Distribución por Día
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {(event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]).map(dateStr => {
+                const parts = dateStr.split('-');
+                const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                const formatted = format(d, "EEEE d 'de' MMMM", { locale: es });
+                const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                
+                const pCount = participants.filter(p => p.attendance_mode === 'presencial' && (p.selected_date === dateStr || (!p.selected_date && dateStr === event.event_date))).length;
+                const vCount = participants.filter(p => p.attendance_mode === 'virtual' && (p.selected_date === dateStr || (!p.selected_date && dateStr === event.event_date))).length;
+                
+                const pLimit = event.max_capacity_presencial;
+                const vLimit = event.max_capacity_virtual;
+                
+                const pLeft = pLimit !== null && pLimit !== undefined && pLimit !== '' ? Number(pLimit) - pCount : null;
+                const vLeft = vLimit !== null && vLimit !== undefined && vLimit !== '' ? Number(vLimit) - vCount : null;
+                
+                const hasPresencialEnabled = pLimit !== 0 && pLimit !== '0';
+                const hasVirtualEnabled = vLimit !== 0 && vLimit !== '0';
+                
+                return (
+                  <div key={dateStr} className="bg-white p-4 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm space-y-2">
+                    <p className="text-xs font-bold text-[var(--color-dark-gray)] flex items-center gap-1">
+                      <span className="material-symbols-outlined text-base text-[var(--color-deep-green)]">calendar_today</span>
+                      {capitalized}
+                    </p>
+                    <div className="text-xs space-y-1.5 pt-1">
+                      {hasPresencialEnabled && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[var(--color-dark-gray)]/60">🏫 Presencial:</span>
+                          <span className="font-semibold text-[var(--color-dark-gray)]">
+                            {pCount} inscriptos {pLimit ? `(Quedan ${pLeft} libres)` : '(Sin límite)'}
+                          </span>
+                        </div>
+                      )}
+                      {hasVirtualEnabled && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[var(--color-dark-gray)]/60">💻 Virtual:</span>
+                          <span className="font-semibold text-[var(--color-dark-gray)]">
+                            {vCount} inscriptos {vLimit ? `(Quedan ${vLeft} libres)` : '(Sin límite)'}
+                          </span>
+                        </div>
+                      )}
+                      {!hasPresencialEnabled && !hasVirtualEnabled && (
+                        <p className="text-[10px] text-red-500 font-medium">Ambas modalidades deshabilitadas</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-6 border-b border-[var(--color-deep-green)]/8 mb-6">
           <button
@@ -334,9 +394,16 @@ export default function EventParticipantsPublic() {
                         </td>
                         <td className="text-sm text-[var(--color-dark-gray)]/70">{p.phone || '—'}</td>
                         <td>
-                          <span className={`badge ${p.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
-                            {p.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className={`badge ${p.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'} w-fit`}>
+                              {p.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
+                            </span>
+                            {p.selected_date && (
+                              <span className="text-[10px] font-semibold text-[var(--color-dark-gray)]/50">
+                                📅 {format(new Date(p.selected_date + 'T12:00:00'), "d 'de' MMMM", { locale: es })}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="text-xs text-[var(--color-dark-gray)]/50">
                           {p.registered_at ? format(new Date(p.registered_at), "d/M/yyyy HH:mm 'hs'", { locale: es }) : '—'}

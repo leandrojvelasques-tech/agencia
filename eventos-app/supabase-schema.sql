@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS events (
     max_capacity INTEGER,
     private_link_token TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
     attendance_link_token TEXT,
+    prices JSONB DEFAULT '[]'::jsonb,
+    payment_methods TEXT,
+    contact_info TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -106,6 +109,7 @@ CREATE TABLE IF NOT EXISTS registrations (
     registered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     confirmation_sent BOOLEAN NOT NULL DEFAULT FALSE,
     unique_token TEXT NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
+    payment_receipt_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -269,6 +273,7 @@ CREATE TABLE IF NOT EXISTS crm_clients (
     name TEXT NOT NULL,
     logo_url TEXT,
     share_token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+    general_tasks TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -288,10 +293,11 @@ CREATE TABLE IF NOT EXISTS crm_publications (
     type TEXT NOT NULL CHECK (type IN ('post', 'story')),
     post_format TEXT NOT NULL CHECK (post_format IN ('carrousel', 'reel', 'placa', 'video', 'otro')),
     territorio TEXT,
-    dimensions TEXT CHECK (dimensions IN ('1080x1080', '1080x1920', '1080x1350')),
+    dimensions TEXT CHECK (dimensions IN ('1080x1080', '1080x1920', '1080x1350', '1080x1440')),
     title TEXT NOT NULL,
     copy TEXT,
     graphic_url TEXT,
+    raw_assets TEXT NOT NULL DEFAULT '',
     status_piece TEXT NOT NULL DEFAULT 'draft',
     status_post TEXT NOT NULL DEFAULT 'scheduled' CHECK (status_post IN ('scheduled', 'published', 'draft')),
     notes TEXT,

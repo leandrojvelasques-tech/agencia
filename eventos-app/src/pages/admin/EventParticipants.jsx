@@ -115,7 +115,8 @@ export default function EventParticipants() {
 
   const handleOpenAdd = () => {
     setEditingParticipant(null)
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
+    const dates = event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]
+    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial', selected_date: dates[0] || '' })
     setShowModal(true)
   }
 
@@ -128,7 +129,8 @@ export default function EventParticipants() {
       email: p.email || '',
       phone: p.phone || '',
       notes: p.notes || '',
-      attendance_mode: reg.attendance_mode || 'presencial'
+      attendance_mode: reg.attendance_mode || 'presencial',
+      selected_date: reg.selected_date || ''
     })
     setShowModal(true)
   }
@@ -178,7 +180,7 @@ export default function EventParticipants() {
   const exportToCSV = () => {
     if (registrations.length === 0) return
 
-    const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Modalidad', 'Fecha Registro']
+    const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Fecha Elegida', 'Modalidad', 'Fecha Registro']
     surveyQuestions.forEach(q => headers.push(q.label))
 
     const rows = registrations.map(r => {
@@ -187,6 +189,7 @@ export default function EventParticipants() {
         r.participants?.last_name || '',
         r.participants?.email || '',
         r.participants?.phone || '',
+        r.selected_date || event.event_date || '',
         r.attendance_mode || '',
         r.registered_at ? format(new Date(r.registered_at), "yyyy-MM-dd HH:mm", { locale: es }) : ''
       ]
@@ -283,6 +286,7 @@ export default function EventParticipants() {
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>Teléfono</th>
+                    <th>Fecha Elegida</th>
                     <th>Modalidad</th>
                     <th>Origen</th>
                     <th className="text-center">Acciones</th>
@@ -313,6 +317,7 @@ export default function EventParticipants() {
                         )}
                       </td>
                       <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
+                      <td className="text-sm font-semibold text-[var(--color-dark-gray)]/85">{r.selected_date || event.event_date || '—'}</td>
                       <td>
                         <span className={`badge ${r.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
                           {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
@@ -461,6 +466,16 @@ export default function EventParticipants() {
                   <option value="virtual">💻 Virtual</option>
                 </select>
               </div>
+              {event.offered_dates && event.offered_dates.length > 0 && (
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Fecha Seleccionada *</label>
+                  <select className="form-input !py-2.5" value={form.selected_date} onChange={e => setForm(p => ({ ...p, selected_date: e.target.value }))}>
+                    {event.offered_dates.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Observaciones</label>
                 <textarea className="form-input !py-2.5 min-h-[60px]" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />

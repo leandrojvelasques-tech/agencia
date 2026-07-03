@@ -28,6 +28,19 @@ export default function CrmDashboard() {
     return urls.length > 0 ? urls[0] : ''
   }
 
+  const getDisplayThumbnail = (pub) => {
+    if (!pub) return ''
+    if (pub.graphic_url) {
+      const urls = getGraphicUrls(pub.graphic_url)
+      if (urls.length > 0) return urls[0]
+    }
+    if (pub.raw_assets) {
+      const rawUrls = getGraphicUrls(pub.raw_assets)
+      if (rawUrls.length > 0) return rawUrls[0]
+    }
+    return ''
+  }
+
   const isVideoFile = (url, format) => {
     if (!url) return false
     const cleanUrl = url.split('?')[0].toLowerCase()
@@ -54,6 +67,13 @@ export default function CrmDashboard() {
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState('calendar') // 'calendar' | 'list'
+  
+  // States for unified tasks view
+  const [showAllClientsTasks, setShowAllClientsTasks] = useState(false)
+  const [allPublications, setAllPublications] = useState([])
+  const [loadingAllPubs, setLoadingAllPubs] = useState(false)
+  const [selectedPubIdForNewTask, setSelectedPubIdForNewTask] = useState('')
+  const [newTaskDescription, setNewTaskDescription] = useState('')
   
   // Filter states for list view
   const [filterType, setFilterType] = useState('all')
@@ -118,7 +138,10 @@ export default function CrmDashboard() {
           .order('name')
         if (error) throw error
         setClients(data || [])
-        if (data && data.length > 0) {
+        const savedClientId = localStorage.getItem('crm_selected_client_id')
+        if (savedClientId && data.some(c => c.id === savedClientId)) {
+          setSelectedClientId(savedClientId)
+        } else if (data && data.length > 0) {
           setSelectedClientId(data[0].id)
         }
       } catch (err) {
@@ -162,6 +185,29 @@ export default function CrmDashboard() {
     loadPublications()
   }, [selectedClientId])
 
+  const loadAllPublications = async () => {
+    setLoadingAllPubs(true)
+    try {
+      const { data, error } = await supabase
+        .from('crm_publications')
+        .select('*, crm_clients(name, logo_url)')
+        .order('date', { ascending: true })
+      if (error) throw error
+      setAllPublications(data || [])
+    } catch (err) {
+      console.error('Error fetching all publications:', err)
+      showToast('Error al cargar tareas de todos los clientes.', 'error')
+    } finally {
+      setLoadingAllPubs(false)
+    }
+  }
+
+  useEffect(() => {
+    if (showAllClientsTasks) {
+      loadAllPublications()
+    }
+  }, [showAllClientsTasks])
+
   const selectedClient = clients.find(c => c.id === selectedClientId)
 
   const showToast = (message, type = 'success') => {
@@ -172,7 +218,13 @@ export default function CrmDashboard() {
   // Copy share portal link
   const copyShareLink = () => {
     if (!selectedClient) return
-    const url = `${window.location.origin}/crm/cliente/${selectedClient.share_token}`
+    const clientSlug = selectedClient.name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove accents
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+    const url = `${window.location.origin}/crm/cliente/${selectedClient.share_token}/${clientSlug}`
     navigator.clipboard.writeText(url)
     showToast('¡Enlace del cliente copiado al portapapeles!')
   }
@@ -355,7 +407,133 @@ export default function CrmDashboard() {
     }
   }
 
-  const handleCompleteTask = async (pub, taskText) => {
+  const getCompiledTasks = () => {
+    const compiled = []
+
+    if (showAllClientsTasks) {
+      // 1. Publication tasks
+      allPublications.forEach(pub => {
+        if (pub.status_piece &&
+            !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+            pub.status_piece.trim() !== '') {
+          const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
+          tasksList.forEach(task => {
+            compiled.push({
+              id: `${pub.id}-${task}`,
+              type: 'publication',
+              pub: pub,
+              clientName: pub.crm_clients ? (Array.isArray(pub.crm_clients) ? pub.crm_clients[0]?.name : pub.crm_clients.name) : 'Sin Cliente',
+              clientLogo: pub.crm_clients ? (Array.isArray(pub.crm_clients) ? pub.crm_clients[0]?.logo_url : pub.crm_clients.logo_url) : null,
+              description: task,
+              title: pub.title,
+              pubType: pub.type,
+              date: pub.date
+            })
+          })
+        }
+      })
+
+      // 2. General tasks
+      clients.forEach(c => {
+        if (c.general_tasks && c.general_tasks.trim() !== '') {
+          const tasksList = c.general_tasks.split('\n').filter(line => line.trim() !== '')
+          tasksList.forEach(task => {
+            compiled.push({
+              id: `general-${c.id}-${task}`,
+              type: 'general',
+              clientId: c.id,
+              clientName: c.name,
+              clientLogo: c.logo_url,
+              description: task,
+              title: 'General (Sin Publicación)',
+              pubType: 'general',
+              date: ''
+            })
+          })
+        }
+      })
+    } else {
+      // Single client mode
+      const currentClient = clients.find(c => c.id === selectedClientId)
+      
+      // 1. Publication tasks
+      publications.forEach(pub => {
+        if (pub.status_piece &&
+            !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+            pub.status_piece.trim() !== '') {
+          const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
+          tasksList.forEach(task => {
+            compiled.push({
+              id: `${pub.id}-${task}`,
+              type: 'publication',
+              pub: pub,
+              clientName: currentClient?.name || '',
+              clientLogo: currentClient?.logo_url || null,
+              description: task,
+              title: pub.title,
+              pubType: pub.type,
+              date: pub.date
+            })
+          })
+        }
+      })
+
+      // 2. General tasks
+      if (currentClient && currentClient.general_tasks && currentClient.general_tasks.trim() !== '') {
+        const tasksList = currentClient.general_tasks.split('\n').filter(line => line.trim() !== '')
+        tasksList.forEach(task => {
+          compiled.push({
+            id: `general-${currentClient.id}-${task}`,
+            type: 'general',
+            clientId: currentClient.id,
+            clientName: currentClient.name,
+            clientLogo: currentClient.logo_url,
+            description: task,
+            title: 'General (Sin Publicación)',
+            pubType: 'general',
+            date: ''
+          })
+        })
+      }
+    }
+
+    return compiled
+  }
+
+  const handleCompleteTask = async (taskItem) => {
+    if (taskItem.type === 'general') {
+      const clientId = taskItem.clientId
+      const targetClient = clients.find(c => c.id === clientId)
+      if (!targetClient) return
+
+      const currentTasks = (targetClient.general_tasks || '').split('\n').filter(line => line.trim() !== '')
+      const updatedTasks = currentTasks.filter(line => line.trim() !== taskItem.description.trim())
+      const updatedGeneralTasks = updatedTasks.join('\n')
+
+      try {
+        const { error } = await supabase
+          .from('crm_clients')
+          .update({ general_tasks: updatedGeneralTasks })
+          .eq('id', clientId)
+
+        if (error) throw error
+
+        setClients(prev => prev.map(c => {
+          if (c.id === clientId) {
+            return { ...c, general_tasks: updatedGeneralTasks }
+          }
+          return c
+        }))
+        showToast('¡Tarea completada!')
+      } catch (err) {
+        console.error('Error completing general task:', err)
+        showToast('Error al completar la tarea.', 'error')
+      }
+      return
+    }
+
+    const pub = taskItem.pub
+    const taskText = taskItem.description
     const currentTasks = pub.status_piece.split('\n').filter(line => line.trim() !== '')
     const updatedTasks = currentTasks.filter(line => line.trim() !== taskText.trim())
     const updatedStatusPiece = updatedTasks.join('\n')
@@ -374,10 +552,108 @@ export default function CrmDashboard() {
         }
         return p
       }))
+      setAllPublications(prev => prev.map(p => {
+        if (p.id === pub.id) {
+          return { ...p, status_piece: updatedStatusPiece }
+        }
+        return p
+      }))
       showToast('¡Tarea completada!')
     } catch (err) {
       console.error('Error completing task:', err)
       showToast('Error al completar la tarea.', 'error')
+    }
+  }
+
+  const handleAddTaskFromTasksView = async () => {
+    if (!selectedPubIdForNewTask) {
+      showToast('Selecciona una publicación o Tareas Generales primero.', 'warning')
+      return
+    }
+    if (!newTaskDescription.trim()) {
+      showToast('Ingresa la descripción de la tarea.', 'warning')
+      return
+    }
+
+    if (selectedPubIdForNewTask.startsWith('general-')) {
+      const clientId = selectedPubIdForNewTask.split('general-')[1]
+      const targetClient = clients.find(c => c.id === clientId)
+      if (!targetClient) {
+        showToast('No se encontró el cliente seleccionado.', 'error')
+        return
+      }
+
+      let currentTasks = []
+      if (targetClient.general_tasks) {
+        currentTasks = targetClient.general_tasks.split('\n').filter(line => line.trim() !== '')
+      }
+
+      const updatedTasks = [...currentTasks, newTaskDescription.trim()]
+      const updatedGeneralTasks = updatedTasks.join('\n')
+
+      try {
+        const { error } = await supabase
+          .from('crm_clients')
+          .update({ general_tasks: updatedGeneralTasks })
+          .eq('id', clientId)
+
+        if (error) throw error
+
+        setClients(prev => prev.map(c => {
+          if (c.id === clientId) {
+            return { ...c, general_tasks: updatedGeneralTasks }
+          }
+          return c
+        }))
+        setNewTaskDescription('')
+        showToast('¡Tarea general agregada con éxito!')
+      } catch (err) {
+        console.error('Error adding general task:', err)
+        showToast('Error al agregar la tarea general.', 'error')
+      }
+      return
+    }
+
+    let targetPub = publications.find(p => p.id === selectedPubIdForNewTask)
+    if (!targetPub && showAllClientsTasks) {
+      targetPub = allPublications.find(p => p.id === selectedPubIdForNewTask)
+    }
+
+    if (!targetPub) {
+      showToast('No se encontró la publicación seleccionada.', 'error')
+      return
+    }
+
+    let currentTasks = []
+    if (targetPub.status_piece && !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(targetPub.status_piece)) {
+      currentTasks = targetPub.status_piece.split('\n').filter(line => line.trim() !== '')
+    }
+
+    const updatedTasks = [...currentTasks, newTaskDescription.trim()]
+    const updatedStatusPiece = updatedTasks.join('\n')
+
+    try {
+      const { error } = await supabase
+        .from('crm_publications')
+        .update({ status_piece: updatedStatusPiece })
+        .eq('id', selectedPubIdForNewTask)
+
+      if (error) throw error
+
+      const updateState = prev => prev.map(p => {
+        if (p.id === selectedPubIdForNewTask) {
+          return { ...p, status_piece: updatedStatusPiece }
+        }
+        return p
+      })
+
+      setPublications(updateState)
+      setAllPublications(updateState)
+      setNewTaskDescription('')
+      showToast('¡Tarea agregada con éxito!')
+    } catch (err) {
+      console.error('Error adding task:', err)
+      showToast('Error al agregar la tarea.', 'error')
     }
   }
 
@@ -558,7 +834,10 @@ export default function CrmDashboard() {
               {clients.map(client => (
                 <button
                   key={client.id}
-                  onClick={() => setSelectedClientId(client.id)}
+                  onClick={() => {
+                    setSelectedClientId(client.id)
+                    localStorage.setItem('crm_selected_client_id', client.id)
+                  }}
                   className={`px-5 py-3 rounded-premium-btn text-sm font-bold border transition-all ${
                     selectedClientId === client.id
                       ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)] shadow-[var(--shadow-premium)]'
@@ -589,7 +868,12 @@ export default function CrmDashboard() {
                   Copiar Enlace
                 </button>
                 <a
-                  href={`/crm/cliente/${selectedClient.share_token}`}
+                  href={`/crm/cliente/${selectedClient.share_token}/${selectedClient.name
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/(^-|-$)/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
                   className="px-4 py-2 bg-[var(--color-deep-green)]/10 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 hover:bg-[var(--color-deep-green)]/20 transition-colors"
@@ -983,8 +1267,8 @@ export default function CrmDashboard() {
                                     <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 ${tooltipPositionClass} bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
                                       isPost ? 'w-96' : 'w-64'
                                     }`}>
-                                      {pub.graphic_url && (() => {
-                                        const firstUrl = getFirstGraphicUrl(pub.graphic_url)
+                                      {(pub.graphic_url || pub.raw_assets) && (() => {
+                                        const firstUrl = getDisplayThumbnail(pub)
                                         return firstUrl && (
                                           <div className={`w-full rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center ${
                                             isPost ? 'h-56' : 'h-96'
@@ -1058,7 +1342,7 @@ export default function CrmDashboard() {
                     .filter(pub => pub.type === 'post')
                     .sort((a, b) => new Date(b.date) - new Date(a.date))
                     .map(pub => {
-                      const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null;
+                      const firstUrl = getDisplayThumbnail(pub);
                       const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false;
                       
                       return (
@@ -1164,7 +1448,7 @@ export default function CrmDashboard() {
 
                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {week.pubs.map(pub => {
-                          const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null
+                          const firstUrl = getDisplayThumbnail(pub)
                           const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
                           const terrConfig = getTerritorioConfig(pub.territorio)
                           
@@ -1185,7 +1469,7 @@ export default function CrmDashboard() {
                             >
                               {/* Card Media Preview */}
                               <div className={`relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                                pub.dimensions === '1080x1920' ? 'aspect-[9/16]' : pub.dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
+                                pub.dimensions === '1080x1920' ? 'aspect-[9/16]' : pub.dimensions === '1080x1350' ? 'aspect-[4/5]' : pub.dimensions === '1080x1440' ? 'aspect-[3/4]' : 'aspect-square'
                               }`}>
                                 {firstUrl ? (
                                   isVideo ? (
@@ -1285,18 +1569,120 @@ export default function CrmDashboard() {
           ) : viewMode === 'tasks' ? (
             /* PENDING TASKS VIEW (TABLE LAYOUT) */
             <div className="p-6 space-y-6 max-w-5xl mx-auto">
-              {(() => {
-                const pubsWithTasks = publications.filter(pub => {
-                  return pub.status_piece &&
-                    !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
-                    pub.status_piece.trim() !== ''
-                })
+              {/* Header options */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-150">
+                <div className="flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showAllClientsTasks}
+                      onChange={(e) => {
+                        setShowAllClientsTasks(e.target.checked)
+                        setSelectedPubIdForNewTask('')
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-250 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-deep-green)]"></div>
+                    <span className="ml-3 text-xs font-bold text-gray-700">Ver tareas de todos los clientes</span>
+                  </label>
+                </div>
+                {showAllClientsTasks && loadingAllPubs && (
+                  <span className="text-xs text-gray-500 font-semibold animate-pulse flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                    Cargando tareas unificadas...
+                  </span>
+                )}
+              </div>
 
-                if (pubsWithTasks.length === 0) {
+              {/* Form to add a new task */}
+              <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
+                <h3 className="font-bold text-xs text-gray-800 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]">add_task</span>
+                  Nueva Tarea Pendiente
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                  <div className="md:col-span-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                      Asociar a Destino {showAllClientsTasks ? '(Todos los Clientes)' : '(Cliente Actual)'}
+                    </label>
+                    <select
+                      value={selectedPubIdForNewTask}
+                      onChange={(e) => setSelectedPubIdForNewTask(e.target.value)}
+                      className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                    >
+                      <option value="">-- Seleccionar Destino --</option>
+                      {showAllClientsTasks ? (
+                        <>
+                          <optgroup label="Tareas Generales (Por Cliente)">
+                            {clients.map(c => (
+                              <option key={`general-${c.id}`} value={`general-${c.id}`}>
+                                [{c.name}] [Tareas Generales]
+                              </option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Publicaciones">
+                            {allPublications.map(pub => {
+                              const formattedDate = pub.date.split('-').reverse().join('/')
+                              const clientName = pub.crm_clients ? `[${Array.isArray(pub.crm_clients) ? pub.crm_clients[0]?.name : pub.crm_clients.name}] ` : '';
+                              return (
+                                <option key={pub.id} value={pub.id}>
+                                  {clientName}[{pub.type === 'post' ? 'Feed' : 'Story'}] {pub.title} ({formattedDate})
+                                </option>
+                              )
+                            })}
+                          </optgroup>
+                        </>
+                      ) : (
+                        <>
+                          <option value={`general-${selectedClientId}`}>[Tareas Generales del Cliente]</option>
+                          <optgroup label="Publicaciones">
+                            {publications.map(pub => {
+                              const formattedDate = pub.date.split('-').reverse().join('/')
+                              return (
+                                <option key={pub.id} value={pub.id}>
+                                  [{pub.type === 'post' ? 'Feed' : 'Story'}] {pub.title} ({formattedDate})
+                                </option>
+                              )
+                            })}
+                          </optgroup>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div className="md:col-span-1">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Descripción de la Tarea</label>
+                    <input
+                      type="text"
+                      value={newTaskDescription}
+                      onChange={(e) => setNewTaskDescription(e.target.value)}
+                      placeholder="Ej: Corregir paleta de color, cambiar foto..."
+                      className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-[var(--color-deep-green)]"
+                    />
+                  </div>
+                  <div className="md:col-span-1">
+                    <button
+                      onClick={handleAddTaskFromTasksView}
+                      className="w-full bg-[var(--color-deep-green)] text-white hover:bg-[var(--color-deep-green)]/90 px-4 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-base">add</span>
+                      Agregar Tarea
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {(() => {
+                const compiledTasks = getCompiledTasks()
+
+                if (compiledTasks.length === 0) {
                   return (
                     <div className="py-20 text-center text-dark-gray/40">
                       <span className="material-symbols-outlined text-4xl block mb-2">checklist_rtl</span>
-                      <p className="text-sm font-bold">¡Buen trabajo! No tenés ninguna tarea pendiente de diseño/material para este cliente.</p>
+                      <p className="text-sm font-bold">
+                        {showAllClientsTasks 
+                          ? "¡Buen trabajo! No tenés ninguna tarea pendiente para ningún cliente."
+                          : "¡Buen trabajo! No tenés ninguna tarea pendiente para este cliente."}
+                      </p>
                     </div>
                   )
                 }
@@ -1307,52 +1693,66 @@ export default function CrmDashboard() {
                       <thead>
                         <tr>
                           <th className="w-12 text-center"></th>
+                          {showAllClientsTasks && <th>Cliente</th>}
                           <th>Tarea Pendiente</th>
-                          <th>Publicación</th>
+                          <th>Publicación / Destino</th>
                           <th>Fecha</th>
                           <th className="text-right w-24">Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {pubsWithTasks.flatMap(pub => {
-                          const tasksList = pub.status_piece.split('\n').filter(line => line.trim() !== '')
-                          return tasksList.map((task, idx) => {
-                            const formattedDate = pub.date.split('-').reverse().join('/')
-                            return (
-                              <tr key={`${pub.id}-${idx}`} className="hover:bg-gray-50/50">
-                                <td className="text-center py-3">
-                                  <input
-                                    type="checkbox"
-                                    onChange={() => handleCompleteTask(pub, task)}
-                                    className="w-4 h-4 text-[var(--color-deep-green)] bg-white border-gray-300 rounded focus:ring-[var(--color-deep-green)] transition-all cursor-pointer"
-                                  />
-                                </td>
-                                <td className="font-semibold text-xs text-gray-800 py-3">
-                                  {task}
-                                </td>
-                                <td className="py-3">
+                        {compiledTasks.map((taskItem) => {
+                          const formattedDate = taskItem.date ? taskItem.date.split('-').reverse().join('/') : '-'
+                          return (
+                            <tr key={taskItem.id} className="hover:bg-gray-50/50">
+                              <td className="text-center py-3">
+                                <input
+                                  type="checkbox"
+                                  onChange={() => handleCompleteTask(taskItem)}
+                                  className="w-4 h-4 text-[var(--color-deep-green)] bg-white border-gray-300 rounded focus:ring-[var(--color-deep-green)] transition-all cursor-pointer"
+                                />
+                              </td>
+                              {showAllClientsTasks && (
+                                <td className="py-3 font-semibold text-xs text-gray-800">
                                   <div className="flex items-center gap-2">
-                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
-                                      pub.type === 'post' ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                                    }`}>
-                                      {pub.type === 'post' ? 'Feed' : 'Story'}
-                                    </span>
-                                    <span className="font-bold text-xs text-gray-900 leading-snug line-clamp-1">{pub.title}</span>
+                                    {taskItem.clientLogo && (
+                                      <img src={taskItem.clientLogo} alt={taskItem.clientName} className="w-5 h-5 rounded-full object-contain border border-gray-100" />
+                                    )}
+                                    <span className="font-bold text-xs text-gray-900">{taskItem.clientName || 'Sin Cliente'}</span>
                                   </div>
                                 </td>
-                                <td className="text-xs text-gray-500 font-semibold py-3">{formattedDate}</td>
-                                <td className="text-right py-3 pr-4">
+                              )}
+                              <td className="font-semibold text-xs text-gray-800 py-3">
+                                {taskItem.description}
+                              </td>
+                              <td className="py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
+                                    taskItem.pubType === 'post' ? 'bg-emerald-100 text-emerald-800' :
+                                    taskItem.pubType === 'story' ? 'bg-pink-100 text-pink-800' : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {taskItem.pubType === 'post' ? 'Feed' :
+                                     taskItem.pubType === 'story' ? 'Story' : 'General'}
+                                  </span>
+                                  <span className="font-bold text-xs text-gray-900 leading-snug line-clamp-1">{taskItem.title}</span>
+                                </div>
+                              </td>
+                              <td className="text-xs text-gray-500 font-semibold py-3">{formattedDate}</td>
+                              <td className="text-right py-3 pr-4">
+                                {taskItem.type === 'publication' ? (
                                   <Link
-                                    to={`/admin/crm/publicacion/${pub.id}/editar`}
+                                    to={`/admin/crm/publicacion/${taskItem.pub.id}/editar`}
                                     className="inline-flex p-1.5 hover:bg-gray-150 rounded text-blue-600 transition-colors"
                                     title="Editar publicación"
                                   >
                                     <span className="material-symbols-outlined text-lg leading-none">edit</span>
                                   </Link>
-                                </td>
-                              </tr>
-                            )
-                          })
+                                ) : (
+                                  <span className="text-[10px] text-gray-400 font-semibold px-2 py-1 bg-gray-50 border border-gray-100 rounded">Sin enlace</span>
+                                )}
+                              </td>
+                            </tr>
+                          )
                         })}
                       </tbody>
                     </table>

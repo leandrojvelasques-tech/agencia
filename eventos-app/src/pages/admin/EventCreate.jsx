@@ -33,8 +33,9 @@ const normalizeAgenda = (agenda) => {
 export default function EventCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getEventById, createEvent, updateEvent } = useStore()
+  const { getEventById, createEvent, updateEvent, agendaTemplates, fetchAgendaTemplates, createAgendaTemplate } = useStore()
   const [existingEvent, setExistingEvent] = useState(null)
+  const [showSaveTemplateForm, setShowSaveTemplateForm] = useState(false)
   const [loading, setLoading] = useState(id ? true : false)
 
   const [step, setStep] = useState(0)
@@ -48,6 +49,7 @@ export default function EventCreate() {
     coordinator: 'Leandro Velasques',
     organizer: '',
     event_date: '',
+    offered_dates: [],
     start_time: '',
     duration_minutes: 120,
     agenda: [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }],
@@ -55,12 +57,16 @@ export default function EventCreate() {
     max_capacity_presencial: '',
     max_capacity_virtual: '',
     banner_url: '',
+    video_url: '',
     is_public: true,
     show_on_home: false,
     live_link: '',
     event_materials: [],
     has_survey: false,
     survey_questions: [],
+    prices: [],
+    payment_methods: '',
+    contact_info: '',
   })
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -71,6 +77,10 @@ export default function EventCreate() {
 
   const [associatedPresentations, setAssociatedPresentations] = useState([])
   const [availablePresentations, setAvailablePresentations] = useState([])
+
+  useEffect(() => {
+    fetchAgendaTemplates()
+  }, [])
 
   useEffect(() => {
     if (id) {
@@ -176,14 +186,20 @@ export default function EventCreate() {
           setForm({
             ...data,
             agenda: normalizeAgenda(data.agenda),
-            max_capacity_presencial: data.max_capacity_presencial || '',
-            max_capacity_virtual: data.max_capacity_virtual || '',
+            registration_mode: data.registration_mode || 'both',
+            max_capacity_presencial: (data.max_capacity_presencial !== null && data.max_capacity_presencial !== undefined) ? data.max_capacity_presencial : '',
+            max_capacity_virtual: (data.max_capacity_virtual !== null && data.max_capacity_virtual !== undefined) ? data.max_capacity_virtual : '',
             is_public: data.status === 'published' || data.status === 'in_progress',
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
             event_materials: data.event_materials || [],
             has_survey: data.has_survey || false,
             survey_questions: data.survey_questions || [],
+            offered_dates: data.offered_dates && data.offered_dates.length > 0 ? data.offered_dates : (data.event_date ? [data.event_date] : []),
+            video_url: data.video_url || '',
+            prices: data.prices || [],
+            payment_methods: data.payment_methods || '',
+            contact_info: data.contact_info || '',
           })
         }
         setLoading(false)
@@ -262,6 +278,21 @@ export default function EventCreate() {
     }))
   }
 
+  const addPriceAlternative = () => setForm(prev => ({
+    ...prev,
+    prices: [...(prev.prices || []), { concept: '', price: '' }]
+  }))
+
+  const removePriceAlternative = (idx) => setForm(prev => ({
+    ...prev,
+    prices: (prev.prices || []).filter((_, i) => i !== idx)
+  }))
+
+  const updatePriceAlternative = (idx, field, value) => setForm(prev => ({
+    ...prev,
+    prices: (prev.prices || []).map((item, i) => i === idx ? { ...item, [field]: value } : item)
+  }))
+
   const handleMaterialFileUpload = async (i, file) => {
     if (!file) return
     setUploadingMaterialIndex(i)
@@ -295,15 +326,18 @@ export default function EventCreate() {
       updated_at: ___,
       event_stats: ____, 
       is_public,
-      max_capacity, // ignore old property
+      max_capacity,
       ...eventData 
     } = form
     
+    const firstDate = form.offered_dates && form.offered_dates.length > 0 ? form.offered_dates[0] : form.event_date;
+    
     const data = { 
       ...eventData, 
+      event_date: firstDate,
       status: is_public ? 'published' : 'draft',
-      max_capacity_presencial: eventData.max_capacity_presencial ? Number(eventData.max_capacity_presencial) : null,
-      max_capacity_virtual: eventData.max_capacity_virtual ? Number(eventData.max_capacity_virtual) : null
+      max_capacity_presencial: (eventData.max_capacity_presencial || eventData.max_capacity_presencial === 0 || eventData.max_capacity_presencial === '0') ? Number(eventData.max_capacity_presencial) : null,
+      max_capacity_virtual: (eventData.max_capacity_virtual || eventData.max_capacity_virtual === 0 || eventData.max_capacity_virtual === '0') ? Number(eventData.max_capacity_virtual) : null
     }
     
     console.log('Datos preparados para enviar a Supabase:', data)
@@ -365,6 +399,7 @@ export default function EventCreate() {
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
               event_materials: updated.event_materials || [],
+              offered_dates: updated.offered_dates && updated.offered_dates.length > 0 ? updated.offered_dates : (updated.event_date ? [updated.event_date] : []),
             })
             setSaved(true)
             setTimeout(() => setSaved(false), 3000)
@@ -473,7 +508,19 @@ export default function EventCreate() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {existingEvent && (
+            <a
+              href={`/evento/${existingEvent.slug}/inscripcion?preview=true`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-secondary !py-2.5 !px-5 shadow-lg shadow-[var(--color-dark-gray)]/5 flex items-center gap-1.5"
+              title="Abre la página pública de inscripción en modo vista previa (incluso en borrador)"
+            >
+              <span className="material-symbols-outlined text-lg">how_to_reg</span>
+              Ver Inscripción
+            </a>
+          )}
           <button
             type="button"
             onClick={handlePreview}
@@ -535,21 +582,6 @@ export default function EventCreate() {
       <div className="card p-6 lg:p-8 animate-fade-in" key={step}>
         {step === 0 && (
           <div className="space-y-5">
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Tipo de evento *</label>
-              <div className="flex gap-3">
-                {['charla', 'taller'].map(t => (
-                  <button key={t} onClick={() => update('type', t)}
-                    className={`flex-1 py-3 rounded-[var(--radius-premium)] text-sm font-bold border-2 transition-all ${
-                      form.type === t
-                        ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)] text-white'
-                        : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)] hover:border-[var(--color-deep-green)]/30'
-                    }`}>
-                    {t === 'charla' ? '🎤 Charla' : '🛠 Taller'}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Visibilidad en la web *</label>
               <div className="flex gap-3">
@@ -687,16 +719,82 @@ export default function EventCreate() {
                 />
               </div>
             </div>
+
+            {/* Video URL Upload/Paste Field */}
+            <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Video explicativo del curso <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <p className="text-xs text-[var(--color-dark-gray)]/50 mb-3">Soporta enlaces de YouTube, Vimeo, Google Drive o enlaces directos a archivos de video MP4.</p>
+              
+              <input
+                className="form-input text-sm"
+                placeholder="Ej: https://www.youtube.com/watch?v=... o URL de video directa"
+                value={form.video_url || ''}
+                onChange={(e) => update('video_url', e.target.value)}
+              />
+
+              {form.video_url && (
+                <div className="mt-4 p-4 bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 rounded-xl text-xs font-semibold text-[var(--color-dark-gray)]">
+                  🎥 Video configurado. Se mostrará de forma destacada en la landing page del evento.
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {step === 1 && (
           <div className="space-y-5">
             <div className="grid sm:grid-cols-3 gap-5">
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Fecha *</label>
-                <input type="date" className="form-input" value={form.event_date} onChange={e => update('event_date', e.target.value)} />
+              <div className="sm:col-span-3 border-b border-[var(--color-deep-green)]/8 pb-4 mb-2">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Días / Fechas del Evento *</label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <input type="date" id="new_event_date" className="form-input !w-auto" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('new_event_date');
+                      const val = input?.value;
+                      if (val) {
+                        const currentDates = form.offered_dates || [];
+                        if (!currentDates.includes(val)) {
+                          const newDates = [...currentDates, val].sort();
+                          update('offered_dates', newDates);
+                          update('event_date', newDates[0]);
+                        }
+                        if (input) input.value = '';
+                      }
+                    }}
+                    className="btn-secondary !py-2 !px-4"
+                  >
+                    Agregar Fecha
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {(form.offered_dates || []).map(d => (
+                    <span key={d} className="flex items-center gap-1.5 bg-[var(--color-deep-green)]/10 text-[var(--color-deep-green)] font-bold text-xs px-3 py-1.5 rounded-full">
+                      <span className="material-symbols-outlined text-xs">calendar_today</span>
+                      {d}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newDates = (form.offered_dates || []).filter(date => date !== d);
+                          update('offered_dates', newDates);
+                          update('event_date', newDates.length > 0 ? newDates[0] : '');
+                        }}
+                        className="hover:text-red-600 transition-colors ml-1 font-bold text-base"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  {(!form.offered_dates || form.offered_dates.length === 0) && (
+                    <span className="text-xs text-red-500 font-semibold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs animate-pulse">warning</span>
+                      Debes agregar al menos una fecha para el evento.
+                    </span>
+                  )}
+                </div>
               </div>
+
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Hora de inicio *</label>
                 <input type="time" className="form-input" value={form.start_time} onChange={e => update('start_time', e.target.value)} />
@@ -724,6 +822,123 @@ export default function EventCreate() {
                   <span className="material-symbols-outlined text-base">add</span> Nueva Clase
                 </button>
               </div>
+
+              {/* Controles de Plantillas de Agenda */}
+              <div className="bg-[var(--color-refined-gray)]/45 p-4 rounded-xl border border-[var(--color-deep-green)]/10 mb-5 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm">history_edu</span> Cargar Plantilla Predefinida
+                    </p>
+                    <div className="flex gap-2">
+                      <select
+                        id="select-agenda-template"
+                        className="form-input !py-1.5 text-xs flex-1 bg-white"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>Seleccione una plantilla...</option>
+                        {agendaTemplates.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const select = document.getElementById('select-agenda-template');
+                          const tId = select?.value;
+                          if (tId) {
+                            const template = agendaTemplates.find(t => t.id === tId);
+                            if (template && window.confirm(`¿Reemplazar la agenda actual con la plantilla "${template.name}"?`)) {
+                              update('agenda', JSON.parse(JSON.stringify(template.agenda || [])));
+                            }
+                          } else {
+                            alert('Por favor seleccione una plantilla primero.');
+                          }
+                        }}
+                        className="btn-secondary !py-1.5 !px-3 !text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-sm">download</span> Aplicar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sm:border-l border-[var(--color-deep-green)]/10 sm:pl-4 flex flex-col justify-end">
+                    <p className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-1.5">Guardar Agenda Actual</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowSaveTemplateForm(prev => !prev)}
+                      className="btn-secondary !py-1.5 !px-3 !text-xs flex items-center gap-1 self-start cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-sm font-bold">save</span> Guardar como Plantilla
+                    </button>
+                  </div>
+                </div>
+
+                {showSaveTemplateForm && (
+                  <div className="bg-white p-4 rounded-lg border border-[var(--color-deep-green)]/10 flex flex-col sm:flex-row gap-3 items-end animate-fade-in mt-3">
+                    <div className="flex-1 w-full">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 mb-1">Nombre de la Plantilla *</label>
+                      <input
+                        type="text"
+                        id="new-template-name"
+                        placeholder="Ej. Taller de IA introductorio"
+                        className="form-input !py-1.5 text-xs w-full bg-gray-50/50"
+                      />
+                    </div>
+                    <div className="flex-1 w-full">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 mb-1">Descripción corta (opcional)</label>
+                      <input
+                        type="text"
+                        id="new-template-desc"
+                        placeholder="Ej. Programa básico del taller"
+                        className="form-input !py-1.5 text-xs w-full bg-gray-50/50"
+                      />
+                    </div>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const nameInput = document.getElementById('new-template-name');
+                          const descInput = document.getElementById('new-template-desc');
+                          const name = nameInput?.value?.trim();
+                          const desc = descInput?.value?.trim() || '';
+                          
+                          if (!name) {
+                            alert('Por favor ingrese un nombre para la plantilla.');
+                            return;
+                          }
+                          
+                          const result = await createAgendaTemplate({
+                            name,
+                            description: desc,
+                            agenda: form.agenda
+                          });
+                          
+                          if (result.success) {
+                            alert(`Plantilla "${name}" guardada con éxito.`);
+                            setShowSaveTemplateForm(false);
+                            if (nameInput) nameInput.value = '';
+                            if (descInput) descInput.value = '';
+                          } else {
+                            alert('Error al guardar la plantilla: ' + (result.error?.message || 'Error desconocido'));
+                          }
+                        }}
+                        className="btn-primary !py-1.5 !px-3 !text-xs flex-1 sm:flex-none cursor-pointer"
+                      >
+                        Confirmar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowSaveTemplateForm(false)}
+                        className="btn-secondary !py-1.5 !px-3 !text-xs flex-1 sm:flex-none cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-6">
                 {form.agenda.map((c, classIdx) => (
                   <div key={classIdx} className="p-4 rounded-[var(--radius-card)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/10 space-y-4">
@@ -795,7 +1010,7 @@ export default function EventCreate() {
                         <div key={blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-white border border-[var(--color-deep-green)]/5 relative group space-y-2">
                           <div className="flex items-center justify-between gap-2">
                             <input
-                              className="form-input !py-1.5 !px-3 text-xs font-semibold !w-48 bg-[var(--color-refined-gray)]/50"
+                              className="form-input !py-2.5 !px-3 text-sm font-semibold w-full bg-[var(--color-refined-gray)]/50"
                               placeholder="Nombre (ej: Bloque 1)"
                               value={b.title || ''}
                               onChange={e => updateBlock(classIdx, blockIdx, 'title', e.target.value)}
@@ -815,7 +1030,7 @@ export default function EventCreate() {
                           <div className="space-y-1">
                             <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Descripción General (Visible al cliente)</label>
                             <textarea
-                              className="form-input !py-2 !px-3 text-xs min-h-[60px]"
+                              className="form-input !py-3 !px-4 text-sm min-h-[200px]"
                               placeholder="Qué aprenderá el cliente en este bloque..."
                               value={b.description || ''}
                               onChange={e => updateBlock(classIdx, blockIdx, 'description', e.target.value)}
@@ -833,37 +1048,197 @@ export default function EventCreate() {
 
         {step === 2 && (
           <div className="space-y-5">
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Modalidad de inscripción *</label>
-              <div className="space-y-2">
-                {[
-                  { value: 'manual', label: 'Solo carga manual', desc: 'Solo el admin carga participantes' },
-                  { value: 'self', label: 'Solo autoinscripción', desc: 'Participantes se inscriben por link privado' },
-                  { value: 'both', label: 'Ambas modalidades', desc: 'Autoinscripción + carga manual' },
-                ].map(opt => (
-                  <label key={opt.value} className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
-                    form.registration_mode === opt.value
-                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
-                      : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
-                  }`}>
-                    <input type="radio" name="reg_mode" value={opt.value} checked={form.registration_mode === opt.value} onChange={e => update('registration_mode', e.target.value)} className="mt-1 accent-[var(--color-deep-green)]" />
+            {/* Modalities Enable/Disable and Capacity */}
+            <div className="space-y-4 pt-2 border-t border-[var(--color-deep-green)]/8">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Modalidades del Evento</label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Presencial Modality toggle and capacity */}
+                <div className="p-4 rounded-xl border border-[var(--color-deep-green)]/10 bg-white space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">{opt.label}</p>
-                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">{opt.desc}</p>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">Modalidad Presencial</p>
+                      <p className="text-[10px] text-[var(--color-dark-gray)]/50">Habilita inscripciones físicas en el lugar</p>
                     </div>
-                  </label>
-                ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const isCurrentlyEnabled = form.max_capacity_presencial !== 0 && form.max_capacity_presencial !== '0';
+                        if (isCurrentlyEnabled) {
+                          update('max_capacity_presencial', 0); // Deshabilitar
+                        } else {
+                          update('max_capacity_presencial', ''); // Habilitar sin limite
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                        form.max_capacity_presencial !== 0 && form.max_capacity_presencial !== '0'
+                          ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                          : 'bg-gray-100 text-gray-500 border-gray-300'
+                      }`}
+                    >
+                      {form.max_capacity_presencial !== 0 && form.max_capacity_presencial !== '0' ? 'Habilitado' : 'Deshabilitado'}
+                    </button>
+                  </div>
+
+                  {form.max_capacity_presencial !== 0 && form.max_capacity_presencial !== '0' && (
+                    <div className="animate-fade-in pt-2 border-t border-[var(--color-refined-gray)]">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2.5 block">
+                        Cupo Máximo Presencial
+                      </label>
+                      <input
+                        type="number"
+                        className="form-input w-full !py-2.5 !px-3.5 text-sm"
+                        placeholder="Sin límite de cupo (vacío)"
+                        value={form.max_capacity_presencial === 0 ? '' : form.max_capacity_presencial}
+                        onChange={e => update('max_capacity_presencial', e.target.value === '' ? '' : Number(e.target.value))}
+                        min={1}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Virtual Modality toggle and capacity */}
+                <div className="p-4 rounded-xl border border-[var(--color-deep-green)]/10 bg-white space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">Modalidad Virtual</p>
+                      <p className="text-[10px] text-[var(--color-dark-gray)]/50">Habilita inscripciones virtuales online</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const isCurrentlyEnabled = form.max_capacity_virtual !== 0 && form.max_capacity_virtual !== '0';
+                        if (isCurrentlyEnabled) {
+                          update('max_capacity_virtual', 0); // Deshabilitar
+                        } else {
+                          update('max_capacity_virtual', ''); // Habilitar sin limite
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                        form.max_capacity_virtual !== 0 && form.max_capacity_virtual !== '0'
+                          ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                          : 'bg-gray-100 text-gray-500 border-gray-300'
+                      }`}
+                    >
+                      {form.max_capacity_virtual !== 0 && form.max_capacity_virtual !== '0' ? 'Habilitado' : 'Deshabilitado'}
+                    </button>
+                  </div>
+
+                  {form.max_capacity_virtual !== 0 && form.max_capacity_virtual !== '0' && (
+                    <div className="animate-fade-in pt-2 border-t border-[var(--color-refined-gray)]">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2.5 block">
+                        Cupo Máximo Virtual
+                      </label>
+                      <input
+                        type="number"
+                        className="form-input w-full !py-2.5 !px-3.5 text-sm"
+                        placeholder="Sin límite de cupo (vacío)"
+                        value={form.max_capacity_virtual === 0 ? '' : form.max_capacity_virtual}
+                        onChange={e => update('max_capacity_virtual', e.target.value === '' ? '' : Number(e.target.value))}
+                        min={1}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad Presencial <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
-                <input type="number" className="form-input w-full" placeholder="Ej: 20" value={form.max_capacity_presencial} onChange={e => update('max_capacity_presencial', e.target.value)} min={1} />
+
+            {/* Configuración de Precios */}
+            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                    Precios y Alternativas de Inscripción
+                  </label>
+                  <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                    Configurá las diferentes opciones de aranceles para el evento (ej: Matriculados, Estudiantes, Externos, etc.)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addPriceAlternative}
+                  className="btn-secondary !py-1.5 !px-3.5 !text-xs flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-xs">add</span> Agregar Tarifa
+                </button>
               </div>
+
+              {(!form.prices || form.prices.length === 0) ? (
+                <div className="p-6 text-center border border-dashed border-[var(--color-deep-green)]/10 rounded-xl bg-white/40">
+                  <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/20 mb-1 block">payments</span>
+                  <p className="text-xs font-semibold text-[var(--color-dark-gray)]/45">Sin tarifas configuradas (se asumirá Sin Cargo o libre)</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(form.prices || []).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          className="form-input !py-2 text-xs"
+                          placeholder="Concepto (ej: Matriculados, Externos...)"
+                          value={item.concept}
+                          onChange={e => updatePriceAlternative(idx, 'concept', e.target.value)}
+                        />
+                      </div>
+                      <div className="w-1/3">
+                        <input
+                          type="text"
+                          className="form-input !py-2 text-xs"
+                          placeholder="Precio (ej: Sin Cargo, $ 5.000...)"
+                          value={item.price}
+                          onChange={e => updatePriceAlternative(idx, 'price', e.target.value)}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePriceAlternative(idx)}
+                        className="text-red-400 hover:text-red-600 transition-colors p-1"
+                        title="Eliminar tarifa"
+                      >
+                        <span className="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Medios de Pago */}
+            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacidad Virtual <span className="normal-case text-[var(--color-dark-gray)]/30">(dejar vacío = sin límite)</span></label>
-                <input type="number" className="form-input w-full" placeholder="Ej: 100" value={form.max_capacity_virtual} onChange={e => update('max_capacity_virtual', e.target.value)} min={1} />
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                  Medios de Pago del Evento
+                </label>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                  Especificá las cuentas bancarias, alias, CBU u otras formas de pago para que el participante pueda transferir (se mostrará en la landing de inscripción)
+                </p>
               </div>
+              <textarea
+                className="form-input text-sm min-h-[140px] font-mono whitespace-pre-wrap leading-relaxed"
+                placeholder="Ej:&#10;BANCO CHUBUT&#10;Número de cuenta: 00600020007500401&#10;CBU: 0830006501002000750047&#10;Alias: CPCECH.CR"
+                value={form.payment_methods || ''}
+                onChange={e => update('payment_methods', e.target.value)}
+              />
+            </div>
+
+            {/* Consultas por Inscripciones */}
+            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                  Contacto para Consultas por Inscripciones
+                </label>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                  Ingresá información de contacto, email o teléfono para que los asistentes puedan enviar sus dudas.
+                </p>
+              </div>
+              <input
+                type="text"
+                className="form-input text-sm"
+                placeholder="Ej: Celular: +54 9 297 123-4567 | Email: eventos@ejemplo.com"
+                value={form.contact_info || ''}
+                onChange={e => update('contact_info', e.target.value)}
+              />
             </div>
           </div>
         )}

@@ -162,6 +162,8 @@ export default function EventsDashboard() {
     }
   })
   const activeEventsOptions = Object.entries(activeEventsMap).map(([id, title]) => ({ id, title }))
+  const selectedEvent = events.find(e => e.id === selectedEventId || e.event_id === selectedEventId)
+  const eventRegs = allRegistrations.filter(r => r.event_id === selectedEventId && r.status !== 'cancelled')
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -367,6 +369,65 @@ export default function EventsDashboard() {
             </div>
           </div>
 
+          {selectedEventId !== 'all' && selectedEvent && (
+            <div className="card p-5 mb-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 animate-fade-in">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] mb-3 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-base">analytics</span>
+                Cupos Libres y Distribución por Día
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {(selectedEvent.offered_dates && selectedEvent.offered_dates.length > 0 ? selectedEvent.offered_dates : [selectedEvent.event_date]).map(dateStr => {
+                  const parts = dateStr.split('-');
+                  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                  const formatted = format(d, "EEEE d 'de' MMMM", { locale: es });
+                  const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                  
+                  const pCount = eventRegs.filter(r => r.attendance_mode === 'presencial' && (r.selected_date === dateStr || (!r.selected_date && dateStr === selectedEvent.event_date))).length;
+                  const vCount = eventRegs.filter(r => r.attendance_mode === 'virtual' && (r.selected_date === dateStr || (!r.selected_date && dateStr === selectedEvent.event_date))).length;
+                  
+                  const pLimit = selectedEvent.max_capacity_presencial;
+                  const vLimit = selectedEvent.max_capacity_virtual;
+                  
+                  const pLeft = pLimit !== null && pLimit !== undefined && pLimit !== '' ? Number(pLimit) - pCount : null;
+                  const vLeft = vLimit !== null && vLimit !== undefined && vLimit !== '' ? Number(vLimit) - vCount : null;
+                  
+                  const hasPresencialEnabled = pLimit !== 0 && pLimit !== '0';
+                  const hasVirtualEnabled = vLimit !== 0 && vLimit !== '0';
+                  
+                  return (
+                    <div key={dateStr} className="bg-white p-4 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm space-y-2">
+                      <p className="text-xs font-bold text-[var(--color-dark-gray)] flex items-center gap-1">
+                        <span className="material-symbols-outlined text-base text-[var(--color-deep-green)]">calendar_today</span>
+                        {capitalized}
+                      </p>
+                      <div className="text-xs space-y-1.5 pt-1">
+                        {hasPresencialEnabled && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[var(--color-dark-gray)]/60">🏫 Presencial:</span>
+                            <span className="font-semibold text-[var(--color-dark-gray)]">
+                              {pCount} inscriptos {pLimit ? `(Quedan ${pLeft} libres)` : '(Sin límite)'}
+                            </span>
+                          </div>
+                        )}
+                        {hasVirtualEnabled && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[var(--color-dark-gray)]/60">💻 Virtual:</span>
+                            <span className="font-semibold text-[var(--color-dark-gray)]">
+                              {vCount} inscriptos {vLimit ? `(Quedan ${vLeft} libres)` : '(Sin límite)'}
+                            </span>
+                          </div>
+                        )}
+                        {!hasPresencialEnabled && !hasVirtualEnabled && (
+                          <p className="text-[10px] text-red-500 font-medium">Ambas modalidades deshabilitadas</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {loadingRegs ? (
             <div className="text-center py-12">
               <p className="text-lg text-[var(--color-dark-gray)]/40 font-medium animate-pulse">Cargando inscriptos...</p>
@@ -410,7 +471,11 @@ export default function EventsDashboard() {
                             <td>
                               <div className="flex flex-col">
                                 <span className="font-semibold text-[var(--color-deep-green)]">{r.events?.title}</span>
-                                {eventDate && <span className="text-[10px] text-[var(--color-dark-gray)]/40">{format(eventDate, "d 'de' MMMM", { locale: es })}</span>}
+                                <span className="text-[10px] text-[var(--color-dark-gray)]/40">
+                                  {r.selected_date 
+                                    ? format(new Date(r.selected_date + 'T12:00:00'), "d 'de' MMMM", { locale: es }) 
+                                    : (eventDate ? format(eventDate, "d 'de' MMMM", { locale: es }) : '—')}
+                                </span>
                               </div>
                             </td>
                             <td>

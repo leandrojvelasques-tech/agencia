@@ -105,6 +105,54 @@ export default function EventLanding() {
           </div>
         )}
 
+        {/* Video explicativo */}
+        {event.video_url && (() => {
+          let embedUrl = '';
+          const urlStr = event.video_url.trim();
+          
+          // YouTube parsing
+          if (urlStr.includes('youtube.com') || urlStr.includes('youtu.be')) {
+            let videoId = '';
+            if (urlStr.includes('youtu.be/')) {
+              videoId = urlStr.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } else {
+              const urlParams = new URLSearchParams(urlStr.split('?')[1]);
+              videoId = urlParams.get('v');
+            }
+            if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+          }
+          // Vimeo parsing
+          else if (urlStr.includes('vimeo.com')) {
+            const videoId = urlStr.split('vimeo.com/')[1]?.split(/[?#]/)[0];
+            if (videoId) embedUrl = `https://player.vimeo.com/video/${videoId}`;
+          }
+
+          if (embedUrl) {
+            return (
+              <div className="rounded-[var(--radius-card)] overflow-hidden mb-8 shadow-[var(--shadow-premium)] aspect-video bg-black">
+                <iframe
+                  src={embedUrl}
+                  title="Video explicativo"
+                  className="w-full h-full border-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            );
+          } else {
+            // Direct MP4 video file
+            return (
+              <div className="rounded-[var(--radius-card)] overflow-hidden mb-8 shadow-[var(--shadow-premium)] bg-black">
+                <video
+                  src={event.video_url}
+                  controls
+                  className="w-full max-h-[450px]"
+                />
+              </div>
+            );
+          }
+        })()}
+
         {/* Event Type Badge */}
         <div className="mb-4">
           <span className="badge badge-green text-xs">
@@ -119,13 +167,28 @@ export default function EventLanding() {
         {/* Key Info */}
         <div className="card p-5 mb-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center">
+            <div className="flex items-start gap-3 col-span-2 sm:col-span-1">
+              <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-xl text-[var(--color-deep-green)]">calendar_today</span>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Fecha</p>
-                <p className="text-sm font-semibold">{format(eventDate, "d 'de' MMMM, yyyy", { locale: es })}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50">Fecha(s)</p>
+                {event.offered_dates && event.offered_dates.length > 0 ? (
+                  <div className="space-y-1">
+                    {event.offered_dates.map(dateStr => {
+                      const d = new Date(dateStr + 'T23:59:59');
+                      const formatted = format(d, "EEEE d 'de' MMMM", { locale: es });
+                      const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                      return (
+                        <p key={dateStr} className="text-xs font-semibold whitespace-nowrap">
+                          {capitalized}
+                        </p>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm font-semibold">{format(eventDate, "d 'de' MMMM, yyyy", { locale: es })}</p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -164,26 +227,7 @@ export default function EventLanding() {
           )}
         </div>
 
-        {/* Live link banner */}
-        {event.live_link && (
-          <div className="card p-5 mb-8 bg-blue-50/50 border border-blue-100 flex items-center gap-4 animate-fade-in">
-            <div className="w-12 h-12 rounded-[var(--radius-premium)] bg-blue-600 text-white flex items-center justify-center shadow-md">
-              <span className="material-symbols-outlined text-2xl">video_camera_back</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-0.5">Transmisión en Vivo / Videollamada</p>
-              <a 
-                href={ensureAbsoluteUrl(event.live_link)} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-sm font-bold text-blue-700 hover:text-blue-900 transition-all break-all flex items-center gap-1.5 group"
-              >
-                Unirse a Google Meet / Transmisión
-                <span className="material-symbols-outlined text-base group-hover:translate-x-0.5 transition-transform">open_in_new</span>
-              </a>
-            </div>
-          </div>
-        )}
+
 
         {/* Description */}
         <div className="mb-8">
@@ -313,41 +357,7 @@ export default function EventLanding() {
         )}
         */}
 
-        {/* Materiales */}
-        {materials.length > 0 && (
-          <div className="card p-6 mb-8 bg-[var(--color-deep-green)]/5 border-dashed border-[var(--color-deep-green)]/20">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
-              <span className="material-symbols-outlined text-xl">folder_zip</span>
-              Materiales del Evento
-            </h2>
-            <div className="space-y-3">
-              {materials.map((material, i) => (
-                <a 
-                  key={i} 
-                  href={ensureAbsoluteUrl(material.url)} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="flex items-center gap-4 p-3 rounded-[var(--radius-premium)] bg-white/50 hover:bg-white transition-all border border-transparent hover:border-[var(--color-deep-green)]/10 group"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] group-hover:bg-[var(--color-deep-green)] group-hover:text-white transition-colors">
-                    <span className="material-symbols-outlined text-xl">
-                      {material.type === 'presentation' ? 'present_to_all' : 'description'}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-[var(--color-dark-gray)]">{material.title}</p>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-dark-gray)]/40">
-                      {material.type === 'presentation' ? 'Diapositivas' : 'Recurso'}
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-[var(--color-dark-gray)]/20 group-hover:text-[var(--color-deep-green)] group-hover:translate-x-1 transition-all">
-                    arrow_forward
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Galería de Fotos del Evento */}
         {photos.length > 0 && (
@@ -378,6 +388,40 @@ export default function EventLanding() {
           </div>
         )}
 
+        {/* Precios y Medios de Pago */}
+        {((event.prices && event.prices.length > 0) || event.payment_methods) && (
+          <div className="card p-6 mb-8 bg-white border border-[var(--color-deep-green)]/10 shadow-[var(--shadow-premium)]">
+            {event.prices && event.prices.length > 0 && (
+              <div className={event.payment_methods ? "mb-6" : ""}>
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
+                  <span className="material-symbols-outlined text-xl">payments</span>
+                  Inversión y Aranceles
+                </h2>
+                <div className="divide-y divide-[var(--color-deep-green)]/5">
+                  {event.prices.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-3 first:pt-0 last:pb-0">
+                      <span className="text-sm font-semibold text-[var(--color-dark-gray)]/85">{item.concept}</span>
+                      <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1 rounded-full">{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {event.payment_methods && (
+              <div className={event.prices && event.prices.length > 0 ? "pt-6 border-t border-[var(--color-deep-green)]/10" : ""}>
+                <h3 className="text-sm font-bold mb-3 flex items-center gap-2 text-[var(--color-deep-green)] uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-lg">account_balance</span>
+                  Medios de Pago / Datos de Transferencia
+                </h3>
+                <div className="bg-[var(--color-refined-gray)]/45 p-4 rounded-xl border border-[var(--color-deep-green)]/5 font-mono text-xs text-[var(--color-dark-gray)]/80 whitespace-pre-wrap leading-relaxed">
+                  {event.payment_methods}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* CTA */}
         {canRegister && (
           <div className="text-center py-6">
@@ -398,10 +442,14 @@ export default function EventLanding() {
           </div>
         )}
 
-        {(event.status === 'completed' || isPastEvent) && (
-          <div className="card p-6 text-center bg-[var(--color-light-green)]/15">
-            <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] mb-2 block">check_circle</span>
-            <p className="text-sm font-semibold text-[var(--color-deep-green)]">Este evento ya finalizó</p>
+        {event.contact_info && (
+          <div className="mt-8 text-center bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/10 rounded-xl p-4 max-w-md mx-auto">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-deep-green)] mb-1">
+              Consultas por Inscripciones
+            </p>
+            <p className="text-sm font-semibold text-[var(--color-dark-gray)]/80">
+              {event.contact_info}
+            </p>
           </div>
         )}
       </main>

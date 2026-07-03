@@ -9,18 +9,11 @@ export default function CrmClientPortal() {
   // State
   const [client, setClient] = useState(null)
   const [publications, setPublications] = useState([])
-  const [importantEvents, setImportantEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorState, setErrorState] = useState(null)
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedPub, setSelectedPub] = useState(null) // for modal details
-  const [viewMode, setViewMode] = useState('calendar')
 
-  const [activeSlide, setActiveSlide] = useState(0)
-
-  useEffect(() => {
-    setActiveSlide(0)
-  }, [selectedPub])
+  // Track active slide index for each individual publication: { [pubId]: slideIndex }
+  const [activeSlides, setActiveSlides] = useState({})
 
   const getGraphicUrls = (urlStr) => {
     if (!urlStr) return []
@@ -39,9 +32,17 @@ export default function CrmClientPortal() {
     return [trimmed]
   }
 
-  const getFirstGraphicUrl = (urlStr) => {
-    const urls = getGraphicUrls(urlStr)
-    return urls.length > 0 ? urls[0] : ''
+  const getDisplayThumbnail = (pub) => {
+    if (!pub) return ''
+    if (pub.graphic_url) {
+      const urls = getGraphicUrls(pub.graphic_url)
+      if (urls.length > 0) return urls[0]
+    }
+    if (pub.raw_assets) {
+      const rawUrls = getGraphicUrls(pub.raw_assets)
+      if (rawUrls.length > 0) return rawUrls[0]
+    }
+    return ''
   }
 
   const isVideoFile = (url, format) => {
@@ -83,7 +84,7 @@ export default function CrmClientPortal() {
 
         setClient(clientData)
 
-        // Fetch client publications (show all publications regardless of status)
+        // Fetch client publications (show all publications sorted by date)
         const { data: pubs, error: pErr } = await supabase
           .from('crm_publications')
           .select('*')
@@ -92,15 +93,6 @@ export default function CrmClientPortal() {
 
         if (pErr) throw pErr
         setPublications(pubs || [])
-
-        // Fetch client important events
-        const { data: eventsData, error: eventsErr } = await supabase
-          .from('crm_important_events')
-          .select('*')
-          .eq('client_id', clientData.id)
-        
-        if (eventsErr) throw eventsErr
-        setImportantEvents(eventsData || [])
       } catch (err) {
         console.error('Error loading client portal:', err)
         setErrorState('Hubo un inconveniente al cargar el calendario. Por favor, intentá nuevamente.')
@@ -111,61 +103,6 @@ export default function CrmClientPortal() {
 
     loadPortalData()
   }, [token])
-
-  // Month navigation helpers
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
-  }
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
-  }
-
-  // Generate Calendar Days
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth()
-  const monthNames = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ]
-  const weekDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-  // Days in month
-  const totalDays = new Date(year, month + 1, 0).getDate()
-  // Start day index of the month (1st of the month, adjusted to Monday as 0)
-  let startDayIndex = new Date(year, month, 1).getDay()
-  startDayIndex = startDayIndex === 0 ? 6 : startDayIndex - 1 // Shift so Monday is 0, Sunday is 6
-
-  const daysArray = []
-  // Fill leading days of the previous month
-  const prevMonthDate = new Date(year, month - 1, 1)
-  const prevYear = prevMonthDate.getFullYear()
-  const prevMonthVal = prevMonthDate.getMonth()
-  const prevTotalDays = new Date(prevYear, prevMonthVal + 1, 0).getDate()
-  
-  for (let i = startDayIndex - 1; i >= 0; i--) {
-    daysArray.push(new Date(prevYear, prevMonthVal, prevTotalDays - i))
-  }
-  // Fill month days
-  for (let i = 1; i <= totalDays; i++) {
-    daysArray.push(new Date(year, month, i))
-  }
-  // Fill trailing days of the next month to complete the last week
-  const nextMonthDate = new Date(year, month + 1, 1)
-  const nextYear = nextMonthDate.getFullYear()
-  const nextMonthVal = nextMonthDate.getMonth()
-  const remainingCells = (7 - (daysArray.length % 7)) % 7
-  for (let i = 1; i <= remainingCells; i++) {
-    daysArray.push(new Date(nextYear, nextMonthVal, i))
-  }
-
-  // Format date to ISO string local YYYY-MM-DD
-  const getLocalDateString = (dateObj) => {
-    if (!dateObj) return ''
-    const y = dateObj.getFullYear()
-    const m = String(dateObj.getMonth() + 1).padStart(2, '0')
-    const d = String(dateObj.getDate()).padStart(2, '0')
-    return `${y}-${m}-${d}`
-  }
 
   const getPublicationState = (pub) => {
     if (!pub) return { label: 'Pendiente', colorClass: 'bg-gray-400', badgeClass: 'bg-gray-100 text-gray-800 border-gray-200' }
@@ -209,8 +146,8 @@ export default function CrmClientPortal() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-refined-gray)] p-6">
         <div className="text-center animate-fade-in">
-          <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)] animate-pulse">
-            hourglass_empty
+          <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)] animate-spin">
+            sync
           </span>
           <p className="font-heading text-sm font-bold text-[var(--color-deep-green)] tracking-widest mt-4">
             CARGANDO PORTAL DE CLIENTE...
@@ -242,15 +179,16 @@ export default function CrmClientPortal() {
     )
   }
 
-  const dayPubs = selectedPub ? publications.filter(p => p.date === selectedPub.date).sort((a, b) => {
-    if (a.type === 'post' && b.type !== 'post') return -1;
-    if (a.type !== 'post' && b.type === 'post') return 1;
-    return 0;
-  }) : []
-  const currentIdx = selectedPub ? dayPubs.findIndex(p => p.id === selectedPub.id) : -1
+  // Filter to show only feed posts from the current month onwards for revision
+  const now = new Date()
+  const firstDayOfCurrentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+  const feedPubs = publications
+    .filter(pub => pub.type === 'post' && pub.date >= firstDayOfCurrentMonth)
+    .sort((a, b) => a.date.localeCompare(b.date))
 
   return (
-    <div className="min-h-screen bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)]">
+    <div className="min-h-screen bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)] pb-20">
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -281,886 +219,313 @@ export default function CrmClientPortal() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 md:px-12 py-10 space-y-8 animate-fade-in">
+      <main className="max-w-5xl mx-auto px-6 py-10 space-y-8 animate-fade-in">
         {/* Banner Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-3xl border border-gray-150 shadow-sm">
           <div>
-            <h2 className="text-3xl font-extrabold text-[var(--color-deep-green)]">Calendario de Contenidos</h2>
+            <h2 className="text-3xl font-extrabold text-[var(--color-deep-green)]">Revisión de Contenidos</h2>
             <p className="text-sm text-gray-500 mt-1 leading-relaxed max-w-xl">
-              Revisá las publicaciones planificadas para tu marca en redes sociales. Hacé clic en cualquier celda para ver la maqueta y dejarnos tu feedback.
+              Revisá las publicaciones planificadas para tu marca. Deslizá hacia abajo para ver las maquetas y envianos tu feedback directo por WhatsApp.
             </p>
           </div>
-          
-          {/* Controls */}
-          <div className="flex flex-col md:flex-row md:items-center gap-4 self-start md:self-center">
-            {/* View Selector */}
-            <div className="p-1 bg-[var(--color-refined-gray)]/80 rounded-premium border border-gray-200 flex items-center">
-              <button
-                onClick={() => setViewMode('calendar')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
-                  viewMode === 'calendar'
-                    ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
-                    : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">calendar_view_month</span>
-                Calendario
-              </button>
-              <button
-                onClick={() => setViewMode('feed')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
-                  viewMode === 'feed'
-                    ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
-                    : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">grid_on</span>
-                Feed
-              </button>
-              <button
-                onClick={() => setViewMode('weekly')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-premium-btn transition-all flex items-center gap-1.5 ${
-                  viewMode === 'weekly'
-                    ? 'bg-white text-[var(--color-deep-green)] shadow-sm'
-                    : 'text-[var(--color-dark-gray)]/60 hover:text-[var(--color-dark-gray)]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">view_week</span>
-                Semanal
-              </button>
-            </div>
-
-            {/* Month Navigator */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={prevMonth}
-                className="p-2 border border-gray-200 rounded-premium bg-white hover:bg-gray-50 text-[var(--color-dark-gray)]"
-              >
-              <span className="material-symbols-outlined text-lg leading-none">chevron_left</span>
-            </button>
-            <h3 className="text-base font-bold text-[var(--color-deep-green)] min-w-[140px] text-center bg-[var(--color-refined-gray)]/40 py-2 px-4 rounded-premium">
-              {monthNames[month]} {year}
-            </h3>
-            <button
-              onClick={nextMonth}
-              className="p-2 border border-gray-200 rounded-premium bg-white hover:bg-gray-50 text-[var(--color-dark-gray)]"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">chevron_right</span>
-            </button>
+          <div className="bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 px-4.5 py-2.5 rounded-2xl flex items-center gap-2 self-start md:self-center">
+            <span className="material-symbols-outlined text-[var(--color-deep-green)] font-bold text-sm">auto_awesome</span>
+            <span className="text-xs font-bold text-[var(--color-deep-green)]">{feedPubs.length} Publicaciones</span>
           </div>
         </div>
-      </div>
 
-        {viewMode === 'feed' ? (
-          /* FEED VIEW */
-          <div className="p-6 max-w-4xl mx-auto">
-            {publications.filter(p => p.type === 'post').length === 0 ? (
-              <div className="py-20 text-center text-dark-gray/40">
-                <span className="material-symbols-outlined text-4xl block mb-2">grid_off</span>
-                <p className="text-sm font-bold">No hay publicaciones de Feed para este mes.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-1 md:gap-2">
-                {publications
-                  .filter(pub => pub.type === 'post')
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .map(pub => {
-                    const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null;
-                    const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false;
-                    
-                    return (
-                      <div
-                        key={pub.id}
-                        onClick={() => setSelectedPub(pub)}
-                        className="relative aspect-square bg-white border border-gray-100 rounded-sm cursor-pointer group overflow-hidden"
-                      >
-                        {firstUrl ? (
-                          isVideo ? (
-                            <video
-                              src={firstUrl}
-                              className="w-full h-full object-cover"
-                              muted
-                              loop
-                              playsInline
-                              onMouseEnter={(e) => e.target.play()}
-                              onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }}
-                            />
-                          ) : (
-                            <img
-                              src={firstUrl}
-                              alt={pub.title}
-                              className="w-full h-full object-cover"
-                            />
-                          )
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gray-50">
-                            <span className="material-symbols-outlined text-gray-300 text-3xl mb-2">image_not_supported</span>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter line-clamp-3">{pub.title}</p>
-                          </div>
-                        )}
-                        
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-4 text-center">
-                          <p className="text-xs font-bold mb-2 line-clamp-3 leading-snug">{pub.title}</p>
-                          <p className="text-[10px] text-white/80 font-medium bg-black/40 px-2 py-1 rounded">
-                            {pub.date.split('-').reverse().join('/')}
-                          </p>
-                          {pub.post_format === 'carrousel' && (
-                             <span className="material-symbols-outlined absolute top-2 right-2 text-white shadow-sm text-sm">filter_none</span>
-                          )}
-                          {isVideo && (
-                            <span className="material-symbols-outlined absolute top-2 right-2 text-white shadow-sm text-sm">play_circle</span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-              </div>
-            )}
-          </div>
-        ) : viewMode === 'weekly' ? (
-          /* WEEKLY FEED VIEW */
-          <div className="space-y-10 max-w-5xl mx-auto">
-            {(() => {
-              // Group days into weeks of 7 days
-              const weeks = []
-              for (let i = 0; i < daysArray.length; i += 7) {
-                weeks.push(daysArray.slice(i, i + 7))
-              }
-
-              // Filter weeks that actually have some publications
-              const weeksWithPubs = weeks.map((weekDaysArray, index) => {
-                const firstDay = weekDaysArray.find(d => d !== null)
-                const lastDay = [...weekDaysArray].reverse().find(d => d !== null)
-                
-                if (!firstDay || !lastDay) return null
-                
-                const weekPubs = publications.filter(pub => {
-                  return weekDaysArray.some(day => day && getLocalDateString(day) === pub.date)
-                })
-
-                return {
-                  index,
-                  firstDay,
-                  lastDay,
-                  pubs: weekPubs
-                }
-              }).filter(w => w !== null && w.pubs.length > 0)
-
-              if (weeksWithPubs.length === 0) {
-                return (
-                  <div className="py-20 text-center text-dark-gray/40">
-                    <span className="material-symbols-outlined text-4xl block mb-2">grid_off</span>
-                    <p className="text-sm font-bold">No hay publicaciones planificadas para este mes.</p>
-                  </div>
-                )
-              }
-
-              return weeksWithPubs.map((week) => {
-                const startStr = `${week.firstDay.getDate()} de ${monthNames[week.firstDay.getMonth()]}`
-                const endStr = `${week.lastDay.getDate()} de ${monthNames[week.lastDay.getMonth()]}`
-                
-                return (
-                  <div key={week.index} className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <h4 className="text-xs font-extrabold uppercase tracking-widest text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 px-4 py-2 rounded-full border border-[var(--color-deep-green)]/10">
-                        Semana del {startStr} al {endStr}
-                      </h4>
-                      <div className="flex-1 h-px bg-gray-200" />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {week.pubs.map(pub => {
-                        const firstUrl = pub.graphic_url ? getFirstGraphicUrl(pub.graphic_url) : null
-                        const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
-                        const terrConfig = getTerritorioConfig(pub.territorio)
-                        
-                        return (
-                          <div
-                            key={pub.id}
-                            onClick={() => setSelectedPub(pub)}
-                            className="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
-                          >
-                            {/* Card Media Preview */}
-                            <div className={`relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                              pub.dimensions === '1080x1920' ? 'aspect-[9/16]' : pub.dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
-                            }`}>
-                              {firstUrl ? (
-                                isVideo ? (
-                                  <video
-                                    src={firstUrl}
-                                    className="w-full h-full object-cover"
-                                    muted
-                                    loop
-                                    playsInline
-                                    onMouseEnter={(e) => e.target.play()}
-                                    onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }}
-                                  />
-                                ) : (
-                                  <img
-                                    src={firstUrl}
-                                    alt={pub.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                )
-                              ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gray-50">
-                                  <span className="material-symbols-outlined text-gray-300 text-4xl mb-2">image_not_supported</span>
-                                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Sin Vista Previa</p>
-                                </div>
-                              )}
-                              
-                              {/* Overlay Indicators */}
-                              <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider text-white bg-black/60 backdrop-blur-sm`}>
-                                  {pub.type === 'post' ? 'Feed' : 'Story'}
-                                </span>
-                                {pub.post_format && (
-                                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/90 text-gray-700 border border-gray-150 uppercase tracking-wider backdrop-blur-sm">
-                                    {pub.post_format === 'carrousel' ? 'Carrusel' :
-                                     pub.post_format === 'reel' ? 'Reel' :
-                                     pub.post_format === 'placa' ? 'Placa' :
-                                     pub.post_format === 'video' ? 'Video' : pub.post_format}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-                                <span className={`w-2.5 h-2.5 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
-                              </div>
-
-                              {pub.post_format === 'carrousel' && (
-                                <span className="material-symbols-outlined absolute bottom-3 right-3 text-white bg-black/50 p-1 rounded backdrop-blur-sm text-sm">filter_none</span>
-                              )}
-                              {isVideo && (
-                                <span className="material-symbols-outlined absolute bottom-3 right-3 text-white bg-black/50 p-1 rounded backdrop-blur-sm text-sm">play_circle</span>
-                              )}
-                            </div>
-
-                            {/* Card Content */}
-                            <div className="p-5 flex-1 flex flex-col justify-between space-y-3 text-left">
-                              <div>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                  {pub.date.split('-').reverse().join('/')}
-                                </p>
-                                <h5 className="font-bold text-sm text-gray-900 group-hover:text-[var(--color-deep-green)] transition-colors mt-1 line-clamp-2">
-                                  {pub.title}
-                                </h5>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  {pub.territorio && (
-                                    <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full border mt-2 ${terrConfig.color.badge}`}>
-                                      {pub.territorio}
-                                    </span>
-                                  )}
-                                  {pub.status_piece &&
-                                   !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
-                                   pub.status_piece.trim() !== '' && (
-                                    <span className="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full px-2 py-0.5 items-center gap-1 mt-2">
-                                      <span className="material-symbols-outlined text-[10px] leading-none">assignment_late</span>
-                                      {pub.status_piece.split('\n').filter(line => line.trim() !== '').length} pendientes
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              {pub.copy && (
-                                <p className="text-xs text-gray-500 line-clamp-3 bg-gray-50 p-2.5 rounded border border-gray-150/60 font-sans leading-relaxed">
-                                  {pub.copy}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })
-            })()}
+        {/* Vertical Feed List */}
+        {feedPubs.length === 0 ? (
+          <div className="bg-white rounded-3xl p-20 text-center border border-gray-150 shadow-sm text-gray-400">
+            <span className="material-symbols-outlined text-5xl block mb-3">grid_off</span>
+            <p className="text-sm font-bold uppercase tracking-wider">No hay publicaciones planificadas para revisión.</p>
           </div>
         ) : (
-          /* CALENDAR VIEW Grid card */
-          <div className="card p-6 bg-white overflow-hidden">
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-2 mb-2 text-center">
-            {weekDays.map(d => (
-              <div key={d} className="text-xs font-bold uppercase tracking-wider text-gray-400 py-2">
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar days */}
-          <div className="grid grid-cols-7 gap-3">
-            {daysArray.map((dayDate, idx) => {
-              if (!dayDate) {
-                return <div key={`empty-${idx}`} className="bg-[var(--color-refined-gray)]/20 rounded-premium border border-dashed border-gray-100 min-h-[140px]"></div>
-              }
-
-              const dateStr = getLocalDateString(dayDate)
-              const dayPubs = publications.filter(p => p.date === dateStr)
-              const dayEvents = importantEvents.filter(e => e.date === dateStr)
-              const isToday = new Date().toDateString() === dayDate.toDateString()
+          <div className="space-y-12">
+            {feedPubs.map((pub) => {
+              const activeSlide = activeSlides[pub.id] || 0
+              const terrConfig = getTerritorioConfig(pub.territorio)
+              const firstUrl = getDisplayThumbnail(pub)
+              const isVideo = firstUrl ? isVideoFile(firstUrl, pub.post_format) : false
+              const carouselUrls = getGraphicUrls(pub.graphic_url || pub.raw_assets)
 
               return (
                 <div
-                  key={`day-${dateStr}`}
-                  className={`min-h-[140px] border rounded-premium p-3 flex flex-col justify-between hover:shadow-md hover:z-20 transition-shadow group relative cursor-pointer ${
-                    dayDate.getMonth() === month ? 'bg-white' : 'bg-[var(--color-refined-gray)]/45'
-                  } ${
-                    isToday ? 'border-[var(--color-deep-green)] ring-1 ring-[var(--color-deep-green)]/20' : 'border-gray-200'
-                  }`}
-                  onClick={() => {
-                    if (dayPubs.length > 0) {
-                      setSelectedPub(dayPubs[0]) // Select first pub on cell click (usual case)
-                    }
-                  }}
+                  key={pub.id}
+                  className="bg-white rounded-3xl border border-gray-150 shadow-md p-6 md:p-8 flex flex-col lg:flex-row gap-8 relative text-left hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className={`text-xs font-bold flex items-center gap-1 ${
-                      isToday 
-                        ? 'bg-[var(--color-deep-green)] text-white px-2 py-0.5 rounded-full shadow-sm' 
-                        : dayDate.getMonth() === month 
-                          ? 'text-gray-500' 
-                          : 'text-gray-500/40'
-                    }`}>
-                      <span>{dayDate.getDate()}</span>
-                      <span className={`text-[9px] ${isToday ? 'text-white/80' : 'text-gray-400'} font-semibold`}>
-                        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][dayDate.getDay()]}
-                      </span>
-                    </span>
-                  </div>
-
-                  {/* Important events list */}
-                  {dayEvents.length > 0 && (
-                    <div className="space-y-1 mb-2">
-                      {dayEvents.map(evt => (
-                        <div 
-                          key={evt.id} 
-                          className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/60 rounded-premium px-1.5 py-1 flex items-center gap-1 select-none text-left"
-                          title="Fecha clave / Evento importante"
-                        >
-                          <span className="material-symbols-outlined text-[12px] text-amber-600 flex-shrink-0">star</span>
-                          <span className="truncate">{evt.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Day items list */}
-                  <div className="flex-1 flex flex-col gap-1.5 mt-2">
-                    {(() => {
-                      return dayPubs.sort((a, b) => {
-                        if (a.type === 'post' && b.type !== 'post') return -1;
-                        if (a.type !== 'post' && b.type === 'post') return 1;
-                        return 0;
-                      }).map(pub => {
-                        const isPost = pub.type === 'post'
-                        const displayTitle = pub.title
-                        const terrConfig = getTerritorioConfig(pub.territorio)
-                        const cardBgClass = isPost ? terrConfig.color.bg : 'bg-transparent'
-                        const cardBorderClass = isPost ? terrConfig.color.border : 'border-gray-200 border-dashed'
-                        const cardHoverBgClass = isPost ? terrConfig.color.hoverBg : 'hover:bg-gray-50'
-                        const textClass = isPost ? (terrConfig.color.text || 'text-[var(--color-dark-gray)]') : 'text-[var(--color-dark-gray)]'
-                        const dayOfWeek = dayDate.getDay() // 0 = Sunday, 1 = Monday, etc.
-                        let tooltipAlignClass = 'left-1/2 -translate-x-1/2'
-                        if (dayOfWeek === 1 || dayOfWeek === 2) {
-                          tooltipAlignClass = 'left-0 translate-x-0'
-                        } else if (dayOfWeek === 6 || dayOfWeek === 0) {
-                          tooltipAlignClass = 'right-0 left-auto translate-x-0'
-                        }
-                        const isFirstRow = idx < 7
-                        const tooltipPositionClass = isFirstRow ? 'top-full mt-2' : 'bottom-full mb-2'
-
-                        return (
-                          <div
-                            key={pub.id}
-                            onClick={(e) => {
-                              e.stopPropagation() // prevent double click
-                              setSelectedPub(pub)
-                            }}
-                            className={`p-2 border rounded text-left transition-all hover:-translate-y-0.5 hover:z-50 group/card relative ${cardBgClass} ${cardBorderClass} ${cardHoverBgClass} ${textClass}`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1 flex-wrap">
-                                <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-tighter ${
-                                  isPost ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-100 text-pink-800'
-                                }`}>
-                                  {isPost ? 'Feed' : 'Story'}
-                                </span>
-                                {isPost && pub.post_format && (
-                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white text-gray-500 border border-gray-150 uppercase tracking-tighter">
-                                    {pub.post_format === 'carrousel' ? 'Carrusel' :
-                                     pub.post_format === 'reel' ? 'Reel' :
-                                     pub.post_format === 'placa' ? 'Placa' :
-                                     pub.post_format === 'video' ? 'Video' : pub.post_format}
-                                  </span>
-                                )}
-                              </div>
-                               <span className={`w-2 h-2 rounded-full ${getPublicationState(pub).colorClass}`} title={getPublicationState(pub).label} />
-                            </div>
-                            <p className="text-[11px] font-bold truncate leading-tight opacity-90">
-                              {displayTitle}
-                            </p>
+                  {/* Left Side: Mockup Preview Area */}
+                  <div className="lg:w-1/2 flex items-center justify-center">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden w-full max-w-sm">
+                      {/* Mockup Header */}
+                      <div className="p-3 flex items-center justify-between border-b border-gray-5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)] text-white font-extrabold flex items-center justify-center text-xs shadow-sm">
+                            {client.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-900">{client.name}</p>
                             {pub.territorio && (
-                              <p className="text-[9px] font-bold uppercase tracking-tighter mt-0.5 opacity-75">
+                              <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">
                                 {pub.territorio}
                               </p>
                             )}
+                          </div>
+                        </div>
+                      </div>
 
-                            {/* Hover preview tooltip popover */}
-                            <div className={`hidden group-hover/card:flex flex-col gap-2 absolute z-50 ${tooltipPositionClass} bg-white border border-gray-200 rounded-2xl shadow-2xl p-3 pointer-events-none transition-all animate-fade-in text-left ${tooltipAlignClass} ${
-                              isPost ? 'w-96' : 'w-64'
-                            }`}>
-                              {pub.graphic_url && (() => {
-                                const firstUrl = getFirstGraphicUrl(pub.graphic_url)
-                                return firstUrl && (
-                                  <div className={`w-full rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center ${
-                                    isPost ? 'h-56' : 'h-96'
-                                  }`}>
-                                    {isVideoFile(firstUrl, pub.post_format) ? (
-                                      <video
-                                        src={firstUrl}
-                                        className="w-full h-full object-cover"
-                                        muted
-                                        loop
-                                        autoPlay
-                                        playsInline
-                                      />
-                                    ) : (
-                                      <img
-                                        src={firstUrl}
-                                        alt={pub.title}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    )}
-                                  </div>
-                                )
-                              })()}
-                              <div>
-                                <p className="font-bold text-xs text-[var(--color-deep-green)] line-clamp-1">{displayTitle}</p>
-                                <p className="text-[10px] text-gray-500 font-semibold uppercase mt-0.5 tracking-tight flex items-center justify-between gap-2">
-                                  <span>{pub.type === 'post' ? 'Feed' : 'Story'} · {pub.post_format === 'carrousel' ? 'Carrusel' : pub.post_format}</span>
-                                  {pub.territorio && (
-                                    <span className="text-[9px] text-[var(--color-deep-green)] font-bold tracking-tight bg-[var(--color-deep-green)]/5 px-1.5 py-0.5 rounded uppercase">
-                                      {pub.territorio}
-                                    </span>
-                                  )}
-                                </p>
-                                {pub.territorio && !isPost && (
-                                  <p className="text-[9px] text-gray-400 font-medium leading-relaxed italic mt-1 normal-case">
-                                    Eje: {terrConfig.desc}
-                                  </p>
-                                )}
-                                {pub.copy && (
-                                  <p className={`text-[10px] text-[var(--color-dark-gray)]/80 mt-1 bg-gray-50 p-2 rounded border border-gray-150 font-mono whitespace-pre-wrap ${
-                                    isPost ? '' : 'line-clamp-3'
-                                  }`}>
-                                    {pub.copy}
-                                  </p>
+                      {/* Graphic image container */}
+                      <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
+                        pub.dimensions === '1080x1920' ? 'aspect-[9/16]' : pub.dimensions === '1080x1350' ? 'aspect-[4/5]' : pub.dimensions === '1080x1440' ? 'aspect-[3/4]' : 'aspect-square'
+                      }`}>
+                        {pub.post_format === 'carrousel' ? (
+                          (() => {
+                            if (carouselUrls.length === 0) {
+                              return (
+                                <div className="flex flex-col items-center justify-center text-center p-8 text-gray-400">
+                                  <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">photo_library</span>
+                                  <p className="text-xs font-bold uppercase tracking-wider">Carrusel de imágenes</p>
+                                  <p className="text-[10px] mt-1 text-gray-400/80 font-medium">{pub.dimensions || '1080x1080'} px</p>
+                                </div>
+                              )
+                            }
+                            const activeUrl = carouselUrls[activeSlide] || carouselUrls[0]
+                            return (
+                              <div className="relative w-full h-full flex items-center justify-center">
+                                <img
+                                  src={activeUrl}
+                                  alt={`Carrusel diapositiva ${activeSlide + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                
+                                {carouselUrls.length > 1 && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        const nextSlide = activeSlide === 0 ? carouselUrls.length - 1 : activeSlide - 1
+                                        handleSlideChange(pub.id, nextSlide)
+                                      }}
+                                      className="absolute left-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                                    >
+                                      <span className="material-symbols-outlined text-lg">chevron_left</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        const nextSlide = activeSlide === carouselUrls.length - 1 ? 0 : activeSlide + 1
+                                        handleSlideChange(pub.id, nextSlide)
+                                      }}
+                                      className="absolute right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
+                                    >
+                                      <span className="material-symbols-outlined text-lg">chevron_right</span>
+                                    </button>
+                                    
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                      {carouselUrls.map((_, idx) => (
+                                        <button
+                                          key={idx}
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleSlideChange(pub.id, idx)
+                                          }}
+                                          className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                            idx === activeSlide ? 'bg-white scale-125' : 'bg-white/55 hover:bg-white/80'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    
+                                    {/* Slide Counter Indicator */}
+                                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold tracking-wider">
+                                      {activeSlide + 1} / {carouselUrls.length}
+                                    </div>
+                                  </>
                                 )}
                               </div>
+                            )
+                          })()
+                        ) : (
+                          firstUrl ? (
+                            isVideo ? (
+                              <video
+                                key={firstUrl}
+                                src={firstUrl}
+                                controls
+                                loop
+                                muted
+                                playsInline
+                                className="w-full h-full object-cover animate-fade-in"
+                              />
+                            ) : (
+                              <img
+                                src={firstUrl}
+                                alt={pub.title}
+                                className="w-full h-full object-cover"
+                              />
+                            )
+                          ) : (
+                            <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
+                              <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
+                                {pub.post_format === 'reel' ? 'movie' : 'image'}
+                              </span>
+                              <p className="text-xs font-bold uppercase tracking-wider">
+                                {pub.post_format === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
+                              </p>
+                              <p className="text-[10px] mt-1 text-gray-400/80">
+                                {pub.dimensions || '1080x1080'} px
+                              </p>
                             </div>
+                          )
+                        )}
+                        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider">
+                          {pub.dimensions || '1080x1080'}
+                        </div>
+                      </div>
+
+                      {/* Actions Mockup */}
+                      <div className="p-3.5 flex items-center gap-4 text-gray-700">
+                        <span className="material-symbols-outlined text-xl animate-pulse text-red-500">favorite</span>
+                        <span className="material-symbols-outlined text-xl">chat_bubble</span>
+                        <span className="material-symbols-outlined text-xl">send</span>
+                      </div>
+
+                      {/* Copy Mockup */}
+                      <div className="p-3.5 pt-0 text-left border-t border-gray-150 max-h-[140px] overflow-y-auto bg-gray-50/20">
+                        <p className="text-xs font-semibold text-gray-900">
+                          {client.name} 
+                          <span className="font-normal text-gray-800 ml-1.5 whitespace-pre-wrap leading-relaxed">
+                            {pub.copy || 'Sin copy redactado.'}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Description & Feedback details */}
+                  <div className="lg:w-1/2 flex flex-col justify-between py-2">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-black text-[var(--color-deep-green)] mt-0 leading-snug">
+                          {pub.title}
+                        </h3>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
+                          Fecha programada: {pub.date.split('-').reverse().join('/')}
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-[var(--color-refined-gray)]/40 border border-gray-150 space-y-3">
+                        <div className="grid grid-cols-2 gap-4 text-left">
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tipo / Canal</p>
+                            <p className="text-xs font-bold text-gray-850 mt-0.5 capitalize">
+                              Feed Post
+                            </p>
                           </div>
-                        )
-                      })
-                    })()}
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Formato de Pieza</p>
+                            <p className="text-xs font-bold text-gray-850 mt-0.5 capitalize">
+                              {pub.post_format}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Dimensiones</p>
+                            <p className="text-xs font-bold text-gray-850 mt-0.5">
+                              {pub.dimensions || '1080 x 1080 px'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Temática / Territorio</p>
+                            {pub.territorio ? (
+                              (() => {
+                                const tConf = getTerritorioConfig(pub.territorio)
+                                return (
+                                  <div className="relative group/terr inline-block mt-0.5">
+                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full border cursor-help ${tConf.color.badge}`}>
+                                      {pub.territorio}
+                                    </span>
+                                    <div className="hidden group-hover/terr:block absolute z-50 bottom-full left-0 mb-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-[10px] rounded-premium p-2.5 shadow-2xl border border-gray-800 pointer-events-none normal-case leading-relaxed font-normal text-left">
+                                      <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[10px] uppercase tracking-wider">{pub.territorio}</p>
+                                      {tConf.desc}
+                                    </div>
+                                  </div>
+                                )
+                              })()
+                            ) : (
+                              <p className="text-xs font-bold text-gray-850 mt-0.5">-</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {pub.copy && (
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Texto de Publicación (Copy)</p>
+                          <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-[180px] overflow-y-auto">
+                            {pub.copy}
+                          </div>
+                        </div>
+                      )}
+
+                      {pub.status_piece &&
+                       !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(pub.status_piece) &&
+                       pub.status_piece.trim() !== '' && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                            <span className="material-symbols-outlined text-xs text-amber-600">assignment_late</span>
+                            Tareas Pendientes
+                          </p>
+                          <div className="bg-amber-50/50 border border-amber-200/60 p-4 rounded-xl text-xs text-amber-955 space-y-1.5 max-h-[150px] overflow-y-auto">
+                            {pub.status_piece.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
+                              <div key={idx} className="flex items-start gap-2">
+                                <span className="material-symbols-outlined text-[14px] leading-none mt-0.5 text-amber-600 select-none">radio_button_unchecked</span>
+                                <span className="leading-tight font-medium">{line}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {pub.notes && pub.notes.trim() !== '' && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                            <span className="material-symbols-outlined text-xs text-gray-550">info</span>
+                            Observaciones
+                          </p>
+                          <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs text-gray-800 leading-relaxed max-h-[150px] overflow-y-auto whitespace-pre-wrap">
+                            {pub.notes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Feedback via WhatsApp Button */}
+                    <div className="pt-6 border-t border-gray-100 mt-6 space-y-3">
+                      <p className="text-xs text-gray-500 font-semibold">
+                        ¿Querés hacer algún cambio en esta publicación? Mandanos tus observaciones directo a WhatsApp:
+                      </p>
+                      <a
+                        href={getWhatsAppLink(pub)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-4 px-6 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-premium font-bold text-center flex items-center justify-center gap-2 shadow-md transition-all hover:-translate-y-0.5 text-sm"
+                      >
+                        <svg className="w-5 h-5 fill-current" viewBox="0 0 448 512">
+                          <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.1-3.2-5.5-.3-8.5 2.4-11.2 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.3 3.8-5.7 5.7-9.4 1.9-3.7 1-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.3 5.7 23.7 9.1 31.7 11.7 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"></path>
+                        </svg>
+                        Enviar Feedback a Leandro
+                      </a>
+                    </div>
                   </div>
                 </div>
               )
             })}
           </div>
-        </div>
         )}
       </main>
-
-      {/* Publication Mockup Drawer / Modal */}
-      {selectedPub && (
-        <div className="modal-overlay animate-fade-in" onClick={() => setSelectedPub(null)}>
-          <div
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row gap-8 relative text-left animate-slide-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedPub(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-250 text-gray-500 hover:text-gray-700 transition-colors z-20"
-            >
-              <span className="material-symbols-outlined text-xl leading-none">close</span>
-            </button>
-
-            {/* Mockup Preview Area (Left column on desktop) */}
-            <div className="md:w-1/2 flex items-center justify-center">
-              {selectedPub.type === 'post' ? (
-                /* Instagram Feed Post Mockup */
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden w-full max-w-sm">
-                  {/* Mockup Header */}
-                  <div className="p-3 flex items-center justify-between border-b border-gray-50">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)] text-white font-extrabold flex items-center justify-center text-xs shadow-sm">
-                        {client.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">{client.name}</p>
-                        {selectedPub.territorio && (
-                          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">
-                            {selectedPub.territorio}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Graphic image container */}
-                  <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                    selectedPub.dimensions === '1080x1920' ? 'aspect-[9/16]' : selectedPub.dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
-                  }`}>
-                    {selectedPub.post_format === 'carrousel' ? (
-                      (() => {
-                        const carouselUrls = getGraphicUrls(selectedPub.graphic_url)
-                        if (carouselUrls.length === 0) {
-                          return (
-                            <div className="flex flex-col items-center justify-center text-center p-8 text-gray-400">
-                              <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">photo_library</span>
-                              <p className="text-xs font-bold uppercase tracking-wider">Carrusel de imágenes</p>
-                              <p className="text-[10px] mt-1 text-gray-400/80 font-medium">{selectedPub.dimensions || '1080x1080'} px</p>
-                            </div>
-                          )
-                        }
-                        const activeUrl = carouselUrls[activeSlide] || carouselUrls[0]
-                        return (
-                          <div className="relative w-full h-full flex items-center justify-center">
-                            <img
-                              src={activeUrl}
-                              alt={`Carrusel diapositiva ${activeSlide + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            
-                            {carouselUrls.length > 1 && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setActiveSlide(prev => (prev === 0 ? carouselUrls.length - 1 : prev - 1))
-                                  }}
-                                  className="absolute left-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
-                                >
-                                  <span className="material-symbols-outlined text-lg">chevron_left</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setActiveSlide(prev => (prev === carouselUrls.length - 1 ? 0 : prev + 1))
-                                  }}
-                                  className="absolute right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-sm transition-colors z-10 select-none"
-                                >
-                                  <span className="material-symbols-outlined text-lg">chevron_right</span>
-                                </button>
-                                
-                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                                  {carouselUrls.map((_, idx) => (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setActiveSlide(idx)
-                                      }}
-                                      className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                        idx === activeSlide ? 'bg-white scale-125' : 'bg-white/55 hover:bg-white/80'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                
-                                {/* Slide Counter Indicator */}
-                                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold tracking-wider">
-                                  {activeSlide + 1} / {carouselUrls.length}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        )
-                      })()
-                    ) : (
-                      selectedPub.graphic_url ? (
-                        isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
-                          <video
-                            key={selectedPub.graphic_url}
-                            src={selectedPub.graphic_url}
-                            controls
-                            loop
-                            autoPlay
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <img
-                            src={selectedPub.graphic_url}
-                            alt={selectedPub.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
-                          <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
-                            {selectedPub.post_format === 'reel' ? 'movie' : 'image'}
-                          </span>
-                          <p className="text-xs font-bold uppercase tracking-wider">
-                            {selectedPub.post_format === 'reel' ? 'Video Reel' : 'Pieza Gráfica'}
-                          </p>
-                          <p className="text-[10px] mt-1 text-gray-400/80">
-                            {selectedPub.dimensions || '1080x1080'} px
-                          </p>
-                        </div>
-                      )
-                    )}
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider">
-                      {selectedPub.dimensions || '1080x1080'}
-                    </div>
-                  </div>
-
-                  {/* Actions Mockup */}
-                  <div className="p-3.5 flex items-center gap-4 text-gray-700">
-                    <span className="material-symbols-outlined text-xl">favorite</span>
-                    <span className="material-symbols-outlined text-xl">chat_bubble</span>
-                    <span className="material-symbols-outlined text-xl">send</span>
-                  </div>
-
-                  {/* Copy Mockup */}
-                  <div className="p-3.5 pt-0 text-left border-t border-gray-50 max-h-[140px] overflow-y-auto">
-                    <p className="text-xs font-semibold text-gray-900">
-                      {client.name} 
-                      <span className="font-normal text-gray-800 ml-1.5 whitespace-pre-wrap leading-relaxed">
-                        {selectedPub.copy || 'Sin copy redactado.'}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                /* Instagram Story Mockup */
-                <div className="bg-gray-950 border-[6px] border-black rounded-[2rem] shadow-xl overflow-hidden w-full max-w-sm aspect-[9/16] relative text-white">
-                  {selectedPub.graphic_url ? (
-                    isVideoFile(selectedPub.graphic_url, selectedPub.post_format) ? (
-                      <video
-                        key={selectedPub.graphic_url}
-                        src={selectedPub.graphic_url}
-                        controls
-                        loop
-                        autoPlay
-                        muted
-                        playsInline
-                        className="absolute inset-0 w-full h-full object-cover animate-fade-in"
-                      />
-                    ) : (
-                      <img
-                        src={selectedPub.graphic_url}
-                        alt={selectedPub.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    )
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-gray-600 bg-gradient-to-b from-gray-800 to-gray-950">
-                      <span className="material-symbols-outlined text-4xl mb-2 text-gray-700">photo_album</span>
-                      <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Historia Vertical</p>
-                      <p className="text-[10px] mt-1 text-gray-600 font-bold">{selectedPub.dimensions || '1080x1920'}</p>
-                    </div>
-                  )}
-
-                  {/* Header overlay */}
-                  <div className="absolute top-4 inset-x-4 z-10 space-y-2">
-                    <div className="flex gap-0.5">
-                      <div className="h-0.5 bg-white flex-1 rounded-full"></div>
-                      <div className="h-0.5 bg-white/40 flex-1 rounded-full"></div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[var(--color-deep-green)] text-white font-extrabold flex items-center justify-center text-[10px] border border-white/20">
-                        {client.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold shadow-text leading-tight">{client.name}</p>
-                        {selectedPub.territorio && (
-                          <p className="text-[8px] text-white/70 font-semibold uppercase tracking-wider">
-                            {selectedPub.territorio}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Story copy overlay */}
-                  {selectedPub.copy && (
-                    <div className="absolute bottom-16 inset-x-4 z-10 bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 text-left">
-                      <p className="text-[11px] text-white leading-relaxed whitespace-pre-wrap">
-                        {selectedPub.copy}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Simulated send message bar */}
-                  <div className="absolute bottom-4 inset-x-4 z-10 flex items-center justify-between gap-3 text-white">
-                    <div className="flex-1 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-[10px] text-white/60 font-semibold backdrop-blur-sm text-left">
-                      Enviar mensaje...
-                    </div>
-                    <span className="material-symbols-outlined text-lg">favorite</span>
-                    <span className="material-symbols-outlined text-lg">send</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Description & Action details (Right column on desktop) */}
-            <div className="md:w-1/2 flex flex-col justify-between py-2">
-              <div className="space-y-6">
-                {dayPubs.length > 1 && (
-                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-150 animate-fade-in">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                      Publicaciones del día ({currentIdx + 1} de {dayPubs.length})
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => {
-                          const prevIdx = (currentIdx - 1 + dayPubs.length) % dayPubs.length
-                          setSelectedPub(dayPubs[prevIdx])
-                        }}
-                        className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 border border-gray-250 flex items-center justify-center text-gray-600 transition-colors shadow-sm"
-                        title="Publicación anterior"
-                      >
-                        <span className="material-symbols-outlined text-base">chevron_left</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          const nextIdx = (currentIdx + 1) % dayPubs.length
-                          setSelectedPub(dayPubs[nextIdx])
-                        }}
-                        className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 border border-gray-250 flex items-center justify-center text-gray-600 transition-colors shadow-sm"
-                        title="Siguiente publicación"
-                      >
-                        <span className="material-symbols-outlined text-base">chevron_right</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-                <div>
-                   <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${getPublicationState(selectedPub).badgeClass}`}>
-                    {getPublicationState(selectedPub).label}
-                  </span>
-                  <h3 className="text-2xl font-black text-[var(--color-deep-green)] mt-3 leading-snug">
-                    {selectedPub.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
-                    Fecha programada: {selectedPub.date.split('-').reverse().join('/')}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[var(--color-refined-gray)]/40 border border-gray-150 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tipo / Canal</p>
-                      <p className="text-xs font-bold text-gray-800 mt-0.5 capitalize">
-                        {selectedPub.type === 'post' ? 'Feed Post' : 'Instagram Story'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Formato de Pieza</p>
-                      <p className="text-xs font-bold text-gray-800 mt-0.5 capitalize">
-                        {selectedPub.post_format}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Dimensiones</p>
-                      <p className="text-xs font-bold text-gray-800 mt-0.5">
-                        {selectedPub.dimensions || '1080 x 1080 px'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Temática / Territorio</p>
-                      {selectedPub.territorio ? (
-                        (() => {
-                          const tConf = getTerritorioConfig(selectedPub.territorio)
-                          return (
-                            <div className="relative group/terr inline-block mt-0.5">
-                              <span className={`text-[10px] font-bold px-2 py-1 rounded-full border cursor-help ${tConf.color.badge}`}>
-                                {selectedPub.territorio}
-                              </span>
-                              <div className="hidden group-hover/terr:block absolute z-50 bottom-full left-0 mb-2 w-64 bg-gray-900/95 backdrop-blur-sm text-white text-[10px] rounded-premium p-2.5 shadow-2xl border border-gray-800 pointer-events-none normal-case leading-relaxed font-normal text-left">
-                                <p className="font-bold text-[var(--color-deep-green)] mb-1 text-[10px] uppercase tracking-wider">{selectedPub.territorio}</p>
-                                {tConf.desc}
-                              </div>
-                            </div>
-                          )
-                        })()
-                      ) : (
-                        <p className="text-xs font-bold text-gray-850 mt-0.5">-</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {selectedPub.copy && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Texto de Publicación (Copy)</p>
-                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-[180px] overflow-y-auto">
-                      {selectedPub.copy}
-                    </div>
-                  </div>
-                )}
-
-                {selectedPub.status_piece &&
-                 !['draft', 'ready', 'published', 'pending_design', 'pending_assets'].includes(selectedPub.status_piece) &&
-                 selectedPub.status_piece.trim() !== '' && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-amber-600">assignment_late</span>
-                      Tareas Pendientes
-                    </p>
-                    <div className="bg-amber-50/50 border border-amber-200/60 p-4 rounded-xl text-xs text-amber-900 space-y-1.5 max-h-[150px] overflow-y-auto">
-                      {selectedPub.status_piece.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <span className="material-symbols-outlined text-[14px] leading-none mt-0.5 text-amber-600 select-none">radio_button_unchecked</span>
-                          <span className="leading-tight font-medium">{line}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedPub.notes && selectedPub.notes.trim() !== '' && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-gray-550">info</span>
-                      Observaciones
-                    </p>
-                    <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-xs text-gray-800 leading-relaxed max-h-[150px] overflow-y-auto whitespace-pre-wrap">
-                      {selectedPub.notes}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Feedback via WhatsApp Button */}
-              <div className="pt-6 border-t border-gray-100 mt-6 space-y-3">
-                <p className="text-xs text-gray-500 font-semibold">
-                  ¿Querés hacer algún cambio en esta publicación? Mandanos tus observaciones directo a WhatsApp:
-                </p>
-                <a
-                  href={getWhatsAppLink(selectedPub)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-4 px-6 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-premium font-bold text-center flex items-center justify-center gap-2 shadow-md transition-all hover:-translate-y-0.5 text-sm"
-                >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 448 512">
-                    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.2-8.5-44.2-27.1-16.4-14.6-27.4-32.7-30.6-38.1-3.2-5.5-.3-8.5 2.4-11.2 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.3 3.8-5.7 5.7-9.4 1.9-3.7 1-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.3 5.7 23.7 9.1 31.7 11.7 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"></path>
-                  </svg>
-                  Enviar Feedback a Leandro
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

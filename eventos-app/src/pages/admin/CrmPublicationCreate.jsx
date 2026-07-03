@@ -63,6 +63,10 @@ export default function CrmPublicationCreate() {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef(null)
+  
+  const [rawAssets, setRawAssets] = useState('')
+  const [uploadingRaw, setUploadingRaw] = useState(false)
+  const rawAssetsInputRef = useRef(null)
 
   const [activeSlide, setActiveSlide] = useState(0)
 
@@ -85,6 +89,18 @@ export default function CrmPublicationCreate() {
       return trimmed.split(',').map(u => u.trim()).filter(Boolean)
     }
     return [trimmed]
+  }
+
+  const getCarouselPreviewUrls = () => {
+    const urls = getGraphicUrls(graphicUrl)
+    if (urls.length > 0) return urls
+    return getGraphicUrls(rawAssets)
+  }
+
+  const getSinglePreviewUrl = () => {
+    if (graphicUrl) return graphicUrl
+    const rawUrls = getGraphicUrls(rawAssets)
+    return rawUrls.length > 0 ? rawUrls[0] : ''
   }
 
   const isVideoFile = (url, format) => {
@@ -172,6 +188,71 @@ export default function CrmPublicationCreate() {
     }
   }
 
+  const handleRawFileUpload = async (files) => {
+    if (!files) return
+    const fileList = files instanceof FileList ? Array.from(files) : (Array.isArray(files) ? files : [files])
+    if (fileList.length === 0) return
+
+    const validFiles = []
+    for (const file of fileList) {
+      const isVideo = file.type.startsWith('video/')
+      const isImage = file.type.startsWith('image/')
+      
+      if (!isImage && !isVideo) {
+        showToast(`Solo se permiten imágenes o videos. Archivo omitido: ${file.name}`, 'error')
+        continue
+      }
+      
+      const limit = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024
+      if (file.size > limit) {
+        showToast(`El archivo "${file.name}" supera el límite permitido (${isVideo ? '100 MB' : '10 MB'}).`, 'error')
+        continue
+      }
+      validFiles.push(file)
+    }
+
+    if (validFiles.length === 0) return
+
+    setUploadingRaw(true)
+    
+    try {
+      const uploadedUrls = []
+      for (const file of validFiles) {
+        const ext = file.name.split('.').pop()
+        const fileName = `raw-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
+        
+        const { error: upErr } = await supabase.storage
+          .from('banners')
+          .upload(fileName, file, { upsert: true, contentType: file.type })
+        
+        if (upErr) throw upErr
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('banners')
+          .getPublicUrl(fileName)
+        
+        uploadedUrls.push(publicUrl)
+      }
+
+      const currentUrls = getGraphicUrls(rawAssets)
+      const newUrls = [...currentUrls, ...uploadedUrls]
+      setRawAssets(JSON.stringify(newUrls))
+      showToast(validFiles.length > 1 ? 'Materiales de respaldo subidos correctamente.' : 'Material de respaldo subido correctamente.')
+    } catch (err) {
+      console.error('Error uploading raw file:', err)
+      showToast('Error al subir el material de respaldo.', 'error')
+    } finally {
+      setUploadingRaw(false)
+    }
+  }
+
+  const handleRemoveRawAsset = (indexToRemove) => {
+    const currentUrls = getGraphicUrls(rawAssets)
+    const newUrls = currentUrls.filter((_, idx) => idx !== indexToRemove)
+    setRawAssets(newUrls.length > 0 ? JSON.stringify(newUrls) : '')
+    showToast('Archivo de respaldo eliminado.')
+  }
+
   const [recurrenceMode, setRecurrenceMode] = useState('single') // 'single' | 'weekly'
   const [endDate, setEndDate] = useState('')
   const [selectedWeekdays, setSelectedWeekdays] = useState([]) // array of getDay() numbers
@@ -254,6 +335,7 @@ export default function CrmPublicationCreate() {
             setTitle(pubData.title)
             setCopy(pubData.copy || '')
             setGraphicUrl(pubData.graphic_url || '')
+            setRawAssets(pubData.raw_assets || '')
             const sp = pubData.status_piece || ''
             setStatusPiece(sp)
             setStatusPost(pubData.status_post || 'draft')
@@ -285,6 +367,7 @@ export default function CrmPublicationCreate() {
 
   // Automatically adjust format/dimensions when Type changes
   useEffect(() => {
+    if (fetchingData) return
     if (type === 'story') {
       setDimensions('1080x1920')
       if (postFormat === 'carrousel') {
@@ -293,18 +376,15 @@ export default function CrmPublicationCreate() {
     } else {
       if (postFormat === 'reel') {
         setDimensions('1080x1920')
-      } else {
-        setDimensions('1080x1080')
       }
     }
   }, [type])
 
   // Automatically adjust dimensions when Format changes
   useEffect(() => {
-    if (postFormat === 'reel' || postFormat === 'video' && type === 'post') {
+    if (fetchingData) return
+    if (postFormat === 'reel' || (postFormat === 'video' && type === 'post')) {
       setDimensions('1080x1920')
-    } else if (type === 'post') {
-      setDimensions('1080x1080')
     }
   }, [postFormat, type])
 
@@ -328,7 +408,8 @@ export default function CrmPublicationCreate() {
       title,
       copy: type === 'post' ? (copy || null) : null,
       graphic_url: graphicUrl || null,
-      status_piece: statusPiece,
+      raw_assets: rawAssets || '',
+      status_piece: statusPiece || '',
       status_post: statusPost,
       notes: notes || null,
     }
@@ -388,7 +469,7 @@ export default function CrmPublicationCreate() {
       setTimeout(() => navigate('/admin/crm'), 1000)
     } catch (err) {
       console.error('Error saving publication:', err)
-      showToast('Error al guardar la publicación.', 'error')
+      showToast(`Error al guardar la publicación: ${err.message || ''}`, 'error')
       setLoading(false)
     }
   }
@@ -408,7 +489,7 @@ export default function CrmPublicationCreate() {
       }, 1000)
     } catch (err) {
       console.error('Error deleting publication:', err)
-      showToast('Error al eliminar la publicación.', 'error')
+      showToast(`Error al eliminar la publicación: ${err.message || ''}`, 'error')
       setLoading(false)
     }
   }
@@ -675,6 +756,7 @@ export default function CrmPublicationCreate() {
               >
                 <option value="1080x1080">Cuadrado (1080 x 1080 px)</option>
                 <option value="1080x1350">Vertical / Retrato (1080 x 1350 px)</option>
+                <option value="1080x1440">Retrato Alto (1080 x 1440 px)</option>
                 <option value="1080x1920">Vertical / Reel (1080 x 1920 px)</option>
               </select>
             </div>
@@ -905,6 +987,110 @@ export default function CrmPublicationCreate() {
               </div>
             </div>
 
+            {/* Raw Assets / Backup Materials */}
+            <div className="md:col-span-2 space-y-3 pt-4 border-t border-gray-150">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/60 block mb-1 flex items-center justify-between">
+                <span>Material de Respaldo / Recursos Originales</span>
+                <span className="text-[10px] text-[var(--color-dark-gray)]/40 font-semibold normal-case">Subí fotos o videos originales</span>
+              </label>
+
+              {/* Drag and Drop Zone */}
+              <div
+                className={`border-2 border-dashed rounded-premium p-6 text-center transition-all cursor-pointer hover:border-[var(--color-deep-green)]/40 hover:bg-[var(--color-deep-green)]/2 ${
+                  uploadingRaw ? 'border-[var(--color-deep-green)]/35 opacity-70' : 'border-gray-200'
+                }`}
+                onClick={() => !uploadingRaw && rawAssetsInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  if (uploadingRaw) return
+                  const files = e.dataTransfer.files
+                  if (files && files.length > 0) handleRawFileUpload(files)
+                }}
+              >
+                <input
+                  ref={rawAssetsInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = e.target.files
+                    if (files && files.length > 0) handleRawFileUpload(files)
+                  }}
+                />
+                {uploadingRaw ? (
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <span className="material-symbols-outlined text-3xl text-[var(--color-deep-green)] animate-spin">sync</span>
+                    <p className="text-xs font-bold text-[var(--color-deep-green)] mt-2">Subiendo archivos de respaldo...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-1">
+                    <span className="material-symbols-outlined text-3xl text-gray-400 mb-1.5">backup</span>
+                    <p className="text-xs font-semibold text-gray-600">
+                      Arrastrá recursos de respaldo o hacé clic para seleccionar
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-1">
+                      Imágenes (máx. 10MB) o Videos (máx. 100MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnail gallery */}
+              {(() => {
+                const rawUrls = getGraphicUrls(rawAssets)
+                if (rawUrls.length === 0) return null
+                return (
+                  <div className="mt-4 p-3 bg-gray-50/50 rounded-premium border border-gray-150 space-y-2">
+                    <p className="text-xs font-bold text-gray-500">Recursos de respaldo cargados ({rawUrls.length})</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {rawUrls.map((url, idx) => {
+                        const isVideo = isVideoFile(url, 'video')
+                        return (
+                          <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+                            {isVideo ? (
+                              <div className="w-full h-full relative">
+                                <video src={url} className="w-full h-full object-cover bg-slate-900" muted preload="metadata" playsInline />
+                                <div className="absolute bottom-1 right-1 bg-black/60 text-white rounded px-1 py-0.5 text-[8px] font-bold flex items-center gap-0.5 pointer-events-none">
+                                  <span className="material-symbols-outlined text-[10px] leading-none">play_arrow</span>
+                                  <span>VIDEO</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <img src={url} className="w-full h-full object-cover" alt="" />
+                            )}
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                                title="Ver / Descargar"
+                              >
+                                <span className="material-symbols-outlined text-sm">visibility</span>
+                              </a>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRemoveRawAsset(idx)
+                                }}
+                                className="w-7 h-7 rounded-full bg-red-650/80 hover:bg-red-650 text-white flex items-center justify-center transition-colors"
+                                title="Eliminar recurso"
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+
             {/* Copy / Caption */}
             {type === 'post' && (
               <div className="md:col-span-2">
@@ -1042,11 +1228,11 @@ export default function CrmPublicationCreate() {
 
               {/* Graphic container (1:1 or 9:16 aspect ratio box) */}
               <div className={`w-full relative bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 ${
-                dimensions === '1080x1920' ? 'aspect-[9/16]' : dimensions === '1080x1350' ? 'aspect-[4/5]' : 'aspect-square'
+                dimensions === '1080x1920' ? 'aspect-[9/16]' : dimensions === '1080x1350' ? 'aspect-[4/5]' : dimensions === '1080x1440' ? 'aspect-[3/4]' : 'aspect-square'
               }`}>
                 {postFormat === 'carrousel' ? (
                   (() => {
-                    const carouselUrls = getGraphicUrls(graphicUrl)
+                    const carouselUrls = getCarouselPreviewUrls()
                     if (carouselUrls.length === 0) {
                       return (
                         <div className="flex flex-col items-center justify-center text-center p-6 text-gray-400">
@@ -1114,11 +1300,11 @@ export default function CrmPublicationCreate() {
                     )
                   })()
                 ) : (
-                  graphicUrl ? (
-                    isVideoFile(graphicUrl, postFormat) ? (
+                  getSinglePreviewUrl() ? (
+                    isVideoFile(getSinglePreviewUrl(), postFormat) ? (
                       <video
-                        key={graphicUrl}
-                        src={graphicUrl}
+                        key={getSinglePreviewUrl()}
+                        src={getSinglePreviewUrl()}
                         controls
                         loop
                         autoPlay
@@ -1133,7 +1319,7 @@ export default function CrmPublicationCreate() {
                       />
                     ) : (
                       <img
-                        src={graphicUrl}
+                        src={getSinglePreviewUrl()}
                         alt="Pieza gráfica"
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -1189,11 +1375,11 @@ export default function CrmPublicationCreate() {
             /* Instagram Story Mockup */
             <div className="bg-gray-900 border-[8px] border-black rounded-[2.5rem] shadow-2xl overflow-hidden max-w-sm mx-auto aspect-[9/16] relative text-white animate-slide-in">
               {/* Background graphic */}
-              {graphicUrl ? (
-                isVideoFile(graphicUrl, postFormat) ? (
+              {getSinglePreviewUrl() ? (
+                isVideoFile(getSinglePreviewUrl(), postFormat) ? (
                   <video
-                    key={graphicUrl}
-                    src={graphicUrl}
+                    key={getSinglePreviewUrl()}
+                    src={getSinglePreviewUrl()}
                     controls
                     loop
                     autoPlay
@@ -1208,7 +1394,7 @@ export default function CrmPublicationCreate() {
                   />
                 ) : (
                   <img
-                    src={graphicUrl}
+                    src={getSinglePreviewUrl()}
                     alt="Story graphic"
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => {
@@ -1223,7 +1409,7 @@ export default function CrmPublicationCreate() {
               {/* Fallback for story */}
               <div 
                 className="fallback-msg-story absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-gradient-to-b from-gray-800 to-gray-900 text-gray-500"
-                style={{ display: graphicUrl ? 'none' : 'flex' }}
+                style={{ display: getSinglePreviewUrl() ? 'none' : 'flex' }}
               >
                 <span className="material-symbols-outlined text-5xl mb-3 text-gray-700">
                   {postFormat === 'video' ? 'video_file' : 'photo_album'}

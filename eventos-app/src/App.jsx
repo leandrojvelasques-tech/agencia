@@ -11,9 +11,11 @@ import EventDetail from './pages/admin/EventDetail'
 import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
 import EventMinuta from './pages/admin/EventMinuta'
+import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
+import CrmSatisfactionDashboard from './pages/admin/CrmSatisfactionDashboard'
 import CrmPublicationCreate from './pages/admin/CrmPublicationCreate'
 import CrmProposalsDashboard from './pages/admin/CrmProposalsDashboard'
 import CrmProposalCreate from './pages/admin/CrmProposalCreate'
@@ -72,9 +74,11 @@ export default function App() {
           <Route path="eventos/:id/participantes" element={<EventParticipants />} />
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
+          <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
           
           {/* CRM Private Routes */}
           <Route path="crm" element={<CrmDashboard />} />
+          <Route path="crm/satisfaccion" element={<CrmSatisfactionDashboard />} />
           <Route path="crm/publicacion/nueva" element={<CrmPublicationCreate />} />
           <Route path="crm/publicacion/:id/editar" element={<CrmPublicationCreate />} />
           <Route path="crm/presupuestos" element={<CrmProposalsDashboard />} />
@@ -95,7 +99,7 @@ export default function App() {
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />
 
         {/* CRM Client Shared Route */}
-        <Route path="/crm/cliente/:token" element={<CrmClientPortal />} />
+        <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
 
         {/* Fallback */}

@@ -18,12 +18,16 @@
             "destination": "/api/event-meta?slug=:slug"
         },
         {
+            "source": "/evento/:slug/inscripcion",
+            "destination": "/api/event-meta?slug=:slug"
+        },
+        {
             "source": "/evento/:slug/:subpath*",
             "destination": "/_app/index.html"
         },
         {
-            "source": "/crm/cliente/:token",
-            "destination": "/_app/index.html"
+            "source": "/crm/cliente/:token/:slug*",
+            "destination": "/api/event-meta?token=:token"
         },
         {
             "source": "/_app/:path*",

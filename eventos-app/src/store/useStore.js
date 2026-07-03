@@ -11,8 +11,8 @@ export const useStore = create((set, get) => ({
   registrations: [],
   participants: [],
   attendance: [],
-  certificates: [],
   proposals: [],
+  agendaTemplates: [],
 
   // Auth
   login: async (email, password) => {
@@ -208,7 +208,7 @@ export const useStore = create((set, get) => ({
   },
 
   addParticipantManual: async (eventId, participantData) => {
-    const { attendance_mode = 'presencial', ...pData } = participantData
+    const { attendance_mode = 'presencial', selected_date = null, ...pData } = participantData
     // 1. Check/Create Participant
     let participantId
     const { data: existing } = await supabase
@@ -237,7 +237,8 @@ export const useStore = create((set, get) => ({
         participant_id: participantId,
         source: 'manual',
         status: 'registered',
-        attendance_mode
+        attendance_mode,
+        selected_date
       }])
       .select('*, participants(*)')
       .single()
@@ -251,7 +252,7 @@ export const useStore = create((set, get) => ({
   },
 
   updateParticipantManual: async (participantId, data) => {
-    const { registrationId, attendance_mode, ...pData } = data
+    const { registrationId, attendance_mode, selected_date, ...pData } = data
     const { data: updated, error } = await supabase
       .from('participants')
       .update(pData)
@@ -260,16 +261,24 @@ export const useStore = create((set, get) => ({
       .single()
 
     if (!error) {
-      if (attendance_mode && registrationId) {
+      if (registrationId && (attendance_mode || selected_date)) {
+        const updateObj = {}
+        if (attendance_mode) updateObj.attendance_mode = attendance_mode
+        if (selected_date) updateObj.selected_date = selected_date
         await supabase
           .from('registrations')
-          .update({ attendance_mode })
+          .update(updateObj)
           .eq('id', registrationId)
       }
       set(state => ({
         registrations: state.registrations.map(r => 
           r.participants?.id === participantId 
-            ? { ...r, participants: updated, attendance_mode: attendance_mode || r.attendance_mode } 
+            ? { 
+                ...r, 
+                participants: updated, 
+                attendance_mode: attendance_mode || r.attendance_mode,
+                selected_date: selected_date || r.selected_date 
+              } 
             : r
         )
       }))
@@ -298,20 +307,26 @@ export const useStore = create((set, get) => ({
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
-    const { attendance_mode = 'presencial', survey_responses = null, ...pData } = participantData
+    const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, ...pData } = participantData
 
-    // Check capacity for chosen modality
+    // Check capacity for chosen modality and selected date
     const maxCap = attendance_mode === 'presencial' ? event.max_capacity_presencial : event.max_capacity_virtual;
     if (maxCap !== null && maxCap !== undefined && maxCap !== '') {
-      const { count, error: countErr } = await supabase
+      const query = supabase
         .from('registrations')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', event.id)
         .eq('attendance_mode', attendance_mode)
         .neq('status', 'cancelled')
       
+      if (selected_date) {
+        query.eq('selected_date', selected_date)
+      }
+
+      const { count, error: countErr } = await query
+      
       if (!countErr && count >= Number(maxCap)) {
-        return { success: false, error: `Disculpas, los cupos para la modalidad ${attendance_mode} están agotados.` }
+        return { success: false, error: `Disculpas, los cupos para la modalidad ${attendance_mode} están agotados para la fecha seleccionada.` }
       }
     }
 
@@ -345,7 +360,9 @@ export const useStore = create((set, get) => ({
         source: 'self_registration',
         status: 'confirmed',
         attendance_mode,
-        survey_responses
+        selected_date,
+        survey_responses,
+        payment_receipt_url
       }])
       .select()
       .single()
@@ -535,6 +552,67 @@ export const useStore = create((set, get) => ({
     if (!error) {
       set(state => ({
         proposals: state.proposals.filter(p => p.id !== id)
+      }))
+      return { success: true }
+    }
+    return { success: false, error }
+  },
+
+  // Agenda Templates Actions
+  fetchAgendaTemplates: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('agenda_templates')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (!error && data) {
+      set({ agendaTemplates: data })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  createAgendaTemplate: async (templateData) => {
+    const { data, error } = await supabase
+      .from('agenda_templates')
+      .insert([templateData])
+      .select()
+      .single()
+    
+    if (!error && data) {
+      set(state => ({ agendaTemplates: [...state.agendaTemplates, data].sort((a, b) => a.name.localeCompare(b.name)) }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  updateAgendaTemplate: async (id, templateData) => {
+    const { data, error } = await supabase
+      .from('agenda_templates')
+      .update(templateData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (!error && data) {
+      set(state => ({
+        agendaTemplates: state.agendaTemplates.map(t => t.id === id ? data : t)
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  deleteAgendaTemplate: async (id) => {
+    const { error } = await supabase
+      .from('agenda_templates')
+      .delete()
+      .eq('id', id)
+    
+    if (!error) {
+      set(state => ({
+        agendaTemplates: state.agendaTemplates.filter(t => t.id !== id)
       }))
       return { success: true }
     }
