@@ -2,6 +2,17 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 
+const getCarrera = (responses) => {
+  if (!responses) return '—';
+  if (responses.profesion === 'Profesional de Ciencias Económicas') {
+    return responses.profesion_carrera || '—';
+  }
+  if (responses.profesion === 'Estudiante Universitario') {
+    return responses.profesion_estudiante_carrera || '—';
+  }
+  return '—';
+};
+
 const renderRegistrationInfo = (responses) => {
   if (!responses) return null;
   const isEc = responses.profesion === 'Profesional de Ciencias Económicas';
@@ -14,64 +25,73 @@ const renderRegistrationInfo = (responses) => {
   ];
   const otherResponses = Object.entries(responses).filter(([k]) => !knownKeys.includes(k));
 
+  const hasDetails = responses.profesion || otherResponses.length > 0;
+  if (!hasDetails) return null;
+
   return (
-    <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-1 shadow-sm">
-      <div>
-        <strong className="text-[var(--color-deep-green)]">Profesión/Ocupación:</strong> {responses.profesion || '—'}
-      </div>
-      {isEc && (
-        <>
-          {responses.profesion_carrera && (
-            <div>
-              <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_carrera}
-            </div>
-          )}
-          {responses.esta_matriculado && (
-            <div>
-              <strong className="text-[var(--color-deep-green)]">Matriculado:</strong> {responses.esta_matriculado}
-              {responses.esta_matriculado === 'Sí' && responses.consejo && ` en ${responses.consejo}`}
-            </div>
-          )}
-          {responses.matriculado && (
-            <div>
-              <strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {responses.matriculado}
-            </div>
-          )}
-        </>
-      )}
-      {isEst && (
-        <>
-          {responses.profesion_estudiante_carrera && (
-            <div>
-              <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_estudiante_carrera}
-            </div>
-          )}
-          {responses.profesion_estudiante_univ && (
-            <div>
-              <strong className="text-[var(--color-deep-green)]">Universidad:</strong> {responses.profesion_estudiante_univ}
-            </div>
-          )}
-        </>
-      )}
-      {isOtro && responses.profesion_otro && (
+    <details className="mt-2 group select-none">
+      <summary className="text-[11px] font-bold text-[var(--color-deep-green)] cursor-pointer hover:underline list-none flex items-center gap-1 outline-none [&::-webkit-details-marker]:hidden">
+        <span className="material-symbols-outlined text-[14px] transition-transform group-open:rotate-90">chevron_right</span>
+        Ver encuesta
+      </summary>
+      <div className="mt-2 text-[11px] text-[var(--color-dark-gray)]/60 font-normal leading-relaxed bg-[var(--color-refined-gray)]/40 p-2.5 rounded-lg border border-[var(--color-deep-green)]/10 max-w-xs space-y-1 shadow-sm">
         <div>
-          <strong className="text-[var(--color-deep-green)]">Detalle:</strong> {responses.profesion_otro}
+          <strong className="text-[var(--color-deep-green)]">Profesión/Ocupación:</strong> {responses.profesion || '—'}
         </div>
-      )}
-      {otherResponses.length > 0 && (
-        <div className="mt-1 pt-1 border-t border-[var(--color-deep-green)]/10 space-y-0.5">
-          {otherResponses.map(([label, val]) => {
-            if (val === undefined || val === null || val === '') return null;
-            const dispVal = typeof val === 'boolean' ? (val ? 'Sí' : 'No') : val;
-            return (
-              <div key={label}>
-                <strong className="text-[var(--color-deep-green)]">{label}:</strong> {dispVal}
+        {isEc && (
+          <>
+            {responses.profesion_carrera && (
+              <div>
+                <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_carrera}
               </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+            )}
+            {responses.esta_matriculado && (
+              <div>
+                <strong className="text-[var(--color-deep-green)]">Matriculado:</strong> {responses.esta_matriculado}
+                {responses.esta_matriculado === 'Sí' && responses.consejo && ` en ${responses.consejo}`}
+              </div>
+            )}
+            {responses.matriculado && (
+              <div>
+                <strong className="text-[var(--color-deep-green)]">Matrícula:</strong> {responses.matriculado}
+              </div>
+            )}
+          </>
+        )}
+        {isEst && (
+          <>
+            {responses.profesion_estudiante_carrera && (
+              <div>
+                <strong className="text-[var(--color-deep-green)]">Carrera:</strong> {responses.profesion_estudiante_carrera}
+              </div>
+            )}
+            {responses.profesion_estudiante_univ && (
+              <div>
+                <strong className="text-[var(--color-deep-green)]">Universidad:</strong> {responses.profesion_estudiante_univ}
+              </div>
+            )}
+          </>
+        )}
+        {isOtro && responses.profesion_otro && (
+          <div>
+            <strong className="text-[var(--color-deep-green)]">Detalle:</strong> {responses.profesion_otro}
+          </div>
+        )}
+        {otherResponses.length > 0 && (
+          <div className="mt-1 pt-1 border-t border-[var(--color-deep-green)]/10 space-y-0.5">
+            {otherResponses.map(([label, val]) => {
+              if (val === undefined || val === null || val === '') return null;
+              const dispVal = typeof val === 'boolean' ? (val ? 'Sí' : 'No') : val;
+              return (
+                <div key={label}>
+                  <strong className="text-[var(--color-deep-green)]">{label}:</strong> {dispVal}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </details>
   );
 };
 
@@ -288,13 +308,13 @@ export default function EventParticipants() {
                     <th>Teléfono</th>
                     <th>Fecha Elegida</th>
                     <th>Modalidad</th>
-                    <th>Origen</th>
+                    <th>Carrera</th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
+                    <tr><td colSpan={7} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
                   ) : filtered.map(r => (
                     <tr key={r.id}>
                       <td className="font-semibold text-[var(--color-dark-gray)]">
@@ -323,7 +343,7 @@ export default function EventParticipants() {
                           {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
                         </span>
                       </td>
-                      <td><span className="badge badge-gray">{r.source === 'manual' ? 'Manual' : 'Autoinscripción'}</span></td>
+                      <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getCarrera(r.survey_responses)}</td>
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button onClick={() => handleOpenEdit(r)} className="btn-ghost !p-1.5 text-blue-600 hover:bg-blue-50" title="Editar">
