@@ -315,6 +315,19 @@ export default function EventRegister() {
       payment_receipt_url: paymentReceiptUrl || null
     })
     if (result.success) {
+      // Trigger the welcome email in the background
+      try {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            registrationId: result.registration.id,
+            type: 'welcome'
+          })
+        }).catch(err => console.error('Error triggering welcome email:', err));
+      } catch (err) {
+        console.error('Error triggering welcome email:', err);
+      }
       navigate(`/evento/${slug}/confirmacion`)
     } else {
       setError(result.error)

@@ -12,6 +12,7 @@ import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
 import EventMinuta from './pages/admin/EventMinuta'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
+import SettingsDashboard from './pages/admin/SettingsDashboard'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
           <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
+          <Route path="configuracion" element={<SettingsDashboard />} />
           
           {/* CRM Private Routes */}
           <Route path="crm" element={<CrmDashboard />} />

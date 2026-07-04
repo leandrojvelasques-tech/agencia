@@ -252,7 +252,7 @@ export const useStore = create((set, get) => ({
   },
 
   updateParticipantManual: async (participantId, data) => {
-    const { registrationId, attendance_mode, selected_date, ...pData } = data
+    const { registrationId, attendance_mode, selected_date, status, ...pData } = data
     const { data: updated, error } = await supabase
       .from('participants')
       .update(pData)
@@ -261,10 +261,11 @@ export const useStore = create((set, get) => ({
       .single()
 
     if (!error) {
-      if (registrationId && (attendance_mode || selected_date)) {
+      if (registrationId && (attendance_mode || selected_date || status)) {
         const updateObj = {}
         if (attendance_mode) updateObj.attendance_mode = attendance_mode
         if (selected_date) updateObj.selected_date = selected_date
+        if (status) updateObj.status = status
         await supabase
           .from('registrations')
           .update(updateObj)
@@ -277,7 +278,8 @@ export const useStore = create((set, get) => ({
                 ...r, 
                 participants: updated, 
                 attendance_mode: attendance_mode || r.attendance_mode,
-                selected_date: selected_date || r.selected_date 
+                selected_date: selected_date || r.selected_date,
+                status: status || r.status
               } 
             : r
         )

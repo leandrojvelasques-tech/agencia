@@ -136,7 +136,7 @@ export default function EventParticipants() {
   const handleOpenAdd = () => {
     setEditingParticipant(null)
     const dates = event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]
-    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial', selected_date: dates[0] || '' })
+    setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial', selected_date: dates[0] || '', status: 'registered' })
     setShowModal(true)
   }
 
@@ -150,7 +150,8 @@ export default function EventParticipants() {
       phone: p.phone || '',
       notes: p.notes || '',
       attendance_mode: reg.attendance_mode || 'presencial',
-      selected_date: reg.selected_date || ''
+      selected_date: reg.selected_date || '',
+      status: reg.status || 'registered'
     })
     setShowModal(true)
   }
@@ -161,12 +162,46 @@ export default function EventParticipants() {
     const payload = { ...form }
 
     if (editingParticipant) {
+      const oldReg = registrations.find(r => r.id === editingParticipant.registrationId)
+      const isStatusChanged = oldReg && oldReg.status !== form.status
+
       await updateParticipantManual(editingParticipant.participantId, {
         ...payload,
         registrationId: editingParticipant.registrationId
       })
+
+      // If status changed to cancelled, trigger cancellation email
+      if (isStatusChanged && form.status === 'cancelled') {
+        try {
+          fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              registrationId: editingParticipant.registrationId,
+              type: 'cancellation'
+            })
+          }).catch(err => console.error('Error triggering cancellation email:', err))
+        } catch (err) {
+          console.error('Error triggering cancellation email:', err)
+        }
+      }
     } else {
-      await addParticipantManual(id, payload)
+      const newReg = await addParticipantManual(id, payload)
+      // If newly added manually, and has email, trigger welcome email
+      if (newReg && payload.email) {
+        try {
+          fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              registrationId: newReg.id,
+              type: 'welcome'
+            })
+          }).catch(err => console.error('Error triggering welcome email:', err))
+        } catch (err) {
+          console.error('Error triggering welcome email:', err)
+        }
+      }
     }
     
     setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
@@ -484,6 +519,14 @@ export default function EventParticipants() {
                 <select className="form-input !py-2.5" value={form.attendance_mode} onChange={e => setForm(p => ({ ...p, attendance_mode: e.target.value }))}>
                   <option value="presencial">🏫 Presencial</option>
                   <option value="virtual">💻 Virtual</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Estado *</label>
+                <select className="form-input !py-2.5" value={form.status || 'registered'} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
+                  <option value="registered">Registrado</option>
+                  <option value="confirmed">Confirmado</option>
+                  <option value="cancelled">❌ Cancelado</option>
                 </select>
               </div>
               {event.offered_dates && event.offered_dates.length > 0 && (

@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/admin/crm/satisfaccion', icon: 'reviews', label: 'Satisfacción' },
   { to: '/admin/crm/presupuestos', icon: 'payments', label: 'Presupuestos' },
   { to: '/admin/crm/presentaciones', icon: 'slideshow', label: 'Presentador' },
+  { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },
 ]
 
 export default function AdminLayout() {
