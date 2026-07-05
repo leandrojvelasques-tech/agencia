@@ -48,6 +48,64 @@ function safeFetch(url, options = {}) {
   });
 }
 
+function formatAgendaHtml(agenda) {
+  if (!Array.isArray(agenda) || agenda.length === 0) return 'No hay agenda definida para este evento.';
+  
+  let html = '<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">';
+  
+  if (agenda[0] && 'blocks' in agenda[0]) {
+    // New format (nested classes/blocks)
+    agenda.forEach((c) => {
+      html += `<div style="margin-bottom: 20px;">`;
+      html += `<h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">${c.title}`;
+      if (c.start_time || c.end_time) {
+        html += ` <span style="font-size: 12px; color: #666; font-weight: normal;">(${c.start_time || '—'}${c.end_time ? ` - ${c.end_time}` : ''} hs)</span>`;
+      }
+      html += `</h4>`;
+      
+      if (Array.isArray(c.blocks) && c.blocks.length > 0) {
+        html += `<div style="margin-left: 15px; border-left: 1px solid #ddd; padding-left: 10px;">`;
+        c.blocks.forEach((b) => {
+          html += `<div style="margin-bottom: 10px;">`;
+          if (b.title) {
+            html += `<p style="margin: 0; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #0b5e3a;">${b.title}</p>`;
+          }
+          if (b.description) {
+            html += `<p style="margin: 2px 0 0 0; font-size: 13px; color: #444; line-height: 1.4;">${b.description}</p>`;
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+      
+      if (c.break_duration > 0) {
+        html += `<p style="margin: 5px 0 0 15px; font-size: 12px; color: #0b5e3a; font-style: italic;">☕ Break / Receso (${c.break_duration} min)</p>`;
+      }
+      html += `</div>`;
+    });
+  } else {
+    // Old format fallback
+    agenda.forEach((item) => {
+      if (item.topic || item.block) {
+        html += `<div style="margin-bottom: 12px;">`;
+        let timeHeader = '';
+        if (item.time) {
+          timeHeader = `<strong style="color: #0b5e3a;">${item.time} hs</strong>: `;
+        }
+        html += `<p style="margin: 0; font-size: 13px; color: #333;">${timeHeader}`;
+        if (item.block) {
+          html += `<span style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #888;">[${item.block}]</span> `;
+        }
+        html += `${item.topic}</p>`;
+        html += `</div>`;
+      }
+    });
+  }
+  
+  html += '</div>';
+  return html.replace(/\n/g, ''); // Remove newlines so they are not replaced by <br> in email mapping
+}
+
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -123,6 +181,13 @@ module.exports = async (req, res) => {
     // Formato de modalidad descriptivo
     const modalityStr = registration.attendance_mode === 'virtual' ? 'Virtual (Online)' : 'Presencial';
 
+    // Generar enlaces dinámicos
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host || 'www.leandrovelasques.com.ar';
+    const domain = `${protocol}://${host}`;
+    const eventUrl = `${domain}/evento/${event.slug}`;
+    const liveLink = event.live_link || '';
+
     const placeholders = {
       '{{nombre}}': participant.first_name || '',
       '{{apellido}}': participant.last_name || '',
@@ -130,7 +195,12 @@ module.exports = async (req, res) => {
       '{{fecha}}': dateStr,
       '{{horario}}': event.start_time || '',
       '{{modalidad}}': modalityStr,
-      '{{coordinador}}': event.coordinator || 'Leandro Velasques'
+      '{{coordinador}}': event.coordinator || 'Leandro Velasques',
+      '{{agenda}}': formatAgendaHtml(event.agenda),
+      '{{link_inscripcion}}': eventUrl,
+      '{{link_evento}}': eventUrl,
+      '{{link_reunion}}': liveLink,
+      '{{link_acceso}}': liveLink
     };
 
     let resolvedSubject = template.subject;

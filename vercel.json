@@ -1,6 +1,12 @@
 {
     "buildCommand": "cd eventos-app && npm install && npm run build",
     "outputDirectory": ".",
+    "crons": [
+        {
+            "path": "/api/send-reminders",
+            "schedule": "0 11 * * *"
+        }
+    ],
     "redirects": [
         {
             "source": "/index_en.html",

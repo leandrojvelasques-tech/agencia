@@ -131,6 +131,9 @@ export default function SettingsDashboard() {
     { tag: '{{horario}}', desc: 'Hora de inicio del evento' },
     { tag: '{{modalidad}}', desc: 'Modalidad de asistencia (Presencial / Virtual)' },
     { tag: '{{coordinador}}', desc: 'Coordinador del evento' },
+    { tag: '{{agenda}}', desc: 'Agenda o programa del evento (formateado en HTML)' },
+    { tag: '{{link_inscripcion}}', desc: 'Enlace a la landing page del evento (alias: {{link_evento}})' },
+    { tag: '{{link_reunion}}', desc: 'Enlace de acceso a la reunión virtual (alias: {{link_acceso}})' },
   ]
 
   return (
@@ -180,26 +183,50 @@ export default function SettingsDashboard() {
                 Editar Plantilla
               </h2>
 
-              <div className="flex gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
                 <button
+                  type="button"
                   onClick={() => handleTemplateChange('welcome')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     selectedTemplateId === 'welcome'
                       ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
                       : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
                   }`}
                 >
-                  Email de Bienvenida
+                  Bienvenida (Inscripto)
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleTemplateChange('cancellation')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     selectedTemplateId === 'cancellation'
                       ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
                       : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
                   }`}
                 >
-                  Email de Cancelación
+                  Cancelación
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTemplateChange('reminder_24h')}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    selectedTemplateId === 'reminder_24h'
+                      ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
+                  }`}
+                >
+                  Recordatorio (24hs)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTemplateChange('reminder_same_day')}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    selectedTemplateId === 'reminder_same_day'
+                      ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
+                  }`}
+                >
+                  Recordatorio (Mismo Día)
                 </button>
               </div>
 
@@ -351,8 +378,12 @@ export default function SettingsDashboard() {
                       let typeLabel = log.type
                       if (log.type === 'welcome') typeLabel = 'Bienvenida (Inscripto)'
                       else if (log.type === 'cancellation') typeLabel = 'Cancelación (Inscripto)'
+                      else if (log.type === 'reminder_24h') typeLabel = 'Recordatorio (24hs)'
+                      else if (log.type === 'reminder_same_day') typeLabel = 'Recordatorio (Mismo Día)'
                       else if (log.type === 'coordinator_welcome') typeLabel = 'Notificación (Coordinador)'
                       else if (log.type === 'coordinator_cancellation') typeLabel = 'Notificación Cancelación'
+                      else if (log.type === 'coordinator_reminder_24h') typeLabel = 'Recordatorio 24hs (Coordinador)'
+                      else if (log.type === 'coordinator_reminder_same_day') typeLabel = 'Recordatorio Mismo Día (Coordinador)'
 
                       return (
                         <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50/20">
