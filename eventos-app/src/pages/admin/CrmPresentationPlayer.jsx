@@ -186,7 +186,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     if (slides[currentIdx]) {
       setSelectedGuideItemId(`auto-slide-${slides[currentIdx].id}`)
     }
-  }, [currentIdx, slides])
+  }, [currentIdx])
 
   // Helper to find the active selected item's notes
   const selectedStepNotes = (() => {
