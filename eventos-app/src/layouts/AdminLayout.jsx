@@ -64,6 +64,7 @@ export default function AdminLayout() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === '/admin/crm'}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `
                 flex items-center gap-3 px-4 py-3 rounded-[var(--radius-premium)] text-sm font-semibold transition-all
