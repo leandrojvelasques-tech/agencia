@@ -96,6 +96,15 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
   const [argentinaTime, setArgentinaTime] = useState('')
+  const [notesTab, setNotesTab] = useState('guide') // 'guide' or 'notes'
+  const [checkedItems, setCheckedItems] = useState({}) // { [itemId]: boolean }
+
+  const toggleItemChecked = (itemId) => {
+    setCheckedItems(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }))
+  }
 
   useEffect(() => {
     if (!isPresenterWindow) return
@@ -679,11 +688,102 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
               )}
             </div>
 
-            {/* Notes box */}
+            {/* Notes & Guide box */}
             <div className="flex-1 min-h-0 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col">
-              <span className="text-[10px] font-bold text-gray-450 uppercase tracking-wider block mb-3">Notas para esta Diapositiva</span>
-              <div className="flex-1 overflow-y-auto text-sm leading-relaxed text-gray-200 whitespace-pre-line font-medium pr-1">
-                {currentSlide?.notes || 'Sin notas escritas para esta diapositiva.'}
+              <div className="flex gap-4 border-b border-white/10 mb-3 shrink-0">
+                <button
+                  onClick={() => setNotesTab('guide')}
+                  className={`pb-2 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+                    notesTab === 'guide'
+                      ? 'border-[#A8D5C1] text-[#A8D5C1]'
+                      : 'border-transparent text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
+                  Guía de Pasos
+                </button>
+                <button
+                  onClick={() => setNotesTab('notes')}
+                  className={`pb-2 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+                    notesTab === 'notes'
+                      ? 'border-[#A8D5C1] text-[#A8D5C1]'
+                      : 'border-transparent text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">sticky_note_2</span>
+                  Notas Generales
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-1">
+                {notesTab === 'guide' ? (
+                  <div className="space-y-3.5">
+                    {!currentSlide?.guide || currentSlide.guide.length === 0 ? (
+                      <p className="text-xs text-gray-450 italic py-4">No hay guía de pasos para esta diapositiva.</p>
+                    ) : (
+                      currentSlide.guide.map((item) => {
+                        const isChecked = !!checkedItems[item.id]
+                        
+                        let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                        let typeText = 'General'
+                        let iconName = 'description'
+                        
+                        if (item.type === 'diapo') {
+                          badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                          typeText = 'Diapo'
+                          iconName = 'movie'
+                        } else if (item.type === 'sitio_web') {
+                          badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                          typeText = 'Sitio Web'
+                          iconName = 'language'
+                        } else if (item.type === 'chatgpt') {
+                          badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                          typeText = 'ChatGPT'
+                          iconName = 'smart_toy'
+                        }
+                        
+                        return (
+                          <div 
+                            key={item.id} 
+                            onClick={() => toggleItemChecked(item.id)}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer flex gap-3 items-start select-none ${
+                              isChecked 
+                                ? 'bg-white/5 border-white/10 opacity-40' 
+                                : 'bg-white/10 border-white/20 hover:bg-white/15'
+                            }`}
+                          >
+                            <div className="pt-0.5 shrink-0">
+                              <span className="material-symbols-outlined text-lg">
+                                {isChecked ? 'check_box' : 'check_box_outline_blank'}
+                              </span>
+                            </div>
+                            
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeColor} flex items-center gap-1`}>
+                                  <span className="material-symbols-outlined text-[10px]">{iconName}</span>
+                                  {typeText}
+                                </span>
+                                <h4 className={`text-xs font-bold leading-normal truncate ${isChecked ? 'line-through' : 'text-white'}`}>
+                                  {item.title || 'Paso sin título'}
+                                </h4>
+                              </div>
+                              {item.details && (
+                                <p className={`text-[11px] leading-relaxed font-medium ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
+                                  {item.details}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm leading-relaxed text-gray-200 whitespace-pre-line font-medium">
+                    {currentSlide?.notes || 'Sin notas escritas para esta diapositiva.'}
+                  </div>
+                )}
               </div>
             </div>
 

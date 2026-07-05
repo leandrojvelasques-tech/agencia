@@ -87,6 +87,28 @@ export default function CrmPresentationEditor() {
 
   const selectedSlide = slides.find(s => s.id === selectedSlideId)
 
+  const guide = selectedSlide?.guide || []
+
+  const handleAddGuideItem = () => {
+    const newItem = {
+      id: crypto.randomUUID(),
+      type: 'diapo',
+      title: '',
+      details: ''
+    }
+    handleUpdateSlideField('guide', [...guide, newItem])
+  }
+
+  const handleUpdateGuideItem = (itemId, field, value) => {
+    const updated = guide.map(item => item.id === itemId ? { ...item, [field]: value } : item)
+    handleUpdateSlideField('guide', updated)
+  }
+
+  const handleDeleteGuideItem = (itemId) => {
+    const updated = guide.filter(item => item.id !== itemId)
+    handleUpdateSlideField('guide', updated)
+  }
+
   const handleUpdateSlideField = (field, value) => {
     setSlides(prev => prev.map(s => {
       if (s.id === selectedSlideId) {
@@ -588,6 +610,73 @@ export default function CrmPresentationEditor() {
                       className="form-input border border-gray-200 text-xs py-1.5"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Presenter Checklist Guide */}
+              <div className="border-t border-gray-150 pt-5">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base">checklist</span>
+                    Guía del Expositor
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddGuideItem}
+                    className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
+                    Agregar paso
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {guide.length === 0 ? (
+                    <p className="text-[10px] text-gray-400 italic">No hay pasos creados para esta diapositiva. Agrega uno para usar de guía durante tu presentación.</p>
+                  ) : (
+                    guide.map((item) => (
+                      <div key={item.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl relative space-y-2">
+                        {/* Header of guide item: Action selector and delete */}
+                        <div className="flex items-center justify-between gap-2">
+                          <select
+                            value={item.type}
+                            onChange={(e) => handleUpdateGuideItem(item.id, 'type', e.target.value)}
+                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[10px] font-bold text-gray-700 outline-none focus:border-[var(--color-deep-green)] cursor-pointer"
+                          >
+                            <option value="diapo">🎬 Diapo</option>
+                            <option value="sitio_web">🌐 Sitio Web</option>
+                            <option value="chatgpt">🤖 ChatGPT</option>
+                            <option value="general">📝 Nota / General</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteGuideItem(item.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                            title="Eliminar paso"
+                          >
+                            <span className="material-symbols-outlined text-base leading-none">delete</span>
+                          </button>
+                        </div>
+
+                        {/* Title input */}
+                        <input
+                          type="text"
+                          value={item.title || ''}
+                          onChange={(e) => handleUpdateGuideItem(item.id, 'title', e.target.value)}
+                          placeholder="Título del paso (ej: ChatGPT gratis vs pago)..."
+                          className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
+                        />
+
+                        {/* Details textarea */}
+                        <textarea
+                          value={item.details || ''}
+                          onChange={(e) => handleUpdateGuideItem(item.id, 'details', e.target.value)}
+                          placeholder="Detalle o instrucción (ej: Mostrar diferencia de costos)..."
+                          className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg h-12 focus:border-[var(--color-deep-green)] outline-none resize-none font-medium leading-normal"
+                        />
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
