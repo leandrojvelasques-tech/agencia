@@ -15,6 +15,7 @@ export default function CrmPresentationEditor() {
   const [description, setDescription] = useState('')
   const [slides, setSlides] = useState([])
   const [selectedSlideId, setSelectedSlideId] = useState(null)
+  const [draggedSlideIdx, setDraggedSlideIdx] = useState(null)
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -97,6 +98,44 @@ export default function CrmPresentationEditor() {
       details: ''
     }
     handleUpdateSlideField('guide', [...guide, newItem])
+  }
+
+  const handleAddSlideToGuide = () => {
+    const newItem = {
+      id: crypto.randomUUID(),
+      type: 'diapo',
+      title: selectedSlide?.title || 'Diapositiva',
+      details: ''
+    }
+    handleUpdateSlideField('guide', [...guide, newItem])
+  }
+
+  const handleDragStart = (e, index) => {
+    setDraggedSlideIdx(index)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+  }
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault()
+    if (draggedSlideIdx === null || draggedSlideIdx === targetIdx) return
+
+    const newSlides = [...slides]
+    const draggedItem = newSlides[draggedSlideIdx]
+    
+    newSlides.splice(draggedSlideIdx, 1)
+    newSlides.splice(targetIdx, 0, draggedItem)
+    
+    setSlides(newSlides)
+    setDraggedSlideIdx(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedSlideIdx(null)
   }
 
   const handleUpdateGuideItem = (itemId, field, value) => {
@@ -439,8 +478,13 @@ export default function CrmPresentationEditor() {
                 return (
                   <div
                     key={s.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, i)}
+                    onDragOver={(e) => handleDragOver(e, i)}
+                    onDrop={(e) => handleDrop(e, i)}
+                    onDragEnd={handleDragEnd}
                     onClick={() => setSelectedSlideId(s.id)}
-                    className={`p-3 border rounded-xl cursor-pointer transition-all flex flex-col gap-1.5 relative overflow-hidden select-none ${
+                    className={`p-3 border rounded-xl cursor-grab active:cursor-grabbing transition-all flex flex-col gap-1.5 relative overflow-hidden select-none ${
                       isSelected 
                         ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 ring-1 ring-[var(--color-deep-green)]/10' 
                         : 'border-gray-200 hover:bg-gray-50'
@@ -632,14 +676,25 @@ export default function CrmPresentationEditor() {
                     <span className="material-symbols-outlined text-base">checklist</span>
                     Guía del Expositor
                   </label>
-                  <button
-                    type="button"
-                    onClick={handleAddGuideItem}
-                    className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
-                    Agregar paso
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAddSlideToGuide}
+                      className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                      title="Agregar diapositiva a la guía"
+                    >
+                      <span className="material-symbols-outlined text-sm leading-none">add_photo_alternate</span>
+                      + Diapo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddGuideItem}
+                      className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
+                      Agregar paso
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
