@@ -190,6 +190,21 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     }
   }, [currentIdx])
 
+  // Helper to find the active selected item object
+  const selectedStepItem = (() => {
+    if (!selectedGuideItemId) return null
+    if (selectedGuideItemId.startsWith('auto-slide-')) {
+      const slideId = selectedGuideItemId.replace('auto-slide-', '')
+      const slide = slides.find(s => s.id === slideId)
+      return slide ? { ...slide, isAuto: true } : null
+    }
+    for (const slide of slides) {
+      const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+      if (item) return { ...item, isAuto: false }
+    }
+    return null
+  })()
+
   // Helper to find the active selected item's notes
   const selectedStepNotes = (() => {
     if (!selectedGuideItemId) return ''
@@ -293,6 +308,77 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     if (id) {
       supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
         if (error) console.error('Error deleting guide item', error)
+      })
+    }
+  }
+
+  const handleAddStepInPlayer = () => {
+    if (slides.length === 0) return
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    const currentSlide = newSlides[currentIdx]
+    if (!currentSlide) return
+
+    const newStep = {
+      id: crypto.randomUUID(),
+      type: 'general',
+      title: 'Nuevo paso',
+      details: '',
+      url: ''
+    }
+
+    if (!Array.isArray(currentSlide.guide)) {
+      currentSlide.guide = []
+    }
+    
+    currentSlide.guide.push(newStep)
+    setSlides(newSlides)
+    setSelectedGuideItemId(newStep.id)
+
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving new step', error)
+      })
+    }
+  }
+
+  const handleUpdateStepTitle = (newTitle) => {
+    if (!selectedGuideItemId || selectedGuideItemId.startsWith('auto-slide-')) return
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    let found = false
+    for (const slide of newSlides) {
+      const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+      if (item) {
+        item.title = newTitle
+        found = true
+        break
+      }
+    }
+    if (!found) return
+    setSlides(newSlides)
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving step title', error)
+      })
+    }
+  }
+
+  const handleUpdateStepType = (newType) => {
+    if (!selectedGuideItemId || selectedGuideItemId.startsWith('auto-slide-')) return
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    let found = false
+    for (const slide of newSlides) {
+      const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+      if (item) {
+        item.type = newType
+        found = true
+        break
+      }
+    }
+    if (!found) return
+    setSlides(newSlides)
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving step type', error)
       })
     }
   }
@@ -813,6 +899,14 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                   <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
                   Guía de Pasos
                 </span>
+                <button
+                  onClick={handleAddStepInPlayer}
+                  className="p-1 hover:bg-white/10 rounded text-[#A8D5C1] text-[9px] font-bold flex items-center gap-0.5 transition-colors cursor-pointer border border-[#A8D5C1]/30 bg-white/5"
+                  title="Agregar un nuevo paso a la diapositiva actual"
+                >
+                  <span className="material-symbols-outlined text-xs leading-none">add_circle</span>
+                  + Paso
+                </button>
               </div>
               
               <div className="flex-1 overflow-y-auto pr-1 space-y-3.5">
@@ -949,31 +1043,68 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
             {/* Column 2: Selected Step Notes & Next Slide Preview */}
             <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-4 min-h-0">
               {/* Selected Step Notes */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5 mb-2 shrink-0">
-                  <span className="material-symbols-outlined text-sm">sticky_note_2</span>
-                  Notas del Paso Seleccionado
-                </span>
-                
-                {/* Optional URL Redirect Input */}
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 shrink-0 mb-3">
-                  <span className="material-symbols-outlined text-xs text-[#A8D5C1]">link</span>
-                  <input
-                    type="text"
-                    value={selectedStepUrl}
-                    onChange={(e) => handleUpdateStepUrl(e.target.value)}
-                    placeholder="Enlace / URL de redirección (opcional)..."
-                    className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none"
+              {selectedStepItem ? (
+                <div className="flex-1 flex flex-col min-h-0 gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5 shrink-0">
+                    <span className="material-symbols-outlined text-sm">sticky_note_2</span>
+                    Notas del Paso Seleccionado
+                  </span>
+                  
+                  {/* Title and Type Row (Only for Custom steps) */}
+                  {!selectedStepItem.isAuto && (
+                    <div className="flex gap-2 shrink-0">
+                      <select
+                        value={selectedStepItem.type || 'general'}
+                        onChange={(e) => handleUpdateStepType(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#A8D5C1]/50 cursor-pointer font-bold"
+                      >
+                        <option value="diapo" className="bg-gray-900">🎬 Diapo</option>
+                        <option value="sitio_web" className="bg-gray-900">🌐 Sitio Web</option>
+                        <option value="chatgpt" className="bg-gray-900">🤖 ChatGPT</option>
+                        <option value="general" className="bg-gray-900">📝 General</option>
+                      </select>
+                      
+                      <input
+                        type="text"
+                        value={selectedStepItem.title || ''}
+                        onChange={(e) => handleUpdateStepTitle(e.target.value)}
+                        placeholder="Título del paso..."
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#A8D5C1]/50 font-bold"
+                      />
+                    </div>
+                  )}
+
+                  {/* Title display for Auto slide */}
+                  {selectedStepItem.isAuto && (
+                    <div className="text-xs font-bold text-white shrink-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                      {selectedStepItem.title || 'Diapositiva ' + (currentIdx + 1)}
+                    </div>
+                  )}
+
+                  {/* Optional URL Redirect Input */}
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 shrink-0">
+                    <span className="material-symbols-outlined text-xs text-[#A8D5C1]">link</span>
+                    <input
+                      type="text"
+                      value={selectedStepUrl}
+                      onChange={(e) => handleUpdateStepUrl(e.target.value)}
+                      placeholder="Enlace / URL de redirección (opcional)..."
+                      className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <textarea
+                    value={selectedStepNotes}
+                    onChange={(e) => handleUpdateStepNotes(e.target.value)}
+                    placeholder="Escribe notas o apuntes más extensos para este paso aquí..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-gray-200 focus:outline-none focus:border-[#A8D5C1]/50 resize-none font-medium text-white"
                   />
                 </div>
-
-                <textarea
-                  value={selectedStepNotes}
-                  onChange={(e) => handleUpdateStepNotes(e.target.value)}
-                  placeholder="Escribe notas o apuntes más extensos para este paso aquí..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-gray-200 focus:outline-none focus:border-[#A8D5C1]/50 resize-none font-medium text-white"
-                />
-              </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-xs text-gray-500 italic">
+                  Selecciona un paso de la guía para ver o editar sus notas
+                </div>
+              )}
 
               {/* Next Slide Preview at the bottom of Column 2 */}
               {nextSlideObj && (
