@@ -12,6 +12,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [draggedGuideIdx, setDraggedGuideIdx] = useState(null)
+  const isGuideClickNavigationRef = useRef(false)
 
   const isPresenterWindow = new URLSearchParams(window.location.search).get('presenter') === 'true'
 
@@ -183,6 +184,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
 
   // Sync selected guide item when slide changes
   useEffect(() => {
+    if (isGuideClickNavigationRef.current) return
     if (slides[currentIdx]) {
       setSelectedGuideItemId(`auto-slide-${slides[currentIdx].id}`)
     }
@@ -860,7 +862,16 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                         onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
                         onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
                         onDragEnd={handleGuideDragEnd}
-                        onClick={() => setSelectedGuideItemId(item.id)}
+                        onClick={() => {
+                          isGuideClickNavigationRef.current = true
+                          setSelectedGuideItemId(item.id)
+                          if (typeof item.slideIndex === 'number' && item.slideIndex !== currentIdx) {
+                            updateSlideIdx(item.slideIndex)
+                          }
+                          setTimeout(() => {
+                            isGuideClickNavigationRef.current = false
+                          }, 50)
+                        }}
                         className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none relative group ${
                           isChecked 
                             ? 'bg-white/5 border-white/10 opacity-40' 
