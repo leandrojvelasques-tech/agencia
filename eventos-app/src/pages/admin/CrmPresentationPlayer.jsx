@@ -203,6 +203,21 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     return ''
   })()
 
+  // Helper to find the active selected item's URL
+  const selectedStepUrl = (() => {
+    if (!selectedGuideItemId) return ''
+    if (selectedGuideItemId.startsWith('auto-slide-')) {
+      const slideId = selectedGuideItemId.replace('auto-slide-', '')
+      const slide = slides.find(s => s.id === slideId)
+      return slide?.url || ''
+    }
+    for (const slide of slides) {
+      const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+      if (item) return item.url || ''
+    }
+    return ''
+  })()
+
   const handleUpdateStepNotes = (newNotes) => {
     if (!selectedGuideItemId) return
     const newSlides = JSON.parse(JSON.stringify(slides))
@@ -226,6 +241,33 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     if (id) {
       supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
         if (error) console.error('Error saving step notes', error)
+      })
+    }
+  }
+
+  const handleUpdateStepUrl = (newUrl) => {
+    if (!selectedGuideItemId) return
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    if (selectedGuideItemId.startsWith('auto-slide-')) {
+      const slideId = selectedGuideItemId.replace('auto-slide-', '')
+      const slide = newSlides.find(s => s.id === slideId)
+      if (slide) slide.url = newUrl
+    } else {
+      let found = false
+      for (const slide of newSlides) {
+        const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+        if (item) {
+          item.url = newUrl
+          found = true
+          break
+        }
+      }
+      if (!found) return
+    }
+    setSlides(newSlides)
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving step URL', error)
       })
     }
   }
@@ -759,147 +801,161 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
             </div>
           </div>
 
-          {/* Right: Notes, Timer */}
-          <div className="w-[450px] flex flex-col gap-6 shrink-0 min-h-0">
-            {/* Unified Guide & Notes box */}
-            <div className="flex-1 min-h-0 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+          {/* Right sidebar: 2-column layout (700px wide) */}
+          <div className="w-[700px] flex gap-4 shrink-0 min-h-0">
+            
+            {/* Column 1: Speaker Guide Checklist */}
+            <div className="w-[320px] bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col min-h-0 shrink-0">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-3 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
+                  Guía de Pasos
+                </span>
+              </div>
               
-              {/* Top part: Speaker Guide List */}
-              <div className="flex-1 min-h-0 flex flex-col">
-                <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-3 shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
-                    Guía de Pasos
-                  </span>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto pr-1 space-y-3.5">
-                  {(() => {
-                    const itemsToRender = slides.flatMap((slide, idx) => {
-                      return [
-                        {
-                          id: `auto-slide-${slide.id}`,
-                          type: 'diapo',
-                          title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
-                          details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
-                          isAuto: true,
-                          slideIndex: idx
-                        },
-                        ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
-                      ]
-                    })
+              <div className="flex-1 overflow-y-auto pr-1 space-y-3.5">
+                {(() => {
+                  const itemsToRender = slides.flatMap((slide, idx) => {
+                    return [
+                      {
+                        id: `auto-slide-${slide.id}`,
+                        type: 'diapo',
+                        title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
+                        details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
+                        isAuto: true,
+                        slideIndex: idx,
+                        url: slide.url
+                      },
+                      ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
+                    ]
+                  })
+                  
+                  return itemsToRender.map((item, itemGlobalIdx) => {
+                    const isChecked = !!checkedItems[item.id]
+                    const isCurrentSlide = item.slideIndex === currentIdx
                     
-                    return itemsToRender.map((item, itemGlobalIdx) => {
-                      const isChecked = !!checkedItems[item.id]
-                      const isCurrentSlide = item.slideIndex === currentIdx
-                      
-                      let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
-                      let typeText = 'General'
-                      let iconName = 'description'
-                      
-                      if (item.type === 'diapo') {
-                        badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                        typeText = 'Diapo'
-                        iconName = 'movie'
-                      } else if (item.type === 'sitio_web') {
-                        badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                        typeText = 'Sitio Web'
-                        iconName = 'language'
-                      } else if (item.type === 'chatgpt') {
-                        badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                        typeText = 'ChatGPT'
-                        iconName = 'smart_toy'
-                      }
-                      
-                      return (
+                    let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                    let typeText = 'General'
+                    let iconName = 'description'
+                    
+                    if (item.type === 'diapo') {
+                      badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                      typeText = 'Diapo'
+                      iconName = 'movie'
+                    } else if (item.type === 'sitio_web') {
+                      badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                      typeText = 'Sitio Web'
+                      iconName = 'language'
+                    } else if (item.type === 'chatgpt') {
+                      badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                      typeText = 'ChatGPT'
+                      iconName = 'smart_toy'
+                    }
+                    
+                    return (
+                      <div 
+                        key={`${item.id}-${itemGlobalIdx}`} 
+                        draggable
+                        onDragStart={(e) => handleGuideDragStart(e, itemGlobalIdx)}
+                        onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
+                        onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
+                        onDragEnd={handleGuideDragEnd}
+                        onClick={() => setSelectedGuideItemId(item.id)}
+                        className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none relative group ${
+                          isChecked 
+                            ? 'bg-white/5 border-white/10 opacity-40' 
+                            : selectedGuideItemId === item.id
+                              ? 'bg-white/15 border-[#A8D5C1] ring-1 ring-[#A8D5C1]/30 shadow-[0_0_15px_rgba(168,213,193,0.15)]'
+                              : isCurrentSlide
+                                ? 'bg-white/10 border-[#A8D5C1]/30'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
+                        } ${draggedGuideIdx === itemGlobalIdx ? 'opacity-20' : ''}`}
+                      >
                         <div 
-                          key={`${item.id}-${itemGlobalIdx}`} 
-                          draggable
-                          onDragStart={(e) => handleGuideDragStart(e, itemGlobalIdx)}
-                          onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
-                          onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
-                          onDragEnd={handleGuideDragEnd}
-                          onClick={() => setSelectedGuideItemId(item.id)}
-                          className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none relative group ${
-                            isChecked 
-                              ? 'bg-white/5 border-white/10 opacity-40' 
-                              : selectedGuideItemId === item.id
-                                ? 'bg-white/15 border-[#A8D5C1] ring-1 ring-[#A8D5C1]/30 shadow-[0_0_15px_rgba(168,213,193,0.15)]'
-                                : isCurrentSlide
-                                  ? 'bg-white/10 border-[#A8D5C1]/30'
-                                  : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
-                          } ${draggedGuideIdx === itemGlobalIdx ? 'opacity-20' : ''}`}
+                          className="pt-0.5 shrink-0 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleItemChecked(item.id);
+                          }}
                         >
-                          <div 
-                            className="pt-0.5 shrink-0 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleItemChecked(item.id);
-                            }}
-                          >
-                            <span className="material-symbols-outlined text-lg">
-                              {isChecked ? 'check_box' : 'check_box_outline_blank'}
+                          <span className="material-symbols-outlined text-lg">
+                            {isChecked ? 'check_box' : 'check_box_outline_blank'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 space-y-1 pr-6">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeColor} flex items-center gap-1`}>
+                              <span className="material-symbols-outlined text-[10px]">{iconName}</span>
+                              {typeText}
                             </span>
+                            <h4 className={`text-xs font-bold leading-normal truncate ${isChecked ? 'line-through' : 'text-white'}`}>
+                              {item.title || 'Paso sin título'}
+                            </h4>
                           </div>
-                          
-                          <div className="flex-1 min-w-0 space-y-1 pr-6">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeColor} flex items-center gap-1`}>
-                                <span className="material-symbols-outlined text-[10px]">{iconName}</span>
-                                {typeText}
-                              </span>
-                              <h4 className={`text-xs font-bold leading-normal truncate ${isChecked ? 'line-through' : 'text-white'}`}>
-                                {item.title || 'Paso sin título'}
-                              </h4>
+                          {item.details && (
+                            <p className={`text-[11px] leading-relaxed font-medium line-clamp-2 ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
+                              {item.details}
+                            </p>
+                          )}
+                          {item.url && (
+                            <div className="pt-1.5">
+                              <button
+                                onClick={(e) => handleLinkClick(e, item.url, item.id)}
+                                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded transition-colors cursor-pointer border ${
+                                  item.type === 'chatgpt'
+                                    ? 'bg-emerald-950/45 hover:bg-emerald-900/60 border-emerald-800/40 text-emerald-300'
+                                    : 'bg-cyan-950/45 hover:bg-cyan-900/60 border-cyan-800/40 text-cyan-300'
+                                }`}
+                                title={`Abrir ${item.url} en una pestaña nueva`}
+                              >
+                                <span className="material-symbols-outlined text-[11px] leading-none">open_in_new</span>
+                                {item.type === 'chatgpt' ? 'Ir a ChatGPT' : 'Abrir Sitio Web'}
+                              </button>
                             </div>
-                            {item.details && (
-                              <p className={`text-[11px] leading-relaxed font-medium line-clamp-2 ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
-                                {item.details}
-                              </p>
-                            )}
-                            {item.url && (
-                              <div className="pt-1.5">
-                                <button
-                                  onClick={(e) => handleLinkClick(e, item.url, item.id)}
-                                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded transition-colors cursor-pointer border ${
-                                    item.type === 'chatgpt'
-                                      ? 'bg-emerald-950/45 hover:bg-emerald-900/60 border-emerald-800/40 text-emerald-300'
-                                      : 'bg-cyan-950/45 hover:bg-cyan-900/60 border-cyan-800/40 text-cyan-300'
-                                  }`}
-                                  title={`Abrir ${item.url} en una pestaña nueva`}
-                                >
-                                  <span className="material-symbols-outlined text-[11px] leading-none">open_in_new</span>
-                                  {item.type === 'chatgpt' ? 'Ir a ChatGPT' : 'Abrir Sitio Web'}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {!item.isAuto && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteGuideItem(item.id);
-                              }}
-                              className="absolute right-3 top-3 p-1 text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                              title="Eliminar paso de la guía"
-                            >
-                              <span className="material-symbols-outlined text-base">delete</span>
-                            </button>
                           )}
                         </div>
-                      )
-                    })
-                  })()}
-                </div>
-              </div>
 
-              {/* Bottom part: Selected Step Notes */}
-              <div className="h-44 border-t border-white/10 pt-3 flex flex-col shrink-0">
+                        {!item.isAuto && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteGuideItem(item.id);
+                            }}
+                            className="absolute right-3 top-3 p-1 text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                            title="Eliminar paso de la guía"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+
+            {/* Column 2: Selected Step Notes & Next Slide Preview */}
+            <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-4 min-h-0">
+              {/* Selected Step Notes */}
+              <div className="flex-1 flex flex-col min-h-0">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5 mb-2 shrink-0">
                   <span className="material-symbols-outlined text-sm">sticky_note_2</span>
                   Notas del Paso Seleccionado
                 </span>
+                
+                {/* Optional URL Redirect Input */}
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 shrink-0 mb-3">
+                  <span className="material-symbols-outlined text-xs text-[#A8D5C1]">link</span>
+                  <input
+                    type="text"
+                    value={selectedStepUrl}
+                    onChange={(e) => handleUpdateStepUrl(e.target.value)}
+                    placeholder="Enlace / URL de redirección (opcional)..."
+                    className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none"
+                  />
+                </div>
+
                 <textarea
                   value={selectedStepNotes}
                   onChange={(e) => handleUpdateStepNotes(e.target.value)}
@@ -908,23 +964,23 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                 />
               </div>
 
-            </div>
-
-            {/* Next Slide Preview */}
-            {nextSlideObj && (
-              <div className="border-t border-white/10 pt-4 shrink-0">
-                <span className="text-[10px] font-bold text-gray-450 uppercase tracking-wider block mb-2">Próxima Diapositiva</span>
-                <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex items-center gap-3">
-                  <div className="w-20 aspect-video rounded overflow-hidden bg-black shrink-0">
-                    <img src={nextSlideObj.mediaUrl} className="w-full h-full object-contain" alt="Next slide" />
-                  </div>
-                  <div className="min-w-0">
-                    <h5 className="text-xs font-bold text-white truncate">{nextSlideObj.title || 'Sin Título'}</h5>
-                    <p className="text-[9px] text-gray-400 capitalize mt-0.5">Siguiente</p>
+              {/* Next Slide Preview at the bottom of Column 2 */}
+              {nextSlideObj && (
+                <div className="border-t border-white/10 pt-4 shrink-0">
+                  <span className="text-[10px] font-bold text-gray-450 uppercase tracking-wider block mb-2">Próxima Diapositiva</span>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                    <div className="w-20 aspect-video rounded overflow-hidden bg-black shrink-0">
+                      <img src={nextSlideObj.mediaUrl} className="w-full h-full object-contain" alt="Next slide" />
+                    </div>
+                    <div className="min-w-0">
+                      <h5 className="text-xs font-bold text-white truncate">{nextSlideObj.title || 'Sin Título'}</h5>
+                      <p className="text-[9px] text-gray-400 capitalize mt-0.5">Siguiente</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
           </div>
         </div>
       </div>
