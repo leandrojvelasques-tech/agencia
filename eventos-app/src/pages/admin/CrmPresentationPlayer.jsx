@@ -97,8 +97,8 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
   const [argentinaTime, setArgentinaTime] = useState('')
-  const [notesTab, setNotesTab] = useState('guide') // 'guide' or 'notes'
   const [checkedItems, setCheckedItems] = useState({}) // { [itemId]: boolean }
+  const [selectedGuideItemId, setSelectedGuideItemId] = useState(null)
 
   const toggleItemChecked = (itemId) => {
     setCheckedItems(prev => ({
@@ -179,6 +179,78 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
 
   const handleGuideDragEnd = () => {
     setDraggedGuideIdx(null)
+  }
+
+  // Sync selected guide item when slide changes
+  useEffect(() => {
+    if (slides[currentIdx]) {
+      setSelectedGuideItemId(`auto-slide-${slides[currentIdx].id}`)
+    }
+  }, [currentIdx, slides])
+
+  // Helper to find the active selected item's notes
+  const selectedStepNotes = (() => {
+    if (!selectedGuideItemId) return ''
+    if (selectedGuideItemId.startsWith('auto-slide-')) {
+      const slideId = selectedGuideItemId.replace('auto-slide-', '')
+      const slide = slides.find(s => s.id === slideId)
+      return slide?.notes || ''
+    }
+    for (const slide of slides) {
+      const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+      if (item) return item.details || ''
+    }
+    return ''
+  })()
+
+  const handleUpdateStepNotes = (newNotes) => {
+    if (!selectedGuideItemId) return
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    if (selectedGuideItemId.startsWith('auto-slide-')) {
+      const slideId = selectedGuideItemId.replace('auto-slide-', '')
+      const slide = newSlides.find(s => s.id === slideId)
+      if (slide) slide.notes = newNotes
+    } else {
+      let found = false
+      for (const slide of newSlides) {
+        const item = (slide.guide || []).find(g => g.id === selectedGuideItemId)
+        if (item) {
+          item.details = newNotes
+          found = true
+          break
+        }
+      }
+      if (!found) return
+    }
+    setSlides(newSlides)
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving step notes', error)
+      })
+    }
+  }
+
+  const handleDeleteGuideItem = (itemId) => {
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    let deleted = false
+    for (const slide of newSlides) {
+      const lenBefore = slide.guide?.length || 0
+      slide.guide = (slide.guide || []).filter(g => g.id !== itemId)
+      if (slide.guide.length !== lenBefore) {
+        deleted = true
+        break
+      }
+    }
+    if (!deleted) return
+    setSlides(newSlides)
+    if (selectedGuideItemId === itemId && slides[currentIdx]) {
+      setSelectedGuideItemId(`auto-slide-${slides[currentIdx].id}`)
+    }
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error deleting guide item', error)
+      })
+    }
   }
 
   useEffect(() => {
@@ -274,7 +346,11 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
         if (error) throw error
         if (data) {
           setPresentation(data)
-          setSlides(Array.isArray(data.slides) ? data.slides : [])
+          const loadedSlides = Array.isArray(data.slides) ? data.slides : []
+          setSlides(loadedSlides)
+          if (loadedSlides.length > 0) {
+            setSelectedGuideItemId(`auto-slide-${loadedSlides[0].id}`)
+          }
         }
       } catch (err) {
         console.error('Error loading presentation:', err)
@@ -680,139 +756,153 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
 
           {/* Right: Notes, Timer */}
           <div className="w-[450px] flex flex-col gap-6 shrink-0 min-h-0">
-            {/* Notes & Guide box */}
-            <div className="flex-1 min-h-0 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col">
-              <div className="flex gap-4 border-b border-white/10 mb-3 shrink-0">
-                <button
-                  onClick={() => setNotesTab('guide')}
-                  className={`pb-2 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
-                    notesTab === 'guide'
-                      ? 'border-[#A8D5C1] text-[#A8D5C1]'
-                      : 'border-transparent text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
-                  Guía de Pasos
-                </button>
-                <button
-                  onClick={() => setNotesTab('notes')}
-                  className={`pb-2 text-[10px] font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
-                    notesTab === 'notes'
-                      ? 'border-[#A8D5C1] text-[#A8D5C1]'
-                      : 'border-transparent text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">sticky_note_2</span>
-                  Notas Generales
-                </button>
+            {/* Unified Guide & Notes box */}
+            <div className="flex-1 min-h-0 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-4">
+              
+              {/* Top part: Speaker Guide List */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-3 shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
+                    Guía de Pasos
+                  </span>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto pr-1 space-y-3.5">
+                  {(() => {
+                    const itemsToRender = slides.flatMap((slide, idx) => {
+                      return [
+                        {
+                          id: `auto-slide-${slide.id}`,
+                          type: 'diapo',
+                          title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
+                          details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
+                          isAuto: true,
+                          slideIndex: idx
+                        },
+                        ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
+                      ]
+                    })
+                    
+                    return itemsToRender.map((item, itemGlobalIdx) => {
+                      const isChecked = !!checkedItems[item.id]
+                      const isCurrentSlide = item.slideIndex === currentIdx
+                      
+                      let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                      let typeText = 'General'
+                      let iconName = 'description'
+                      
+                      if (item.type === 'diapo') {
+                        badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                        typeText = 'Diapo'
+                        iconName = 'movie'
+                      } else if (item.type === 'sitio_web') {
+                        badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                        typeText = 'Sitio Web'
+                        iconName = 'language'
+                      } else if (item.type === 'chatgpt') {
+                        badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        typeText = 'ChatGPT'
+                        iconName = 'smart_toy'
+                      }
+                      
+                      return (
+                        <div 
+                          key={`${item.id}-${itemGlobalIdx}`} 
+                          draggable
+                          onDragStart={(e) => handleGuideDragStart(e, itemGlobalIdx)}
+                          onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
+                          onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
+                          onDragEnd={handleGuideDragEnd}
+                          onClick={() => setSelectedGuideItemId(item.id)}
+                          className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none relative group ${
+                            isChecked 
+                              ? 'bg-white/5 border-white/10 opacity-40' 
+                              : selectedGuideItemId === item.id
+                                ? 'bg-white/15 border-[#A8D5C1] ring-1 ring-[#A8D5C1]/30 shadow-[0_0_15px_rgba(168,213,193,0.15)]'
+                                : isCurrentSlide
+                                  ? 'bg-white/10 border-[#A8D5C1]/30'
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
+                          } ${draggedGuideIdx === itemGlobalIdx ? 'opacity-20' : ''}`}
+                        >
+                          <div 
+                            className="pt-0.5 shrink-0 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleItemChecked(item.id);
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {isChecked ? 'check_box' : 'check_box_outline_blank'}
+                            </span>
+                          </div>
+                          
+                          <div className="flex-1 min-w-0 space-y-1 pr-6">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeColor} flex items-center gap-1`}>
+                                <span className="material-symbols-outlined text-[10px]">{iconName}</span>
+                                {typeText}
+                              </span>
+                              <h4 className={`text-xs font-bold leading-normal truncate ${isChecked ? 'line-through' : 'text-white'}`}>
+                                {item.title || 'Paso sin título'}
+                              </h4>
+                            </div>
+                            {item.details && (
+                              <p className={`text-[11px] leading-relaxed font-medium line-clamp-2 ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
+                                {item.details}
+                              </p>
+                            )}
+                            {item.url && (
+                              <div className="pt-1.5">
+                                <button
+                                  onClick={(e) => handleLinkClick(e, item.url, item.id)}
+                                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded transition-colors cursor-pointer border ${
+                                    item.type === 'chatgpt'
+                                      ? 'bg-emerald-950/45 hover:bg-emerald-900/60 border-emerald-800/40 text-emerald-300'
+                                      : 'bg-cyan-950/45 hover:bg-cyan-900/60 border-cyan-800/40 text-cyan-300'
+                                  }`}
+                                  title={`Abrir ${item.url} en una pestaña nueva`}
+                                >
+                                  <span className="material-symbols-outlined text-[11px] leading-none">open_in_new</span>
+                                  {item.type === 'chatgpt' ? 'Ir a ChatGPT' : 'Abrir Sitio Web'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {!item.isAuto && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteGuideItem(item.id);
+                              }}
+                              className="absolute right-3 top-3 p-1 text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                              title="Eliminar paso de la guía"
+                            >
+                              <span className="material-symbols-outlined text-base">delete</span>
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })
+                  })()}
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-1">
-                {notesTab === 'guide' ? (
-                  <div className="space-y-3.5">
-                    {(() => {
-                      const itemsToRender = slides.flatMap((slide, idx) => {
-                        return [
-                          {
-                            id: `auto-slide-${slide.id}`,
-                            type: 'diapo',
-                            title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
-                            details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
-                            isAuto: true,
-                            slideIndex: idx
-                          },
-                          ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
-                        ]
-                      })
-                      
-                      return itemsToRender.map((item, itemGlobalIdx) => {
-                        const isChecked = !!checkedItems[item.id]
-                        const isCurrentSlide = item.slideIndex === currentIdx
-                        
-                        let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
-                        let typeText = 'General'
-                        let iconName = 'description'
-                        
-                        if (item.type === 'diapo') {
-                          badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                          typeText = 'Diapo'
-                          iconName = 'movie'
-                        } else if (item.type === 'sitio_web') {
-                          badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                          typeText = 'Sitio Web'
-                          iconName = 'language'
-                        } else if (item.type === 'chatgpt') {
-                          badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          typeText = 'ChatGPT'
-                          iconName = 'smart_toy'
-                        }
-                        
-                        return (
-                          <div 
-                            key={`${item.id}-${itemGlobalIdx}`} 
-                            draggable
-                            onDragStart={(e) => handleGuideDragStart(e, itemGlobalIdx)}
-                            onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
-                            onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
-                            onDragEnd={handleGuideDragEnd}
-                            onClick={() => toggleItemChecked(item.id)}
-                            className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none ${
-                              isChecked 
-                                ? 'bg-white/5 border-white/10 opacity-40' 
-                                : isCurrentSlide
-                                  ? 'bg-white/10 border-[#A8D5C1]/50 shadow-[0_0_15px_rgba(168,213,193,0.15)] ring-1 ring-[#A8D5C1]/30'
-                                  : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
-                            } ${draggedGuideIdx === itemGlobalIdx ? 'opacity-20' : ''}`}
-                          >
-                            <div className="pt-0.5 shrink-0">
-                              <span className="material-symbols-outlined text-lg">
-                                {isChecked ? 'check_box' : 'check_box_outline_blank'}
-                              </span>
-                            </div>
-                            
-                            <div className="flex-1 min-w-0 space-y-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeColor} flex items-center gap-1`}>
-                                  <span className="material-symbols-outlined text-[10px]">{iconName}</span>
-                                  {typeText}
-                                </span>
-                                <h4 className={`text-xs font-bold leading-normal truncate ${isChecked ? 'line-through' : 'text-white'}`}>
-                                  {item.title || 'Paso sin título'}
-                                </h4>
-                              </div>
-                              {item.details && (
-                                <p className={`text-[11px] leading-relaxed font-medium ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
-                                  {item.details}
-                                </p>
-                              )}
-                              {item.url && (
-                                <div className="pt-1.5">
-                                  <button
-                                    onClick={(e) => handleLinkClick(e, item.url, item.id)}
-                                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded transition-colors cursor-pointer border ${
-                                      item.type === 'chatgpt'
-                                        ? 'bg-emerald-950/45 hover:bg-emerald-900/60 border-emerald-800/40 text-emerald-300'
-                                        : 'bg-cyan-950/45 hover:bg-cyan-900/60 border-cyan-800/40 text-cyan-300'
-                                    }`}
-                                    title={`Abrir ${item.url} en una pestaña nueva`}
-                                  >
-                                    <span className="material-symbols-outlined text-[11px] leading-none">open_in_new</span>
-                                    {item.type === 'chatgpt' ? 'Ir a ChatGPT' : 'Abrir Sitio Web'}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })
-                    })()}
-                  </div>
-                ) : (
-                  <div className="text-sm leading-relaxed text-gray-200 whitespace-pre-line font-medium">
-                    {currentSlide?.notes || 'Sin notas escritas para esta diapositiva.'}
-                  </div>
-                )}
+              {/* Bottom part: Selected Step Notes */}
+              <div className="h-44 border-t border-white/10 pt-3 flex flex-col shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8D5C1] flex items-center gap-1.5 mb-2 shrink-0">
+                  <span className="material-symbols-outlined text-sm">sticky_note_2</span>
+                  Notas del Paso Seleccionado
+                </span>
+                <textarea
+                  value={selectedStepNotes}
+                  onChange={(e) => handleUpdateStepNotes(e.target.value)}
+                  placeholder="Escribe notas o apuntes más extensos para este paso aquí..."
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-gray-200 focus:outline-none focus:border-[#A8D5C1]/50 resize-none font-medium text-white"
+                />
               </div>
+
             </div>
 
             {/* Next Slide Preview */}
