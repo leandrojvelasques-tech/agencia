@@ -1,63 +1,32 @@
-const https = require('https');
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-// Helper to make HTTPS requests without external dependencies
-function safeFetch(url, options = {}) {
-  return new Promise((resolve, reject) => {
-    const urlObj = new URL(url);
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Vercel Serverless)',
-      'Content-Type': 'application/json',
-      ...options.headers
-    };
-
-    const reqOptions = {
-      hostname: urlObj.hostname,
-      port: 443,
-      path: urlObj.pathname + urlObj.search,
-      method: options.method || 'GET',
-      headers: headers
-    };
-
-    const req = https.request(reqOptions, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          json: () => {
-            try {
-              return Promise.resolve(JSON.parse(data));
-            } catch (e) {
-              return Promise.resolve(data ? { raw: data } : {});
-            }
-          }
-        });
-      });
-    });
-
-    req.on('error', (err) => {
-      console.error('Socket error in safeFetch:', err);
-      reject(err);
-    });
-
-    if (options.body) {
-      req.write(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
-    }
-    req.end();
-  });
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function formatAgendaHtml(agenda) {
+interface AgendaItem {
+  time?: string;
+  block?: string;
+  topic?: string;
+  title?: string;
+  start_time?: string;
+  end_time?: string;
+  break_duration?: number;
+  blocks?: Array<{ title?: string; description?: string }>;
+}
+
+function formatAgendaHtml(agenda: AgendaItem[] | null | undefined): string {
   if (!Array.isArray(agenda) || agenda.length === 0) return 'No hay agenda definida para este evento.';
   
   let html = '<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">';
   
-  if (agenda[0] && 'blocks' in agenda[0]) {
+  if (agenda[0] && ('blocks' in agenda[0] || 'title' in agenda[0])) {
     // New format (nested classes/blocks)
     agenda.forEach((c) => {
       html += `<div style="margin-bottom: 20px;">`;
-      html += `<h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">${c.title}`;
+      html += `<h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">${c.title || 'Clase / Sesión'}`;
       if (c.start_time || c.end_time) {
         html += ` <span style="font-size: 12px; color: #666; font-weight: normal;">(${c.start_time || '—'}${c.end_time ? ` - ${c.end_time}` : ''} hs)</span>`;
       }
@@ -78,7 +47,7 @@ function formatAgendaHtml(agenda) {
         html += `</div>`;
       }
       
-      if (c.break_duration > 0) {
+      if (c.break_duration && c.break_duration > 0) {
         html += `<p style="margin: 5px 0 0 15px; font-size: 12px; color: #0b5e3a; font-style: italic;">☕ Break / Receso (${c.break_duration} min)</p>`;
       }
       html += `</div>`;
@@ -96,7 +65,7 @@ function formatAgendaHtml(agenda) {
         if (item.block) {
           html += `<span style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #888;">[${item.block}]</span> `;
         }
-        html += `${item.topic}</p>`;
+        html += `${item.topic || ''}</p>`;
         html += `</div>`;
       }
     });
@@ -106,34 +75,19 @@ function formatAgendaHtml(agenda) {
   return html.replace(/\n/g, ''); // Remove newlines so they are not replaced by <br> in email mapping
 }
 
-module.exports = async (req, res) => {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return new Response('ok', { headers: corsHeaders })
   }
-
-  // Secreto de cron/autorización
-  const authHeader = req.headers.authorization;
-  const cronSecret = process.env.CRON_SECRET || process.env.REMINDERS_SECRET;
-  
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}` && req.query.secret !== cronSecret) {
-    return res.status(401).json({ error: 'No autorizado. Token de cron inválido.' });
-  }
-
-  const supabaseUrl = 'https://oaapnglvbkvxyydjnmun.supabase.co';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXBuZ2x2Ymt2eHl5ZGpubXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjg3MDAsImV4cCI6MjA5MTcwNDcwMH0.Q0H0K1dKT77gawhU-YfkqmpAnDqgzq0i8etoY9bLM_0';
-
-  const authHeaders = {
-    'apikey': supabaseKey,
-    'Authorization': `Bearer ${supabaseKey}`
-  };
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+
     // 1. Obtener fecha de hoy y de mañana en Buenos Aires (GMT-3)
     const todayGMT3 = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"}));
     const todayStr = todayGMT3.toISOString().split('T')[0];
@@ -144,33 +98,38 @@ module.exports = async (req, res) => {
     console.log(`Buscando eventos para hoy (${todayStr}) y mañana (${tomorrowStr})...`);
 
     // 2. Obtener todas las plantillas de correo
-    const templatesUrl = `${supabaseUrl}/rest/v1/email_templates?select=*`;
-    const tempResponse = await safeFetch(templatesUrl, { headers: authHeaders });
-    const templatesData = await tempResponse.json();
-    const templates = {};
-    if (Array.isArray(templatesData)) {
-      templatesData.forEach(t => { templates[t.id] = t; });
+    const { data: templatesData, error: tempErr } = await supabase
+      .from('email_templates')
+      .select('*');
+
+    if (tempErr || !templatesData) {
+      return new Response(JSON.stringify({ error: `Templates not loaded: ${tempErr?.message}` }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
     }
 
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+    const templates: Record<string, any> = {};
+    templatesData.forEach(t => { templates[t.id] = t; });
 
-    const results = [];
+    const results: any[] = [];
 
-    // Helper para procesar recordatorios por fecha
-    async function processRemindersForDate(dateStr, type) {
+    // Helper para procesar recordatorios
+    async function processRemindersForDate(dateStr: string, type: string) {
       const template = templates[type];
       if (!template) {
         console.warn(`Plantilla "${type}" no encontrada en la base de datos.`);
         return;
       }
 
-      // Obtener eventos publicados para la fecha indicada
-      const eventsUrl = `${supabaseUrl}/rest/v1/events?event_date=eq.${dateStr}&status=eq.published&select=*`;
-      const eventsRes = await safeFetch(eventsUrl, { headers: authHeaders });
-      const events = await eventsRes.json();
+      // Obtener eventos publicados para la fecha
+      const { data: events, error: evErr } = await supabase
+        .from('events')
+        .select('*')
+        .eq('event_date', dateStr)
+        .eq('status', 'published');
 
-      if (!Array.isArray(events) || events.length === 0) {
+      if (evErr || !events || events.length === 0) {
         console.log(`No hay eventos publicados para la fecha: ${dateStr}`);
         return;
       }
@@ -179,21 +138,26 @@ module.exports = async (req, res) => {
         console.log(`Procesando recordatorios para el evento: "${event.title}" (${type})`);
 
         // Obtener inscritos activos (no cancelados)
-        const regsUrl = `${supabaseUrl}/rest/v1/registrations?event_id=eq.${event.id}&status=neq.cancelled&select=*,participants(*)`;
-        const regsRes = await safeFetch(regsUrl, { headers: authHeaders });
-        const registrations = await regsRes.json();
+        const { data: registrations, error: regErr } = await supabase
+          .from('registrations')
+          .select('*, participants(*)')
+          .eq('event_id', event.id)
+          .neq('status', 'cancelled');
 
-        if (!Array.isArray(registrations) || registrations.length === 0) {
+        if (regErr || !registrations || registrations.length === 0) {
           console.log(`No hay inscriptos para el evento: "${event.title}"`);
           continue;
         }
 
         // Obtener logs ya enviados para evitar duplicados
-        const logsUrl = `${supabaseUrl}/rest/v1/email_logs?event_id=eq.${event.id}&type=eq.${type}&select=recipient_email`;
-        const logsRes = await safeFetch(logsUrl, { headers: authHeaders });
-        const logsData = await logsRes.json();
+        const { data: logsData } = await supabase
+          .from('email_logs')
+          .select('recipient_email')
+          .eq('event_id', event.id)
+          .eq('type', type);
+
         const sentEmails = new Set();
-        if (Array.isArray(logsData)) {
+        if (logsData) {
           logsData.forEach(log => {
             if (log.recipient_email) sentEmails.add(log.recipient_email.toLowerCase());
           });
@@ -215,13 +179,11 @@ module.exports = async (req, res) => {
             dateFormatted = reg.selected_date;
           }
           const modalityStr = reg.attendance_mode === 'virtual' ? 'Virtual (Online)' : 'Presencial';
-          const protocol = req.headers['x-forwarded-proto'] || 'https';
-          const host = req.headers.host || 'www.leandrovelasques.com.ar';
-          const domain = `${protocol}://${host}`;
+          const domain = 'https://www.leandrovelasques.com.ar';
           const eventUrl = `${domain}/evento/${event.slug}`;
           const liveLink = event.live_link || '';
 
-          const placeholders = {
+          const placeholders: Record<string, string> = {
             '{{nombre}}': participant.first_name || '',
             '{{apellido}}': participant.last_name || '',
             '{{evento}}': event.title || '',
@@ -252,18 +214,18 @@ module.exports = async (req, res) => {
 
           if (resendApiKey) {
             try {
-              const sendResponse = await safeFetch('https://api.resend.com/emails', {
+              const sendResponse = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${resendApiKey}`,
                   'Content-Type': 'application/json'
                 },
-                body: {
+                body: JSON.stringify({
                   from: emailFrom,
                   to: [participant.email],
                   subject: resolvedSubject,
                   html: emailHtml
-                }
+                })
               });
               const sendResult = await sendResponse.json();
               if (sendResponse.status >= 200 && sendResponse.status < 300) {
@@ -272,33 +234,26 @@ module.exports = async (req, res) => {
                 status = 'failed';
                 errorMessage = sendResult.message || `Error status: ${sendResponse.status}`;
               }
-            } catch (err) {
+            } catch (err: any) {
               status = 'failed';
               errorMessage = err.message || String(err);
             }
           } else {
             status = 'simulated';
-            errorMessage = 'Simulación: RESEND_API_KEY no configurado en el servidor.';
+            errorMessage = 'Simulación: RESEND_API_KEY no configurado en Supabase.';
           }
 
-          // Guardar log del envío
+          // Guardar log
           try {
-            await safeFetch(`${supabaseUrl}/rest/v1/email_logs`, {
-              method: 'POST',
-              headers: {
-                ...authHeaders,
-                'Prefer': 'return=minimal'
-              },
-              body: {
-                event_id: event.id,
-                recipient_email: participant.email,
-                recipient_name: `${participant.first_name} ${participant.last_name}`,
-                type: type,
-                subject: resolvedSubject,
-                body: emailHtml,
-                status: status,
-                error_message: errorMessage
-              }
+            await supabase.from('email_logs').insert({
+              event_id: event.id,
+              recipient_email: participant.email,
+              recipient_name: `${participant.first_name} ${participant.last_name}`,
+              type: type,
+              subject: resolvedSubject,
+              body: emailHtml,
+              status: status,
+              error_message: errorMessage
             });
           } catch (dbErr) {
             console.error('Error guardando logs en Supabase:', dbErr);
@@ -315,21 +270,21 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Procesar los dos tipos de recordatorios
-    // 1. Recordatorio 24hs antes del evento (se busca para eventos de mañana)
+    // 1. Procesar recordatorio de 24hs antes del evento (para mañana)
     await processRemindersForDate(tomorrowStr, 'reminder_24h');
 
-    // 2. Recordatorio del mismo día (se busca para eventos de hoy)
+    // 2. Procesar recordatorio del mismo día (para hoy)
     await processRemindersForDate(todayStr, 'reminder_same_day');
 
-    return res.status(200).json({
-      success: true,
-      processed: results.length,
-      details: results
+    return new Response(JSON.stringify({ success: true, processed: results.length, details: results }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
-  } catch (error) {
-    console.error('Error general en send-reminders serverless function:', error);
-    return res.status(500).json({ error: error.message || 'Error interno del servidor.' });
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
-};
+})
