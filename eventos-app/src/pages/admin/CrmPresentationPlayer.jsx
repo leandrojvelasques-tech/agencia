@@ -390,9 +390,14 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     }
   }
 
-  // Keyboard navigation & controls
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // If typing in an input or textarea, ignore shortcuts
+      const tagName = document.activeElement?.tagName
+      if (tagName === 'INPUT' || tagName === 'TEXTAREA' || document.activeElement?.isContentEditable) {
+        return
+      }
+
       // Don't trigger navigation if laser/draw are active or if drawing
       if (drawingMode && e.key === 'z' && (e.ctrlKey || e.metaKey)) {
         handleUndo()
