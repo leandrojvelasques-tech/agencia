@@ -4,6 +4,8 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
+import CrmPresentationsDashboard from './CrmPresentationsDashboard'
+import AgendaTemplatesDashboard from './AgendaTemplatesDashboard'
 
 const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note' },
@@ -168,21 +170,23 @@ export default function EventsDashboard() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Mis Eventos</h1>
-          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium mt-1">
-            {events.length} eventos · {totalRegistered} inscriptos · {totalPresent} asistieron
-          </p>
+      {(activeTab === 'events' || activeTab === 'registrations') && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Mis Eventos</h1>
+            <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium mt-1">
+              {events.length} eventos · {totalRegistered} inscriptos · {totalPresent} asistieron
+            </p>
+          </div>
+          <Link to="/admin/eventos/nuevo" className="btn-primary">
+            <span className="material-symbols-outlined text-lg">add</span>
+            Nuevo Evento
+          </Link>
         </div>
-        <Link to="/admin/eventos/nuevo" className="btn-primary">
-          <span className="material-symbols-outlined text-lg">add</span>
-          Nuevo Evento
-        </Link>
-      </div>
+      )}
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b border-[var(--color-deep-green)]/8 mb-6">
+      <div className="flex flex-wrap gap-6 border-b border-[var(--color-deep-green)]/8 mb-6">
         <button
           onClick={() => setActiveTab('events')}
           className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
@@ -204,6 +208,28 @@ export default function EventsDashboard() {
         >
           <span className="material-symbols-outlined text-lg">groups</span>
           Panel de Inscriptos (Activos)
+        </button>
+        <button
+          onClick={() => setActiveTab('presentations')}
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+            activeTab === 'presentations'
+              ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
+              : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">slideshow</span>
+          Presentador (Contenidos)
+        </button>
+        <button
+          onClick={() => setActiveTab('templates')}
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+            activeTab === 'templates'
+              ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
+              : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">history_edu</span>
+          Plantillas de Agenda
         </button>
       </div>
 
@@ -565,6 +591,16 @@ export default function EventsDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tab: Presentations */}
+      {activeTab === 'presentations' && (
+        <CrmPresentationsDashboard />
+      )}
+
+      {/* Tab: Templates */}
+      {activeTab === 'templates' && (
+        <AgendaTemplatesDashboard />
       )}
     </div>
   )
