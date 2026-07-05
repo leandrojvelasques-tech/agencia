@@ -646,19 +646,23 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                 {notesTab === 'guide' ? (
                   <div className="space-y-3.5">
                     {(() => {
-                      const itemsToRender = [
-                        {
-                          id: `auto-slide-${currentSlide.id}`,
-                          type: 'diapo',
-                          title: `Presentar Diapo: ${currentSlide.title || 'Diapositiva ' + (currentIdx + 1)}`,
-                          details: currentSlide.notes || (currentSlide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
-                          isAuto: true
-                        },
-                        ...(currentSlide.guide || [])
-                      ]
+                      const itemsToRender = slides.flatMap((slide, idx) => {
+                        return [
+                          {
+                            id: `auto-slide-${slide.id}`,
+                            type: 'diapo',
+                            title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
+                            details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
+                            isAuto: true,
+                            slideIndex: idx
+                          },
+                          ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
+                        ]
+                      })
                       
-                      return itemsToRender.map((item) => {
+                      return itemsToRender.map((item, itemGlobalIdx) => {
                         const isChecked = !!checkedItems[item.id]
+                        const isCurrentSlide = item.slideIndex === currentIdx
                         
                         let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
                         let typeText = 'General'
@@ -680,12 +684,14 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                         
                         return (
                           <div 
-                            key={item.id} 
+                            key={`${item.id}-${itemGlobalIdx}`} 
                             onClick={() => toggleItemChecked(item.id)}
                             className={`p-3 rounded-xl border transition-all cursor-pointer flex gap-3 items-start select-none ${
                               isChecked 
                                 ? 'bg-white/5 border-white/10 opacity-40' 
-                                : 'bg-white/10 border-white/20 hover:bg-white/15'
+                                : isCurrentSlide
+                                  ? 'bg-white/10 border-[#A8D5C1]/50 shadow-[0_0_15px_rgba(168,213,193,0.15)] ring-1 ring-[#A8D5C1]/30'
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
                             }`}
                           >
                             <div className="pt-0.5 shrink-0">
