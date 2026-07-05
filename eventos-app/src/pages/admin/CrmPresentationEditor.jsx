@@ -386,18 +386,30 @@ export default function CrmPresentationEditor() {
 
         <div className="flex items-center gap-3">
           {isEdit && (
-            <Link
-              to={`/admin/crm/presentaciones/${id}/presentar`}
-              className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
-            >
-              <span className="material-symbols-outlined text-base">play_circle</span>
-              Proyectar
-            </Link>
+            <>
+              <Link
+                to={`/admin/crm/presentaciones/${id}/presentar`}
+                className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-base">play_circle</span>
+                Proyectar
+              </Link>
+              <a
+                href={`/admin/crm/presentaciones/${id}/presentar?presenter=true`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 border border-[#A8D5C1] bg-[#A8D5C1]/10 hover:bg-[#A8D5C1]/20 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                title="Abrir la Vista del Presentador con notas y checklist privado en una pestaña nueva"
+              >
+                <span className="material-symbols-outlined text-base">co_present</span>
+                Modo Presentador
+              </a>
+            </>
           )}
           <button
             onClick={handleSave}
             disabled={saving}
-            className="btn-primary"
+            className="btn-primary animate-pulse-subtle"
           >
             <span className="material-symbols-outlined text-lg">save</span>
             {saving ? 'Guardando...' : 'Guardar Presentación'}
