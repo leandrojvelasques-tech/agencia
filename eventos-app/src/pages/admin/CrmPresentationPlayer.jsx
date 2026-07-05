@@ -718,10 +718,19 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
               <div className="flex-1 overflow-y-auto pr-1">
                 {notesTab === 'guide' ? (
                   <div className="space-y-3.5">
-                    {!currentSlide?.guide || currentSlide.guide.length === 0 ? (
-                      <p className="text-xs text-gray-450 italic py-4">No hay guía de pasos para esta diapositiva.</p>
-                    ) : (
-                      currentSlide.guide.map((item) => {
+                    {(() => {
+                      const itemsToRender = [
+                        {
+                          id: `auto-slide-${currentSlide.id}`,
+                          type: 'diapo',
+                          title: `Presentar Diapo: ${currentSlide.title || 'Diapositiva ' + (currentIdx + 1)}`,
+                          details: currentSlide.notes || (currentSlide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
+                          isAuto: true
+                        },
+                        ...(currentSlide.guide || [])
+                      ]
+                      
+                      return itemsToRender.map((item) => {
                         const isChecked = !!checkedItems[item.id]
                         
                         let badgeColor = 'bg-slate-500/20 text-slate-300 border-slate-500/30'
@@ -777,7 +786,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                           </div>
                         )
                       })
-                    )}
+                    })()}
                   </div>
                 ) : (
                   <div className="text-sm leading-relaxed text-gray-200 whitespace-pre-line font-medium">
