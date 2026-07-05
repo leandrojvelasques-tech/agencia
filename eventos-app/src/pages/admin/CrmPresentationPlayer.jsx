@@ -106,6 +106,16 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     }))
   }
 
+  const handleLinkClick = (e, itemUrl, itemId) => {
+    e.stopPropagation()
+    if (!itemUrl) return
+    const url = itemUrl.startsWith('http') ? itemUrl : `https://${itemUrl}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+    if (!checkedItems[itemId]) {
+      setCheckedItems(prev => ({ ...prev, [itemId]: true }))
+    }
+  }
+
   useEffect(() => {
     if (!isPresenterWindow) return
     const updateTime = () => {
@@ -698,6 +708,22 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                                 <p className={`text-[11px] leading-relaxed font-medium ${isChecked ? 'text-gray-500' : 'text-[#A8D5C1]/80'}`}>
                                   {item.details}
                                 </p>
+                              )}
+                              {item.url && (
+                                <div className="pt-1.5">
+                                  <button
+                                    onClick={(e) => handleLinkClick(e, item.url, item.id)}
+                                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded transition-colors cursor-pointer border ${
+                                      item.type === 'chatgpt'
+                                        ? 'bg-emerald-950/45 hover:bg-emerald-900/60 border-emerald-800/40 text-emerald-300'
+                                        : 'bg-cyan-950/45 hover:bg-cyan-900/60 border-cyan-800/40 text-cyan-300'
+                                    }`}
+                                    title={`Abrir ${item.url} en una pestaña nueva`}
+                                  >
+                                    <span className="material-symbols-outlined text-[11px] leading-none">open_in_new</span>
+                                    {item.type === 'chatgpt' ? 'Ir a ChatGPT' : 'Abrir Sitio Web'}
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>

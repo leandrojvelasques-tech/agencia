@@ -679,6 +679,17 @@ export default function CrmPresentationEditor() {
                           className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
                         />
 
+                        {/* URL input for website or chatgpt */}
+                        {(item.type === 'sitio_web' || item.type === 'chatgpt') && (
+                          <input
+                            type="text"
+                            value={item.url || ''}
+                            onChange={(e) => handleUpdateGuideItem(item.id, 'url', e.target.value)}
+                            placeholder={item.type === 'chatgpt' ? "URL/Enlace de ChatGPT (opcional)..." : "Enlace del Sitio Web (ej: google.com)..."}
+                            className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-medium"
+                          />
+                        )}
+
                         {/* Details textarea */}
                         <textarea
                           value={item.details || ''}
