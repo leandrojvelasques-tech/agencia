@@ -6,8 +6,6 @@ const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
   { to: '/admin/plantillas', icon: 'history_edu', label: 'Plantillas de Agenda' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
-  { to: '/admin/crm/satisfaccion', icon: 'reviews', label: 'Satisfacción' },
-  { to: '/admin/crm/presupuestos', icon: 'payments', label: 'Presupuestos' },
   { to: '/admin/crm/presentaciones', icon: 'slideshow', label: 'Presentador' },
   { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },
 ]
