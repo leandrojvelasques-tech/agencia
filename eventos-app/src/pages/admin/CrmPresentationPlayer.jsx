@@ -11,6 +11,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [draggedGuideIdx, setDraggedGuideIdx] = useState(null)
 
   const isPresenterWindow = new URLSearchParams(window.location.search).get('presenter') === 'true'
 
@@ -114,6 +115,70 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     if (!checkedItems[itemId]) {
       setCheckedItems(prev => ({ ...prev, [itemId]: true }))
     }
+  }
+
+  const handleGuideDragStart = (e, index) => {
+    setDraggedGuideIdx(index)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  const handleGuideDragOver = (e, index) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+  }
+
+  const handleGuideDrop = async (e, targetIdx) => {
+    e.preventDefault()
+    if (draggedGuideIdx === null || draggedGuideIdx === targetIdx) return
+
+    const currentFlatList = slides.flatMap((slide, idx) => {
+      return [
+        {
+          id: `auto-slide-${slide.id}`,
+          type: 'diapo',
+          title: `[Diapo ${idx + 1}] Presentar: ${slide.title || 'Diapositiva ' + (idx + 1)}`,
+          details: slide.notes || (slide.mediaUrl ? 'Verificar que la audiencia vea la imagen.' : 'Diapositiva de transición.'),
+          isAuto: true,
+          slideIndex: idx,
+          slideId: slide.id
+        },
+        ...(slide.guide || []).map(g => ({ ...g, slideIndex: idx }))
+      ]
+    })
+
+    const draggedItem = currentFlatList[draggedGuideIdx]
+    currentFlatList.splice(draggedGuideIdx, 1)
+    currentFlatList.splice(targetIdx, 0, draggedItem)
+
+    const newSlides = JSON.parse(JSON.stringify(slides))
+    newSlides.forEach(s => s.guide = [])
+    
+    let currentSlideId = newSlides[0]?.id
+    
+    currentFlatList.forEach(item => {
+      if (item.isAuto) {
+        currentSlideId = item.slideId
+      } else {
+        const slide = newSlides.find(s => s.id === currentSlideId)
+        if (slide) {
+          const { slideIndex, slideId, ...cleanItem } = item
+          slide.guide.push(cleanItem)
+        }
+      }
+    })
+
+    setSlides(newSlides)
+    setDraggedGuideIdx(null)
+
+    if (id) {
+      supabase.from('crm_presentations').update({ slides: newSlides }).eq('id', id).then(({error}) => {
+        if (error) console.error('Error saving reordered guide', error)
+      })
+    }
+  }
+
+  const handleGuideDragEnd = () => {
+    setDraggedGuideIdx(null)
   }
 
   useEffect(() => {
@@ -685,14 +750,19 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
                         return (
                           <div 
                             key={`${item.id}-${itemGlobalIdx}`} 
+                            draggable
+                            onDragStart={(e) => handleGuideDragStart(e, itemGlobalIdx)}
+                            onDragOver={(e) => handleGuideDragOver(e, itemGlobalIdx)}
+                            onDrop={(e) => handleGuideDrop(e, itemGlobalIdx)}
+                            onDragEnd={handleGuideDragEnd}
                             onClick={() => toggleItemChecked(item.id)}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer flex gap-3 items-start select-none ${
+                            className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing flex gap-3 items-start select-none ${
                               isChecked 
                                 ? 'bg-white/5 border-white/10 opacity-40' 
                                 : isCurrentSlide
                                   ? 'bg-white/10 border-[#A8D5C1]/50 shadow-[0_0_15px_rgba(168,213,193,0.15)] ring-1 ring-[#A8D5C1]/30'
                                   : 'bg-white/5 border-white/10 hover:bg-white/10 opacity-75'
-                            }`}
+                            } ${draggedGuideIdx === itemGlobalIdx ? 'opacity-20' : ''}`}
                           >
                             <div className="pt-0.5 shrink-0">
                               <span className="material-symbols-outlined text-lg">
