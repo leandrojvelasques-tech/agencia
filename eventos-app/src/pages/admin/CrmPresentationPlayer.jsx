@@ -504,7 +504,11 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
             <span className="material-symbols-outlined text-[#A8D5C1] text-2xl">co_present</span>
             <span className="font-extrabold text-sm uppercase tracking-widest text-[#A8D5C1]">Vista del Presentador</span>
           </div>
-          <div className="flex items-center gap-4 text-xs font-semibold text-gray-400">
+          <div className="flex items-center gap-6 text-xs font-bold text-gray-450">
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[#A8D5C1]">
+              <span className="material-symbols-outlined text-sm leading-none">schedule</span>
+              <span>Hora ARG: {argentinaTime}</span>
+            </div>
             <span>Diapositiva {currentIdx + 1} de {slides.length}</span>
           </div>
         </div>
@@ -600,94 +604,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
           </div>
 
           {/* Right: Notes, Timer */}
-          <div className="w-96 flex flex-col gap-6 shrink-0 min-h-0">
-            {/* Timer & Clock card */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 shrink-0">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-gray-455">Tiempo Transcurrido</span>
-                  <div className="text-xl font-black tracking-tight mt-0.5">{formatTimer(timerSeconds)}</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-gray-455">Hora Oficial (ARG)</span>
-                  <div className="text-xl font-black tracking-tight text-[#A8D5C1] mt-0.5">{argentinaTime}</div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTimerActive(!timerActive)}
-                  className="flex-1 py-1.5 bg-white/10 hover:bg-white/15 text-xs font-semibold rounded-lg"
-                >
-                  {timerActive ? 'Pausar Cronómetro' : 'Iniciar Cronómetro'}
-                </button>
-                <button
-                  onClick={() => setTimerSeconds(0)}
-                  className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-xs font-semibold rounded-lg"
-                >
-                  Reiniciar
-                </button>
-              </div>
-            </div>
-
-            {/* Activity Countdown card */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 shrink-0">
-              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Temporizador de Actividades (Audiencia)</span>
-              
-              {countdownActive ? (
-                <div className="bg-black/40 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-red-400 animate-pulse">alarm</span>
-                    <span className="text-xl font-mono font-black text-red-400">
-                      {Math.floor(countdownSecondsLeft / 60)}:{String(countdownSecondsLeft % 60).padStart(2, '0')}
-                    </span>
-                  </div>
-                  <button
-                    onClick={stopCountdown}
-                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-xs font-bold text-white rounded-lg flex items-center gap-1"
-                  >
-                    Detener
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {/* Presets */}
-                  <div className="grid grid-cols-5 gap-1">
-                    {[1, 3, 5, 10, 15].map(m => (
-                      <button
-                        key={m}
-                        onClick={() => startCountdown(m * 60)}
-                        className="py-1 bg-white/10 hover:bg-white/15 text-[10px] font-bold rounded-md"
-                      >
-                        {m}m
-                      </button>
-                    ))}
-                  </div>
-                  {/* Custom minutes */}
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Minutos..."
-                      value={customMinutes}
-                      onChange={(e) => setCustomMinutes(e.target.value)}
-                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 text-xs outline-none focus:border-[#A8D5C1] text-white"
-                    />
-                    <button
-                      onClick={() => {
-                        const mins = parseInt(customMinutes)
-                        if (mins > 0) {
-                          startCountdown(mins * 60)
-                          setCustomMinutes('')
-                        }
-                      }}
-                      className="px-3 py-1.5 bg-[#A8D5C1] hover:bg-[#97c4b0] text-xs font-bold text-brand-dark rounded-lg"
-                    >
-                      Iniciar
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
+          <div className="w-[450px] flex flex-col gap-6 shrink-0 min-h-0">
             {/* Notes & Guide box */}
             <div className="flex-1 min-h-0 bg-black/40 border border-white/5 rounded-2xl p-5 flex flex-col">
               <div className="flex gap-4 border-b border-white/10 mb-3 shrink-0">
