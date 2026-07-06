@@ -438,11 +438,14 @@ export default function EventCreate() {
       ...eventData 
     } = form
     
+    const firstDate = form.offered_dates && form.offered_dates.length > 0 ? form.offered_dates[0] : form.event_date;
+    
     const data = { 
       ...eventData, 
+      event_date: firstDate,
       status: is_public ? 'published' : 'draft',
-      max_capacity_presencial: eventData.max_capacity_presencial ? Number(eventData.max_capacity_presencial) : null,
-      max_capacity_virtual: eventData.max_capacity_virtual ? Number(eventData.max_capacity_virtual) : null
+      max_capacity_presencial: (eventData.max_capacity_presencial || eventData.max_capacity_presencial === 0 || eventData.max_capacity_presencial === '0') ? Number(eventData.max_capacity_presencial) : null,
+      max_capacity_virtual: (eventData.max_capacity_virtual || eventData.max_capacity_virtual === 0 || eventData.max_capacity_virtual === '0') ? Number(eventData.max_capacity_virtual) : null
     }
 
     let targetEventId = id
