@@ -329,7 +329,7 @@ export default function EventRegister() {
       } catch (err) {
         console.error('Error triggering welcome email:', err);
       }
-      navigate(`/evento/${slug}/confirmacion`)
+      navigate(`/evento/${slug}/confirmacion`, { state: { selectedDate: form.selected_date } })
     } else {
       setError(result.error)
     }

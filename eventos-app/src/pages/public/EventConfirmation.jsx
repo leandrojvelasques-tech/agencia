@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale'
 
 export default function EventConfirmation() {
   const { slug } = useParams()
+  const location = useLocation()
   const { getEventBySlug } = useStore()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -42,7 +43,12 @@ export default function EventConfirmation() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">calendar_today</span>
-                <span className="font-medium">{format(new Date(event.event_date + 'T12:00:00'), "EEEE d 'de' MMMM, yyyy", { locale: es })}</span>
+                <span className="font-medium">
+                  {(() => {
+                    const displayDateStr = location.state?.selectedDate || event.event_date;
+                    return format(new Date(displayDateStr + 'T12:00:00'), "EEEE d 'de' MMMM, yyyy", { locale: es });
+                  })()}
+                </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">schedule</span>
