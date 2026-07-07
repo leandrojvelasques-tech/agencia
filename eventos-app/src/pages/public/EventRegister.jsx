@@ -162,7 +162,8 @@ export default function EventRegister() {
   const searchParams = new URLSearchParams(window.location.search)
   const isPreview = searchParams.get('preview') === 'true'
 
-  const eventDate = event ? new Date(event.event_date + 'T23:59:59') : new Date()
+  const latestDateStr = event ? availableDates.reduce((latest, current) => current > latest ? current : latest, event.event_date || '') : ''
+  const eventDate = latestDateStr ? new Date(latestDateStr + 'T23:59:59') : new Date()
   const isPastEvent = event && eventDate < new Date()
   
   // Allow registration in preview mode even if status is not 'published'

@@ -977,7 +977,7 @@
         // Consultar eventos activos (published, in_progress) y destacados (show_on_home = true)
         const { data: allEvents, error } = await sb
           .from('events')
-          .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, show_on_home')
+          .select('slug, type, title, subtitle, description_short, event_date, start_time, duration_minutes, coordinator, organizer, banner_url, status, show_on_home, offered_dates')
           .or('status.in.("published","in_progress"),show_on_home.eq.true')
           .order('event_date', { ascending: false });
 
@@ -989,12 +989,15 @@
 
         // Filtrado en memoria
         const filtered = (allEvents || []).filter(ev => {
+          const availableDates = ev.offered_dates && ev.offered_dates.length > 0 ? ev.offered_dates : [ev.event_date];
+          const latestDate = availableDates.reduce((latest, current) => current > latest ? current : latest, ev.event_date || '');
+
           // Evento activo/futuro
-          if ((ev.status === 'published' || ev.status === 'in_progress') && ev.event_date >= todayStr) {
+          if ((ev.status === 'published' || ev.status === 'in_progress') && latestDate >= todayStr) {
             return true;
           }
           // Evento finalizado destacado
-          const isPassed = ev.event_date < todayStr;
+          const isPassed = latestDate < todayStr;
           if ((ev.status === 'completed' || isPassed) && ev.show_on_home === true) {
             return true;
           }
@@ -1008,7 +1011,11 @@
 
         // Ordenamiento óptimo:
         // 1. Activos/futuros: orden ascendente (más próximo primero)
-        const upcoming = filtered.filter(ev => (ev.status === 'published' || ev.status === 'in_progress') && ev.event_date >= todayStr);
+        const upcoming = filtered.filter(ev => {
+          const availableDates = ev.offered_dates && ev.offered_dates.length > 0 ? ev.offered_dates : [ev.event_date];
+          const latestDate = availableDates.reduce((latest, current) => current > latest ? current : latest, ev.event_date || '');
+          return (ev.status === 'published' || ev.status === 'in_progress') && latestDate >= todayStr;
+        });
         upcoming.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
         // 2. Finalizados: orden descendente (más reciente primero)

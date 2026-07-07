@@ -78,7 +78,9 @@ export default function EventLanding() {
     )
   }
 
-  const eventDate = new Date(event.event_date + 'T23:59:59')
+  const availableDates = event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]
+  const latestDateStr = availableDates.reduce((latest, current) => current > latest ? current : latest, event.event_date || '')
+  const eventDate = new Date(latestDateStr + 'T23:59:59')
   const isPastEvent = eventDate < new Date()
   const canRegister = event.status === 'published' && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
 
