@@ -189,14 +189,20 @@ serve(async (req) => {
 
     const emailHtml = resolvedBody.replace(/\n/g, '<br>');
 
-    // 4. Send email via Resend
+    // 4. Send email helper
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
-    
-    let status = 'pending';
-    let errorMessage = null;
 
-    if (participant.email) {
+    async function sendAndLogEmail(
+      toEmail: string,
+      toName: string,
+      emailSubject: string,
+      htmlContent: string,
+      isCoordinator = false
+    ) {
+      let status = 'pending';
+      let errorMessage: string | null = null;
+
       if (resendApiKey) {
         try {
           const sendResponse = await fetch('https://api.resend.com/emails', {
@@ -207,9 +213,9 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               from: emailFrom,
-              to: [participant.email],
-              subject: resolvedSubject,
-              html: emailHtml
+              to: [toEmail],
+              subject: emailSubject,
+              html: htmlContent
             })
           });
           const sendResult = await sendResponse.json();
@@ -228,24 +234,95 @@ serve(async (req) => {
         errorMessage = 'Simulación: RESEND_API_KEY no configurado en Supabase.';
       }
 
-      // 5. Save log
       try {
         await supabase.from('email_logs').insert({
           event_id: event.id,
-          recipient_email: participant.email,
-          recipient_name: `${participant.first_name} ${participant.last_name}`,
-          type: emailType,
-          subject: resolvedSubject,
-          body: emailHtml,
+          recipient_email: toEmail,
+          recipient_name: toName,
+          type: isCoordinator ? `coordinator_${emailType}` : emailType,
+          subject: emailSubject,
+          body: htmlContent,
           status: status,
           error_message: errorMessage
         });
       } catch (dbErr) {
         console.error('Error guardando logs en Supabase:', dbErr);
       }
+
+      return { status, errorMessage };
     }
 
-    return new Response(JSON.stringify({ success: true, status, error: errorMessage }), {
+    // 5. Send email to participant
+    let participantResult = { status: 'skipped', errorMessage: null as string | null };
+    if (participant.email) {
+      participantResult = await sendAndLogEmail(
+        participant.email,
+        `${participant.first_name} ${participant.last_name}`,
+        resolvedSubject,
+        emailHtml,
+        false
+      );
+    }
+
+    // 6. Send email to coordinators
+    const coordinators = event.notification_recipients || [];
+    if (coordinators.length > 0) {
+      const isCancellation = emailType === 'cancellation';
+      const coordSubject = isCancellation
+        ? `[Cancelación] Inscripción cancelada en: ${event.title}`
+        : `[Inscripción] Nuevo inscripto en: ${event.title}`;
+
+      const coordTitle = isCancellation ? 'Inscripción Cancelada' : 'Nueva Inscripción';
+      const coordIntro = isCancellation
+        ? `Se ha cancelado una inscripción para el evento <strong>${event.title}</strong>.`
+        : `Se ha registrado una nueva inscripción para el evento <strong>${event.title}</strong>.`;
+
+      let surveyDetails = '';
+      if (reg.survey_responses) {
+        surveyDetails = '<h3>Respuestas del Formulario:</h3><ul>';
+        for (const [key, value] of Object.entries(reg.survey_responses)) {
+          if (value !== null && value !== undefined && value !== '') {
+            const dispValue = typeof value === 'boolean' ? (value ? 'Sí' : 'No') : value;
+            surveyDetails += `<li><strong>${key}:</strong> ${dispValue}</li>`;
+          }
+        }
+        surveyDetails += '</ul>';
+      }
+
+      const coordHtml = `
+        <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+          <h2 style="color: #0b5e3a; border-bottom: 2px solid #0b5e3a; padding-bottom: 10px;">${coordTitle}</h2>
+          <p>${coordIntro}</p>
+          <h3>Datos del Participante:</h3>
+          <ul>
+            <li><strong>Nombre Completo:</strong> ${participant.first_name} ${participant.last_name}</li>
+            <li><strong>Email:</strong> ${participant.email || 'No proporcionado'}</li>
+            <li><strong>Teléfono:</strong> ${participant.phone || 'No proporcionado'}</li>
+            <li><strong>Modalidad elegida:</strong> ${modalityStr}</li>
+            <li><strong>Fecha seleccionada:</strong> ${dateStr}</li>
+            <li><strong>Observaciones:</strong> ${reg.notes || 'Ninguna'}</li>
+          </ul>
+          ${surveyDetails}
+          <br>
+          <hr style="border: none; border-top: 1px solid #eee;">
+          <p style="font-size: 11px; color: #777;">Este es un correo automático enviado por el Gestor de Eventos de Leandro Velasques.</p>
+        </div>
+      `;
+
+      for (const coordinator of coordinators) {
+        if (coordinator.email) {
+          await sendAndLogEmail(
+            coordinator.email,
+            coordinator.name || 'Coordinador',
+            coordSubject,
+            coordHtml,
+            true
+          );
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, status: participantResult.status, error: participantResult.errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
