@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { exportPresentationToPdf } from '../../lib/pdfExport'
 
 const LAYOUTS = [
   { id: 'image', name: 'Solo Imagen (16:9)', icon: 'image', desc: 'Diapositiva prediseñada de 16:9' }
@@ -23,6 +24,8 @@ export default function CrmPresentationEditor() {
   const [uploading, setUploading] = useState(false)
   const [eventId, setEventId] = useState('')
   const [events, setEvents] = useState([])
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportProgress, setExportProgress] = useState('')
   const fileInputRef = useRef(null)
   const slidesImportInputRef = useRef(null)
 
@@ -341,6 +344,27 @@ export default function CrmPresentationEditor() {
     }
   }
 
+  const handleExportPdf = async () => {
+    if (slides.length === 0) {
+      showToast('No hay diapositivas para exportar.', 'error')
+      return
+    }
+    setExportingPdf(true)
+    setExportProgress('0%')
+    try {
+      await exportPresentationToPdf(title || 'presentacion', slides, (curr, total) => {
+        setExportProgress(`${Math.round((curr / total) * 100)}%`)
+      })
+      showToast('PDF exportado correctamente.')
+    } catch (err) {
+      console.error('Error al exportar PDF:', err)
+      showToast('Error al exportar PDF: ' + err.message, 'error')
+    } finally {
+      setExportingPdf(false)
+      setExportProgress('')
+    }
+  }
+
   // Helper render for live preview
   const renderPreview = () => {
     if (!selectedSlide) {
@@ -424,6 +448,19 @@ export default function CrmPresentationEditor() {
         </div>
 
         <div className="flex items-center gap-3">
+          {slides.length > 0 && (
+            <button
+              onClick={handleExportPdf}
+              disabled={exportingPdf}
+              className="px-4 py-2 border border-red-200 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-xs font-bold text-red-700 rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+              title="Exportar todas las diapositivas a PDF"
+            >
+              <span className="material-symbols-outlined text-base leading-none">
+                {exportingPdf ? 'sync' : 'picture_as_pdf'}
+              </span>
+              {exportingPdf ? `Exportando (${exportProgress})` : 'Exportar PDF'}
+            </button>
+          )}
           {isEdit && (
             <>
               <Link

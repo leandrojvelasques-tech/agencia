@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { exportPresentationToPdf } from '../../lib/pdfExport'
 
 export default function CrmPresentationsDashboard() {
   const navigate = useNavigate()
   const [presentations, setPresentations] = useState([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState(null)
+  const [exportingId, setExportingId] = useState(null)
+  const [exportProgress, setExportProgress] = useState('')
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -45,6 +48,23 @@ export default function CrmPresentationsDashboard() {
     } catch (err) {
       console.error('Error deleting:', err)
       showToast('Error al eliminar la presentación.', 'error')
+    }
+  }
+
+  const handleExportPdf = async (presentation) => {
+    try {
+      setExportingId(presentation.id)
+      setExportProgress('0%')
+      await exportPresentationToPdf(presentation.title, presentation.slides, (curr, total) => {
+        setExportProgress(`${Math.round((curr / total) * 100)}%`)
+      })
+      showToast('PDF exportado correctamente.')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al exportar PDF: ' + err.message, 'error')
+    } finally {
+      setExportingId(null)
+      setExportProgress('')
     }
   }
 
@@ -191,7 +211,7 @@ export default function CrmPresentationsDashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-6 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 mt-6 pt-4 border-t border-gray-100 flex-wrap">
                   <Link
                     to={`/admin/crm/presentaciones/${presentation.id}/presentar`}
                     className="px-4 py-2 bg-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/90 text-white text-xs font-bold rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm"
@@ -206,6 +226,17 @@ export default function CrmPresentationsDashboard() {
                     <span className="material-symbols-outlined text-base">edit</span>
                     Editar
                   </Link>
+                  <button
+                    onClick={() => handleExportPdf(presentation)}
+                    disabled={exportingId !== null}
+                    className="px-4 py-2 border border-red-200 bg-red-50/50 hover:bg-red-50 disabled:opacity-50 text-xs font-bold text-red-700 rounded-premium-btn flex items-center gap-1.5 transition-colors cursor-pointer"
+                    title="Exportar todas las diapositivas a PDF"
+                  >
+                    <span className="material-symbols-outlined text-base leading-none">
+                      {exportingId === presentation.id ? 'sync' : 'picture_as_pdf'}
+                    </span>
+                    {exportingId === presentation.id ? `Descargando (${exportProgress})` : 'Exportar PDF'}
+                  </button>
                   <button
                     onClick={() => handleDelete(presentation.id, presentation.title)}
                     className="p-2 border border-gray-150 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-gray-400 rounded-premium-btn transition-colors ml-auto"

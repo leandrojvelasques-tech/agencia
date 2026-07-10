@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS events (
     prices JSONB DEFAULT '[]'::jsonb,
     payment_methods TEXT,
     contact_info TEXT,
+    satisfaction_questions JSONB DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -347,4 +348,63 @@ CREATE POLICY "Admin full access crm_important_events" ON crm_important_events
 CREATE POLICY "Public read crm_important_events" ON crm_important_events 
     FOR SELECT USING (true);
 
+-- =====================================================
+-- 12. CRM PROPOSALS (Presupuestos / Cotizaciones)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS crm_proposals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    description TEXT,
+    client_name TEXT,
+    client_company TEXT,
+    client_email TEXT,
+    client_phone TEXT,
+    client_id UUID REFERENCES crm_clients(id) ON DELETE SET NULL,
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'viewed', 'accepted', 'rejected', 'revision_requested')),
+    total_amount NUMERIC DEFAULT 0,
+    valid_until DATE,
+    terms_conditions TEXT,
+    pdf_url TEXT,
+    attachments JSONB DEFAULT '[]'::jsonb,
+    payment_details JSONB DEFAULT '{}'::jsonb,
+    share_token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+    viewed_at TIMESTAMPTZ,
+    approved_by_name TEXT,
+    approved_by_email TEXT,
+    approved_at TIMESTAMPTZ,
+    client_feedback TEXT,
+    items JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
+CREATE TRIGGER update_crm_proposals_updated_at
+    BEFORE UPDATE ON crm_proposals
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE INDEX IF NOT EXISTS idx_crm_proposals_share_token ON crm_proposals(share_token);
+CREATE INDEX IF NOT EXISTS idx_crm_proposals_status ON crm_proposals(status);
+
+ALTER TABLE crm_proposals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin full access crm_proposals" ON crm_proposals 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Public read crm_proposals" ON crm_proposals 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public update crm_proposals" ON crm_proposals 
+    FOR UPDATE USING (true);
+
+-- =====================================================
+-- MIGRATION: Add new columns to existing crm_proposals table
+-- Run these if the table already exists without these columns:
+-- =====================================================
+-- ALTER TABLE crm_proposals ADD COLUMN IF NOT EXISTS description TEXT;
+-- ALTER TABLE crm_proposals ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
+-- ALTER TABLE crm_proposals ADD COLUMN IF NOT EXISTS viewed_at TIMESTAMPTZ;
+-- ALTER TABLE crm_proposals DROP CONSTRAINT IF EXISTS crm_proposals_status_check;
+-- ALTER TABLE crm_proposals ADD CONSTRAINT crm_proposals_status_check 
+--   CHECK (status IN ('draft', 'sent', 'viewed', 'accepted', 'rejected', 'revision_requested'));

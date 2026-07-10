@@ -28,6 +28,7 @@ export default function EventDetail() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [modalityCounts, setModalityCounts] = useState({ presencial: 0, virtual: 0 })
+  const [feedbackCount, setFeedbackCount] = useState(0)
 
   useEffect(() => {
     async function loadData() {
@@ -48,6 +49,13 @@ export default function EventDetail() {
         const pCount = regs?.filter(r => r.attendance_mode === 'presencial').length || 0
         const vCount = regs?.filter(r => r.attendance_mode === 'virtual').length || 0
         setModalityCounts({ presencial: pCount, virtual: vCount })
+
+        // Query feedback count
+        const { count: fbCount } = await supabase
+          .from('event_feedback')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_id', eventData.id)
+        setFeedbackCount(fbCount || 0)
       }
 
       setLoading(false)
@@ -124,6 +132,7 @@ export default function EventDetail() {
     { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas', count: null },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
+    { to: `/admin/eventos/${id}/satisfaccion`, icon: 'thumb_up', label: 'Satisfacción', count: feedbackCount },
   ]
   const materials = event.event_materials?.filter(m => m.type !== 'image') || []
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
@@ -252,7 +261,7 @@ export default function EventDetail() {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         {ACTIONS.map(action => (
           <Link key={action.to} to={action.to} className="card card-interactive p-5 flex items-center gap-4 group">
             <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center group-hover:bg-[var(--color-deep-green)] transition-colors">

@@ -11,6 +11,7 @@ import EventDetail from './pages/admin/EventDetail'
 import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
 import EventMinuta from './pages/admin/EventMinuta'
+import EventSatisfaction from './pages/admin/EventSatisfaction'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
 
@@ -30,6 +31,7 @@ import EventRegister from './pages/public/EventRegister'
 import EventConfirmation from './pages/public/EventConfirmation'
 import AttendanceCheck from './pages/public/AttendanceCheck'
 import EventParticipantsPublic from './pages/public/EventParticipantsPublic'
+import EventFeedback from './pages/public/EventFeedback'
 
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="eventos/:id/participantes" element={<EventParticipants />} />
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
+          <Route path="eventos/:id/satisfaccion" element={<EventSatisfaction />} />
           <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
           <Route path="configuracion" element={<SettingsDashboard />} />
           
@@ -86,6 +89,11 @@ export default function App() {
           <Route path="crm/presentaciones/nueva" element={<CrmPresentationEditor />} />
           <Route path="crm/presentaciones/:id/editar" element={<CrmPresentationEditor />} />
           <Route path="crm/presentaciones/:id/presentar" element={<CrmPresentationPlayer />} />
+
+          {/* Presupuestos (Back Office) */}
+          <Route path="presupuestos" element={<CrmProposalsDashboard />} />
+          <Route path="presupuestos/nuevo" element={<CrmProposalCreate />} />
+          <Route path="presupuestos/:id/editar" element={<CrmProposalCreate />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -94,6 +102,7 @@ export default function App() {
         <Route path="/evento/:slug/confirmacion" element={<EventConfirmation />} />
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
         <Route path="/evento/:slug/inscritos" element={<EventParticipantsPublic />} />
+        <Route path="/encuesta/:slug" element={<EventFeedback />} />
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />
 
         {/* CRM Client Shared Route */}

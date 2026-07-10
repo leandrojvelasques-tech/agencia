@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { exportPresentationToPdf } from '../../lib/pdfExport'
 
 export default function CrmPresentationPlayer({ isPublic = false }) {
   const { id } = useParams()
@@ -12,6 +13,8 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [draggedGuideIdx, setDraggedGuideIdx] = useState(null)
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportProgress, setExportProgress] = useState('')
   const isGuideClickNavigationRef = useRef(false)
 
   const isPresenterWindow = new URLSearchParams(window.location.search).get('presenter') === 'true'
@@ -617,6 +620,25 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     window.open(url, `PresenterMode_${id}`, 'width=950,height=650,resizable=yes,scrollbars=yes')
   }
 
+  const handleExportPdf = async (e) => {
+    if (e) e.stopPropagation();
+    if (!presentation || slides.length === 0) return
+    setExportingPdf(true)
+    setExportProgress('0%')
+    try {
+      await exportPresentationToPdf(presentation.title || 'presentacion', slides, (curr, total) => {
+        setExportProgress(`${Math.round((curr / total) * 100)}%`)
+      })
+      alert('PDF exportado correctamente.')
+    } catch (err) {
+      console.error('Error al exportar PDF:', err)
+      alert('Error al exportar PDF: ' + err.message)
+    } finally {
+      setExportingPdf(false)
+      setExportProgress('')
+    }
+  }
+
   // Mouse move for laser pointer coordinate tracking
   const handleMouseMove = (e) => {
     if (!playerRef.current) return
@@ -791,6 +813,17 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
             <span className="font-extrabold text-sm uppercase tracking-widest text-[#A8D5C1]">Vista del Presentador</span>
           </div>
           <div className="flex items-center gap-6 text-xs font-bold text-gray-450">
+            <button
+              onClick={handleExportPdf}
+              disabled={exportingPdf}
+              className="flex items-center gap-1.5 bg-red-950/60 hover:bg-red-900 border border-red-800/40 px-3 py-1.5 rounded-xl text-red-300 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+              title="Exportar todas las diapositivas a PDF"
+            >
+              <span className={`material-symbols-outlined text-sm leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
+                {exportingPdf ? 'sync' : 'picture_as_pdf'}
+              </span>
+              <span>{exportingPdf ? `Exportando (${exportProgress})` : 'Exportar PDF'}</span>
+            </button>
             <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[#A8D5C1]">
               <span className="material-symbols-outlined text-sm leading-none">schedule</span>
               <span>Hora ARG: {argentinaTime}</span>
@@ -1230,6 +1263,16 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
           </div>
           <div className="w-px h-5 bg-white/20" />
           <button
+            onClick={handleExportPdf}
+            disabled={exportingPdf}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400 disabled:opacity-50 cursor-pointer"
+            title="Descargar diapositivas en PDF"
+          >
+            <span className={`material-symbols-outlined text-lg leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
+              {exportingPdf ? 'sync' : 'picture_as_pdf'}
+            </span>
+          </button>
+          <button
             onClick={toggleFullscreen}
             className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"
             title="Pantalla Completa (F)"
@@ -1312,6 +1355,17 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
           <div className="w-px h-5 bg-white/20" />
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={handleExportPdf}
+              disabled={exportingPdf}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400 disabled:opacity-50 cursor-pointer"
+              title="Descargar diapositivas en PDF"
+            >
+              <span className={`material-symbols-outlined text-lg leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
+                {exportingPdf ? 'sync' : 'picture_as_pdf'}
+              </span>
+            </button>
+
             <button
               onClick={handleOpenPresenterWindow}
               className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"

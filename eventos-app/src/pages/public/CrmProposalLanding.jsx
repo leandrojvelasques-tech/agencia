@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
+import { supabase } from '../../lib/supabase'
 
 export default function CrmProposalLanding() {
   const { token } = useParams()
   const { fetchProposalByToken, updateProposal } = useStore()
+  const viewTracked = useRef(false)
 
   // State
   const [proposal, setProposal] = useState(null)
@@ -15,9 +17,14 @@ export default function CrmProposalLanding() {
   // Modals / Actions State
   const [showApproveModal, setShowApproveModal] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showRevisionModal, setShowRevisionModal] = useState(false)
   const [approveForm, setApproveForm] = useState({ name: '', email: '', cuit: '', acceptTerms: false })
   const [rejectFeedback, setRejectFeedback] = useState('')
+  const [revisionFeedback, setRevisionFeedback] = useState('')
   const [actionError, setActionError] = useState('')
+
+  // Lightbox
+  const [lightboxImage, setLightboxImage] = useState(null)
 
   useEffect(() => {
     async function loadData() {
@@ -28,6 +35,21 @@ export default function CrmProposalLanding() {
           setErrorState('La propuesta comercial no existe o el enlace es inválido.')
         } else {
           setProposal(data)
+          // Track view only once per session
+          if (!viewTracked.current && !data.viewed_at && data.status !== 'accepted') {
+            viewTracked.current = true
+            try {
+              await supabase
+                .from('crm_proposals')
+                .update({ 
+                  viewed_at: new Date().toISOString(),
+                  status: data.status === 'sent' ? 'viewed' : data.status
+                })
+                .eq('id', data.id)
+            } catch (e) {
+              console.log('Could not track view:', e)
+            }
+          }
         }
       } catch (err) {
         console.error(err)
@@ -88,7 +110,7 @@ export default function CrmProposalLanding() {
     setActionError('')
 
     if (!rejectFeedback.trim()) {
-      setActionError('Por favor, ingresa el motivo del rechazo o tus comentarios.')
+      setActionError('Por favor, ingresa el motivo del rechazo.')
       return
     }
 
@@ -115,6 +137,41 @@ export default function CrmProposalLanding() {
       setSubmitting(false)
     }
   }
+
+  const handleRevisionSubmit = async (e) => {
+    e.preventDefault()
+    setActionError('')
+
+    if (!revisionFeedback.trim()) {
+      setActionError('Por favor, describí qué cambios necesitás.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const result = await updateProposal(proposal.id, {
+        status: 'revision_requested',
+        client_feedback: revisionFeedback
+      })
+
+      if (result.success) {
+        setProposal(prev => ({
+          ...prev,
+          status: 'revision_requested',
+          client_feedback: revisionFeedback
+        }))
+        setShowRevisionModal(false)
+      } else {
+        throw new Error(result.error?.message || 'Error al enviar')
+      }
+    } catch (err) {
+      setActionError('No se pudo enviar la solicitud de cambios: ' + err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const isImageFile = (type) => type && type.startsWith('image/')
 
   if (loading) {
     return (
@@ -145,6 +202,8 @@ export default function CrmProposalLanding() {
   const isPastValidity = proposal.valid_until && new Date(proposal.valid_until + 'T23:59:59') < new Date()
   const isAccepted = proposal.status === 'accepted'
   const isRejected = proposal.status === 'rejected'
+  const isRevisionRequested = proposal.status === 'revision_requested'
+  const canAct = !isAccepted && !isRejected && !isPastValidity
 
   // Default bank details if database doesn't have it
   const bankDetails = proposal.payment_details || {
@@ -155,6 +214,8 @@ export default function CrmProposalLanding() {
     cuit: '20309551665',
     cuenta: 'CA $ 00150846000113486326'
   }
+
+  const attachments = proposal.attachments || []
 
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)] pb-16 relative">
@@ -224,9 +285,20 @@ export default function CrmProposalLanding() {
           <div className="p-4 mb-6 rounded-2xl border border-red-200 bg-red-50 text-red-800 flex items-start gap-3 no-print">
             <span className="material-symbols-outlined text-2xl text-red-500">cancel</span>
             <div>
-              <p className="text-sm font-bold">Propuesta rechazada / con comentarios</p>
+              <p className="text-sm font-bold">Propuesta rechazada</p>
               <p className="text-xs text-red-700/80 mt-0.5 leading-relaxed">
                 Motivo: "{proposal.client_feedback}"
+              </p>
+            </div>
+          </div>
+        )}
+        {isRevisionRequested && (
+          <div className="p-4 mb-6 rounded-2xl border border-orange-200 bg-orange-50 text-orange-800 flex items-start gap-3 no-print">
+            <span className="material-symbols-outlined text-2xl text-orange-500">rate_review</span>
+            <div>
+              <p className="text-sm font-bold">Cambios solicitados</p>
+              <p className="text-xs text-orange-700/80 mt-0.5 leading-relaxed">
+                Tu comentario fue enviado: "{proposal.client_feedback}". El proveedor lo revisará y te contactará.
               </p>
             </div>
           </div>
@@ -250,9 +322,9 @@ export default function CrmProposalLanding() {
             {proposal.subtitle && (
               <p className="text-sm md:text-base text-[var(--color-dark-gray)]/65 font-medium leading-snug">{proposal.subtitle}</p>
             )}
-            <div className="flex gap-2 pt-1.5 no-print">
-              <span className={`badge ${isAccepted ? 'badge-green' : isRejected ? 'badge-red' : 'badge-yellow'}`}>
-                {isAccepted ? '✓ Aprobado' : isRejected ? '✘ Rechazado' : '⏳ Pendiente de revisión'}
+            <div className="flex gap-2 pt-1.5 no-print flex-wrap">
+              <span className={`badge ${isAccepted ? 'badge-green' : isRejected ? 'badge-red' : isRevisionRequested ? 'badge-orange' : 'badge-yellow'}`}>
+                {isAccepted ? '✓ Aprobado' : isRejected ? '✘ Rechazado' : isRevisionRequested ? '✏ Cambios solicitados' : '⏳ Pendiente de revisión'}
               </span>
             </div>
           </div>
@@ -271,6 +343,51 @@ export default function CrmProposalLanding() {
           </div>
         </div>
 
+        {/* Description Section */}
+        {proposal.description && (
+          <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
+            <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-xl">description</span>
+              Descripción del Servicio
+            </h2>
+            <p className="text-xs text-[var(--color-dark-gray)]/75 font-medium leading-relaxed whitespace-pre-wrap">
+              {proposal.description}
+            </p>
+          </div>
+        )}
+
+        {/* Attachments Gallery */}
+        {attachments.length > 0 && (
+          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm">collections</span>
+              Material de Referencia
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {attachments.map((att, i) => (
+                <div key={i} className="rounded-xl overflow-hidden border border-gray-100 group cursor-pointer">
+                  {isImageFile(att.type) ? (
+                    <img 
+                      src={att.url} 
+                      alt={att.name} 
+                      className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300"
+                      onClick={() => setLightboxImage(att.url)}
+                    />
+                  ) : (
+                    <a href={att.url} target="_blank" rel="noreferrer" className="block w-full h-36 flex flex-col items-center justify-center gap-1 bg-[var(--color-refined-gray)] p-2 hover:bg-[var(--color-deep-green)]/5 transition-colors">
+                      <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/30">
+                        {att.type === 'application/pdf' ? 'picture_as_pdf' : 'insert_drive_file'}
+                      </span>
+                      <p className="text-[10px] font-semibold text-[var(--color-dark-gray)]/60 truncate max-w-full px-1">{att.name}</p>
+                      <p className="text-[9px] text-[var(--color-deep-green)] font-bold">Click para descargar</p>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* PDF Download Section */}
         {proposal.pdf_url && (
           <div className="card p-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 no-print">
@@ -278,7 +395,7 @@ export default function CrmProposalLanding() {
               <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]">picture_as_pdf</span>
               <div>
                 <h3 className="text-sm font-extrabold text-[var(--color-dark-gray)]">Propuesta Técnica Completa (Documentación)</h3>
-                <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">Accede a las especificaciones detalladas del diagnóstico y propuesta técnica de 15 páginas.</p>
+                <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">Accede a las especificaciones detalladas del diagnóstico y propuesta técnica.</p>
               </div>
             </div>
             <a 
@@ -392,15 +509,22 @@ export default function CrmProposalLanding() {
           </div>
         )}
 
-        {/* Interactive Approval Actions */}
-        {!isAccepted && !isRejected && !isPastValidity && (
+        {/* Interactive Actions */}
+        {canAct && (
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 no-print">
             <button
-              onClick={() => { setActionError(''); setShowRejectModal(true) }}
+              onClick={() => { setActionError(''); setRevisionFeedback(''); setShowRevisionModal(true) }}
               className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto"
             >
+              <span className="material-symbols-outlined text-lg">rate_review</span>
+              Solicitar Cambios
+            </button>
+            <button
+              onClick={() => { setActionError(''); setRejectFeedback(''); setShowRejectModal(true) }}
+              className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto !border-red-200 !text-red-600 hover:!bg-red-50"
+            >
               <span className="material-symbols-outlined text-lg">cancel</span>
-              Rechazar / Solicitar ajuste
+              Rechazar
             </button>
             <button
               onClick={() => { setActionError(''); setShowApproveModal(true) }}
@@ -519,14 +643,14 @@ export default function CrmProposalLanding() {
         </div>
       )}
 
-      {/* REJECT/FEEDBACK MODAL */}
+      {/* REJECT MODAL */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in modal no-print">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="font-extrabold text-[var(--color-deep-green)] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-xl">rate_review</span>
-                Solicitar Ajustes o Rechazar
+              <h3 className="font-extrabold text-red-600 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-xl">cancel</span>
+                Rechazar Presupuesto
               </h3>
               <button onClick={() => setShowRejectModal(false)} className="text-gray-400 hover:text-gray-600">
                 <span className="material-symbols-outlined">close</span>
@@ -535,9 +659,9 @@ export default function CrmProposalLanding() {
             
             <form onSubmit={handleRejectSubmit} className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">Comentarios / Ajustes requeridos *</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">Motivo del rechazo *</label>
                 <textarea
-                  placeholder="Detalla qué cambios o aclaraciones necesitas antes de confirmar el presupuesto..."
+                  placeholder="Indicá por qué rechazás esta propuesta..."
                   className="form-input text-xs min-h-[120px] leading-relaxed"
                   value={rejectFeedback}
                   onChange={e => setRejectFeedback(e.target.value)}
@@ -563,11 +687,84 @@ export default function CrmProposalLanding() {
                   className="btn-primary !py-2 !px-5 !text-xs bg-red-500 border-red-500 hover:bg-red-600"
                   disabled={submitting}
                 >
-                  {submitting ? 'Enviando...' : 'Enviar Comentarios'}
+                  {submitting ? 'Enviando...' : 'Confirmar Rechazo'}
                 </button>
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* REVISION REQUEST MODAL */}
+      {showRevisionModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in modal no-print">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+              <h3 className="font-extrabold text-orange-600 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-xl">rate_review</span>
+                Solicitar Cambios
+              </h3>
+              <button onClick={() => setShowRevisionModal(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <form onSubmit={handleRevisionSubmit} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">¿Qué cambios necesitás? *</label>
+                <textarea
+                  placeholder="Describí los ajustes que necesitás antes de aprobar el presupuesto. Por ejemplo: cambiar el plazo de entrega, ajustar el alcance del servicio, modificar la forma de pago..."
+                  className="form-input text-xs min-h-[140px] leading-relaxed"
+                  value={revisionFeedback}
+                  onChange={e => setRevisionFeedback(e.target.value)}
+                  required
+                />
+              </div>
+
+              {actionError && (
+                <p className="text-xs font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">{actionError}</p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRevisionModal(false)}
+                  className="btn-secondary !py-2 !px-4 !text-xs"
+                  disabled={submitting}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary !py-2 !px-5 !text-xs !bg-orange-500 !border-orange-500 hover:!bg-orange-600"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Enviando...' : 'Enviar Solicitud de Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in no-print"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 transition-all"
+          >
+            <span className="material-symbols-outlined text-2xl">close</span>
+          </button>
+          <img 
+            src={lightboxImage} 
+            alt="Preview" 
+            className="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain"
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
 

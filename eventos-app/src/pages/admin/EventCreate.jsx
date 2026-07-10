@@ -5,6 +5,14 @@ import { supabase } from '../../lib/supabase'
 
 const STEPS = ['Información', 'Fecha y Agenda', 'Inscripción', 'Materiales', 'Encuesta']
 
+const DEFAULT_SATISFACTION_QUESTIONS = [
+  { key: 'score_experience', label: 'Experiencia General', desc: '¿Cómo calificarías tu experiencia general con el evento?' },
+  { key: 'score_registration', label: 'Proceso de Inscripción', desc: '¿Qué te pareció el proceso de registro y la comunicación previa?' },
+  { key: 'score_duration', label: 'Duración del Evento', desc: '¿Cómo evalúas la duración total de la jornada?' },
+  { key: 'score_delivery', label: 'Dictado del Taller/Charla', desc: '¿Qué te pareció la claridad y el desempeño del facilitador?' },
+  { key: 'score_content', label: 'Interés del Contenido', desc: '¿Qué tan útil y aplicable te resultó el contenido visto?' }
+]
+
 const normalizeAgenda = (agenda) => {
   if (!agenda || !Array.isArray(agenda) || agenda.length === 0) {
     return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }]
@@ -68,6 +76,7 @@ export default function EventCreate() {
     payment_methods: '',
     contact_info: '',
     notification_recipients: [],
+    satisfaction_questions: DEFAULT_SATISFACTION_QUESTIONS,
   })
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -202,6 +211,9 @@ export default function EventCreate() {
             payment_methods: data.payment_methods || '',
             contact_info: data.contact_info || '',
             notification_recipients: data.notification_recipients || [],
+            satisfaction_questions: data.satisfaction_questions && data.satisfaction_questions.length === 5
+              ? data.satisfaction_questions
+              : DEFAULT_SATISFACTION_QUESTIONS,
           })
         }
         setLoading(false)
@@ -403,6 +415,9 @@ export default function EventCreate() {
               event_materials: updated.event_materials || [],
               offered_dates: updated.offered_dates && updated.offered_dates.length > 0 ? updated.offered_dates : (updated.event_date ? [updated.event_date] : []),
               notification_recipients: updated.notification_recipients || [],
+              satisfaction_questions: updated.satisfaction_questions && updated.satisfaction_questions.length === 5
+                ? updated.satisfaction_questions
+                : DEFAULT_SATISFACTION_QUESTIONS,
             })
             setSaved(true)
             setTimeout(() => setSaved(false), 3000)
@@ -500,6 +515,12 @@ export default function EventCreate() {
     if (step === 0) return form.title && form.description_short && form.coordinator
     if (step === 1) return form.event_date && form.start_time && form.duration_minutes
     return true
+  }
+
+  const handleUpdateSatisfactionQuestion = (idx, field, value) => {
+    const list = [...(form.satisfaction_questions || DEFAULT_SATISFACTION_QUESTIONS)]
+    list[idx] = { ...list[idx], [field]: value }
+    update('satisfaction_questions', list)
   }
 
   return (
@@ -1680,6 +1701,49 @@ export default function EventCreate() {
                 )}
               </div>
             )}
+
+            {/* Encuesta de Satisfacción Post-Evento */}
+            <div className="border-t border-[var(--color-deep-green)]/15 pt-6 space-y-4">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                  Encuesta de Satisfacción Post-Evento (Minuta)
+                </label>
+                <p className="text-xs text-[var(--color-dark-gray)]/50 mb-4">
+                  Personalizá las 5 preguntas que recibirán los asistentes en el correo de la minuta para calificar de 1 a 5 estrellas.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {(form.satisfaction_questions || DEFAULT_SATISFACTION_QUESTIONS).map((q, idx) => (
+                  <div key={q.key} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-dark-gray)]/5 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-[var(--color-deep-green)]">Pregunta {idx + 1} ({q.key === 'score_experience' ? 'Experiencia' : q.key === 'score_registration' ? 'Inscripción' : q.key === 'score_duration' ? 'Duración' : q.key === 'score_delivery' ? 'Dictado' : 'Contenido'})</span>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Etiqueta corta (Ej: Experiencia General)</label>
+                        <input
+                          className="form-input !py-2 text-xs"
+                          value={q.label}
+                          onChange={e => handleUpdateSatisfactionQuestion(idx, 'label', e.target.value)}
+                          placeholder="Ej: Experiencia General"
+                        />
+                       </div>
+                       <div>
+                         <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Pregunta completa (Ej: ¿Cómo calificarías tu experiencia...?)</label>
+                         <input
+                           className="form-input !py-2 text-xs"
+                           value={q.desc}
+                           onChange={e => handleUpdateSatisfactionQuestion(idx, 'desc', e.target.value)}
+                           placeholder="¿Cómo calificarías...?"
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
           </div>
         )}
       </div>

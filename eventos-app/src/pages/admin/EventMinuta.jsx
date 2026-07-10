@@ -22,6 +22,8 @@ export default function EventMinuta() {
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [toast, setToast] = useState('')
+  const [uploadingField, setUploadingField] = useState(null)
+  const [includeSurvey, setIncludeSurvey] = useState(true)
 
   useEffect(() => {
     async function loadData() {
@@ -42,6 +44,7 @@ export default function EventMinuta() {
           if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
           if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
           if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
+          if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
         } catch (e) {
           console.error("Error loading draft", e)
         }
@@ -79,6 +82,53 @@ export default function EventMinuta() {
     .map(r => r.participants || r.participant)
     .filter(Boolean)
 
+  const handleFileUpload = async (e, field) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Supabase Free Tier maximum file size limit (50MB)
+    const MAX_SIZE_MB = 50
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
+    if (file.size > MAX_SIZE_BYTES) {
+      alert(`El archivo es demasiado grande (${(file.size / (1024 * 1024)).toFixed(1)} MB). La cuenta de Supabase tiene un límite de ${MAX_SIZE_MB} MB por archivo.\n\nTe recomendamos:\n1. Si es la presentación, descárgala de nuevo como PDF (ahora son mucho más ligeros).\n2. Si es otro archivo grande, súbelo a Google Drive/Dropbox y pega el enlace directo.`);
+      return
+    }
+
+    setUploadingField(field)
+    try {
+      const ext = file.name.split('.').pop()
+      const folder = field === 'photo' ? 'minuta-photos' : field === 'presentation' ? 'minuta-presentations' : 'minuta-files'
+      const fileName = `${folder}/minuta-${id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
+      
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      
+      if (upErr) throw upErr
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('banners')
+        .getPublicUrl(fileName)
+      
+      if (field === 'photo') {
+        setPhotoUrl(publicUrl)
+      } else if (field === 'presentation') {
+        setPresentationLink(publicUrl)
+      } else if (field === 'extra') {
+        setExtraFiles(publicUrl)
+      }
+      
+      setToast('Archivo subido correctamente')
+      setTimeout(() => setToast(''), 3000)
+    } catch (err) {
+      console.error('Error al subir archivo:', err)
+      setToast('Error al subir el archivo: ' + err.message)
+      setTimeout(() => setToast(''), 5000)
+    } finally {
+      setUploadingField(null)
+    }
+  }
+
   const handleSaveDraft = () => {
     const draft = {
       summary,
@@ -88,7 +138,8 @@ export default function EventMinuta() {
       extraFiles,
       includeAttendees,
       includeAbsentees,
-      externalEmails
+      externalEmails,
+      includeSurvey
     }
     localStorage.setItem(`minuta_draft_${id}`, JSON.stringify(draft))
     setToast('Borrador guardado exitosamente en este dispositivo')
@@ -175,7 +226,8 @@ export default function EventMinuta() {
         const p = getParticipant(r)
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
       }).filter(Boolean) : [],
-      emails: finalEmails
+      emails: finalEmails,
+      surveyLink: includeSurvey ? `${window.location.origin}/encuesta/${event.slug}` : null
     }
 
     console.log('DEBUG MINUTA PAYLOAD:', payload)
@@ -191,10 +243,10 @@ export default function EventMinuta() {
     const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
 
     try {
-      const webhookUrl = 'https://leandro-velasques-n8n.dwocd5.easypanel.host/webhook/minuta-evento'
-      console.log('Iniciando fetch a n8n...', payload)
+      const apiUrl = '/api/send-minuta'
+      console.log('Iniciando fetch a backend...', payload)
       
-      const response = await fetch(webhookUrl, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -203,9 +255,12 @@ export default function EventMinuta() {
 
       clearTimeout(timeoutId)
 
-      if (!response.ok) throw new Error(`n8n respondió con error ${response.status}`)
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `El servidor respondió con error ${response.status}`);
+      }
       
-      console.log('¡Respuesta de n8n recibida exitosamente!')
+      console.log('¡Respuesta del servidor recibida exitosamente!')
 
       // Registrar en BDD como enviado
       const { error: dbError } = await supabase.from('event_reports').upsert({
@@ -340,19 +395,51 @@ export default function EventMinuta() {
 
         <div>
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-            Foto del evento <span className="normal-case text-[var(--color-dark-gray)]/30">(Link a imagen)</span>
+            Foto del evento
           </label>
-          <input
-            className="form-input"
-            placeholder="Link directo a la imagen, JPG o PNG..."
-            value={photoUrl}
-            onChange={e => setPhotoUrl(e.target.value)}
-          />
+          <div className="flex gap-2">
+            <input
+              className="form-input flex-1"
+              placeholder="Enlace directo a la imagen o subí una desde tu PC..."
+              value={photoUrl}
+              onChange={e => setPhotoUrl(e.target.value)}
+            />
+            <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'photo' ? 'opacity-55 pointer-events-none' : ''}`}>
+              {uploadingField === 'photo' ? (
+                <>
+                  <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-sm">upload_file</span>
+                  Subir Foto
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => handleFileUpload(e, 'photo')}
+                disabled={uploadingField !== null}
+              />
+            </label>
+          </div>
           <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">
-            <strong>¿Cómo subirla?</strong> Por ahora no se suben fotos directo al sistema por políticas de peso. Tenés que subir la foto a <strong>Google Drive o Google Photos</strong>, configurarla para que "Cualquier persona con el link pueda verla" y pegar acá ese enlace abierto.
+            Podés pegar una dirección web de imagen o subir un archivo directamente.
           </p>
           {photoUrl && (
-            <img src={photoUrl} alt="Preview" className="mt-3 rounded-[var(--radius-card)] max-h-48 object-cover w-full" onError={e => e.target.style.display = 'none'} />
+            <div className="relative mt-3 group">
+              <img src={photoUrl} alt="Preview" className="rounded-[var(--radius-card)] max-h-48 object-cover w-full" onError={e => e.target.style.display = 'none'} />
+              <button
+                type="button"
+                onClick={() => setPhotoUrl('')}
+                className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors shadow-md flex items-center justify-center cursor-pointer"
+                title="Quitar foto"
+              >
+                <span className="material-symbols-outlined text-sm leading-none">close</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -386,6 +473,10 @@ export default function EventMinuta() {
                 <input type="checkbox" checked={includeAbsentees} onChange={e => setIncludeAbsentees(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
                 <span className="text-sm font-semibold">Incluir inscriptos ausentes</span>
               </label>
+              <label className="flex items-center gap-3 cursor-pointer pt-2 border-t border-[var(--color-deep-green)]/10 mt-1">
+                <input type="checkbox" checked={includeSurvey} onChange={e => setIncludeSurvey(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
+                <span className="text-sm font-semibold text-[var(--color-deep-green)]">⭐ Incluir link a Encuesta de Satisfacción</span>
+              </label>
             </div>
             
             <div>
@@ -404,30 +495,107 @@ export default function EventMinuta() {
         </div>
 
         <div className="pt-4 border-t border-[var(--color-deep-green)]/10">
-          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Archivos Adjuntos (Links)</label>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Archivos Adjuntos</label>
           <div className="space-y-4">
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                Link de la Presentación
+                Archivo o Enlace de la Presentación
               </label>
-              <input
-                className="form-input"
-                placeholder="https://... (URL de Canva, Google Slides o PDF compartido)"
-                value={presentationLink}
-                onChange={e => setPresentationLink(e.target.value)}
-              />
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Asegurate de que el permiso diga "Cualquier persona con el enlace puede leer".</p>
+              <div className="flex gap-2">
+                <input
+                  className="form-input flex-1"
+                  placeholder="Enlace de Canva/Slides o subí el archivo PDF de la presentación..."
+                  value={presentationLink}
+                  onChange={e => setPresentationLink(e.target.value)}
+                />
+                <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'presentation' ? 'opacity-55 pointer-events-none' : ''}`}>
+                  {uploadingField === 'presentation' ? (
+                    <>
+                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-sm">upload_file</span>
+                      Subir PDF
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    className="hidden"
+                    onChange={e => handleFileUpload(e, 'presentation')}
+                    disabled={uploadingField !== null}
+                  />
+                </label>
+              </div>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube la presentación como PDF o pega un enlace externo.</p>
+              {presentationLink && (
+                <div className="flex items-center gap-2 mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
+                  <span className="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                  <a href={presentationLink} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-deep-green)] hover:underline truncate max-w-md flex-1">
+                    {presentationLink}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setPresentationLink('')}
+                    className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center"
+                    title="Quitar presentación"
+                  >
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+              )}
             </div>
+
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                Otros Archivos Adicionales
+                Otros Archivos Adicionales (Archivos o Enlaces)
               </label>
-              <input
-                className="form-input"
-                placeholder="https://... (URL a carpeta de Drive, Dropbox, etc.)"
-                value={extraFiles}
-                onChange={e => setExtraFiles(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <input
+                  className="form-input flex-1"
+                  placeholder="Enlace a Drive/Dropbox o subí un archivo de soporte..."
+                  value={extraFiles}
+                  onChange={e => setExtraFiles(e.target.value)}
+                />
+                <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'extra' ? 'opacity-55 pointer-events-none' : ''}`}>
+                  {uploadingField === 'extra' ? (
+                    <>
+                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-sm">upload_file</span>
+                      Subir Archivo
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={e => handleFileUpload(e, 'extra')}
+                    disabled={uploadingField !== null}
+                  />
+                </label>
+              </div>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube cualquier tipo de archivo o proporciona un enlace a carpeta compartida.</p>
+              {extraFiles && (
+                <div className="flex items-center gap-2 mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
+                  <span className="material-symbols-outlined text-blue-600">draft</span>
+                  <a href={extraFiles} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-deep-green)] hover:underline truncate max-w-md flex-1">
+                    {extraFiles}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setExtraFiles('')}
+                    className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center"
+                    title="Quitar archivo"
+                  >
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -519,6 +687,16 @@ export default function EventMinuta() {
                     Ver Archivos Adicionales
                   </a>
                 )}
+              </div>
+            )}
+
+            {includeSurvey && (
+              <div className="mt-8 p-5 bg-amber-50/60 border border-amber-200 rounded-[10px] text-center font-sans">
+                <p className="font-bold text-amber-800 text-sm mb-1">⭐ ¡Tu opinión nos importa!</p>
+                <p className="text-amber-900/80 text-xs mb-3">Te invitamos a responder una breve encuesta de satisfacción sobre tu experiencia en el taller.</p>
+                <span className="inline-block px-4 py-2 bg-amber-500 rounded-[6px] text-xs font-bold text-white shadow-sm">
+                  Completar Encuesta de Satisfacción
+                </span>
               </div>
             )}
             
