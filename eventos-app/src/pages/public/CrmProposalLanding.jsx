@@ -18,7 +18,7 @@ export default function CrmProposalLanding() {
   const [showApproveModal, setShowApproveModal] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [showRevisionModal, setShowRevisionModal] = useState(false)
-  const [approveForm, setApproveForm] = useState({ name: '', email: '', cuit: '', acceptTerms: false })
+  const [approveForm, setApproveForm] = useState({ name: '', email: '', acceptTerms: false })
   const [rejectFeedback, setRejectFeedback] = useState('')
   const [revisionFeedback, setRevisionFeedback] = useState('')
   const [actionError, setActionError] = useState('')
@@ -69,7 +69,7 @@ export default function CrmProposalLanding() {
     e.preventDefault()
     setActionError('')
 
-    if (!approveForm.name || !approveForm.email || !approveForm.cuit) {
+    if (!approveForm.name || !approveForm.email) {
       setActionError('Por favor, completa todos los campos de confirmación.')
       return
     }
@@ -80,7 +80,7 @@ export default function CrmProposalLanding() {
 
     setSubmitting(true)
     try {
-      const feedback = `Aprobado digitalmente por CUIT/DNI: ${approveForm.cuit}`
+      const feedback = `Aprobado digitalmente.`
       const result = await updateProposal(proposal.id, {
         status: 'accepted',
         approved_by_name: approveForm.name,
@@ -650,18 +650,6 @@ export default function CrmProposalLanding() {
                   className="form-input text-xs"
                   value={approveForm.email}
                   onChange={e => setApproveForm(p => ({ ...p, email: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">DNI / CUIT de la Empresa *</label>
-                <input
-                  type="text"
-                  placeholder="20-XXXXXXXX-9 o DNI"
-                  className="form-input text-xs"
-                  value={approveForm.cuit}
-                  onChange={e => setApproveForm(p => ({ ...p, cuit: e.target.value }))}
                   required
                 />
               </div>
