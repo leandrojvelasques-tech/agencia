@@ -9,6 +9,7 @@ export default function CrmProposalCreate() {
   const { createProposal, updateProposal, crmClients, fetchCrmClients, createCrmClient } = useStore()
   const fileInputRef = useRef(null)
   const attachmentInputRef = useRef(null)
+  const logoInputRef = useRef(null)
 
   // Local State
   const [loading, setLoading] = useState(false)
@@ -16,6 +17,7 @@ export default function CrmProposalCreate() {
   const [error, setError] = useState('')
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [uploadingAttachments, setUploadingAttachments] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [showPreview, setShowPreview] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
@@ -31,6 +33,10 @@ export default function CrmProposalCreate() {
     client_email: '',
     client_email_2: '',
     client_phone: '',
+    client_address: '',
+    client_city: '',
+    client_website: '',
+    client_logo_url: '',
     title: '',
     subtitle: '',
     description: '',
@@ -60,6 +66,36 @@ export default function CrmProposalCreate() {
     setTimeout(() => setToast(null), 3500)
   }
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploadingLogo(true)
+    setError('')
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+      const filePath = `client_logos/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('proposals')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage
+        .from('proposals')
+        .getPublicUrl(filePath)
+        
+      update('client_logo_url', publicUrlData.publicUrl)
+      showToast('Logo subido correctamente')
+    } catch (err) {
+      setError('Error al subir logo: ' + err.message)
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
   // Load clients
   useEffect(() => {
     fetchCrmClients()
@@ -87,6 +123,10 @@ export default function CrmProposalCreate() {
             client_email: proposal.client_email || '',
             client_email_2: proposal.client_email_2 || '',
             client_phone: proposal.client_phone || '',
+            client_address: proposal.client_address || '',
+            client_city: proposal.client_city || '',
+            client_website: proposal.client_website || '',
+            client_logo_url: proposal.client_logo_url || '',
             title: proposal.title || '',
             subtitle: proposal.subtitle || '',
             description: proposal.description || '',
@@ -171,7 +211,11 @@ export default function CrmProposalCreate() {
         client_company: '',
         client_email: '',
         client_email_2: '',
-        client_phone: ''
+        client_phone: '',
+        client_address: '',
+        client_city: '',
+        client_website: '',
+        client_logo_url: ''
       }))
       return
     }
@@ -185,7 +229,11 @@ export default function CrmProposalCreate() {
         client_company: client.company || '',
         client_email: client.email || '',
         client_email_2: client.email_2 || '',
-        client_phone: client.phone || ''
+        client_phone: client.phone || '',
+        client_address: client.address || '',
+        client_city: client.city || '',
+        client_website: client.website || '',
+        client_logo_url: client.logo_url || ''
       }))
       showToast('Datos del cliente cargados')
     }
@@ -372,6 +420,10 @@ export default function CrmProposalCreate() {
       client_email: form.client_email || null,
       client_email_2: form.client_email_2 || null,
       client_phone: form.client_phone || null,
+      client_address: form.client_address || null,
+      client_city: form.client_city || null,
+      client_website: form.client_website || null,
+      client_logo_url: form.client_logo_url || null,
       title: form.title,
       subtitle: form.subtitle || null,
       description: form.description || null,
@@ -393,7 +445,11 @@ export default function CrmProposalCreate() {
           company: proposalData.client_company,
           email: proposalData.client_email,
           email_2: proposalData.client_email_2,
-          phone: proposalData.client_phone
+          phone: proposalData.client_phone,
+          address: proposalData.client_address,
+          city: proposalData.client_city,
+          website: proposalData.client_website,
+          logo_url: proposalData.client_logo_url
         })
         if (clientResult.success && clientResult.data) {
           proposalData.client_id = clientResult.data.id
@@ -637,6 +693,70 @@ export default function CrmProposalCreate() {
                 placeholder="Ej: +54 9 280 123456"
                 value={form.client_phone}
                 onChange={e => update('client_phone', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Ciudad</label>
+              <input
+                type="text"
+                className="form-input text-xs"
+                placeholder="Ej: Comodoro Rivadavia"
+                value={form.client_city}
+                onChange={e => update('client_city', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Dirección</label>
+              <input
+                type="text"
+                className="form-input text-xs"
+                placeholder="Ej: San Martín 123"
+                value={form.client_address}
+                onChange={e => update('client_address', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Sitio Web</label>
+              <input
+                type="url"
+                className="form-input text-xs"
+                placeholder="https://..."
+                value={form.client_website}
+                onChange={e => update('client_website', e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4 border-t border-[var(--color-deep-green)]/8 pt-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Logo del Cliente</label>
+            <div className="flex items-center gap-4">
+              {form.client_logo_url ? (
+                <div className="relative group w-16 h-16 rounded-lg border border-[var(--color-deep-green)]/20 overflow-hidden bg-[var(--color-refined-gray)]">
+                  <img src={form.client_logo_url} alt="Logo" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => update('client_logo_url', '')} className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadingLogo}
+                className="btn-secondary !py-1.5 !px-3 !text-xs flex items-center gap-1"
+              >
+                {uploadingLogo ? (
+                  <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined text-sm">upload</span>
+                )}
+                Subir Logo
+              </button>
+              <input
+                type="file"
+                ref={logoInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleLogoUpload}
               />
             </div>
           </div>

@@ -350,6 +350,55 @@ export default function CrmProposalLanding() {
           </div>
         </div>
 
+        {/* Client & Vendor Details */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm">person</span>
+              Propuesta preparada para:
+            </h2>
+            {(proposal.client_name || proposal.crm_clients) ? (
+              <div className="flex items-start gap-4">
+                {(proposal.client_logo_url || proposal.crm_clients?.logo_url) && (
+                  <img 
+                    src={proposal.client_logo_url || proposal.crm_clients?.logo_url} 
+                    alt="Logo Cliente" 
+                    className="w-16 h-16 rounded-lg object-contain border border-gray-100 bg-white" 
+                  />
+                )}
+                <div className="space-y-1 text-xs">
+                  <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{proposal.client_name || proposal.crm_clients?.name}</p>
+                  {(proposal.client_company || proposal.crm_clients?.company) && <p className="font-semibold text-[var(--color-dark-gray)]/65">{proposal.client_company || proposal.crm_clients?.company}</p>}
+                  {(proposal.client_email || proposal.crm_clients?.email) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_email || proposal.crm_clients?.email}</p>}
+                  {(proposal.client_phone || proposal.crm_clients?.phone) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_phone || proposal.crm_clients?.phone}</p>}
+                  {(proposal.client_address || proposal.crm_clients?.address) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_address || proposal.crm_clients?.address}</p>}
+                  {(proposal.client_city || proposal.crm_clients?.city) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_city || proposal.crm_clients?.city}</p>}
+                  {(proposal.client_website || proposal.crm_clients?.website) && (
+                    <a href={proposal.client_website || proposal.crm_clients?.website} target="_blank" rel="noreferrer" className="text-[var(--color-deep-green)] hover:underline block truncate">
+                      {proposal.client_website || proposal.crm_clients?.website}
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-[var(--color-dark-gray)]/40">Cliente no especificado</p>
+            )}
+          </div>
+
+          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm">apartment</span>
+              Proveedor:
+            </h2>
+            <div className="space-y-1 text-xs">
+              <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
+              <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
+              <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
+              <p className="text-[var(--color-dark-gray)]/50">Comodoro Rivadavia, Chubut, Argentina</p>
+            </div>
+          </div>
+        </div>
+
         {/* Description Section */}
         {proposal.description && (
           <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
@@ -459,39 +508,6 @@ export default function CrmProposalLanding() {
             </a>
           </div>
         )}
-
-        {/* Client & Vendor Details */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm">person</span>
-              Propuesta preparada para:
-            </h2>
-            {(proposal.client_name || proposal.crm_clients) ? (
-              <div className="space-y-1 text-xs">
-                <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{proposal.client_name || proposal.crm_clients?.name}</p>
-                {(proposal.client_company || proposal.crm_clients?.company) && <p className="font-semibold text-[var(--color-dark-gray)]/65">{proposal.client_company || proposal.crm_clients?.company}</p>}
-                {(proposal.client_email || proposal.crm_clients?.email) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_email || proposal.crm_clients?.email}</p>}
-                {(proposal.client_phone || proposal.crm_clients?.phone) && <p className="text-[var(--color-dark-gray)]/50">{proposal.client_phone || proposal.crm_clients?.phone}</p>}
-              </div>
-            ) : (
-              <p className="text-xs text-[var(--color-dark-gray)]/40">Cliente no especificado</p>
-            )}
-          </div>
-
-          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-sm">apartment</span>
-              Proveedor:
-            </h2>
-            <div className="space-y-1 text-xs">
-              <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
-              <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
-              <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
-              <p className="text-[var(--color-dark-gray)]/50">Comodoro Rivadavia, Chubut, Argentina</p>
-            </div>
-          </div>
-        </div>
 
         {/* PAYMENT SCHEDULE PLAN */}
         <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">

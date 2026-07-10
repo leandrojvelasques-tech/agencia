@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
+import { supabase } from '../../lib/supabase'
 
 export default function CrmClientCreate() {
   const navigate = useNavigate()
@@ -15,9 +16,16 @@ export default function CrmClientCreate() {
     email: '',
     email_2: '',
     phone: '',
-    position: '',
-    notes: ''
+    notes: '',
+    address: '',
+    city: '',
+    website: '',
+    logo_url: ''
   })
+  
+  const [logoFile, setLogoFile] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
   
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState(null)
@@ -36,9 +44,15 @@ export default function CrmClientCreate() {
           email: client.email || '',
           email_2: client.email_2 || '',
           phone: client.phone || '',
-          position: client.position || '',
-          notes: client.notes || ''
+          notes: client.notes || '',
+          address: client.address || '',
+          city: client.city || '',
+          website: client.website || '',
+          logo_url: client.logo_url || ''
         })
+        if (client.logo_url) {
+          setLogoPreview(client.logo_url)
+        }
       }
     }
   }, [id, isEditing, crmClients])
@@ -53,6 +67,14 @@ export default function CrmClientCreate() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setLogoFile(file)
+      setLogoPreview(URL.createObjectURL(file))
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.name) {
@@ -62,11 +84,34 @@ export default function CrmClientCreate() {
 
     setIsLoading(true)
     try {
+      let uploadedLogoUrl = formData.logo_url
+
+      if (logoFile) {
+        setIsUploading(true)
+        const fileExt = logoFile.name.split('.').pop()
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+        const filePath = `client_logos/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('proposals')
+          .upload(filePath, logoFile)
+
+        if (uploadError) throw uploadError
+
+        const { data: publicUrlData } = supabase.storage
+          .from('proposals')
+          .getPublicUrl(filePath)
+          
+        uploadedLogoUrl = publicUrlData.publicUrl
+      }
+
+      const finalData = { ...formData, logo_url: uploadedLogoUrl }
+
       let result
       if (isEditing) {
-        result = await updateCrmClient(id, formData)
+        result = await updateCrmClient(id, finalData)
       } else {
-        result = await createCrmClient(formData)
+        result = await createCrmClient(finalData)
       }
 
       if (result.success) {
@@ -78,6 +123,7 @@ export default function CrmClientCreate() {
       showToast('Error inesperado: ' + err.message, 'error')
     } finally {
       setIsLoading(false)
+      setIsUploading(false)
     }
   }
 
@@ -115,6 +161,33 @@ export default function CrmClientCreate() {
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 md:p-8 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
+        
+        {/* Logo Upload */}
+        <div className="mb-8 flex flex-col items-center sm:items-start">
+          <label className="block text-sm font-bold text-[var(--color-dark-gray)] mb-3">Logo del Cliente (Opcional)</label>
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full border-2 border-dashed border-[var(--color-deep-green)]/30 flex items-center justify-center bg-[var(--color-refined-gray)] overflow-hidden transition-all group-hover:border-[var(--color-deep-green)]">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/30">add_photo_alternate</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <div className="text-sm text-[var(--color-dark-gray)]/60">
+              <p>Recomendado: Imagen cuadrada (PNG/JPG)</p>
+              <p>Tamaño máximo: 2MB</p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 md:col-span-2">
             <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Nombre / Contacto *</label>
@@ -189,6 +262,42 @@ export default function CrmClientCreate() {
             />
           </div>
 
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Ciudad (Opcional)</label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="Ej: Comodoro Rivadavia"
+              className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-3 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Dirección (Opcional)</label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Ej: San Martín 123"
+              className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-3 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Sitio Web (Opcional)</label>
+            <input
+              type="url"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              placeholder="Ej: https://empresa.com"
+              className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-3 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium"
+            />
+          </div>
+
           <div className="space-y-2 md:col-span-2">
             <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Notas Adicionales (Interno)</label>
             <textarea
@@ -214,7 +323,7 @@ export default function CrmClientCreate() {
             disabled={isLoading}
             className="btn-primary"
           >
-            {isLoading ? (
+            {isLoading || isUploading ? (
               <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
             ) : (
               <span className="material-symbols-outlined text-lg">save</span>
