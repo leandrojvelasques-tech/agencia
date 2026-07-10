@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 const getCarrera = (responses) => {
   if (!responses) return '—';
@@ -104,6 +106,7 @@ export default function EventParticipants() {
   const [editingParticipant, setEditingParticipant] = useState(null)
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
   const [search, setSearch] = useState('')
+  const [sortConfig, setSortConfig] = useState({ key: 'registered_at', direction: 'desc' })
 
   // Tab State
   const searchParams = new URLSearchParams(window.location.search)
@@ -124,14 +127,52 @@ export default function EventParticipants() {
   if (loading) return <div className="text-center py-20"><p className="text-lg text-[var(--color-dark-gray)]/40 font-medium animate-pulse">Cargando...</p></div>
   if (!event) return <div className="text-center py-20"><p className="text-lg text-[var(--color-dark-gray)]/40">Evento no encontrado</p></div>
 
-  const filtered = registrations.filter(r => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    const p = r.participants || {}
-    return p.first_name?.toLowerCase().includes(q) ||
-      p.last_name?.toLowerCase().includes(q) ||
-      p.email?.toLowerCase().includes(q)
-  })
+  const handleSort = (key) => {
+    let direction = 'asc'
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const getTitulo = (responses) => {
+    if (!responses) return '';
+    return responses['Profesión/Ocupación'] || responses['Profesión'] || responses.profesion || '';
+  }
+
+  const getDelegacion = (responses) => {
+    if (!responses) return '—';
+    return responses['delegacion'] || responses['Delegación'] || responses.delegacion || '—';
+  }
+
+  const sortedAndFiltered = [...registrations]
+    .filter(r => {
+      if (!search) return true
+      const q = search.toLowerCase()
+      const p = r.participants || {}
+      return p.first_name?.toLowerCase().includes(q) ||
+        p.last_name?.toLowerCase().includes(q) ||
+        p.email?.toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (!sortConfig.key) return 0;
+      let valA = '', valB = '';
+      
+      if (sortConfig.key === 'nombre') {
+        valA = `${a.participants?.first_name || ''} ${a.participants?.last_name || ''}`.toLowerCase();
+        valB = `${b.participants?.first_name || ''} ${b.participants?.last_name || ''}`.toLowerCase();
+      } else if (sortConfig.key === 'titulo') {
+        valA = getTitulo(a.survey_responses).toLowerCase();
+        valB = getTitulo(b.survey_responses).toLowerCase();
+      } else if (sortConfig.key === 'registered_at') {
+        valA = new Date(a.registered_at || 0).getTime();
+        valB = new Date(b.registered_at || 0).getTime();
+      }
+
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
 
   const handleOpenAdd = () => {
     setEditingParticipant(null)
@@ -338,19 +379,31 @@ export default function EventParticipants() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
+                    <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('nombre')}>
+                      <div className="flex items-center gap-1">
+                        Nombre {sortConfig.key === 'nombre' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                      </div>
+                    </th>
+                    <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('titulo')}>
+                      <div className="flex items-center gap-1">
+                        Título {sortConfig.key === 'titulo' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                      </div>
+                    </th>
+                    <th>Delegación</th>
                     <th>Email</th>
                     <th>Teléfono</th>
-                    <th>Fecha Elegida</th>
-                    <th>Modalidad</th>
-                    <th>Carrera</th>
+                    <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('registered_at')}>
+                      <div className="flex items-center gap-1">
+                        Día de Inscripción {sortConfig.key === 'registered_at' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                      </div>
+                    </th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.length === 0 ? (
+                  {sortedAndFiltered.length === 0 ? (
                     <tr><td colSpan={7} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No hay participantes registrados</td></tr>
-                  ) : filtered.map(r => (
+                  ) : sortedAndFiltered.map(r => (
                     <tr key={r.id}>
                       <td className="font-semibold text-[var(--color-dark-gray)]">
                         <div className="flex flex-col">
@@ -361,6 +414,8 @@ export default function EventParticipants() {
                           {renderRegistrationInfo(r.survey_responses)}
                         </div>
                       </td>
+                      <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getTitulo(r.survey_responses) || '—'}</td>
+                      <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getDelegacion(r.survey_responses)}</td>
                       <td>
                         {r.participants?.email ? (
                           <span className="text-sm">{r.participants.email}</span>
@@ -372,13 +427,9 @@ export default function EventParticipants() {
                         )}
                       </td>
                       <td className="text-sm text-[var(--color-dark-gray)]/70">{r.participants?.phone || '—'}</td>
-                      <td className="text-sm font-semibold text-[var(--color-dark-gray)]/85">{r.selected_date || event.event_date || '—'}</td>
-                      <td>
-                        <span className={`badge ${r.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
-                          {r.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
-                        </span>
+                      <td className="text-sm font-semibold text-[var(--color-dark-gray)]/85">
+                        {r.registered_at ? format(new Date(r.registered_at), "dd/MM/yyyy HH:mm") : '—'}
                       </td>
-                      <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getCarrera(r.survey_responses)}</td>
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button onClick={() => handleOpenEdit(r)} className="btn-ghost !p-1.5 text-blue-600 hover:bg-blue-50" title="Editar">
