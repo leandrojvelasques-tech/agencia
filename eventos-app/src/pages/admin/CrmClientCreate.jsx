@@ -7,12 +7,13 @@ export default function CrmClientCreate() {
   const { id } = useParams()
   const isEditing = Boolean(id)
   
-  const { crmClients, createCrmClient, updateCrmClient } = useStore()
+  const { crmClients, createCrmClient, updateCrmClient, fetchCrmClients } = useStore()
   
   const [formData, setFormData] = useState({
     name: '',
     company: '',
     email: '',
+    email_2: '',
     phone: '',
     position: '',
     notes: ''
@@ -22,6 +23,10 @@ export default function CrmClientCreate() {
   const [toast, setToast] = useState(null)
 
   useEffect(() => {
+    fetchCrmClients()
+  }, [fetchCrmClients])
+
+  useEffect(() => {
     if (isEditing) {
       const client = crmClients.find(c => c.id === id)
       if (client) {
@@ -29,6 +34,7 @@ export default function CrmClientCreate() {
           name: client.name || '',
           company: client.company || '',
           email: client.email || '',
+          email_2: client.email_2 || '',
           phone: client.phone || '',
           position: client.position || '',
           notes: client.notes || ''
@@ -55,19 +61,23 @@ export default function CrmClientCreate() {
     }
 
     setIsLoading(true)
-    let result
-    if (isEditing) {
-      result = await updateCrmClient(id, formData)
-    } else {
-      result = await createCrmClient(formData)
-    }
+    try {
+      let result
+      if (isEditing) {
+        result = await updateCrmClient(id, formData)
+      } else {
+        result = await createCrmClient(formData)
+      }
 
-    setIsLoading(false)
-
-    if (result.success) {
-      navigate('/admin/clientes')
-    } else {
-      showToast('Error al guardar: ' + (result.error?.message || ''), 'error')
+      if (result.success) {
+        navigate('/admin/clientes')
+      } else {
+        showToast('Error al guardar: ' + (result.error?.message || ''), 'error')
+      }
+    } catch (err) {
+      showToast('Error inesperado: ' + err.message, 'error')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -144,13 +154,25 @@ export default function CrmClientCreate() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Email (Opcional)</label>
+            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Email Principal (Opcional)</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Ej: juan@empresa.com"
+              className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-3 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Email Secundario (Opcional)</label>
+            <input
+              type="email"
+              name="email_2"
+              value={formData.email_2}
+              onChange={handleChange}
+              placeholder="Ej: socio@empresa.com"
               className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-3 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium"
             />
           </div>

@@ -490,6 +490,67 @@ export const useStore = create((set, get) => ({
     return { success: true }
   },
 
+  // CRM Clients
+  fetchCrmClients: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('crm_clients')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (!error && data) {
+      set({ crmClients: data })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  createCrmClient: async (clientData) => {
+    const { data, error } = await supabase
+      .from('crm_clients')
+      .insert([clientData])
+      .select()
+      .single()
+    
+    if (!error && data) {
+      set(state => ({ crmClients: [...state.crmClients, data].sort((a, b) => a.name.localeCompare(b.name)) }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  updateCrmClient: async (id, clientData) => {
+    const { data, error } = await supabase
+      .from('crm_clients')
+      .update(clientData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (!error && data) {
+      set(state => ({
+        crmClients: state.crmClients.map(c => c.id === id ? data : c)
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  deleteCrmClient: async (id) => {
+    const { error } = await supabase
+      .from('crm_clients')
+      .delete()
+      .eq('id', id)
+    
+    if (!error) {
+      set(state => ({
+        crmClients: state.crmClients.filter(c => c.id !== id)
+      }))
+      return { success: true }
+    }
+    return { success: false, error }
+  },
+
   // Proposals / Budgets
   fetchProposals: async () => {
     set({ isLoading: true })

@@ -30,7 +30,8 @@ export default function CrmClientsDashboard() {
   const filtered = crmClients.filter(c => 
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
     c.company?.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase())
+    c.email?.toLowerCase().includes(search.toLowerCase()) ||
+    c.email_2?.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -119,6 +120,11 @@ export default function CrmClientsDashboard() {
                         {client.email && (
                           <span className="text-xs text-[var(--color-dark-gray)]/60 flex items-center gap-1">
                             <span className="material-symbols-outlined text-[14px]">mail</span> {client.email}
+                          </span>
+                        )}
+                        {client.email_2 && (
+                          <span className="text-xs text-[var(--color-dark-gray)]/60 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">mail</span> {client.email_2}
                           </span>
                         )}
                         {client.phone && (

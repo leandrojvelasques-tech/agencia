@@ -29,6 +29,7 @@ export default function CrmProposalCreate() {
     client_name: '',
     client_company: '',
     client_email: '',
+    client_email_2: '',
     client_phone: '',
     title: '',
     subtitle: '',
@@ -84,6 +85,7 @@ export default function CrmProposalCreate() {
             client_name: proposal.client_name || '',
             client_company: proposal.client_company || '',
             client_email: proposal.client_email || '',
+            client_email_2: proposal.client_email_2 || '',
             client_phone: proposal.client_phone || '',
             title: proposal.title || '',
             subtitle: proposal.subtitle || '',
@@ -168,6 +170,7 @@ export default function CrmProposalCreate() {
         client_name: '',
         client_company: '',
         client_email: '',
+        client_email_2: '',
         client_phone: ''
       }))
       return
@@ -181,6 +184,7 @@ export default function CrmProposalCreate() {
         client_name: client.name || '',
         client_company: client.company || '',
         client_email: client.email || '',
+        client_email_2: client.email_2 || '',
         client_phone: client.phone || ''
       }))
       showToast('Datos del cliente cargados')
@@ -366,6 +370,7 @@ export default function CrmProposalCreate() {
       client_name: form.client_name,
       client_company: form.client_company || null,
       client_email: form.client_email || null,
+      client_email_2: form.client_email_2 || null,
       client_phone: form.client_phone || null,
       title: form.title,
       subtitle: form.subtitle || null,
@@ -387,6 +392,7 @@ export default function CrmProposalCreate() {
           name: proposalData.client_name,
           company: proposalData.client_company,
           email: proposalData.client_email,
+          email_2: proposalData.client_email_2,
           phone: proposalData.client_phone
         })
         if (clientResult.success && clientResult.data) {
@@ -611,6 +617,16 @@ export default function CrmProposalCreate() {
                 placeholder="ejemplo@empresa.com"
                 value={form.client_email}
                 onChange={e => update('client_email', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Email Secundario</label>
+              <input
+                type="email"
+                className="form-input text-xs"
+                placeholder="socio@empresa.com"
+                value={form.client_email_2}
+                onChange={e => update('client_email_2', e.target.value)}
               />
             </div>
             <div>
