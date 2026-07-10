@@ -188,6 +188,19 @@ module.exports = async (req, res) => {
     const eventUrl = `${domain}/evento/${event.slug}`;
     const liveLink = event.live_link || '';
 
+    let durationStr = '—';
+    if (event.duration_minutes) {
+      const hrs = Math.floor(event.duration_minutes / 60);
+      const mins = event.duration_minutes % 60;
+      if (hrs > 0 && mins > 0) {
+        durationStr = `${hrs} h ${mins} min`;
+      } else if (hrs > 0) {
+        durationStr = `${hrs} ${hrs === 1 ? 'hora' : 'horas'}`;
+      } else {
+        durationStr = `${mins} min`;
+      }
+    }
+
     const placeholders = {
       '{{nombre}}': participant.first_name || '',
       '{{apellido}}': participant.last_name || '',
@@ -196,6 +209,7 @@ module.exports = async (req, res) => {
       '{{horario}}': event.start_time || '',
       '{{modalidad}}': modalityStr,
       '{{coordinador}}': event.coordinator || 'Leandro Velasques',
+      '{{duracion}}': durationStr,
       '{{agenda}}': formatAgendaHtml(event.agenda),
       '{{link_inscripcion}}': eventUrl,
       '{{link_evento}}': eventUrl,

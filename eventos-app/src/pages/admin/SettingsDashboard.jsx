@@ -107,6 +107,7 @@ export default function SettingsDashboard() {
       '{{horario}}': '18:00',
       '{{modalidad}}': 'Virtual (Online)',
       '{{coordinador}}': 'Leandro Velasques',
+      '{{duracion}}': '2 horas',
       '{{agenda}}': `<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">
         <div style="margin-bottom: 20px;">
           <h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">Módulo 1: Introducción a la IA <span style="font-size: 12px; color: #666; font-weight: normal;">(18:00 - 19:30 hs)</span></h4>
@@ -167,6 +168,7 @@ export default function SettingsDashboard() {
     { tag: '{{horario}}', desc: 'Hora de inicio del evento' },
     { tag: '{{modalidad}}', desc: 'Modalidad de asistencia (Presencial / Virtual)' },
     { tag: '{{coordinador}}', desc: 'Coordinador del evento' },
+    { tag: '{{duracion}}', desc: 'Duración del evento' },
     { tag: '{{agenda}}', desc: 'Agenda o programa del evento (formateado en HTML)' },
     { tag: '{{link_inscripcion}}', desc: 'Enlace a la landing page del evento (alias: {{link_evento}})' },
     { tag: '{{link_reunion}}', desc: 'Enlace de acceso a la reunión virtual (alias: {{link_acceso}})' },
