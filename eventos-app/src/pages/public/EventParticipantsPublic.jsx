@@ -110,6 +110,7 @@ export default function EventParticipantsPublic() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('list') // 'list' | 'survey'
+  const [sortConfig, setSortConfig] = useState({ key: 'registered_at', direction: 'desc' })
 
   useEffect(() => {
     async function loadData() {
@@ -142,15 +143,101 @@ export default function EventParticipantsPublic() {
     loadData()
   }, [slug, token])
 
-  const filtered = participants.filter(p => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return (
-      p.first_name?.toLowerCase().includes(q) ||
-      p.last_name?.toLowerCase().includes(q) ||
-      p.email?.toLowerCase().includes(q)
-    )
-  })
+  const handleSort = (key) => {
+    let direction = 'asc'
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const getTitulo = (responses) => {
+    if (!responses) return '';
+    const profesion = responses['Profesión/Ocupación'] || responses['Profesión'] || responses.profesion || '';
+    const carrera = responses['Carrera'] || responses.profesion_carrera || responses.profesion_estudiante_carrera || '';
+    
+    if (carrera && carrera !== '—') {
+      return profesion ? `${profesion} (${carrera})` : carrera;
+    }
+    return profesion;
+  }
+
+  const getDelegacion = (responses) => {
+    if (!responses) return '—';
+    return responses['delegacion'] || responses['Delegación'] || responses.delegacion || '—';
+  }
+
+  const sortedAndFiltered = [...participants]
+    .filter(p => {
+      if (!search) return true
+      const q = search.toLowerCase()
+      return (
+        p.first_name?.toLowerCase().includes(q) ||
+        p.last_name?.toLowerCase().includes(q) ||
+        p.email?.toLowerCase().includes(q)
+      )
+    })
+    .sort((a, b) => {
+      if (!sortConfig.key) return 0;
+      let valA = '', valB = '';
+      
+      if (sortConfig.key === 'nombre') {
+        valA = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase();
+        valB = `${b.first_name || ''} ${b.last_name || ''}`.toLowerCase();
+      } else if (sortConfig.key === 'titulo') {
+        valA = getTitulo(a.survey_responses).toLowerCase();
+        valB = getTitulo(b.survey_responses).toLowerCase();
+      } else if (sortConfig.key === 'registered_at') {
+        valA = new Date(a.registered_at || 0).getTime();
+        valB = new Date(b.registered_at || 0).getTime();
+      }
+
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+  const stats = (() => {
+    const titulos = {}
+    const delegaciones = {}
+    
+    participants.forEach(p => {
+      const resp = p.survey_responses || {}
+      
+      // Carrera / Titulo
+      const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
+      let cleanCarrera = carreraVal.trim()
+      
+      if (!cleanCarrera || cleanCarrera === '—') {
+        const profesionVal = resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || ''
+        cleanCarrera = profesionVal.trim()
+      }
+      
+      if (!cleanCarrera) {
+        cleanCarrera = 'No especificado'
+      }
+
+      titulos[cleanCarrera] = (titulos[cleanCarrera] || 0) + 1
+
+      // Delegacion
+      const delVal = resp['delegacion'] || resp['Delegación'] || resp.delegacion || ''
+      let cleanDel = delVal.trim()
+      if (!cleanDel || cleanDel === '—') {
+        cleanDel = 'No especificado'
+      }
+      delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
+    })
+
+    const sortedTitulos = Object.entries(titulos)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    const sortedDelegaciones = Object.entries(delegaciones)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones }
+  })()
 
   const presencialCount = participants.filter(p => p.attendance_mode === 'presencial').length
   const virtualCount = participants.filter(p => p.attendance_mode === 'virtual').length
@@ -378,24 +465,87 @@ export default function EventParticipantsPublic() {
               />
             </div>
 
+            {/* Cuadro Resumen de Títulos y Delegaciones */}
+            {participants.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="card p-4 bg-white shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                    <span className="material-symbols-outlined text-base">school</span>
+                    Resumen de Títulos
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {Object.entries(stats.titulos).map(([name, count]) => {
+                      const pct = participants.length > 0 ? Math.round((count / participants.length) * 100) : 0
+                      return (
+                        <div key={name} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                            <span className="truncate max-w-[75%]" title={name}>{name}</span>
+                            <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-100/70 rounded-full h-1">
+                            <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="card p-4 bg-white shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                    <span className="material-symbols-outlined text-base">map</span>
+                    Distribución de Delegaciones
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {Object.entries(stats.delegaciones).map(([name, count]) => {
+                      const pct = participants.length > 0 ? Math.round((count / participants.length) * 100) : 0
+                      return (
+                        <div key={name} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                            <span className="truncate max-w-[75%]" title={name}>{name}</span>
+                            <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-100/70 rounded-full h-1">
+                            <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Table */}
             <div className="card overflow-hidden bg-white shadow-sm">
               <div className="overflow-x-auto">
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Nombre y Perfil</th>
+                      <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('nombre')}>
+                        <div className="flex items-center gap-1">
+                          Nombre {sortConfig.key === 'nombre' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                        </div>
+                      </th>
+                      <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('titulo')}>
+                        <div className="flex items-center gap-1">
+                          Título {sortConfig.key === 'titulo' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                        </div>
+                      </th>
+                      <th>Delegación</th>
                       <th>Email</th>
                       <th>Teléfono</th>
-                      <th>Modalidad</th>
-                      <th>Carrera</th>
-                      <th>Fecha Registro</th>
+                      <th className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => handleSort('registered_at')}>
+                        <div className="flex items-center gap-1">
+                          Día de Inscripción {sortConfig.key === 'registered_at' && <span className="material-symbols-outlined text-[14px]">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.length === 0 ? (
+                    {sortedAndFiltered.length === 0 ? (
                       <tr><td colSpan={6} className="text-center py-8 text-[var(--color-dark-gray)]/30 font-medium">No se encontraron inscritos</td></tr>
-                    ) : filtered.map(p => (
+                    ) : sortedAndFiltered.map(p => (
                       <tr key={p.registration_id}>
                         <td className="font-semibold text-[var(--color-dark-gray)]">
                           <div className="flex flex-col">
@@ -403,6 +553,8 @@ export default function EventParticipantsPublic() {
                             {renderRegistrationInfo(p.survey_responses)}
                           </div>
                         </td>
+                        <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getTitulo(p.survey_responses) || '—'}</td>
+                        <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">{getDelegacion(p.survey_responses)}</td>
                         <td>
                           {p.email ? (
                             <span className="text-sm">{p.email}</span>
@@ -414,23 +566,8 @@ export default function EventParticipantsPublic() {
                           )}
                         </td>
                         <td className="text-sm text-[var(--color-dark-gray)]/70">{p.phone || '—'}</td>
-                        <td>
-                          <div className="flex flex-col gap-1">
-                            <span className={`badge ${p.attendance_mode === 'virtual' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'} w-fit`}>
-                              {p.attendance_mode === 'virtual' ? '💻 Virtual' : '🏫 Presencial'}
-                            </span>
-                            {p.selected_date && (
-                              <span className="text-[10px] font-semibold text-[var(--color-dark-gray)]/50">
-                                📅 {format(new Date(p.selected_date + 'T12:00:00'), "d 'de' MMMM", { locale: es })}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-sm font-medium text-[var(--color-dark-gray)]/80">
-                          {getCarrera(p.survey_responses)}
-                        </td>
-                        <td className="text-xs text-[var(--color-dark-gray)]/50">
-                          {p.registered_at ? format(new Date(p.registered_at), "d/M/yyyy HH:mm 'hs'", { locale: es }) : '—'}
+                        <td className="text-sm font-semibold text-[var(--color-dark-gray)]/85">
+                          {p.registered_at ? format(new Date(p.registered_at), "dd/MM/yyyy HH:mm") : '—'}
                         </td>
                       </tr>
                     ))}
