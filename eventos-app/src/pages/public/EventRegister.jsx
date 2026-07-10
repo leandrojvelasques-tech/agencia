@@ -28,12 +28,13 @@ export default function EventRegister() {
     // Custom prices mode
     if (event && event.prices && event.prices.length > 0) {
       const isMatriculado = lower.includes('matriculado') && !lower.includes('no matriculado');
+      const cleanLower = lower.replace(/\./g, '');
       
-      if (isMatriculado && (lower.includes('chubut') || lower.includes('cpcech') || lower.includes('cpcech.'))) {
+      if (isMatriculado && (cleanLower.includes('chubut') || cleanLower.includes('cpcech'))) {
         return 'matriculado_chubut';
       }
 
-      if (isMatriculado && (lower.includes('otro') || lower.includes('otros') || (!lower.includes('chubut') && !lower.includes('cpcech')))) {
+      if (isMatriculado && (cleanLower.includes('otro') || cleanLower.includes('otros') || (!cleanLower.includes('chubut') && !cleanLower.includes('cpcech')))) {
         return 'matriculado_otro';
       }
       
