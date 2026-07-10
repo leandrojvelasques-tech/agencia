@@ -488,7 +488,7 @@ export default function CrmProposalLanding() {
               <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
               <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
               <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
-              <p className="text-[var(--color-dark-gray)]/50">Trelew, Chubut, Argentina</p>
+              <p className="text-[var(--color-dark-gray)]/50">Comodoro Rivadavia, Chubut, Argentina</p>
             </div>
           </div>
         </div>
