@@ -180,6 +180,48 @@ export default function EventParticipants() {
       return 0;
     });
 
+  const stats = (() => {
+    const titulos = {}
+    const delegaciones = {}
+    
+    registrations.forEach(r => {
+      const resp = r.survey_responses || {}
+      
+      // Carrera / Titulo
+      const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
+      let cleanCarrera = carreraVal.trim()
+      
+      if (!cleanCarrera || cleanCarrera === '—') {
+        const profesionVal = resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || ''
+        cleanCarrera = profesionVal.trim()
+      }
+      
+      if (!cleanCarrera) {
+        cleanCarrera = 'No especificado'
+      }
+
+      titulos[cleanCarrera] = (titulos[cleanCarrera] || 0) + 1
+
+      // Delegacion
+      const delVal = resp['delegacion'] || resp['Delegación'] || resp.delegacion || ''
+      let cleanDel = delVal.trim()
+      if (!cleanDel || cleanDel === '—') {
+        cleanDel = 'No especificado'
+      }
+      delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
+    })
+
+    const sortedTitulos = Object.entries(titulos)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    const sortedDelegaciones = Object.entries(delegaciones)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones }
+  })()
+
   const handleOpenAdd = () => {
     setEditingParticipant(null)
     const dates = event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]
@@ -379,6 +421,57 @@ export default function EventParticipants() {
               onChange={e => setSearch(e.target.value)} 
             />
           </div>
+
+          {/* Cuadro Resumen de Títulos y Delegaciones */}
+          {registrations.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="card p-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                  <span className="material-symbols-outlined text-base">school</span>
+                  Resumen de Títulos
+                </h3>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {Object.entries(stats.titulos).map(([name, count]) => {
+                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                    return (
+                      <div key={name} className="flex flex-col gap-1">
+                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
+                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-100/70 rounded-full h-1">
+                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="card p-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                  <span className="material-symbols-outlined text-base">map</span>
+                  Distribución de Delegaciones
+                </h3>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {Object.entries(stats.delegaciones).map(([name, count]) => {
+                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                    return (
+                      <div key={name} className="flex flex-col gap-1">
+                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
+                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-100/70 rounded-full h-1">
+                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="card overflow-hidden">
             <div className="overflow-x-auto">
