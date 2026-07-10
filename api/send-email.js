@@ -211,7 +211,9 @@ module.exports = async (req, res) => {
       resolvedBody = resolvedBody.replaceAll(key, value);
     }
 
-    const emailHtml = resolvedBody.replace(/\n/g, '<br>');
+    const emailHtml = resolvedBody.trim().startsWith('<') || resolvedBody.includes('<div') || resolvedBody.includes('<table') || resolvedBody.includes('<html')
+      ? resolvedBody
+      : resolvedBody.replace(/\n/g, '<br>');
 
     // 4. Preparar el envío de email
     const resendApiKey = process.env.RESEND_API_KEY;
