@@ -704,15 +704,28 @@ export default function EventRegister() {
 
             {/* Comprobante de Transferencia para Inscripciones Pagas */}
             {requiresPayment(survey.profesion) && (
-              <div className="p-4 rounded-[var(--radius-premium)] bg-amber-50/50 border border-amber-300/30 animate-fade-in space-y-3">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
-                    Comprobante de Transferencia *
-                  </label>
-                  <p className="text-[10px] text-[var(--color-dark-gray)]/50 mb-2">
-                    Adjuntá una foto o PDF del comprobante de transferencia para validar tu inscripción.
-                  </p>
-                </div>
+              <div className="space-y-4">
+                {event.payment_methods && (
+                  <div className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10 animate-fade-in space-y-3">
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)] flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">account_balance</span>
+                      Medios de Pago / Datos de Transferencia
+                    </h3>
+                    <div className="bg-white/50 p-3 rounded-lg border border-[var(--color-deep-green)]/5 font-mono text-xs text-[var(--color-dark-gray)]/80 whitespace-pre-wrap leading-relaxed">
+                      {event.payment_methods}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="p-4 rounded-[var(--radius-premium)] bg-amber-50/50 border border-amber-300/30 animate-fade-in space-y-3">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                      Comprobante de Transferencia *
+                    </label>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50 mb-2">
+                      Adjuntá una foto o PDF del comprobante de transferencia para validar tu inscripción.
+                    </p>
+                  </div>
                 
                 <div className="flex items-center gap-3">
                   <input
@@ -769,6 +782,7 @@ export default function EventRegister() {
                     URL: <a href={paymentReceiptUrl} target="_blank" rel="noreferrer" className="underline">{paymentReceiptUrl}</a>
                   </p>
                 )}
+              </div>
               </div>
             )}
           </div>

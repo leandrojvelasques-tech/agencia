@@ -390,37 +390,23 @@ export default function EventLanding() {
           </div>
         )}
 
-        {/* Precios y Medios de Pago */}
-        {((event.prices && event.prices.length > 0) || event.payment_methods) && (
+        {/* Precios */}
+        {event.prices && event.prices.length > 0 && (
           <div className="card p-6 mb-8 bg-white border border-[var(--color-deep-green)]/10 shadow-[var(--shadow-premium)]">
-            {event.prices && event.prices.length > 0 && (
-              <div className={event.payment_methods ? "mb-6" : ""}>
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
-                  <span className="material-symbols-outlined text-xl">payments</span>
-                  Inversión y Aranceles
-                </h2>
-                <div className="divide-y divide-[var(--color-deep-green)]/5">
-                  {event.prices.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-3 first:pt-0 last:pb-0">
-                      <span className="text-sm font-semibold text-[var(--color-dark-gray)]/85">{item.concept}</span>
-                      <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1 rounded-full">{item.price}</span>
-                    </div>
-                  ))}
-                </div>
+            <div>
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-[var(--color-deep-green)]">
+                <span className="material-symbols-outlined text-xl">payments</span>
+                Inversión y Aranceles
+              </h2>
+              <div className="divide-y divide-[var(--color-deep-green)]/5">
+                {event.prices.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-3 first:pt-0 last:pb-0">
+                    <span className="text-sm font-semibold text-[var(--color-dark-gray)]/85">{item.concept}</span>
+                    <span className="text-sm font-bold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/8 px-3 py-1 rounded-full">{item.price}</span>
+                  </div>
+                ))}
               </div>
-            )}
-
-            {event.payment_methods && (
-              <div className={event.prices && event.prices.length > 0 ? "pt-6 border-t border-[var(--color-deep-green)]/10" : ""}>
-                <h3 className="text-sm font-bold mb-3 flex items-center gap-2 text-[var(--color-deep-green)] uppercase tracking-wider">
-                  <span className="material-symbols-outlined text-lg">account_balance</span>
-                  Medios de Pago / Datos de Transferencia
-                </h3>
-                <div className="bg-[var(--color-refined-gray)]/45 p-4 rounded-xl border border-[var(--color-deep-green)]/5 font-mono text-xs text-[var(--color-dark-gray)]/80 whitespace-pre-wrap leading-relaxed">
-                  {event.payment_methods}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
 
