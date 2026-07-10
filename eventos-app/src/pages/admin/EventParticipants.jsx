@@ -188,15 +188,24 @@ export default function EventParticipants() {
       const resp = r.survey_responses || {}
       
       // Carrera / Titulo
-      const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
-      let cleanCarrera = carreraVal.trim()
+      let cleanCarrera = ''
+      const profesionVal = (resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || '').trim()
+      const lowerProf = profesionVal.toLowerCase()
       
-      if (!cleanCarrera || cleanCarrera === '—') {
-        const profesionVal = resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || ''
-        cleanCarrera = profesionVal.trim()
+      if (lowerProf.includes('estudiante')) {
+        cleanCarrera = 'Estudiante'
+      } else if (lowerProf.includes('otro') || lowerProf.includes('externo')) {
+        cleanCarrera = 'Externo'
+      } else {
+        const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
+        cleanCarrera = carreraVal.trim()
+        
+        if (!cleanCarrera || cleanCarrera === '—') {
+          cleanCarrera = profesionVal
+        }
       }
       
-      if (!cleanCarrera) {
+      if (!cleanCarrera || cleanCarrera === '—') {
         cleanCarrera = 'No especificado'
       }
 
@@ -428,7 +437,7 @@ export default function EventParticipants() {
               <div className="card p-4">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
                   <span className="material-symbols-outlined text-base">school</span>
-                  Resumen de Títulos
+                  Resumen de Inscriptos
                 </h3>
                 <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
                   {Object.entries(stats.titulos).map(([name, count]) => {
