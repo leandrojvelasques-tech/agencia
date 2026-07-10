@@ -15,6 +15,7 @@ export default function SettingsDashboard() {
   const [activeTab, setActiveTab] = useState('templates') // 'templates' | 'logs'
   const [error, setError] = useState('')
   const [expandedLogId, setExpandedLogId] = useState(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   // Fetch templates and logs
   useEffect(() => {
@@ -95,6 +96,41 @@ export default function SettingsDashboard() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const getPreviewHtml = () => {
+    const mockPlaceholders = {
+      '{{nombre}}': 'Juan',
+      '{{apellido}}': 'Pérez',
+      '{{evento}}': 'Taller de IA para Ciencias Económicas',
+      '{{fecha}}': '2026-07-21',
+      '{{horario}}': '18:00',
+      '{{modalidad}}': 'Virtual (Online)',
+      '{{coordinador}}': 'Leandro Velasques',
+      '{{agenda}}': `<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">
+        <div style="margin-bottom: 20px;">
+          <h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">Módulo 1: Introducción a la IA <span style="font-size: 12px; color: #666; font-weight: normal;">(18:00 - 19:30 hs)</span></h4>
+          <div style="margin-left: 15px; border-left: 1px solid #ddd; padding-left: 10px;">
+            <div style="margin-bottom: 10px;">
+              <p style="margin: 0; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #0b5e3a;">CONCEPTOS CLAVE</p>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: #444; line-height: 1.4;">Cómo aplicar la IA en tareas cotidianas de contabilidad y administración.</p>
+            </div>
+          </div>
+        </div>
+      </div>`,
+      '{{link_inscripcion}}': '#',
+      '{{link_evento}}': '#',
+      '{{link_reunion}}': '#',
+      '{{link_acceso}}': '#'
+    }
+
+    let resolvedBody = body || ''
+    for (const [key, value] of Object.entries(mockPlaceholders)) {
+      resolvedBody = resolvedBody.replaceAll(key, value)
+    }
+
+    const isHtml = resolvedBody.trim().startsWith('<') || resolvedBody.includes('<div') || resolvedBody.includes('<table') || resolvedBody.includes('<html')
+    return isHtml ? resolvedBody : resolvedBody.replace(/\n/g, '<br>')
   }
 
   // Refrescar logs
@@ -274,7 +310,15 @@ export default function SettingsDashboard() {
                   />
                 </div>
 
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(true)}
+                    className="btn-secondary !px-4 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-base">visibility</span>
+                    Vista Previa
+                  </button>
                   <button
                     type="submit"
                     disabled={saving}
@@ -467,6 +511,41 @@ export default function SettingsDashboard() {
               </div>
             )
           })()}
+        </div>
+      )}
+      {/* Email Preview Modal */}
+      {showPreview && (
+        <div className="modal-overlay" onClick={() => setShowPreview(false)}>
+          <div className="card p-6 w-full max-w-2xl h-[85vh] flex flex-col animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-[var(--color-deep-green)]/10 pb-3 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-[var(--color-deep-green)] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined">visibility</span>
+                  Vista Previa del Correo
+                </h3>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/60 font-semibold mt-0.5">
+                  Asunto: {subject.replaceAll('{{evento}}', 'Taller de IA...')}
+                </p>
+              </div>
+              <button onClick={() => setShowPreview(false)} className="text-[var(--color-dark-gray)]/40 hover:text-red-500 transition-colors cursor-pointer">
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+            
+            <div className="flex-1 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+              <iframe
+                title="Email Preview"
+                srcDoc={getPreviewHtml()}
+                className="w-full h-full border-none bg-white"
+              />
+            </div>
+            
+            <div className="flex justify-end mt-4 pt-2 border-t border-gray-100">
+              <button onClick={() => setShowPreview(false)} className="btn-primary !px-6 cursor-pointer">
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
