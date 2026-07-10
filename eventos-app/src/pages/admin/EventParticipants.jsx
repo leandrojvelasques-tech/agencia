@@ -137,7 +137,13 @@ export default function EventParticipants() {
 
   const getTitulo = (responses) => {
     if (!responses) return '';
-    return responses['Profesión/Ocupación'] || responses['Profesión'] || responses.profesion || '';
+    const profesion = responses['Profesión/Ocupación'] || responses['Profesión'] || responses.profesion || '';
+    const carrera = responses['Carrera'] || responses.profesion_carrera || responses.profesion_estudiante_carrera || '';
+    
+    if (carrera && carrera !== '—') {
+      return profesion ? `${profesion} (${carrera})` : carrera;
+    }
+    return profesion;
   }
 
   const getDelegacion = (responses) => {
