@@ -494,25 +494,41 @@ export default function CrmProposalLanding() {
           </h2>
           
           <div className="space-y-3.5 text-xs font-semibold text-[var(--color-dark-gray)]">
-            <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
-              <div>
-                <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar el proyecto)</p>
-                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Se abona al momento de firmar y dar inicio a las actividades.</p>
-              </div>
-              <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
-                ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+            {(proposal.payment_details?.schedule && proposal.payment_details.schedule.length > 0) ? (
+              proposal.payment_details.schedule.map((item, idx) => (
+                <div key={item.id || idx} className={`flex justify-between items-center p-3 rounded-lg ${idx === 0 ? 'bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10' : 'bg-[var(--color-refined-gray)]/50 border border-gray-100'}`}>
+                  <div>
+                    <p className={`font-bold ${idx === 0 ? 'text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]/85'}`}>{item.name}</p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Corresponde al {item.percentage}% del total.</p>
+                  </div>
+                  <span className={`font-mono font-bold ${idx === 0 ? 'text-sm text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]'}`}>
+                    ${(Number(proposal.total_amount) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
+                  <div>
+                    <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar el proyecto)</p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Se abona al momento de firmar y dar inicio a las actividades.</p>
+                  </div>
+                  <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
+                    ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
 
-            <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
-              <div>
-                <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar las etapas acordadas)</p>
-                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
-              </div>
-              <span className="font-mono font-bold text-[var(--color-dark-gray)]">
-                ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
+                  <div>
+                    <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar las etapas acordadas)</p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
+                  </div>
+                  <span className="font-mono font-bold text-[var(--color-dark-gray)]">
+                    ${(Number(proposal.total_amount) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </>
+            )}
 
             <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
               <span>Total del Presupuesto Comercial:</span>

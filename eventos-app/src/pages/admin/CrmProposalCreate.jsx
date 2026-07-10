@@ -45,7 +45,11 @@ export default function CrmProposalCreate() {
       cbu: '0150846601000134863268',
       alias: 'LEANDRO.TANGO',
       cuit: '20309551665',
-      cuenta: 'CA $ 00150846000113486326'
+      cuenta: 'CA $ 00150846000113486326',
+      schedule: [
+        { id: '1', name: 'Pago Inicial (Anticipo al comenzar)', percentage: 50 },
+        { id: '2', name: 'Pago Final (Al finalizar el proyecto)', percentage: 50 }
+      ]
     }
   })
 
@@ -94,8 +98,12 @@ export default function CrmProposalCreate() {
               nombre: 'LEANDRO JOSE VELASQUES',
               cbu: '0150846601000134863268',
               alias: 'LEANDRO.TANGO',
-              cuit: '20309551665',
-              cuenta: 'CA $ 00150846000113486326'
+              cuit: proposal.payment_details?.cuit || '20309551665',
+              cuenta: proposal.payment_details?.cuenta || 'CA $ 00150846000113486326',
+              schedule: proposal.payment_details?.schedule || [
+                { id: '1', name: 'Pago Inicial (Anticipo al comenzar)', percentage: 50 },
+                { id: '2', name: 'Pago Final (Al finalizar el proyecto)', percentage: 50 }
+              ]
             }
           })
         }
@@ -129,6 +137,24 @@ export default function CrmProposalCreate() {
         [field]: value
       }
     }))
+  }
+
+  // --- Payment Schedule Management ---
+  const handleAddScheduleItem = () => {
+    const newId = Date.now().toString()
+    const currentSchedule = form.payment_details.schedule || []
+    updatePaymentDetails('schedule', [...currentSchedule, { id: newId, name: 'Nuevo Pago', percentage: 0 }])
+  }
+
+  const handleUpdateScheduleItem = (id, field, value) => {
+    const currentSchedule = form.payment_details.schedule || []
+    const updated = currentSchedule.map(item => item.id === id ? { ...item, [field]: value } : item)
+    updatePaymentDetails('schedule', updated)
+  }
+
+  const handleRemoveScheduleItem = (id) => {
+    const currentSchedule = form.payment_details.schedule || []
+    updatePaymentDetails('schedule', currentSchedule.filter(item => item.id !== id))
   }
 
   const handleClientSelect = (clientId) => {
@@ -835,6 +861,93 @@ export default function CrmProposalCreate() {
           {uploadError && (
             <p className="text-xs font-bold text-red-500">{uploadError}</p>
           )}
+        </div>
+
+        {/* PAYMENT SCHEDULE CARD */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--color-deep-green)]/8 pb-2">
+            <h3 className="text-sm font-bold text-[var(--color-deep-green)] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-lg">calendar_month</span>
+              Plan de Pagos (Hitos)
+            </h3>
+            <button
+              type="button"
+              onClick={handleAddScheduleItem}
+              className="btn-secondary !py-1 !px-2 !text-[10px] flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[14px]">add</span>
+              Agregar Pago
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {(form.payment_details?.schedule || []).map((item, idx) => (
+              <div key={item.id || idx} className="flex gap-2 items-center">
+                <div className="flex-1">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">
+                    Descripción del Pago
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input !py-1.5 text-xs font-semibold"
+                    placeholder="Ej: Pago Inicial (Anticipo)"
+                    value={item.name}
+                    onChange={e => handleUpdateScheduleItem(item.id, 'name', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="w-24">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">
+                    Porcentaje (%)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="form-input !py-1.5 text-xs font-mono pr-6"
+                      value={item.percentage}
+                      onChange={e => handleUpdateScheduleItem(item.id, 'percentage', Number(e.target.value))}
+                      required
+                    />
+                    <span className="absolute right-2 top-1.5 text-xs font-bold text-[var(--color-dark-gray)]/40">%</span>
+                  </div>
+                </div>
+                <div className="w-[100px]">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block text-right">
+                    Monto
+                  </label>
+                  <div className="form-input !py-1.5 text-xs font-mono bg-gray-50 text-right opacity-70">
+                    ${(Number(form.total_amount || 0) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
+                  </div>
+                </div>
+                <div className="pt-4 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveScheduleItem(item.id)}
+                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Eliminar Pago"
+                  >
+                    <span className="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Validation Total */}
+            {(() => {
+              const totalPercentage = (form.payment_details?.schedule || []).reduce((acc, curr) => acc + (Number(curr.percentage) || 0), 0)
+              if (totalPercentage !== 100 && (form.payment_details?.schedule || []).length > 0) {
+                return (
+                  <p className="text-[10px] font-bold text-amber-600 flex items-center gap-1 pt-1">
+                    <span className="material-symbols-outlined text-[14px]">warning</span>
+                    Atención: Los porcentajes suman {totalPercentage}%. Deberían sumar 100%.
+                  </p>
+                )
+              }
+              return null
+            })()}
+          </div>
         </div>
 
         {/* BANK TRANSFER PAYMENT DETAILS CARD */}
