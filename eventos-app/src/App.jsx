@@ -19,6 +19,8 @@ import SettingsDashboard from './pages/admin/SettingsDashboard'
 import CrmDashboard from './pages/admin/CrmDashboard'
 import CrmSatisfactionDashboard from './pages/admin/CrmSatisfactionDashboard'
 import CrmPublicationCreate from './pages/admin/CrmPublicationCreate'
+import CrmClientsDashboard from './pages/admin/CrmClientsDashboard'
+import CrmClientCreate from './pages/admin/CrmClientCreate'
 import CrmProposalsDashboard from './pages/admin/CrmProposalsDashboard'
 import CrmProposalCreate from './pages/admin/CrmProposalCreate'
 import CrmPresentationsDashboard from './pages/admin/CrmPresentationsDashboard'
@@ -89,6 +91,11 @@ export default function App() {
           <Route path="crm/presentaciones/nueva" element={<CrmPresentationEditor />} />
           <Route path="crm/presentaciones/:id/editar" element={<CrmPresentationEditor />} />
           <Route path="crm/presentaciones/:id/presentar" element={<CrmPresentationPlayer />} />
+
+          {/* Clientes */}
+          <Route path="clientes" element={<CrmClientsDashboard />} />
+          <Route path="clientes/nuevo" element={<CrmClientCreate />} />
+          <Route path="clientes/:id/editar" element={<CrmClientCreate />} />
 
           {/* Presupuestos (Back Office) */}
           <Route path="presupuestos" element={<CrmProposalsDashboard />} />

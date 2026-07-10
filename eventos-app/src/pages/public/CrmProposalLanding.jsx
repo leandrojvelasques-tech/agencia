@@ -322,7 +322,10 @@ export default function CrmProposalLanding() {
         {/* Corporate Header Info */}
         <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">{proposal.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">
+              {proposal.proposal_number ? <span className="opacity-60 font-semibold mr-2">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
+              {proposal.title}
+            </h1>
             {proposal.subtitle && (
               <p className="text-sm md:text-base text-[var(--color-dark-gray)]/65 font-medium leading-snug">{proposal.subtitle}</p>
             )}

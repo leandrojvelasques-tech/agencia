@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
   { to: '/admin/presupuestos', icon: 'request_quote', label: 'Presupuestos' },
+  { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
   { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },
 ]
 

@@ -319,6 +319,7 @@ export default function CrmProposalsDashboard() {
                       >
                         <div className="flex items-start justify-between gap-2 mb-1.5">
                           <h4 className="font-bold text-sm text-[var(--color-deep-green)] leading-tight">
+                            {proposal.proposal_number ? <span className="opacity-60 font-semibold mr-1">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
                             {proposal.title}
                           </h4>
                           <Link to={`/admin/presupuestos/${proposal.id}/editar`} className="text-gray-400 hover:text-[var(--color-deep-green)] transition-colors">
@@ -401,6 +402,7 @@ export default function CrmProposalsDashboard() {
                       )}
                     </div>
                     <h3 className="text-lg font-extrabold text-[var(--color-deep-green)] truncate">
+                      {proposal.proposal_number ? <span className="opacity-60 font-semibold mr-1.5">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
                       {proposal.title}
                     </h3>
                     {proposal.subtitle && (

@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase'
 export default function CrmProposalCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { createProposal, updateProposal, crmClients, fetchCrmClients } = useStore()
+  const { createProposal, updateProposal, crmClients, fetchCrmClients, createCrmClient } = useStore()
   const fileInputRef = useRef(null)
   const attachmentInputRef = useRef(null)
 
@@ -24,6 +24,7 @@ export default function CrmProposalCreate() {
   const [savedShareToken, setSavedShareToken] = useState(null)
 
   const [form, setForm] = useState({
+    proposal_number: null,
     client_id: '',
     client_name: '',
     client_company: '',
@@ -78,6 +79,7 @@ export default function CrmProposalCreate() {
         if (proposal) {
           setSavedShareToken(proposal.share_token)
           setForm({
+            proposal_number: proposal.proposal_number || null,
             client_id: proposal.client_id || '',
             client_name: proposal.client_name || '',
             client_company: proposal.client_company || '',
@@ -378,6 +380,22 @@ export default function CrmProposalCreate() {
       payment_details: form.payment_details
     }
 
+    // Auto-create client if not selected
+    if (!proposalData.client_id && proposalData.client_name) {
+      if (window.confirm(`El cliente "${proposalData.client_name}" no está en tu directorio. ¿Deseas agregarlo ahora para usarlo a futuro?`)) {
+        const clientResult = await createCrmClient({
+          name: proposalData.client_name,
+          company: proposalData.client_company,
+          email: proposalData.client_email,
+          phone: proposalData.client_phone
+        })
+        if (clientResult.success && clientResult.data) {
+          proposalData.client_id = clientResult.data.id
+          setForm(prev => ({ ...prev, client_id: clientResult.data.id }))
+        }
+      }
+    }
+
     setLoading(true)
     try {
       if (id) {
@@ -437,7 +455,9 @@ export default function CrmProposalCreate() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-extrabold tracking-tight">
-            {id ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}
+            {id 
+              ? `Editar Presupuesto ${form.proposal_number ? `(#${form.proposal_number.toString().padStart(4, '0')})` : ''}` 
+              : 'Nuevo Presupuesto (#AUTO)'}
           </h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">
             Completá los detalles del presupuesto, adjuntá archivos y compartilo con tu cliente.
