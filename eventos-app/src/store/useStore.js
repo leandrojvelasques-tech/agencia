@@ -13,6 +13,7 @@ export const useStore = create((set, get) => ({
   attendance: [],
   proposals: [],
   agendaTemplates: [],
+  crmClients: [],
 
   // Auth
   login: async (email, password) => {
@@ -499,6 +500,20 @@ export const useStore = create((set, get) => ({
     
     if (!error) {
       set({ proposals: data || [] })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  fetchCrmClients: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('crm_clients')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (!error) {
+      set({ crmClients: data || [] })
     }
     set({ isLoading: false })
     return data || []

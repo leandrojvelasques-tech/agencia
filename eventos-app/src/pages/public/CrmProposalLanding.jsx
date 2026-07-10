@@ -348,11 +348,54 @@ export default function CrmProposalLanding() {
           <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
             <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-xl">description</span>
-              Descripción del Servicio
+              Descripción General
             </h2>
             <p className="text-xs text-[var(--color-dark-gray)]/75 font-medium leading-relaxed whitespace-pre-wrap">
               {proposal.description}
             </p>
+          </div>
+        )}
+
+        {/* Items Table */}
+        {proposal.items && proposal.items.length > 0 && (
+          <div className="card p-0 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 overflow-hidden">
+            <div className="p-6 md:p-8 border-b border-[var(--color-deep-green)]/8">
+              <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-xl">list_alt</span>
+                Detalle de la Inversión
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[var(--color-refined-gray)]/50 text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">
+                  <tr>
+                    <th className="px-6 py-4">Descripción del Ítem</th>
+                    <th className="px-6 py-4 text-center">Cant.</th>
+                    <th className="px-6 py-4 text-right">Precio Unit.</th>
+                    <th className="px-6 py-4 text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {proposal.items.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-extrabold text-[var(--color-deep-green)] text-sm">{item.title}</p>
+                        {item.description && (
+                          <p className="text-xs text-[var(--color-dark-gray)]/60 mt-0.5 whitespace-pre-wrap">{item.description}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center font-mono text-xs">{item.quantity}</td>
+                      <td className="px-6 py-4 text-right font-mono text-xs">
+                        ${Number(item.unit_price).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono font-bold text-[var(--color-dark-gray)]">
+                        ${(Number(item.quantity) * Number(item.unit_price)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

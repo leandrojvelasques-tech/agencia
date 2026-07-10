@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase'
 export default function CrmProposalCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { createProposal, updateProposal } = useStore()
+  const { createProposal, updateProposal, crmClients, fetchCrmClients } = useStore()
   const fileInputRef = useRef(null)
   const attachmentInputRef = useRef(null)
 
@@ -24,6 +24,7 @@ export default function CrmProposalCreate() {
   const [savedShareToken, setSavedShareToken] = useState(null)
 
   const [form, setForm] = useState({
+    client_id: '',
     client_name: '',
     client_company: '',
     client_email: '',
@@ -36,6 +37,7 @@ export default function CrmProposalCreate() {
     terms_conditions: 'Términos y condiciones comerciales:\n- Forma de pago: 50% al momento de iniciar el proyecto y 50% luego de la capacitación y entrega de manual de usuario (al finalizar el proyecto).\n- Validez del presupuesto: 15 días.',
     pdf_url: '',
     attachments: [],
+    items: [], // [{ id, title, description, quantity, unit_price }]
     total_amount: 0,
     payment_details: {
       banco: 'Banco ICBC',
@@ -52,6 +54,11 @@ export default function CrmProposalCreate() {
     setTimeout(() => setToast(null), 3500)
   }
 
+  // Load clients
+  useEffect(() => {
+    fetchCrmClients()
+  }, [])
+
   // Load proposal if editing
   useEffect(() => {
     async function loadData() {
@@ -67,6 +74,7 @@ export default function CrmProposalCreate() {
         if (proposal) {
           setSavedShareToken(proposal.share_token)
           setForm({
+            client_id: proposal.client_id || '',
             client_name: proposal.client_name || '',
             client_company: proposal.client_company || '',
             client_email: proposal.client_email || '',
@@ -79,6 +87,7 @@ export default function CrmProposalCreate() {
             terms_conditions: proposal.terms_conditions || '',
             pdf_url: proposal.pdf_url || '',
             attachments: proposal.attachments || [],
+            items: proposal.items || [],
             total_amount: proposal.total_amount || 0,
             payment_details: proposal.payment_details || {
               banco: 'Banco ICBC',
@@ -100,6 +109,16 @@ export default function CrmProposalCreate() {
     loadData()
   }, [id])
 
+  // Recalculate total amount when items change
+  useEffect(() => {
+    if (form.items.length > 0) {
+      const newTotal = form.items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.unit_price)), 0)
+      if (newTotal !== form.total_amount) {
+        update('total_amount', newTotal)
+      }
+    }
+  }, [form.items])
+
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
   
   const updatePaymentDetails = (field, value) => {
@@ -111,6 +130,61 @@ export default function CrmProposalCreate() {
       }
     }))
   }
+
+  const handleClientSelect = (clientId) => {
+    if (!clientId) {
+      // Clear client fields
+      setForm(prev => ({
+        ...prev,
+        client_id: '',
+        client_name: '',
+        client_company: '',
+        client_email: '',
+        client_phone: ''
+      }))
+      return
+    }
+
+    const client = crmClients.find(c => c.id === clientId)
+    if (client) {
+      setForm(prev => ({
+        ...prev,
+        client_id: client.id,
+        client_name: client.name || '',
+        client_company: client.company || '',
+        client_email: client.email || '',
+        client_phone: client.phone || ''
+      }))
+      showToast('Datos del cliente cargados')
+    }
+  }
+
+  // --- Items Management ---
+  const handleAddItem = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      title: '',
+      description: '',
+      quantity: 1,
+      unit_price: 0
+    }
+    update('items', [...form.items, newItem])
+  }
+
+  const handleUpdateItem = (itemId, field, value) => {
+    const updatedItems = form.items.map(item => {
+      if (item.id === itemId) {
+        return { ...item, [field]: value }
+      }
+      return item
+    })
+    update('items', updatedItems)
+  }
+
+  const handleRemoveItem = (itemId) => {
+    update('items', form.items.filter(i => i.id !== itemId))
+  }
+  // ------------------------
 
   const handlePdfUpload = async (file) => {
     if (!file) return
@@ -260,6 +334,7 @@ export default function CrmProposalCreate() {
     }
 
     const proposalData = {
+      client_id: form.client_id || null,
       client_name: form.client_name,
       client_company: form.client_company || null,
       client_email: form.client_email || null,
@@ -272,7 +347,7 @@ export default function CrmProposalCreate() {
       terms_conditions: form.terms_conditions || null,
       pdf_url: form.pdf_url || null,
       attachments: form.attachments || [],
-      items: [],
+      items: form.items || [],
       total_amount: Number(form.total_amount || 0),
       payment_details: form.payment_details
     }
@@ -312,7 +387,7 @@ export default function CrmProposalCreate() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       {/* Toast */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-premium shadow-lg border transition-all duration-300 animate-fade-in ${
@@ -385,129 +460,250 @@ export default function CrmProposalCreate() {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Main Details Card */}
-        <div className="card p-6 space-y-4 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
-          
-          {/* CLIENT DETAILS SECTION */}
-          <div className="border-b border-[var(--color-deep-green)]/8 pb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] mb-3 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-base">person</span>
-              Datos del Cliente
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Nombre / Razón Social *</label>
-                <input
-                  type="text"
-                  className="form-input text-xs font-semibold"
-                  placeholder="Ej: Juan Pérez"
-                  value={form.client_name}
-                  onChange={e => update('client_name', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Empresa / Organización</label>
-                <input
-                  type="text"
-                  className="form-input text-xs"
-                  placeholder="Ej: Consejo Profesional"
-                  value={form.client_company}
-                  onChange={e => update('client_company', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Email</label>
-                <input
-                  type="email"
-                  className="form-input text-xs"
-                  placeholder="ejemplo@empresa.com"
-                  value={form.client_email}
-                  onChange={e => update('client_email', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Teléfono</label>
-                <input
-                  type="text"
-                  className="form-input text-xs"
-                  placeholder="Ej: +54 9 280 123456"
-                  value={form.client_phone}
-                  onChange={e => update('client_phone', e.target.value)}
-                />
+        
+        {/* TITULO Y ESTADO */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Título de la Propuesta *</label>
+              <input
+                type="text"
+                className="form-input text-lg font-extrabold text-[var(--color-deep-green)]"
+                placeholder="Ej: Diseño de Banner Digital para Campaña de Verano"
+                value={form.title}
+                onChange={e => update('title', e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Subtítulo (Opcional)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Ej: Propuesta de consultoría y diseño gráfico"
+                value={form.subtitle}
+                onChange={e => update('subtitle', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Estado</label>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: 'draft', label: 'Borrador' },
+                  { value: 'sent', label: 'Enviado' },
+                  { value: 'accepted', label: 'Aprobado' },
+                  { value: 'rejected', label: 'Rechazado' }
+                ].map(st => (
+                  <button
+                    key={st.value}
+                    type="button"
+                    onClick={() => update('status', st.value)}
+                    className={`flex-1 min-w-[80px] py-2 px-1 rounded-[var(--radius-premium)] text-xs font-bold border-2 transition-all ${
+                      form.status === st.value
+                        ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 text-[var(--color-deep-green)]'
+                        : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)] hover:bg-[var(--color-refined-gray)]'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="grid sm:grid-cols-2 gap-5 pt-2">
+        {/* CLIENT DETAILS SECTION */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-base">person</span>
+              Datos del Cliente
+            </h2>
+            
+            {/* Client Selector */}
+            <select
+              className="form-input !py-1.5 !px-3 text-xs w-auto min-w-[200px]"
+              value={form.client_id}
+              onChange={e => handleClientSelect(e.target.value)}
+            >
+              <option value="">+ Escribir datos manualmente</option>
+              {crmClients.map(c => (
+                <option key={c.id} value={c.id}>{c.name} {c.company ? `(${c.company})` : ''}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Monto Total del Presupuesto ($) *</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Nombre / Razón Social *</label>
               <input
-                type="number"
-                className="form-input text-sm font-mono font-bold"
-                placeholder="0.00"
-                value={form.total_amount || ''}
-                onChange={e => update('total_amount', Number(e.target.value))}
-                min={0}
+                type="text"
+                className="form-input text-xs font-semibold"
+                placeholder="Ej: Juan Pérez"
+                value={form.client_name}
+                onChange={e => update('client_name', e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Validez hasta</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Empresa / Organización</label>
+              <input
+                type="text"
+                className="form-input text-xs"
+                placeholder="Ej: Consejo Profesional"
+                value={form.client_company}
+                onChange={e => update('client_company', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Email</label>
+              <input
+                type="email"
+                className="form-input text-xs"
+                placeholder="ejemplo@empresa.com"
+                value={form.client_email}
+                onChange={e => update('client_email', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Teléfono</label>
+              <input
+                type="text"
+                className="form-input text-xs"
+                placeholder="Ej: +54 9 280 123456"
+                value={form.client_phone}
+                onChange={e => update('client_phone', e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ITEMS SECTION */}
+        <div className="card p-0 overflow-hidden bg-white shadow-sm border border-[var(--color-deep-green)]/5">
+          <div className="p-6 border-b border-[var(--color-deep-green)]/8 flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-base">list_alt</span>
+              Ítems del Presupuesto
+            </h2>
+            <button
+              type="button"
+              onClick={handleAddItem}
+              className="btn-secondary !py-1.5 !px-3 !text-xs flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              Agregar Ítem
+            </button>
+          </div>
+
+          {form.items.length === 0 ? (
+            <div className="p-8 text-center text-[var(--color-dark-gray)]/50">
+              <span className="material-symbols-outlined text-4xl mb-2 opacity-50">shopping_cart</span>
+              <p className="text-sm font-semibold">No hay ítems cargados.</p>
+              <p className="text-xs mt-1">Podés detallar varios productos o servicios, o dejarlo vacío y usar solo el total.</p>
+            </div>
+          ) : (
+            <div className="p-4 sm:p-6 space-y-4 bg-[var(--color-refined-gray)]/30">
+              {form.items.map((item, index) => (
+                <div key={item.id} className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm relative group">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="text-red-400 hover:text-red-600 p-1"
+                      title="Eliminar Ítem"
+                    >
+                      <span className="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                  </div>
+                  
+                  <div className="grid sm:grid-cols-12 gap-4 pr-8">
+                    <div className="sm:col-span-12">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Título del Producto/Servicio *</label>
+                      <input
+                        type="text"
+                        className="form-input text-sm font-bold"
+                        placeholder="Ej: Diseño de Logo"
+                        value={item.title}
+                        onChange={e => handleUpdateItem(item.id, 'title', e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="sm:col-span-12">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Descripción (Opcional)</label>
+                      <textarea
+                        className="form-input text-xs min-h-[60px]"
+                        placeholder="Detalles del ítem..."
+                        value={item.description}
+                        onChange={e => handleUpdateItem(item.id, 'description', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="sm:col-span-4">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Cantidad</label>
+                      <input
+                        type="number"
+                        className="form-input text-sm font-mono"
+                        min="1"
+                        step="0.01"
+                        value={item.quantity}
+                        onChange={e => handleUpdateItem(item.id, 'quantity', Number(e.target.value))}
+                      />
+                    </div>
+                    
+                    <div className="sm:col-span-4">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Precio Unitario ($)</label>
+                      <input
+                        type="number"
+                        className="form-input text-sm font-mono"
+                        min="0"
+                        step="0.01"
+                        value={item.unit_price}
+                        onChange={e => handleUpdateItem(item.id, 'unit_price', Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="sm:col-span-4 flex flex-col justify-end">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1">Subtotal</p>
+                      <p className="form-input text-sm font-mono font-bold bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed">
+                        ${(Number(item.quantity) * Number(item.unit_price)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className="p-6 bg-[var(--color-deep-green)]/5 border-t border-[var(--color-deep-green)]/15 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Validez hasta</label>
               <input
                 type="date"
-                className="form-input text-sm"
+                className="form-input text-sm !w-auto"
                 value={form.valid_until}
                 onChange={e => update('valid_until', e.target.value)}
               />
             </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Título de la Propuesta *</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Ej: Diseño de Banner Digital para Campaña de Verano"
-              value={form.title}
-              onChange={e => update('title', e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Subtítulo (Opcional)</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Ej: Propuesta de consultoría y diseño gráfico"
-              value={form.subtitle}
-              onChange={e => update('subtitle', e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Estado</label>
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'draft', label: 'Borrador' },
-                { value: 'sent', label: 'Enviado' },
-                { value: 'accepted', label: 'Aprobado' },
-                { value: 'rejected', label: 'Rechazado' }
-              ].map(st => (
-                <button
-                  key={st.value}
-                  type="button"
-                  onClick={() => update('status', st.value)}
-                  className={`flex-1 min-w-[80px] py-2.5 rounded-[var(--radius-premium)] text-xs font-bold border-2 transition-all ${
-                    form.status === st.value
-                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 text-[var(--color-deep-green)]'
-                      : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)] hover:bg-[var(--color-refined-gray)]'
-                  }`}
-                >
-                  {st.label}
-                </button>
-              ))}
+            
+            <div className="text-right">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Monto Total del Presupuesto ($) *</label>
+              <input
+                type="number"
+                className="form-input text-lg font-mono font-bold !w-auto sm:min-w-[200px] text-right"
+                placeholder="0.00"
+                value={form.total_amount === 0 ? '' : form.total_amount}
+                onChange={e => update('total_amount', Number(e.target.value))}
+                min={0}
+                required
+                readOnly={form.items.length > 0} // Read-only if it's auto-calculated from items
+                title={form.items.length > 0 ? "El total se calcula automáticamente sumando los ítems." : ""}
+              />
+              {form.items.length > 0 && (
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-1">Calculado automáticamente desde los ítems</p>
+              )}
             </div>
           </div>
         </div>
@@ -516,14 +712,14 @@ export default function CrmProposalCreate() {
         <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 flex items-center gap-1.5">
             <span className="material-symbols-outlined text-sm">description</span>
-            Descripción del Servicio Cotizado
+            Descripción General del Servicio
           </label>
           <p className="text-[10px] text-[var(--color-dark-gray)]/40 -mt-1">
-            Describí en detalle qué incluye el trabajo: alcance, entregables, plazos, etc. El cliente lo verá en la propuesta.
+            Describí en detalle qué incluye el trabajo de forma general (alcance, entregables, plazos).
           </p>
           <textarea
-            className="form-input min-h-[180px] text-xs font-semibold leading-relaxed"
-            placeholder="Ej: El servicio incluye el diseño de 3 banners digitales para redes sociales en formato 1080x1080, incluyendo 2 rondas de revisión. El tiempo de entrega estimado es de 5 días hábiles..."
+            className="form-input min-h-[140px] text-xs font-semibold leading-relaxed"
+            placeholder="Ej: El servicio incluye el diseño de campaña publicitaria..."
             value={form.description}
             onChange={e => update('description', e.target.value)}
           />
@@ -800,17 +996,6 @@ export default function CrmProposalCreate() {
             </div>
 
             <div className="max-w-4xl mx-auto px-6 py-8 lg:py-12">
-              {/* Status Alert */}
-              <div className="p-4 mb-6 rounded-2xl border border-amber-200 bg-amber-50/50 text-amber-800 flex items-start gap-3">
-                <span className="material-symbols-outlined text-2xl text-amber-500">info</span>
-                <div>
-                  <p className="text-sm font-bold">Borrador de Propuesta</p>
-                  <p className="text-xs text-amber-700/80 mt-0.5 leading-relaxed">
-                    Esta es una vista preliminar en tiempo real de cómo el cliente revisará la propuesta comercial en su navegador.
-                  </p>
-                </div>
-              </div>
-
               {/* Corporate Header Info */}
               <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">
@@ -842,11 +1027,54 @@ export default function CrmProposalCreate() {
                 <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
                   <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-xl">description</span>
-                    Descripción del Servicio
+                    Descripción General
                   </h2>
                   <p className="text-xs text-[var(--color-dark-gray)]/75 font-medium leading-relaxed whitespace-pre-wrap">
                     {form.description}
                   </p>
+                </div>
+              )}
+
+              {/* Items Table */}
+              {form.items.length > 0 && (
+                <div className="card p-0 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 overflow-hidden">
+                  <div className="p-6 border-b border-[var(--color-deep-green)]/8">
+                    <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-xl">list_alt</span>
+                      Detalle de la Inversión
+                    </h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-[var(--color-refined-gray)]/50 text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">
+                        <tr>
+                          <th className="px-6 py-4">Descripción del Ítem</th>
+                          <th className="px-6 py-4 text-center">Cant.</th>
+                          <th className="px-6 py-4 text-right">Precio Unit.</th>
+                          <th className="px-6 py-4 text-right">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {form.items.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <p className="font-extrabold text-[var(--color-deep-green)] text-sm">{item.title}</p>
+                              {item.description && (
+                                <p className="text-xs text-[var(--color-dark-gray)]/60 mt-0.5 whitespace-pre-wrap">{item.description}</p>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-center font-mono text-xs">{item.quantity}</td>
+                            <td className="px-6 py-4 text-right font-mono text-xs">
+                              ${Number(item.unit_price).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-6 py-4 text-right font-mono font-bold text-[var(--color-dark-gray)]">
+                              ${(Number(item.quantity) * Number(item.unit_price)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 
@@ -876,73 +1104,24 @@ export default function CrmProposalCreate() {
                 </div>
               )}
 
-              {/* PDF Download Section */}
-              {form.pdf_url && (
-                <div className="card p-6 bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]">picture_as_pdf</span>
-                    <div>
-                      <h3 className="text-sm font-extrabold text-[var(--color-dark-gray)]">Propuesta Técnica Completa (Documentación)</h3>
-                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">Accede a las especificaciones detalladas.</p>
-                    </div>
-                  </div>
-                  <a 
-                    href={form.pdf_url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="btn-primary !py-2.5 !px-6 !text-xs whitespace-nowrap inline-flex items-center justify-center gap-1.5 shadow-md shadow-[var(--color-deep-green)]/10"
-                  >
-                    <span className="material-symbols-outlined text-sm">download</span>
-                    Ver Propuesta PDF
-                  </a>
-                </div>
-              )}
-
-              {/* Client & Vendor Details */}
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm">person</span>
-                    Propuesta preparada para:
-                  </h2>
-                  {form.client_name ? (
-                    <div className="space-y-1 text-xs">
-                      <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{form.client_name}</p>
-                      {form.client_company && <p className="font-semibold text-[var(--color-dark-gray)]/65">{form.client_company}</p>}
-                      {form.client_email && <p className="text-[var(--color-dark-gray)]/50">{form.client_email}</p>}
-                      {form.client_phone && <p className="text-[var(--color-dark-gray)]/50">{form.client_phone}</p>}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-[var(--color-dark-gray)]/40 italic">Ningún cliente especificado</p>
-                  )}
-                </div>
-
-                <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm">apartment</span>
-                    Proveedor:
-                  </h2>
-                  <div className="space-y-1 text-xs">
-                    <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
-                    <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
-                    <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
-                    <p className="text-[var(--color-dark-gray)]/50">Trelew, Chubut, Argentina</p>
-                  </div>
-                </div>
-              </div>
-
               {/* PAYMENT SCHEDULE PLAN */}
               <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">
                 <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-xl">payments</span>
-                  Plan de Pagos de la Propuesta
+                  Total y Plan de Pagos
                 </h2>
                 
                 <div className="space-y-3.5 text-xs font-semibold text-[var(--color-dark-gray)]">
+                  <div className="flex justify-between items-center pt-2 pb-4 mb-2 border-b-2 border-dashed border-gray-200 text-sm font-extrabold">
+                    <span className="uppercase tracking-widest text-[10px]">Total del Presupuesto Comercial:</span>
+                    <span className="text-xl font-extrabold text-[var(--color-deep-green)] font-mono">
+                      ${Number(form.total_amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
                     <div>
-                      <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar el proyecto)</p>
-                      <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Se abona al momento de firmar y dar inicio a las actividades.</p>
+                      <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar)</p>
                     </div>
                     <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
                       ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
@@ -951,18 +1130,10 @@ export default function CrmProposalCreate() {
 
                   <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
                     <div>
-                      <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar las etapas acordadas)</p>
-                      <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Luego de la capacitación y entrega de manual de usuario correspondiente.</p>
+                      <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar)</p>
                     </div>
                     <span className="font-mono font-bold text-[var(--color-dark-gray)]">
                       ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
-                    <span>Total del Presupuesto Comercial:</span>
-                    <span className="text-lg font-extrabold text-[var(--color-deep-green)] font-mono">
-                      ${Number(form.total_amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -970,14 +1141,6 @@ export default function CrmProposalCreate() {
 
               {/* Simulated Client Actions */}
               <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 opacity-50 pointer-events-none">
-                <button type="button" className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto">
-                  <span className="material-symbols-outlined text-lg">rate_review</span>
-                  Solicitar Cambios
-                </button>
-                <button type="button" className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto">
-                  <span className="material-symbols-outlined text-lg">cancel</span>
-                  Rechazar
-                </button>
                 <button type="button" className="btn-primary !py-3.5 !px-10 text-sm w-full sm:w-auto shadow-lg shadow-[var(--color-deep-green)]/20">
                   <span className="material-symbols-outlined text-lg">check_circle</span>
                   Aprobar Presupuesto

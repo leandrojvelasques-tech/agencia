@@ -272,6 +272,9 @@ GROUP BY e.id, e.title, e.status, e.event_date;
 CREATE TABLE IF NOT EXISTS crm_clients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
+    company TEXT,
+    email TEXT,
+    phone TEXT,
     logo_url TEXT,
     share_token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
     general_tasks TEXT NOT NULL DEFAULT '',
@@ -283,6 +286,11 @@ CREATE TRIGGER update_crm_clients_updated_at
     BEFORE UPDATE ON crm_clients
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- MIGRATION: 
+-- ALTER TABLE crm_clients ADD COLUMN IF NOT EXISTS company TEXT;
+-- ALTER TABLE crm_clients ADD COLUMN IF NOT EXISTS email TEXT;
+-- ALTER TABLE crm_clients ADD COLUMN IF NOT EXISTS phone TEXT;
 
 -- =====================================================
 -- 10. CRM PUBLICATIONS
