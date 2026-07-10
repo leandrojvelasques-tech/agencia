@@ -35,6 +35,10 @@ export default function CrmProposalLanding() {
           setErrorState('La propuesta comercial no existe o el enlace es inválido.')
         } else {
           setProposal(data)
+          
+          // Update the browser tab title dynamically
+          document.title = `Presupuesto de ${data.client_name || data.crm_clients?.name || 'Cliente'} | Leandro Velasques`
+
           // Track view only once per session
           if (!viewTracked.current && !data.viewed_at && data.status !== 'accepted') {
             viewTracked.current = true
