@@ -534,7 +534,7 @@ export default function EventRegister() {
               <div className="space-y-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 animate-fade-in">
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                        Carrera *
+                        {cat === 'matriculado_chubut' || (survey.profesion && survey.profesion.toLowerCase().includes('matriculado')) ? 'Título *' : 'Carrera *'}
                       </label>
                       <select
                         className="form-input text-sm"
@@ -567,10 +567,9 @@ export default function EventRegister() {
                       </div>
                     )}
 
-                 {survey.esta_matriculado === 'Sí' && (
-                  <div className="space-y-4 animate-fade-in">
-                    {cat !== 'matriculado_chubut' && (
-                      <div>
+                    {/* Si no es chubut, mostramos consejo */}
+                    {cat !== 'matriculado_chubut' && survey.esta_matriculado === 'Sí' && (
+                      <div className="animate-fade-in mb-4">
                         <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
                           Consejo Profesional *
                         </label>
@@ -617,42 +616,45 @@ export default function EventRegister() {
                       </div>
                     )}
 
-                    {/* Sub-dropdown only if Chubut is selected */}
-                    {(survey.consejo === 'Chubut' || cat === 'matriculado_chubut') && (
-                      <div className="animate-fade-in">
-                        <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                          Delegación de Chubut *
-                        </label>
-                        <select
-                          className="form-input text-sm"
-                          value={survey.delegacion || 'Delegación Comodoro Rivadavia'}
-                          onChange={e => setSurvey(s => ({ ...s, delegacion: e.target.value }))}
-                          required
-                        >
-                          <option value="Delegación Comodoro Rivadavia">Delegación Comodoro Rivadavia</option>
-                          <option value="Delegación Esquel">Delegación Esquel</option>
-                          <option value="Delegación Trelew">Delegación Trelew</option>
-                          <option value="Delegación Rawson">Delegación Rawson</option>
-                          <option value="Delegación Puerto Madryn">Delegación Puerto Madryn</option>
-                        </select>
+                    {/* Delegacion and Matricula logic */}
+                    {(survey.esta_matriculado === 'Sí' || cat === 'matriculado_chubut') && (
+                      <div className="space-y-4 animate-fade-in">
+                        {/* Sub-dropdown only if Chubut is selected */}
+                        {(survey.consejo === 'Chubut' || cat === 'matriculado_chubut') && (
+                          <div className="animate-fade-in">
+                            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                              Delegación de Chubut *
+                            </label>
+                            <select
+                              className="form-input text-sm"
+                              value={survey.delegacion || 'Delegación Comodoro Rivadavia'}
+                              onChange={e => setSurvey(s => ({ ...s, delegacion: e.target.value }))}
+                              required
+                            >
+                              <option value="Delegación Comodoro Rivadavia">Delegación Comodoro Rivadavia</option>
+                              <option value="Delegación Esquel">Delegación Esquel</option>
+                              <option value="Delegación Trelew">Delegación Trelew</option>
+                              <option value="Delegación Rawson">Delegación Rawson</option>
+                              <option value="Delegación Puerto Madryn">Delegación Puerto Madryn</option>
+                            </select>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                            Número de Matrícula *
+                          </label>
+                          <input
+                            type="text"
+                            className="form-input text-sm"
+                            placeholder="Ingresa tu número de matrícula..."
+                            value={survey.matricula || ''}
+                            onChange={e => setSurvey(s => ({ ...s, matricula: e.target.value }))}
+                            required
+                          />
+                        </div>
                       </div>
                     )}
-
-                    <div>
-                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                        Número de Matrícula *
-                      </label>
-                      <input
-                        type="text"
-                        className="form-input text-sm"
-                        placeholder="Ingresa tu número de matrícula..."
-                        value={survey.matricula || ''}
-                        onChange={e => setSurvey(s => ({ ...s, matricula: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
