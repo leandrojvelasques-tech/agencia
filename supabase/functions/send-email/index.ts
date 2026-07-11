@@ -199,7 +199,8 @@ serve(async (req) => {
       toName: string,
       emailSubject: string,
       htmlContent: string,
-      isCoordinator = false
+      isCoordinator = false,
+      replyTo?: string | string[]
     ) {
       let status = 'pending';
       let errorMessage: string | null = null;
@@ -216,7 +217,8 @@ serve(async (req) => {
               from: emailFrom,
               to: [toEmail],
               subject: emailSubject,
-              html: htmlContent
+              html: htmlContent,
+              ...(replyTo ? { reply_to: replyTo } : {})
             })
           });
           const sendResult = await sendResponse.json();
@@ -253,7 +255,12 @@ serve(async (req) => {
       return { status, errorMessage };
     }
 
-    // 5. Send email to participant
+    // 5. Setup replyTo arrays
+    const coordinators = event.notification_recipients || [];
+    const coordinatorEmails = coordinators.map((c: any) => c.email).filter(Boolean);
+    const eventReplyTo = coordinatorEmails.length > 0 ? coordinatorEmails : ['leandrojvelasques@gmail.com'];
+
+    // 6. Send email to participant
     let participantResult = { status: 'skipped', errorMessage: null as string | null };
     if (participant.email) {
       participantResult = await sendAndLogEmail(
@@ -261,12 +268,12 @@ serve(async (req) => {
         `${participant.first_name} ${participant.last_name}`,
         resolvedSubject,
         emailHtml,
-        false
+        false,
+        eventReplyTo
       );
     }
 
-    // 6. Send email to coordinators
-    const coordinators = event.notification_recipients || [];
+    // 7. Send email to coordinators
     if (coordinators.length > 0) {
       const isCancellation = emailType === 'cancellation';
       const coordSubject = isCancellation
@@ -317,7 +324,8 @@ serve(async (req) => {
             coordinator.name || 'Coordinador',
             coordSubject,
             coordHtml,
-            true
+            true,
+            participant.email || undefined
           );
         }
       }

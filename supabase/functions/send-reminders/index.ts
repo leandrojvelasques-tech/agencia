@@ -209,6 +209,11 @@ serve(async (req) => {
 
           const emailHtml = resolvedBody.replace(/\n/g, '<br>');
 
+          // Preparar replyTo
+          const coordinators = event.notification_recipients || [];
+          const coordinatorEmails = coordinators.map((c: any) => c.email).filter(Boolean);
+          const replyTo = coordinatorEmails.length > 0 ? coordinatorEmails : ['leandrojvelasques@gmail.com'];
+
           // Enviar email
           let status = 'pending';
           let errorMessage = null;
@@ -225,7 +230,8 @@ serve(async (req) => {
                   from: emailFrom,
                   to: [participant.email],
                   subject: resolvedSubject,
-                  html: emailHtml
+                  html: emailHtml,
+                  reply_to: replyTo
                 })
               });
               const sendResult = await sendResponse.json();
