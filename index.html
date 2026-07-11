@@ -1041,17 +1041,17 @@
           let badgeHTML = '';
           if (isCompleted) {
             badgeHTML = `
-              <div class="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm border border-dark-gray/10 text-dark-gray/70 text-[10px] font-bold tracking-wider uppercase rounded-full shadow-md">
-                <span class="material-symbols-outlined text-[12px] leading-none">history</span>
+              <div class="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-dark-gray border border-dark-gray/20 text-white text-[10px] font-extrabold tracking-wider uppercase rounded-full shadow-lg">
+                <span class="material-symbols-outlined text-[12px] leading-none text-refined-gray">history</span>
                 <span>Evento finalizado</span>
               </div>
             `;
           } else if (isOpen) {
             badgeHTML = `
-              <div class="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm border border-emerald-500/20 text-emerald-800 text-[10px] font-bold tracking-wider uppercase rounded-full shadow-md">
+              <div class="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 border border-emerald-600 text-white text-[10px] font-extrabold tracking-wider uppercase rounded-full shadow-lg">
                 <span class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-300"></span>
                 </span>
                 <span>Inscripciones abiertas</span>
               </div>
