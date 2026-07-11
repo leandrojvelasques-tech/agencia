@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
 
 const getCarrera = (responses) => {
   if (!responses) return '—';
@@ -471,72 +472,99 @@ export default function EventParticipants() {
           {/* Cuadro Resumen de Títulos, Delegaciones y Suscripciones */}
           {registrations.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="card p-4 bg-white shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
-                  <span className="material-symbols-outlined text-base">school</span>
-                  Resumen de Inscriptos
-                </h3>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {Object.entries(stats.titulos).map(([name, count]) => {
-                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
-                    return (
-                      <div key={name} className="flex flex-col gap-1">
-                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
-                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
-                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+              <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                    <span className="material-symbols-outlined text-base">school</span>
+                    Resumen de Inscriptos
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {Object.entries(stats.titulos).map(([name, count], index) => {
+                      const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                      const color = CHART_COLORS[index % CHART_COLORS.length]
+                      return (
+                        <div key={name} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                            <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                              <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                              {name}
+                            </span>
+                            <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-100/70 rounded-full h-1">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-100/70 rounded-full h-1">
-                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+                  <DonutChart data={stats.titulos} totalLabel="Inscriptos" />
                 </div>
               </div>
 
-              <div className="card p-4 bg-white shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
-                  <span className="material-symbols-outlined text-base">map</span>
-                  Distribución de Delegaciones
-                </h3>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {Object.entries(stats.delegaciones).map(([name, count]) => {
-                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
-                    return (
-                      <div key={name} className="flex flex-col gap-1">
-                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
-                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
-                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+              <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                    <span className="material-symbols-outlined text-base">map</span>
+                    Distribución de Delegaciones
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {Object.entries(stats.delegaciones).map(([name, count], index) => {
+                      const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                      const color = CHART_COLORS[index % CHART_COLORS.length]
+                      return (
+                        <div key={name} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                            <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                              <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                              {name}
+                            </span>
+                            <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-100/70 rounded-full h-1">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-100/70 rounded-full h-1">
-                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+                  <DonutChart data={stats.delegaciones} totalLabel="Delegaciones" />
                 </div>
               </div>
 
-              <div className="card p-4 bg-white shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
-                  <span className="material-symbols-outlined text-base">payments</span>
-                  Suscripciones LLM
-                </h3>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {Object.entries(stats.suscripciones).map(([name, count]) => {
-                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
-                    return (
-                      <div key={name} className="flex flex-col gap-1">
-                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
-                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
-                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+              <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                    <span className="material-symbols-outlined text-base">payments</span>
+                    Suscripciones LLM
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {Object.entries(stats.suscripciones).map(([name, count], index) => {
+                      const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                      const color = CHART_COLORS[index % CHART_COLORS.length]
+                      return (
+                        <div key={name} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                            <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                              <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                              {name}
+                            </span>
+                            <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-100/70 rounded-full h-1">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-100/70 rounded-full h-1">
-                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+                  <DonutChart data={stats.suscripciones} totalLabel="Suscripciones" />
                 </div>
               </div>
             </div>
