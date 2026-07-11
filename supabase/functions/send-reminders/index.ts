@@ -195,7 +195,8 @@ serve(async (req) => {
             '{{link_inscripcion}}': eventUrl,
             '{{link_evento}}': eventUrl,
             '{{link_reunion}}': liveLink,
-            '{{link_acceso}}': liveLink
+            '{{link_acceso}}': liveLink,
+            '{{link_cancelacion}}': `https://www.leandrovelasques.com.ar/cancelar.html?token=${reg.unique_token}`
           };
 
           let resolvedSubject = template.subject;
