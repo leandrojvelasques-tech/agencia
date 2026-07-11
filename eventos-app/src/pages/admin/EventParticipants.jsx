@@ -183,6 +183,11 @@ export default function EventParticipants() {
   const stats = (() => {
     const titulos = {}
     const delegaciones = {}
+    const suscripciones = {
+      'Paga': 0,
+      'Gratuita/Ninguna': 0,
+      'No especificado': 0
+    }
     
     registrations.forEach(r => {
       const resp = r.survey_responses || {}
@@ -218,6 +223,36 @@ export default function EventParticipants() {
         cleanDel = 'No especificado'
       }
       delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
+
+      // Suscripciones LLM (Heurística)
+      let subVal = null
+      Object.keys(resp).forEach(k => {
+        const lowerKey = k.toLowerCase()
+        if (lowerKey.includes('suscrip') || lowerKey.includes('pagando') || lowerKey.includes('paga o') || lowerKey.includes('paga/')) {
+          subVal = resp[k]
+        }
+      })
+      
+      if (subVal !== null && subVal !== undefined) {
+        const valStr = String(subVal).trim()
+        const lowerVal = valStr.toLowerCase()
+        
+        const isTrue = subVal === true || lowerVal === 'true' || lowerVal === 'sí' || lowerVal === 'si'
+        const isPaidTerm = lowerVal.includes('paga') || lowerVal.includes('pagando') || lowerVal.includes('suscripción') || lowerVal.includes('suscripcion')
+        const commonServices = ['claude', 'chatgpt', 'gemini', 'julius', 'copilot', 'midjourney', 'pro']
+        const hasService = commonServices.some(service => lowerVal.includes(service))
+        const isNegative = lowerVal.includes('no ') || lowerVal.includes('ningun') || lowerVal.includes('gratis') || lowerVal === 'no'
+        
+        if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
+          suscripciones['Paga'] = (suscripciones['Paga'] || 0) + 1
+        } else if (subVal === false || lowerVal === 'false' || isNegative || lowerVal === '—' || lowerVal === '') {
+          suscripciones['Gratuita/Ninguna'] = (suscripciones['Gratuita/Ninguna'] || 0) + 1
+        } else {
+          suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+        }
+      } else {
+        suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+      }
     })
 
     const sortedTitulos = Object.entries(titulos)
@@ -228,7 +263,7 @@ export default function EventParticipants() {
       .sort((a, b) => b[1] - a[1])
       .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
 
-    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones }
+    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones, suscripciones }
   })()
 
   const handleOpenAdd = () => {
@@ -369,33 +404,35 @@ export default function EventParticipants() {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2">
-          <span className="material-symbols-outlined text-xl">arrow_back</span>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-extrabold tracking-tight">Participantes</h1>
-          <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {registrations.length} inscriptos</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2 shrink-0">
+            <span className="material-symbols-outlined text-xl">arrow_back</span>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight">Participantes</h1>
+            <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {registrations.length} inscriptos</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           {activeTab === 'survey' && surveyQuestions.length > 0 && (
             <button onClick={exportToCSV} className="btn-secondary">
               <span className="material-symbols-outlined text-lg">download</span>
-              <span className="hidden sm:inline">Exportar CSV</span>
+              <span>Exportar CSV</span>
             </button>
           )}
           <button onClick={handleOpenAdd} className="btn-primary">
             <span className="material-symbols-outlined text-lg">person_add</span>
-            <span className="hidden sm:inline">Agregar</span>
+            <span>Agregar</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b border-[var(--color-deep-green)]/8 mb-6">
+      <div className="flex gap-6 border-b border-[var(--color-deep-green)]/8 mb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth">
         <button
           onClick={() => setActiveTab('list')}
-          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 shrink-0 ${
             activeTab === 'list'
               ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
               : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
@@ -406,7 +443,7 @@ export default function EventParticipants() {
         </button>
         <button
           onClick={() => setActiveTab('survey')}
-          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 ${
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 shrink-0 ${
             activeTab === 'survey'
               ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
               : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
@@ -431,10 +468,10 @@ export default function EventParticipants() {
             />
           </div>
 
-          {/* Cuadro Resumen de Títulos y Delegaciones */}
+          {/* Cuadro Resumen de Títulos, Delegaciones y Suscripciones */}
           {registrations.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="card p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="card p-4 bg-white shadow-sm">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
                   <span className="material-symbols-outlined text-base">school</span>
                   Resumen de Inscriptos
@@ -457,7 +494,7 @@ export default function EventParticipants() {
                 </div>
               </div>
 
-              <div className="card p-4">
+              <div className="card p-4 bg-white shadow-sm">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
                   <span className="material-symbols-outlined text-base">map</span>
                   Distribución de Delegaciones
@@ -479,10 +516,34 @@ export default function EventParticipants() {
                   })}
                 </div>
               </div>
+
+              <div className="card p-4 bg-white shadow-sm">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                  <span className="material-symbols-outlined text-base">payments</span>
+                  Suscripciones LLM
+                </h3>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {Object.entries(stats.suscripciones).map(([name, count]) => {
+                    const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                    return (
+                      <div key={name} className="flex flex-col gap-1">
+                        <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                          <span className="truncate max-w-[75%]" title={name}>{name}</span>
+                          <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-100/70 rounded-full h-1">
+                          <div className="bg-[var(--color-deep-green)] h-full rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
-          <div className="card overflow-hidden">
+          {/* Desktop Table View */}
+          <div className="card overflow-hidden hidden md:block bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
@@ -554,6 +615,75 @@ export default function EventParticipants() {
               </table>
             </div>
           </div>
+
+          {/* Mobile Cards View */}
+          <div className="space-y-3 block md:hidden">
+            {sortedAndFiltered.length === 0 ? (
+              <div className="card p-8 text-center text-[var(--color-dark-gray)]/30 font-medium bg-white shadow-sm">
+                No hay participantes registrados
+              </div>
+            ) : sortedAndFiltered.map(r => (
+              <div key={r.id} className="card p-4 bg-white shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-[var(--color-dark-gray)] text-base">
+                      {r.participants?.first_name} {r.participants?.last_name}
+                    </span>
+                    <span className="text-xs text-[var(--color-dark-gray)]/50">
+                      Inscrito: {r.registered_at ? format(new Date(r.registered_at), "dd/MM/yyyy HH:mm") : '—'}
+                    </span>
+                  </div>
+                  <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${r.status === 'confirmed' ? 'bg-green-50 text-green-700 border border-green-200' : r.status === 'cancelled' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                    {r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-deep-green)]/5 pt-2">
+                  <div>
+                    <span className="text-[var(--color-dark-gray)]/50 block font-medium">Título</span>
+                    <span className="font-semibold text-[var(--color-dark-gray)]/85 truncate block" title={getTitulo(r.survey_responses)}>{getTitulo(r.survey_responses) || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[var(--color-dark-gray)]/50 block font-medium">Delegación</span>
+                    <span className="font-semibold text-[var(--color-dark-gray)]/85 truncate block" title={getDelegacion(r.survey_responses)}>{getDelegacion(r.survey_responses) || '—'}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1 text-xs border-t border-[var(--color-deep-green)]/5 pt-2">
+                  {r.participants?.email ? (
+                    <a href={`mailto:${r.participants.email}`} className="flex items-center gap-1.5 text-[var(--color-deep-green)] hover:underline">
+                      <span className="material-symbols-outlined text-sm">mail</span>
+                      <span className="truncate">{r.participants.email}</span>
+                    </a>
+                  ) : (
+                    <span className="text-xs text-amber-600 font-semibold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm">warning</span>
+                      Sin email
+                    </span>
+                  )}
+                  {r.participants?.phone && (
+                    <a href={`tel:${r.participants.phone}`} className="flex items-center gap-1.5 text-[var(--color-deep-green)] hover:underline">
+                      <span className="material-symbols-outlined text-sm">phone</span>
+                      <span>{r.participants.phone}</span>
+                    </a>
+                  )}
+                </div>
+
+                {renderRegistrationInfo(r.survey_responses)}
+
+                <div className="flex items-center justify-end gap-2 border-t border-[var(--color-deep-green)]/5 pt-2">
+                  <button onClick={() => handleOpenEdit(r)} className="btn-secondary !py-1.5 px-3 text-xs flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50">
+                    <span className="material-symbols-outlined text-base">edit</span>
+                    Editar
+                  </button>
+                  <button onClick={() => handleDelete(r)} className="btn-secondary !py-1.5 px-3 text-xs flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50">
+                    <span className="material-symbols-outlined text-base">delete</span>
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
@@ -601,8 +731,8 @@ export default function EventParticipants() {
                 })}
               </div>
 
-              {/* Matrix Table */}
-              <div className="card overflow-hidden">
+              {/* Desktop Matrix Table View */}
+              <div className="card overflow-hidden hidden md:block bg-white shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="data-table">
                     <thead>
@@ -643,6 +773,40 @@ export default function EventParticipants() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Mobile Matrix Cards View */}
+              <div className="space-y-3 block md:hidden">
+                {registrations.length === 0 ? (
+                  <div className="card p-8 text-center text-[var(--color-dark-gray)]/30 font-medium bg-white shadow-sm">
+                    No hay respuestas registradas
+                  </div>
+                ) : (
+                  registrations.map(r => (
+                    <div key={r.id} className="card p-4 bg-white shadow-sm flex flex-col gap-2">
+                      <div className="flex flex-col border-b border-[var(--color-deep-green)]/5 pb-2">
+                        <span className="font-bold text-[var(--color-dark-gray)] text-base">
+                          {r.participants?.first_name} {r.participants?.last_name}
+                        </span>
+                        <span className="text-xs text-[var(--color-dark-gray)]/50">
+                          {r.participants?.email || 'Sin email'}
+                        </span>
+                      </div>
+                      <div className="space-y-2.5 mt-1">
+                        {surveyQuestions.map(q => {
+                          const ans = r.survey_responses?.[q.label]
+                          const displayAns = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : (ans || '—')
+                          return (
+                            <div key={q.label} className="text-xs">
+                              <span className="text-[var(--color-dark-gray)]/50 block font-medium">{q.label}</span>
+                              <span className="font-semibold text-[var(--color-dark-gray)]/85 block">{displayAns}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </>
           )}
