@@ -221,7 +221,7 @@ export default function SettingsDashboard() {
                 Editar Plantilla
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
                 <button
                   type="button"
                   onClick={() => handleTemplateChange('welcome')}
@@ -243,6 +243,17 @@ export default function SettingsDashboard() {
                   }`}
                 >
                   Cancelación
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTemplateChange('reminder_48h')}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    selectedTemplateId === 'reminder_48h'
+                      ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
+                  }`}
+                >
+                  Recordatorio (48hs)
                 </button>
                 <button
                   type="button"

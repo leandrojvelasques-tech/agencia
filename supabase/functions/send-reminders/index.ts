@@ -270,10 +270,15 @@ serve(async (req) => {
       }
     }
 
-    // 1. Procesar recordatorio de 24hs antes del evento (para mañana)
+    // 1. Procesar recordatorio de 48hs antes del evento (para pasado mañana)
+    const afterTomorrowGMT3 = new Date(todayGMT3.getTime() + 2 * 24 * 60 * 60 * 1000);
+    const afterTomorrowStr = afterTomorrowGMT3.toISOString().split('T')[0];
+    await processRemindersForDate(afterTomorrowStr, 'reminder_48h');
+
+    // 2. Procesar recordatorio de 24hs antes del evento (para mañana)
     await processRemindersForDate(tomorrowStr, 'reminder_24h');
 
-    // 2. Procesar recordatorio del mismo día (para hoy)
+    // 3. Procesar recordatorio del mismo día (para hoy)
     await processRemindersForDate(todayStr, 'reminder_same_day');
 
     return new Response(JSON.stringify({ success: true, processed: results.length, details: results }), {
