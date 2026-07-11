@@ -77,6 +77,7 @@ export default function EventCreate() {
     contact_info: '',
     notification_recipients: [],
     satisfaction_questions: DEFAULT_SATISFACTION_QUESTIONS,
+    registrations_open: false,
   })
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -214,6 +215,7 @@ export default function EventCreate() {
             satisfaction_questions: data.satisfaction_questions && data.satisfaction_questions.length === 5
               ? data.satisfaction_questions
               : DEFAULT_SATISFACTION_QUESTIONS,
+            registrations_open: data.registrations_open || false,
           })
         }
         setLoading(false)
@@ -418,6 +420,7 @@ export default function EventCreate() {
               satisfaction_questions: updated.satisfaction_questions && updated.satisfaction_questions.length === 5
                 ? updated.satisfaction_questions
                 : DEFAULT_SATISFACTION_QUESTIONS,
+              registrations_open: updated.registrations_open || false,
             })
             setSaved(true)
             setTimeout(() => setSaved(false), 3000)
@@ -496,6 +499,7 @@ export default function EventCreate() {
             live_link: updated.live_link || '',
             event_materials: updated.event_materials || [],
             has_survey: updated.has_survey || false,
+            registrations_open: updated.registrations_open || false,
           })
           savedSlug = updated.slug
         }
@@ -1075,6 +1079,32 @@ export default function EventCreate() {
 
         {step === 2 && (
           <div className="space-y-5">
+            {/* Estado de Inscripciones */}
+            <div className="space-y-4 pt-2 border-t border-[var(--color-deep-green)]/8">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Estado de la Inscripción</label>
+              <div className="p-4 rounded-xl border border-[var(--color-deep-green)]/10 bg-white space-y-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--color-dark-gray)]">Inscripciones Abiertas</p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50">Muestra un cartel de "Inscripciones abiertas" en la portada del evento</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update('registrations_open', !form.registrations_open);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                      form.registrations_open
+                        ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                        : 'bg-gray-100 text-gray-500 border-gray-300'
+                    }`}
+                  >
+                    {form.registrations_open ? 'Activado' : 'Desactivado'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Modalities Enable/Disable and Capacity */}
             <div className="space-y-4 pt-2 border-t border-[var(--color-deep-green)]/8">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Modalidades del Evento</label>

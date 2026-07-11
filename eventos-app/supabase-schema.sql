@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS events (
     payment_methods TEXT,
     contact_info TEXT,
     satisfaction_questions JSONB DEFAULT NULL,
+    registrations_open BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
