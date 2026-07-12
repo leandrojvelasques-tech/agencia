@@ -655,7 +655,9 @@ export default function EventRegister() {
                                   setSurvey(prev => ({
                                     ...prev,
                                     matricula: m.matricula,
-                                    delegacion: mapDelegacion(m.delegacion)
+                                    delegacion: mapDelegacion(m.delegacion),
+                                    tomo: m.tomo || '',
+                                    folio: m.folio || ''
                                   }))
                                   setSearchQuery(`${toTitleCase(m.apellido)}, ${toTitleCase(m.nombres)} (Mat. ${m.matricula})`)
                                   setSearchResults([])
@@ -691,6 +693,15 @@ export default function EventRegister() {
                             <span>¡Auto-completado con éxito! Revisa o edita los datos abajo si es necesario.</span>
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {isChubutMatriculado && (
+                      <div className="border-t border-[var(--color-deep-green)]/10 pt-4 mt-2">
+                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-dark-gray)]/45 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm">edit_note</span>
+                          Ingresar matrícula manualmente
+                        </h3>
                       </div>
                     )}
 
@@ -815,6 +826,35 @@ export default function EventRegister() {
                             required
                           />
                         </div>
+
+                        {(survey.consejo === 'Chubut' || cat === 'matriculado_chubut') && (
+                          <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                            <div>
+                              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                                Tomo
+                              </label>
+                              <input
+                                type="text"
+                                className="form-input text-sm"
+                                placeholder="Ej: XI"
+                                value={survey.tomo || ''}
+                                onChange={e => setSurvey(s => ({ ...s, tomo: e.target.value }))}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                                Folio
+                              </label>
+                              <input
+                                type="text"
+                                className="form-input text-sm"
+                                placeholder="Ej: 25"
+                                value={survey.folio || ''}
+                                onChange={e => setSurvey(s => ({ ...s, folio: e.target.value }))}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
               </div>
