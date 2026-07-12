@@ -21,6 +21,29 @@ export default function EventRegister() {
   const [paymentReceiptUrl, setPaymentReceiptUrl] = useState('')
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
 
+  // Matriculados padron state variables
+  const [matriculadosList, setMatriculadosList] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [loadingPadron, setLoadingPadron] = useState(false)
+  const [selectedMatriculado, setSelectedMatriculado] = useState(null)
+
+  const toTitleCase = (str) => {
+    if (!str) return ''
+    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  }
+
+  const mapDelegacion = (del) => {
+    if (!del) return 'Delegación Comodoro Rivadavia'
+    const dLower = del.toLowerCase()
+    if (dLower.includes('comodoro') || dLower.includes('rivadavia')) return 'Delegación Comodoro Rivadavia'
+    if (dLower.includes('esquel')) return 'Delegación Esquel'
+    if (dLower.includes('trelew')) return 'Delegación Trelew'
+    if (dLower.includes('rawson')) return 'Delegación Rawson'
+    if (dLower.includes('madryn') || dLower.includes('puerto')) return 'Delegación Puerto Madryn'
+    return 'Delegación Comodoro Rivadavia' // Default fallback
+  }
+
   const getPricingCategory = (selectedProfession, surveyData) => {
     if (!selectedProfession) return null;
     const lower = selectedProfession.toLowerCase();
@@ -154,11 +177,48 @@ export default function EventRegister() {
     }
   }, [event, form.selected_date, regs, hasPresencial, hasVirtual])
 
+  const cat = getPricingCategory(survey.profesion, survey)
+  const isChubutMatriculado = cat === 'matriculado_chubut' || 
+    (survey.profesion === 'Profesional de Ciencias Económicas' && survey.esta_matriculado === 'Sí' && survey.consejo === 'Chubut')
+
+  // Load CPCECh matriculados padron only when selected
+  useEffect(() => {
+    if (isChubutMatriculado && matriculadosList.length === 0 && !loadingPadron) {
+      setLoadingPadron(true)
+      fetch(import.meta.env.BASE_URL + 'matriculados.json')
+        .then(res => res.json())
+        .then(data => {
+          setMatriculadosList(data || [])
+          setLoadingPadron(false)
+        })
+        .catch(err => {
+          console.error("Error loading matriculados padron:", err)
+          setLoadingPadron(false)
+        })
+    }
+  }, [isChubutMatriculado, matriculadosList.length, loadingPadron])
+
+  // Filter matriculados dynamically
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.includes(' (Mat. ')) {
+      setSearchResults([])
+      return
+    }
+    const q = searchQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const filtered = matriculadosList.filter(m => {
+      const nom = (m.nombres || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      const ape = (m.apellido || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      const mat = (m.matricula || '').toLowerCase()
+      const fullName = `${ape} ${nom}`
+      const fullNameReverse = `${nom} ${ape}`
+      return nom.includes(q) || ape.includes(q) || mat.includes(q) || fullName.includes(q) || fullNameReverse.includes(q)
+    })
+    setSearchResults(filtered.slice(0, 10))
+  }, [searchQuery, matriculadosList])
+
   if (loadingEvent) {
     return <div className="min-h-screen flex items-center justify-center p-4">Cargando...</div>
   }
-
-  const cat = getPricingCategory(survey.profesion, survey)
 
   const searchParams = new URLSearchParams(window.location.search)
   const isPreview = searchParams.get('preview') === 'true'
@@ -533,6 +593,107 @@ export default function EventRegister() {
 
             {(survey.profesion === 'Profesional de Ciencias Económicas' || cat === 'matriculado_chubut' || cat === 'matriculado_otro') && (
               <div className="space-y-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 animate-fade-in">
+                    
+                    {/* Buscador de Matriculados del CPCECh */}
+                    {isChubutMatriculado && (
+                      <div className="bg-white p-4 rounded-xl border border-[var(--color-deep-green)]/15 shadow-sm space-y-3">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)] flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-base">search</span>
+                          Buscar en el Padrón del CPCECh (Recomendado)
+                        </label>
+                        <p className="text-[10px] text-[var(--color-dark-gray)]/50 leading-relaxed">
+                          Busca por tu nombre, apellido o número de matrícula para auto-completar el formulario.
+                        </p>
+                        
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="form-input text-sm pl-9"
+                            placeholder="Escribe tu apellido, nombre o matrícula..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                          />
+                          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[var(--color-dark-gray)]/30 text-lg">
+                            person_search
+                          </span>
+                          
+                          {searchQuery && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchQuery('')
+                                setSelectedMatriculado(null)
+                              }}
+                              className="absolute right-3 top-2.5 text-[var(--color-dark-gray)]/40 hover:text-red-500"
+                            >
+                              <span className="material-symbols-outlined text-lg">cancel</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {loadingPadron && (
+                          <p className="text-xs text-[var(--color-dark-gray)]/40 flex items-center gap-1.5 animate-pulse">
+                            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                            Cargando padrón oficial...
+                          </p>
+                        )}
+
+                        {/* Resultados de búsqueda */}
+                        {searchResults.length > 0 && (
+                          <div className="border border-gray-150 rounded-xl overflow-hidden divide-y divide-gray-100 bg-white max-h-56 overflow-y-auto shadow-lg animate-fade-in relative z-20">
+                            {searchResults.map(m => (
+                              <button
+                                key={m.matricula}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedMatriculado(m)
+                                  setForm(prev => ({
+                                    ...prev,
+                                    first_name: toTitleCase(m.nombres),
+                                    last_name: toTitleCase(m.apellido)
+                                  }))
+                                  setSurvey(prev => ({
+                                    ...prev,
+                                    matricula: m.matricula,
+                                    delegacion: mapDelegacion(m.delegacion)
+                                  }))
+                                  setSearchQuery(`${toTitleCase(m.apellido)}, ${toTitleCase(m.nombres)} (Mat. ${m.matricula})`)
+                                  setSearchResults([])
+                                }}
+                                className="w-full text-left px-4 py-2.5 hover:bg-[var(--color-deep-green)]/5 transition-colors flex justify-between items-center text-xs font-semibold text-[var(--color-dark-gray)]"
+                              >
+                                <div>
+                                  <p className="font-bold text-sm text-[var(--color-deep-green)]">
+                                    {toTitleCase(m.apellido)}, {toTitleCase(m.nombres)}
+                                  </p>
+                                  <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">
+                                    Delegación: {mapDelegacion(m.delegacion)}
+                                  </p>
+                                </div>
+                                <span className="bg-[var(--color-deep-green)]/8 text-[var(--color-deep-green)] px-2 py-1 rounded text-[10px] font-bold">
+                                  Mat. {m.matricula}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {searchQuery.trim() && searchResults.length === 0 && !loadingPadron && !searchQuery.includes(' (Mat. ') && (
+                          <p className="text-xs text-amber-600 font-semibold flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-sm">info</span>
+                            No se encontraron coincidencias. Puedes rellenar los datos abajo manualmente.
+                          </p>
+                        )}
+                        
+                        {selectedMatriculado && (
+                          <div className="bg-[var(--color-deep-green)]/5 p-3 rounded-lg border border-[var(--color-deep-green)]/15 text-xs text-[var(--color-deep-green)] font-bold flex items-center gap-2 animate-fade-in">
+                            <span className="material-symbols-outlined text-base">task_alt</span>
+                            <span>¡Auto-completado con éxito! Revisa o edita los datos abajo si es necesario.</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
                         {cat === 'matriculado_chubut' || (survey.profesion && survey.profesion.toLowerCase().includes('matriculado')) ? 'Título *' : 'Carrera *'}

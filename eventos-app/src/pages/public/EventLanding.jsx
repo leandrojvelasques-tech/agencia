@@ -101,11 +101,23 @@ export default function EventLanding() {
 
       <main className="max-w-3xl mx-auto px-6 py-8 lg:py-12 animate-fade-in">
         {/* Banner */}
-        {event.banner_url && (
+        {event.banner_url ? (
           <div className="rounded-[var(--radius-card)] overflow-hidden mb-8 shadow-[var(--shadow-premium)]">
             <img src={event.banner_url} alt={event.title} className="w-full h-auto object-cover" />
           </div>
-        )}
+        ) : event.official_banner_url ? (
+          /* Si no hay banner horizontal pero sí oficial, lo mostramos al inicio de forma centrada y contenida */
+          <div className="flex justify-center mb-8 animate-fade-in">
+            <div className="rounded-[var(--radius-card)] overflow-hidden shadow-[var(--shadow-premium)] max-w-md w-full border border-[var(--color-deep-green)]/10">
+              <img 
+                src={event.official_banner_url} 
+                alt={event.title} 
+                className="w-full h-auto object-contain cursor-pointer"
+                onClick={() => window.open(event.official_banner_url, '_blank')}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {/* Video explicativo */}
         {event.video_url && (() => {
@@ -406,6 +418,24 @@ export default function EventLanding() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Banner Oficial (Flyer 1080x1350) - Mostrar al final si también hay un banner horizontal */}
+        {event.official_banner_url && event.banner_url && (
+          <div className="card p-6 mb-8 bg-white border border-[var(--color-deep-green)]/10 shadow-[var(--shadow-premium)] flex flex-col items-center animate-fade-in">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--color-deep-green)] mb-4 self-start flex items-center gap-2 border-b border-[var(--color-deep-green)]/10 pb-2 w-full">
+              <span className="material-symbols-outlined text-xl">layers</span>
+              Folleto Oficial del Evento
+            </h2>
+            <div className="rounded-[var(--radius-premium)] overflow-hidden max-w-sm w-full border border-gray-150 shadow-md">
+              <img 
+                src={event.official_banner_url} 
+                alt="Folleto Oficial" 
+                className="w-full h-auto object-contain cursor-pointer hover:scale-[1.01] transition-transform duration-300"
+                onClick={() => window.open(event.official_banner_url, '_blank')} 
+              />
             </div>
           </div>
         )}

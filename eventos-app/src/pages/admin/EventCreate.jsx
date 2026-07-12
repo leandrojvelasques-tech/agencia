@@ -65,6 +65,7 @@ export default function EventCreate() {
     max_capacity_presencial: '',
     max_capacity_virtual: '',
     banner_url: '',
+    official_banner_url: '',
     video_url: '',
     is_public: true,
     show_on_home: false,
@@ -83,8 +84,11 @@ export default function EventCreate() {
   const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [uploadingOfficial, setUploadingOfficial] = useState(false)
+  const [uploadOfficialError, setUploadOfficialError] = useState('')
   const [uploadingMaterialIndex, setUploadingMaterialIndex] = useState(null)
   const fileInputRef = useRef(null)
+  const officialBannerInputRef = useRef(null)
 
   const [associatedPresentations, setAssociatedPresentations] = useState([])
   const [availablePresentations, setAvailablePresentations] = useState([])
@@ -184,6 +188,34 @@ export default function EventCreate() {
       setUploadError('Error al subir la imagen: ' + (err.message || err))
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleOfficialBannerUpload = async (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadOfficialError('Solo se permiten imágenes (JPG, PNG, WEBP, GIF)')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadOfficialError('El archivo no puede superar los 5 MB')
+      return
+    }
+    setUploadOfficialError('')
+    setUploadingOfficial(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `official-banner-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName)
+      update('official_banner_url', publicUrl)
+    } catch (err) {
+      setUploadOfficialError('Error al subir la imagen: ' + (err.message || err))
+    } finally {
+      setUploadingOfficial(false)
     }
   }
 
@@ -1296,6 +1328,80 @@ export default function EventCreate() {
                 value={form.contact_info || ''}
                 onChange={e => update('contact_info', e.target.value)}
               />
+            </div>
+
+            {/* Banner Oficial (1080x1350) Upload */}
+            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                  Banner Oficial del Evento (Tamaño 1080 x 1350) <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span>
+                </label>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mb-3">
+                  Subí el folleto vertical (relación 4:5, recomendado 1080x1350px) que se mostrará en la landing del evento.
+                </p>
+              </div>
+
+              {/* Preview */}
+              {form.official_banner_url && (
+                <div className="relative mb-4 rounded-[var(--radius-card)] overflow-hidden border border-[var(--color-deep-green)]/10 max-w-[200px] mx-auto group">
+                  <img src={form.official_banner_url} alt="Official banner preview" className="w-full h-auto object-contain" />
+                  <button
+                    type="button"
+                    onClick={() => update('official_banner_url', '')}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Quitar banner oficial"
+                  >
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Area */}
+              <div
+                className={`border-2 border-dashed rounded-[var(--radius-card)] p-6 text-center transition-all cursor-pointer hover:border-[var(--color-deep-green)]/40 hover:bg-[var(--color-deep-green)]/2 ${
+                  uploadingOfficial ? 'border-[var(--color-deep-green)]/30 opacity-70' : 'border-[var(--color-deep-green)]/15'
+                }`}
+                onClick={() => !uploadingOfficial && officialBannerInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleOfficialBannerUpload(f) }}
+              >
+                <input
+                  ref={officialBannerInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files[0]; if (f) handleOfficialBannerUpload(f) }}
+                />
+                {uploadingOfficial ? (
+                  <>
+                    <span className="material-symbols-outlined text-4xl text-[var(--color-deep-green)]/40 mb-2 block animate-spin">progress_activity</span>
+                    <p className="text-sm font-semibold text-[var(--color-dark-gray)]/50">Subiendo imagen...</p>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/20 mb-2 block">add_photo_alternate</span>
+                    <p className="text-sm font-semibold text-[var(--color-dark-gray)]/50">Arrastrá el banner oficial o hacé click para seleccionar</p>
+                    <p className="text-xs text-[var(--color-dark-gray)]/30 mt-1">JPG, PNG, WEBP · Máx. 5 MB · Tamaño: 1080×1350 px</p>
+                  </>
+                )}
+              </div>
+
+              {uploadOfficialError && (
+                <p className="text-xs text-red-500 font-semibold mt-2 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">error</span> {uploadOfficialError}
+                </p>
+              )}
+
+              {/* Fallback URL */}
+              <div className="mt-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">O pegá una URL del banner oficial</label>
+                <input
+                  className="form-input text-sm"
+                  placeholder="https://..."
+                  value={form.official_banner_url || ''}
+                  onChange={(e) => update('official_banner_url', e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Notificaciones de Inscripción (Coordinadores) */}
