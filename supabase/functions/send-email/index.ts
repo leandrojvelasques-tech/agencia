@@ -144,6 +144,7 @@ serve(async (req) => {
     // 2. Fetch email template
     const { data: template, error: tempErr } = await supabase
       .from('email_templates')
+      .select('*')
       .eq('id', emailType)
       .single();
 
