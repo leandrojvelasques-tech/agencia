@@ -1,10 +1,11 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
 import html2canvas from 'html2canvas'
+import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
 
 const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note', next: 'Publicar', nextStatus: 'published' },
@@ -23,7 +24,7 @@ const ensureAbsoluteUrl = (url) => {
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getEventById, getEventStats, updateEvent, publishEvent, deleteEvent, isLoading } = useStore()
+  const { getEventById, getEventStats, updateEvent, publishEvent, deleteEvent, isLoading, registrations, fetchEventData } = useStore()
   const [event, setEvent] = useState(null)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -48,6 +49,7 @@ export default function EventDetail() {
       setStats(statsData)
 
       if (eventData) {
+        await fetchEventData(eventData.id)
         // Query registrations to count by modality
         const { data: regs } = await supabase
           .from('registrations')
@@ -227,6 +229,94 @@ export default function EventDetail() {
     }
   }
 
+  const surveyStatsSummary = useMemo(() => {
+    if (!registrations || registrations.length === 0) return null
+
+    const titulos = {}
+    const delegaciones = {}
+    const suscripciones = {
+      'Paga': 0,
+      'Gratuita/Ninguna': 0,
+      'No especificado': 0
+    }
+    
+    registrations.forEach(r => {
+      const resp = r.survey_responses || {}
+      
+      // Carrera / Titulo
+      let cleanCarrera = ''
+      const profesionVal = (resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || '').trim()
+      const lowerProf = profesionVal.toLowerCase()
+      
+      if (lowerProf.includes('estudiante')) {
+        cleanCarrera = 'Estudiante'
+      } else if (lowerProf.includes('otro') || lowerProf.includes('externo')) {
+        cleanCarrera = 'Externo'
+      } else {
+        const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
+        cleanCarrera = carreraVal.trim()
+        
+        if (!cleanCarrera || cleanCarrera === '—') {
+          cleanCarrera = profesionVal
+        }
+      }
+      
+      if (!cleanCarrera || cleanCarrera === '—') {
+        cleanCarrera = 'No especificado'
+      }
+
+      titulos[cleanCarrera] = (titulos[cleanCarrera] || 0) + 1
+
+      // Delegacion
+      const delVal = resp['delegacion'] || resp['Delegación'] || resp.delegacion || ''
+      let cleanDel = delVal.trim()
+      if (!cleanDel || cleanDel === '—') {
+        cleanDel = 'No especificado'
+      }
+      delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
+
+      // Suscripciones LLM
+      let subVal = null
+      Object.keys(resp).forEach(k => {
+        const lowerKey = k.toLowerCase()
+        if (lowerKey.includes('suscrip') || lowerKey.includes('pagando') || lowerKey.includes('paga o') || lowerKey.includes('paga/')) {
+          subVal = resp[k]
+        }
+      })
+      
+      if (subVal !== null && subVal !== undefined) {
+        const valStr = String(subVal).trim()
+        const lowerVal = valStr.toLowerCase()
+        
+        const isTrue = subVal === true || lowerVal === 'true' || lowerVal === 'sí' || lowerVal === 'si'
+        const isPaidTerm = lowerVal.includes('paga') || lowerVal.includes('pagando') || lowerVal.includes('suscripción') || lowerVal.includes('suscripcion')
+        const commonServices = ['claude', 'chatgpt', 'gemini', 'julius', 'copilot', 'midjourney', 'pro']
+        const hasService = commonServices.some(service => lowerVal.includes(service))
+        const isNegative = lowerVal.includes('no ') || lowerVal.includes('ningun') || lowerVal.includes('gratis') || lowerVal === 'no'
+        
+        if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
+          suscripciones['Paga'] = (suscripciones['Paga'] || 0) + 1
+        } else if (subVal === false || lowerVal === 'false' || isNegative || lowerVal === '—' || lowerVal === '') {
+          suscripciones['Gratuita/Ninguna'] = (suscripciones['Gratuita/Ninguna'] || 0) + 1
+        } else {
+          suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+        }
+      } else {
+        suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+      }
+    })
+
+    const sortedTitulos = Object.entries(titulos)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    const sortedDelegaciones = Object.entries(delegaciones)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones, suscripciones }
+  }, [registrations])
+
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
     { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas', count: null },
@@ -366,6 +456,107 @@ export default function EventDetail() {
           </div>
         ))}
       </div>
+
+      {/* Cuadro Resumen de Títulos, Delegaciones y Suscripciones */}
+      {registrations && registrations.length > 0 && surveyStatsSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                <span className="material-symbols-outlined text-base">school</span>
+                Resumen de Inscriptos
+              </h3>
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                {Object.entries(surveyStatsSummary.titulos).map(([name, count], index) => {
+                  const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                  const color = CHART_COLORS[index % CHART_COLORS.length]
+                  return (
+                    <div key={name} className="flex flex-col gap-1">
+                      <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                        <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                          <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                          {name}
+                        </span>
+                        <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-100/70 rounded-full h-1">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+              <DonutChart data={surveyStatsSummary.titulos} totalLabel="Inscriptos" />
+            </div>
+          </div>
+
+          <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                <span className="material-symbols-outlined text-base">map</span>
+                Distribución de Delegaciones
+              </h3>
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                {Object.entries(surveyStatsSummary.delegaciones).map(([name, count], index) => {
+                  const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                  const color = CHART_COLORS[index % CHART_COLORS.length]
+                  return (
+                    <div key={name} className="flex flex-col gap-1">
+                      <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                        <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                          <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                          {name}
+                        </span>
+                        <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-100/70 rounded-full h-1">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+              <DonutChart data={surveyStatsSummary.delegaciones} totalLabel="Delegaciones" />
+            </div>
+          </div>
+
+          <div className="card p-4 bg-white shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-3 flex items-center gap-1.5 border-b border-[var(--color-deep-green)]/5 pb-2">
+                <span className="material-symbols-outlined text-base">payments</span>
+                Suscripciones LLM
+              </h3>
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                {Object.entries(surveyStatsSummary.suscripciones).map(([name, count], index) => {
+                  const pct = registrations.length > 0 ? Math.round((count / registrations.length) * 100) : 0
+                  const color = CHART_COLORS[index % CHART_COLORS.length]
+                  return (
+                    <div key={name} className="flex flex-col gap-1">
+                      <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                        <span className="truncate max-w-[75%] flex items-center gap-1.5" title={name}>
+                          <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                          {name}
+                        </span>
+                        <span className="text-[var(--color-deep-green)] font-bold">{count} ({pct}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-100/70 rounded-full h-1">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="border-t border-gray-100 mt-4 pt-3 flex justify-center">
+              <DonutChart data={surveyStatsSummary.suscripciones} totalLabel="Suscripciones" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Action Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
