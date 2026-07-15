@@ -19,6 +19,7 @@ export default function CrmPresentationEditor() {
   const [draggedSlideIdx, setDraggedSlideIdx] = useState(null)
   
   const [loading, setLoading] = useState(true)
+  const [sidebarTab, setSidebarTab] = useState('slide') // 'slide', 'guide', 'ficha'
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -158,6 +159,20 @@ export default function CrmPresentationEditor() {
       }
       return s
     }))
+  }
+
+  const handleUpdateFichaField = (field, value) => {
+    if (!selectedSlide) return
+    const currentFicha = selectedSlide.ficha || {
+      title: selectedSlide.title || '',
+      subtitle: '',
+      summary: '',
+      keyIdeas: [],
+      closingIdea: '',
+      glossary: []
+    }
+    const updatedFicha = { ...currentFicha, [field]: value }
+    handleUpdateSlideField('ficha', updatedFicha)
   }
 
   const handleAddSlide = () => {
@@ -646,153 +661,345 @@ export default function CrmPresentationEditor() {
 
           {/* RIGHT SIDEBAR: Content Editor */}
           {selectedSlide && (
-            <div className="w-80 border border-gray-200 bg-white rounded-2xl p-5 shrink-0 overflow-y-auto shadow-sm space-y-6">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Nombre Diapositiva</label>
-                <input
-                  type="text"
-                  value={selectedSlide.title || ''}
-                  onChange={(e) => handleUpdateSlideField('title', e.target.value)}
-                  placeholder="Diapositiva 1..."
-                  className="form-input border border-gray-200 font-bold"
-                />
+            <div className="w-80 border border-gray-200 bg-white rounded-2xl flex flex-col shrink-0 overflow-hidden shadow-sm">
+              {/* Sidebar Tabs */}
+              <div className="flex border-b border-gray-150 shrink-0 bg-gray-50/50">
+                <button
+                  type="button"
+                  onClick={() => setSidebarTab('slide')}
+                  className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider text-center border-b-2 transition-colors ${sidebarTab === 'slide' ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                >
+                  Diapo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSidebarTab('guide')}
+                  className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider text-center border-b-2 transition-colors ${sidebarTab === 'guide' ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                >
+                  Guía
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSidebarTab('ficha')}
+                  className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider text-center border-b-2 transition-colors ${sidebarTab === 'ficha' ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                >
+                  Ficha
+                </button>
               </div>
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Archivo de Diapositiva (16:9)</label>
-                <div className="space-y-3">
-                  {selectedSlide.mediaUrl ? (
-                    <div className="relative rounded-premium overflow-hidden aspect-video border border-gray-200 bg-black">
-                      <img src={selectedSlide.mediaUrl} className="w-full h-full object-contain" alt="Preview Thumbnail" />
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateSlideField('mediaUrl', '')}
-                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-750 text-white rounded-full transition-colors flex items-center justify-center"
-                        title="Eliminar imagen"
-                      >
-                        <span className="material-symbols-outlined text-sm leading-none">delete</span>
-                      </button>
+              <div className="flex-1 p-5 overflow-y-auto space-y-6">
+                {sidebarTab === 'slide' && (
+                  <>
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Nombre Diapositiva</label>
+                      <input
+                        type="text"
+                        value={selectedSlide.title || ''}
+                        onChange={(e) => handleUpdateSlideField('title', e.target.value)}
+                        placeholder="Diapositiva 1..."
+                        className="form-input border border-gray-200 font-bold"
+                      />
                     </div>
-                  ) : (
-                    <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 hover:border-[var(--color-deep-green)] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-50 flex flex-col items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-3xl text-gray-400">cloud_upload</span>
-                      <span className="text-xs font-bold text-gray-600">Subir diapositiva (JPG/PNG)</span>
-                      <span className="text-[10px] text-gray-450">Relación de aspecto recomendada: 16:9</span>
-                    </div>
-                  )}
-                  
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  {uploading && <span className="text-[10px] text-[var(--color-deep-green)] font-bold animate-pulse">Subiendo archivo...</span>}
-                  
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-gray-450 uppercase">URL Directa de la Imagen</label>
-                    <input
-                      type="text"
-                      value={selectedSlide.mediaUrl || ''}
-                      onChange={(e) => handleUpdateSlideField('mediaUrl', e.target.value)}
-                      placeholder="Pegar URL de la imagen..."
-                      className="form-input border border-gray-200 text-xs py-1.5"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Presenter Checklist Guide */}
-              <div className="border-t border-gray-150 pt-5">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-base">checklist</span>
-                    Guía del Expositor
-                  </label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handleAddSlideToGuide}
-                      className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
-                      title="Agregar diapositiva a la guía"
-                    >
-                      <span className="material-symbols-outlined text-sm leading-none">add_photo_alternate</span>
-                      + Diapo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddGuideItem}
-                      className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
-                      Agregar paso
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {guide.length === 0 ? (
-                    <p className="text-[10px] text-gray-400 italic">No hay pasos creados para esta diapositiva. Agrega uno para usar de guía durante tu presentación.</p>
-                  ) : (
-                    guide.map((item) => (
-                      <div key={item.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl relative space-y-2">
-                        {/* Header of guide item: Action selector and delete */}
-                        <div className="flex items-center justify-between gap-2">
-                          <select
-                            value={item.type}
-                            onChange={(e) => handleUpdateGuideItem(item.id, 'type', e.target.value)}
-                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[10px] font-bold text-gray-700 outline-none focus:border-[var(--color-deep-green)] cursor-pointer"
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Archivo de Diapositiva (16:9)</label>
+                      <div className="space-y-3">
+                        {selectedSlide.mediaUrl ? (
+                          <div className="relative rounded-premium overflow-hidden aspect-video border border-gray-200 bg-black">
+                            <img src={selectedSlide.mediaUrl} className="w-full h-full object-contain" alt="Preview Thumbnail" />
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateSlideField('mediaUrl', '')}
+                              className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-750 text-white rounded-full transition-colors flex items-center justify-center"
+                              title="Eliminar imagen"
+                            >
+                              <span className="material-symbols-outlined text-sm leading-none">delete</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 hover:border-[var(--color-deep-green)] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-50 flex flex-col items-center justify-center gap-2"
                           >
-                            <option value="diapo">🎬 Diapo</option>
-                            <option value="sitio_web">🌐 Sitio Web</option>
-                            <option value="chatgpt">🤖 ChatGPT</option>
-                            <option value="general">📝 Nota / General</option>
-                          </select>
+                            <span className="material-symbols-outlined text-3xl text-gray-400">cloud_upload</span>
+                            <span className="text-xs font-bold text-gray-600">Subir diapositiva (JPG/PNG)</span>
+                            <span className="text-[10px] text-gray-450">Relación de aspecto recomendada: 16:9</span>
+                          </div>
+                        )}
+                        
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        {uploading && <span className="text-[10px] text-[var(--color-deep-green)] font-bold animate-pulse">Subiendo archivo...</span>}
+                        
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-gray-450 uppercase">URL Directa de la Imagen</label>
+                          <input
+                            type="text"
+                            value={selectedSlide.mediaUrl || ''}
+                            onChange={(e) => handleUpdateSlideField('mediaUrl', e.target.value)}
+                            placeholder="Pegar URL de la imagen..."
+                            className="form-input border border-gray-200 text-xs py-1.5"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {sidebarTab === 'guide' && (
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-base">checklist</span>
+                        Guía del Expositor
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleAddSlideToGuide}
+                          className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                          title="Agregar diapositiva a la guía"
+                        >
+                          <span className="material-symbols-outlined text-sm leading-none">add_photo_alternate</span>
+                          + Diapo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddGuideItem}
+                          className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
+                          Agregar paso
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {guide.length === 0 ? (
+                        <p className="text-[10px] text-gray-400 italic">No hay pasos creados para esta diapositiva. Agrega uno para usar de guía durante tu presentación.</p>
+                      ) : (
+                        guide.map((item) => (
+                          <div key={item.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl relative space-y-2">
+                            {/* Header of guide item */}
+                            <div className="flex items-center justify-between gap-2">
+                              <select
+                                value={item.type}
+                                onChange={(e) => handleUpdateGuideItem(item.id, 'type', e.target.value)}
+                                className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-[10px] font-bold text-gray-700 outline-none focus:border-[var(--color-deep-green)] cursor-pointer"
+                              >
+                                <option value="diapo">🎬 Diapo</option>
+                                <option value="sitio_web">🌐 Sitio Web</option>
+                                <option value="chatgpt">🤖 ChatGPT</option>
+                                <option value="general">📝 Nota / General</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteGuideItem(item.id)}
+                                className="text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                                title="Eliminar paso"
+                              >
+                                <span className="material-symbols-outlined text-base leading-none">delete</span>
+                              </button>
+                            </div>
+
+                            <input
+                              type="text"
+                              value={item.title || ''}
+                              onChange={(e) => handleUpdateGuideItem(item.id, 'title', e.target.value)}
+                              placeholder="Título del paso..."
+                              className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
+                            />
+
+                            {(item.type === 'sitio_web' || item.type === 'chatgpt') && (
+                              <input
+                                type="text"
+                                value={item.url || ''}
+                                onChange={(e) => handleUpdateGuideItem(item.id, 'url', e.target.value)}
+                                placeholder="Enlace / URL..."
+                                className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-medium"
+                              />
+                            )}
+
+                            <textarea
+                              value={item.details || ''}
+                              onChange={(e) => handleUpdateGuideItem(item.id, 'details', e.target.value)}
+                              placeholder="Detalle o instrucción..."
+                              className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg h-12 focus:border-[var(--color-deep-green)] outline-none resize-none font-medium leading-normal"
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {sidebarTab === 'ficha' && (() => {
+                  const ficha = selectedSlide.ficha || {
+                    title: selectedSlide.title || '',
+                    subtitle: '',
+                    summary: '',
+                    keyIdeas: [],
+                    closingIdea: '',
+                    glossary: []
+                  }
+                  
+                  return (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Título de la Ficha</label>
+                        <input
+                          type="text"
+                          value={ficha.title || ''}
+                          onChange={(e) => handleUpdateFichaField('title', e.target.value)}
+                          placeholder="Título del tema..."
+                          className="form-input border border-gray-200 font-semibold text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Subtítulo</label>
+                        <input
+                          type="text"
+                          value={ficha.subtitle || ''}
+                          onChange={(e) => handleUpdateFichaField('subtitle', e.target.value)}
+                          placeholder="Descripción breve..."
+                          className="form-input border border-gray-200 text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Resumen</label>
+                        <textarea
+                          value={ficha.summary || ''}
+                          onChange={(e) => handleUpdateFichaField('summary', e.target.value)}
+                          placeholder="Resumen del contenido de la diapositiva..."
+                          className="w-full text-xs p-3 border border-gray-200 rounded-premium h-24 outline-none focus:border-[var(--color-deep-green)] resize-y font-medium"
+                        />
+                      </div>
+
+                      <div className="border-t border-gray-150 pt-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block">Ideas Fuerza</label>
                           <button
                             type="button"
-                            onClick={() => handleDeleteGuideItem(item.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-                            title="Eliminar paso"
+                            onClick={() => {
+                              const currentIdeas = ficha.keyIdeas || []
+                              handleUpdateFichaField('keyIdeas', [...currentIdeas, { title: '', description: '' }])
+                            }}
+                            className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-base leading-none">delete</span>
+                            <span className="material-symbols-outlined text-sm leading-none font-bold">add</span>
+                            Agregar
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {(ficha.keyIdeas || []).map((idea, idx) => (
+                            <div key={idx} className="p-2.5 bg-gray-50 border border-gray-200 rounded-xl relative space-y-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (ficha.keyIdeas || []).filter((_, i) => i !== idx)
+                                  handleUpdateFichaField('keyIdeas', updated)
+                                }}
+                                className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-sm leading-none font-bold">close</span>
+                              </button>
+                              <input
+                                type="text"
+                                value={idea.title || ''}
+                                onChange={(e) => {
+                                  const updated = (ficha.keyIdeas || []).map((idVal, i) => i === idx ? { ...idVal, title: e.target.value } : idVal)
+                                  handleUpdateFichaField('keyIdeas', updated)
+                                }}
+                                placeholder="Idea fuerza / Título..."
+                                className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
+                              />
+                              <textarea
+                                value={idea.description || ''}
+                                onChange={(e) => {
+                                  const updated = (ficha.keyIdeas || []).map((idVal, i) => i === idx ? { ...idVal, description: e.target.value } : idVal)
+                                  handleUpdateFichaField('keyIdeas', updated)
+                                }}
+                                placeholder="Descripción desarrollada..."
+                                className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg h-12 focus:border-[var(--color-deep-green)] outline-none resize-none font-medium leading-normal"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Idea de Cierre</label>
+                        <textarea
+                          value={ficha.closingIdea || ''}
+                          onChange={(e) => handleUpdateFichaField('closingIdea', e.target.value)}
+                          placeholder="Conclusión o frase de cierre..."
+                          className="w-full text-xs p-3 border border-gray-200 rounded-premium h-20 outline-none focus:border-[var(--color-deep-green)] resize-y font-medium"
+                        />
+                      </div>
+
+                      <div className="border-t border-gray-150 pt-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block">Glosario Breve</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentGlos = ficha.glossary || []
+                              handleUpdateFichaField('glossary', [...currentGlos, { term: '', definition: '' }])
+                            }}
+                            className="p-1 hover:bg-gray-100 rounded text-[var(--color-deep-green)] text-xs font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-sm leading-none font-bold">add</span>
+                            Agregar
                           </button>
                         </div>
 
-                        {/* Title input */}
-                        <input
-                          type="text"
-                          value={item.title || ''}
-                          onChange={(e) => handleUpdateGuideItem(item.id, 'title', e.target.value)}
-                          placeholder="Título del paso (ej: ChatGPT gratis vs pago)..."
-                          className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
-                        />
-
-                        {/* URL input for website or chatgpt */}
-                        {(item.type === 'sitio_web' || item.type === 'chatgpt') && (
-                          <input
-                            type="text"
-                            value={item.url || ''}
-                            onChange={(e) => handleUpdateGuideItem(item.id, 'url', e.target.value)}
-                            placeholder={item.type === 'chatgpt' ? "URL/Enlace de ChatGPT (opcional)..." : "Enlace del Sitio Web (ej: google.com)..."}
-                            className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-medium"
-                          />
-                        )}
-
-                        {/* Details textarea */}
-                        <textarea
-                          value={item.details || ''}
-                          onChange={(e) => handleUpdateGuideItem(item.id, 'details', e.target.value)}
-                          placeholder="Detalle o instrucción (ej: Mostrar diferencia de costos)..."
-                          className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg h-12 focus:border-[var(--color-deep-green)] outline-none resize-none font-medium leading-normal"
-                        />
+                        <div className="space-y-3">
+                          {(ficha.glossary || []).map((item, idx) => (
+                            <div key={idx} className="p-2.5 bg-gray-50 border border-gray-200 rounded-xl relative space-y-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (ficha.glossary || []).filter((_, i) => i !== idx)
+                                  handleUpdateFichaField('glossary', updated)
+                                }}
+                                className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-sm leading-none font-bold">close</span>
+                              </button>
+                              <input
+                                type="text"
+                                value={item.term || ''}
+                                onChange={(e) => {
+                                  const updated = (ficha.glossary || []).map((gVal, i) => i === idx ? { ...gVal, term: e.target.value } : gVal)
+                                  handleUpdateFichaField('glossary', updated)
+                                }}
+                                placeholder="Término / Concepto..."
+                                className="w-full text-xs p-1.5 border border-gray-200 rounded-lg focus:border-[var(--color-deep-green)] outline-none font-bold"
+                              />
+                              <textarea
+                                value={item.definition || ''}
+                                onChange={(e) => {
+                                  const updated = (ficha.glossary || []).map((gVal, i) => i === idx ? { ...gVal, definition: e.target.value } : gVal)
+                                  handleUpdateFichaField('glossary', updated)
+                                }}
+                                placeholder="Definición o significado..."
+                                className="w-full text-[10px] p-1.5 border border-gray-200 rounded-lg h-12 focus:border-[var(--color-deep-green)] outline-none resize-none font-medium leading-normal"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}

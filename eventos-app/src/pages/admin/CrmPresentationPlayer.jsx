@@ -1180,220 +1180,333 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     )
   }
 
-  return (
-    <div className="fixed inset-0 bg-[#285A47] text-white flex flex-col overflow-hidden select-none select-none font-sans z-50">
-      
-      {/* Laser Pointer Trail layer */}
-      {laserPointer && (
-        <div 
-          className="absolute w-8 h-8 rounded-full bg-red-600/80 pointer-events-none z-40 transition-all duration-75 blur-sm"
-          style={{
-            left: mousePos.x - 16,
-            top: mousePos.y - 16,
-            boxShadow: '0 0 16px 8px rgba(220, 38, 38, 0.9)'
-          }}
-        />
-      )}
-
-      {/* Main Slide frame */}
-      <div 
-        ref={playerRef}
-        onMouseMove={handleMouseMove}
-        onClick={handleSlideClick}
-        className="flex-1 w-full h-full flex flex-col justify-center items-center relative cursor-pointer"
-        style={{ fontSize: '1.4vw' }}
-      >
-        <div className="w-full aspect-video h-full max-h-[56.25vw] max-w-[177.78vh] flex flex-col justify-between relative">
-          {renderSlideContent(currentSlide)}
-          
-          {/* Drawing Canvas Overlay aligned with slide coordinates */}
-          <canvas
-            ref={canvasRef}
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
-            className={`absolute inset-0 z-30 ${drawingMode ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'}`}
-          />
-
-          {/* Activity Countdown Overlay */}
-          {countdownSecondsLeft > 0 && (
-            <div className="absolute top-6 right-6 z-40 bg-black/85 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-2xl animate-pulse font-mono text-3xl font-black text-yellow-400">
-              <span className="material-symbols-outlined text-3xl text-yellow-400">alarm</span>
-              <span>{Math.floor(countdownSecondsLeft / 60)}:{String(countdownSecondsLeft % 60).padStart(2, '0')}</span>
-            </div>
-          )}
-          
-          {/* Time Up Alert Overlay */}
-          {showTimeUp && (
-            <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-              <div className="bg-red-950/90 border border-red-500/40 rounded-3xl p-8 max-w-sm text-center shadow-2xl animate-bounce">
-                <span className="material-symbols-outlined text-6xl text-red-400 animate-ping mb-3">alarm_on</span>
-                <h3 className="text-3xl font-black text-white tracking-wide uppercase">¡Tiempo Cumplido!</h3>
-                <p className="text-sm text-gray-300 mt-2">La actividad práctica ha finalizado.</p>
-              </div>
-            </div>
-          )}
+  const renderFloatingControls = () => {
+    return (
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-5 flex items-center gap-4 z-40 shadow-2xl transition-opacity hover:opacity-100 opacity-60 duration-300">
+        <div className="flex items-center gap-1.5">
+          <button 
+            onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+            disabled={currentIdx === 0}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30 flex items-center"
+            title="Anterior"
+          >
+            <span className="material-symbols-outlined text-lg leading-none">arrow_back</span>
+          </button>
+          <span className="text-xs font-extrabold text-white/80 min-w-[3rem] text-center">
+            {currentIdx + 1} / {slides.length}
+          </span>
+          <button 
+            onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+            disabled={currentIdx === slides.length - 1}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30 flex items-center"
+            title="Siguiente"
+          >
+            <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
+          </button>
         </div>
+        <div className="w-px h-5 bg-white/20" />
+        
+        {/* Laser & Annotation tools */}
+        {!isPublic && (
+          <>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); setLaserPointer(l => !l); if (drawingMode) setDrawingMode(false); }}
+                className={`p-2 rounded-full transition-colors flex items-center ${laserPointer ? 'bg-red-600 text-white shadow-lg' : 'hover:bg-white/10 text-white/70'}`}
+                title="Puntero Láser (L)"
+              >
+                <span className="material-symbols-outlined text-lg leading-none">flare</span>
+              </button>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); setDrawingMode(d => !d); if (laserPointer) setLaserPointer(false); }}
+                className={`p-2 rounded-full transition-colors flex items-center ${drawingMode ? 'bg-[var(--color-deep-green)] text-white shadow-lg' : 'hover:bg-white/10 text-white/70'}`}
+                title="Anotaciones / Dibujo (D)"
+              >
+                <span className="material-symbols-outlined text-lg leading-none">gesture</span>
+              </button>
+
+              {drawingMode && (
+                <div className="flex items-center gap-1 ml-1 animate-fade-in">
+                  {['#ff0000', '#ffeb3b', '#4caf50', '#ffffff'].map(c => (
+                    <button
+                      key={c}
+                      onClick={() => setDrawColor(c)}
+                      className={`w-4 h-4 rounded-full border border-white/20 transition-transform ${drawColor === c ? 'scale-125 ring-2 ring-white/50' : 'hover:scale-110'}`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleUndo(); }}
+                    className="p-1.5 hover:bg-white/10 rounded-full text-white/80"
+                    title="Deshacer (Ctrl+Z)"
+                  >
+                    <span className="material-symbols-outlined text-sm leading-none">undo</span>
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); clearCanvas(); }}
+                    className="p-1.5 hover:bg-white/10 rounded-full text-red-400"
+                    title="Borrar lienzo"
+                  >
+                    <span className="material-symbols-outlined text-sm leading-none">delete_sweep</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="w-px h-5 bg-white/20" />
+          </>
+        )}
+
+        <button
+          onClick={(e) => { e.stopPropagation(); handleExportPdf(); }}
+          disabled={exportingPdf}
+          className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400 disabled:opacity-50 cursor-pointer flex items-center"
+          title="Descargar diapositivas en PDF"
+        >
+          <span className={`material-symbols-outlined text-lg leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
+            {exportingPdf ? 'sync' : 'picture_as_pdf'}
+          </span>
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+          className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 flex items-center"
+          title="Pantalla Completa (F)"
+        >
+          <span className="material-symbols-outlined text-lg leading-none">
+            {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
+          </span>
+        </button>
+        {!isPublic && (
+          <button
+            onClick={(e) => { e.stopPropagation(); navigate(`/admin/crm/presentaciones/${id}/editar`); }}
+            className="p-2 hover:bg-red-500/25 hover:text-red-300 rounded-full transition-colors text-white/70 flex items-center"
+            title="Salir de la proyección"
+          >
+            <span className="material-symbols-outlined text-lg leading-none">cancel</span>
+          </button>
+        )}
       </div>
+    )
+  }
 
-      {/* FLOAT BAR CONTROLS (Hover to show / auto-hide) */}
-      {isPublic ? (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-5 flex items-center gap-4 z-40 shadow-2xl transition-opacity hover:opacity-100 opacity-60 duration-300">
-          <div className="flex items-center gap-1.5">
-            <button 
-              onClick={prevSlide}
-              disabled={currentIdx === 0}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30"
-              title="Anterior"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">arrow_back</span>
-            </button>
-            <span className="text-xs font-extrabold text-white/80 min-w-[3rem] text-center">
-              {currentIdx + 1} / {slides.length}
-            </span>
-            <button 
-              onClick={nextSlide}
-              disabled={currentIdx === slides.length - 1}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30"
-              title="Siguiente"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
-            </button>
-          </div>
-          <div className="w-px h-5 bg-white/20" />
-          <button
-            onClick={handleExportPdf}
-            disabled={exportingPdf}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400 disabled:opacity-50 cursor-pointer"
-            title="Descargar diapositivas en PDF"
+  if (!isPresenterWindow) {
+    if (isFullscreen) {
+      // Fullscreen view (16:9 full black screen projection)
+      return (
+        <div className="fixed inset-0 bg-black text-white flex flex-col justify-center items-center overflow-hidden z-50 font-sans">
+          {/* Laser Pointer Trail layer */}
+          {laserPointer && (
+            <div 
+              className="absolute w-8 h-8 rounded-full bg-red-600/80 pointer-events-none z-40 transition-all duration-75 blur-sm"
+              style={{
+                left: mousePos.x - 16,
+                top: mousePos.y - 16,
+                boxShadow: '0 0 16px 8px rgba(220, 38, 38, 0.9)'
+              }}
+            />
+          )}
+
+          <div 
+            ref={playerRef}
+            onMouseMove={handleMouseMove}
+            onClick={handleSlideClick}
+            className="w-full aspect-video h-full max-h-[56.25vw] max-w-[177.78vh] flex flex-col justify-between relative cursor-pointer"
+            style={{ fontSize: '1.4vw' }}
           >
-            <span className={`material-symbols-outlined text-lg leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
-              {exportingPdf ? 'sync' : 'picture_as_pdf'}
-            </span>
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"
-            title="Pantalla Completa (F)"
-          >
-            <span className="material-symbols-outlined text-lg leading-none">
-              {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
-            </span>
-          </button>
-        </div>
-      ) : (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 rounded-full py-2 px-5 flex items-center gap-4 z-40 shadow-2xl transition-opacity hover:opacity-100 opacity-20 duration-300">
-          <div className="flex items-center gap-1.5">
-            <button 
-              onClick={prevSlide}
-              disabled={currentIdx === 0}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">arrow_back</span>
-            </button>
-            <span className="text-xs font-extrabold text-white/80 min-w-[3rem] text-center">
-              {currentIdx + 1} / {slides.length}
-            </span>
-            <button 
-              onClick={nextSlide}
-              disabled={currentIdx === slides.length - 1}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white disabled:opacity-30"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">arrow_forward</span>
-            </button>
-          </div>
+            {renderSlideContent(currentSlide)}
+            
+            {/* Drawing Canvas Overlay aligned with slide coordinates */}
+            <canvas
+              ref={canvasRef}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+              className={`absolute inset-0 z-30 ${drawingMode ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'}`}
+            />
 
-          <div className="w-px h-5 bg-white/20" />
-
-          {/* Laser & Annotation tools */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => { setLaserPointer(l => !l); if (drawingMode) setDrawingMode(false); }}
-              className={`p-2 rounded-full transition-colors flex items-center ${laserPointer ? 'bg-red-600 text-white shadow-lg' : 'hover:bg-white/10 text-white/70'}`}
-              title="Puntero Láser (L)"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">flare</span>
-            </button>
-
-            <button
-              onClick={() => { setDrawingMode(d => !d); if (laserPointer) setLaserPointer(false); }}
-              className={`p-2 rounded-full transition-colors flex items-center ${drawingMode ? 'bg-[var(--color-deep-green)] text-white shadow-lg' : 'hover:bg-white/10 text-white/70'}`}
-              title="Anotaciones / Dibujo (D)"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">gesture</span>
-            </button>
-
-            {drawingMode && (
-              <div className="flex items-center gap-1 ml-1 animate-fade-in">
-                {['#ff0000', '#ffeb3b', '#4caf50', '#ffffff'].map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setDrawColor(c)}
-                    className={`w-4 h-4 rounded-full border border-white/20 transition-transform ${drawColor === c ? 'scale-125 ring-2 ring-white/50' : 'hover:scale-110'}`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-                <button 
-                  onClick={handleUndo}
-                  className="p-1.5 hover:bg-white/10 rounded-full text-white/80"
-                  title="Deshacer (Ctrl+Z)"
-                >
-                  <span className="material-symbols-outlined text-sm leading-none">undo</span>
-                </button>
-                <button 
-                  onClick={clearCanvas}
-                  className="p-1.5 hover:bg-white/10 rounded-full text-red-400"
-                  title="Borrar lienzo"
-                >
-                  <span className="material-symbols-outlined text-sm leading-none">delete_sweep</span>
-                </button>
+            {/* Activity Countdown Overlay */}
+            {countdownSecondsLeft > 0 && (
+              <div className="absolute top-6 right-6 z-40 bg-black/85 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-2xl animate-pulse font-mono text-3xl font-black text-yellow-400">
+                <span className="material-symbols-outlined text-3xl text-yellow-400">alarm</span>
+                <span>{Math.floor(countdownSecondsLeft / 60)}:{String(countdownSecondsLeft % 60).padStart(2, '0')}</span>
+              </div>
+            )}
+            
+            {/* Time Up Alert Overlay */}
+            {showTimeUp && (
+              <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+                <div className="bg-red-950/90 border border-red-500/40 rounded-3xl p-8 max-w-sm text-center shadow-2xl animate-bounce">
+                  <span className="material-symbols-outlined text-6xl text-red-400 animate-ping mb-3">alarm_on</span>
+                  <h3 className="text-3xl font-black text-white tracking-wide uppercase">¡Tiempo Cumplido!</h3>
+                  <p className="text-sm text-gray-300 mt-2">La actividad práctica ha finalizado.</p>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="w-px h-5 bg-white/20" />
+          {/* Floating Controls Bar */}
+          {renderFloatingControls()}
+        </div>
+      )
+    }
 
-          <div className="flex items-center gap-1">
+    // Default scrollable reader view (with Ficha de Contenido)
+    const ficha = currentSlide?.ficha || null
+
+    return (
+      <div className="min-h-screen bg-[var(--color-refined-gray)] text-[var(--color-dark-gray)] font-sans pb-16 flex flex-col">
+        {/* Sticky Reader Header */}
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm shrink-0">
+          <div className="flex items-center gap-3">
+            {!isPublic && (
+              <Link
+                to={`/admin/crm/presentaciones/${id}/editar`}
+                className="p-2 border border-gray-200 rounded-premium hover:bg-gray-50 text-[var(--color-dark-gray)] flex items-center"
+              >
+                <span className="material-symbols-outlined text-lg leading-none">arrow_back</span>
+              </Link>
+            )}
+            <div>
+              <h2 className="text-base font-extrabold text-[var(--color-deep-green)] leading-tight">{presentation?.title || 'Presentación'}</h2>
+              <p className="text-[10px] text-gray-450 font-bold uppercase tracking-wider mt-0.5">
+                Diapositiva {currentIdx + 1} de {slides.length}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
             <button
               onClick={handleExportPdf}
               disabled={exportingPdf}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-red-400 disabled:opacity-50 cursor-pointer"
-              title="Descargar diapositivas en PDF"
+              className="px-3.5 py-2 border border-red-250 hover:bg-red-50 disabled:opacity-50 text-xs font-bold text-red-700 rounded-premium flex items-center gap-1.5 transition-colors cursor-pointer flex items-center"
             >
-              <span className={`material-symbols-outlined text-lg leading-none ${exportingPdf ? 'animate-spin' : ''}`}>
+              <span className="material-symbols-outlined text-base leading-none">
                 {exportingPdf ? 'sync' : 'picture_as_pdf'}
               </span>
+              <span>{exportingPdf ? 'Descargando...' : 'Descargar PDF'}</span>
             </button>
-
-            <button
-              onClick={handleOpenPresenterWindow}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"
-              title="Abrir Vista Presentador (P)"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">co_present</span>
-            </button>
-
             <button
               onClick={toggleFullscreen}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70"
-              title="Pantalla Completa (F)"
+              className="px-3.5 py-2 bg-[var(--color-deep-green)] text-white hover:bg-[var(--color-deep-green)]/95 text-xs font-bold rounded-premium flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
-              <span className="material-symbols-outlined text-lg leading-none">
-                {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
-              </span>
-            </button>
-            
-            <button
-              onClick={() => navigate(`/admin/crm/presentaciones/${id}/editar`)}
-              className="p-2 hover:bg-red-500/25 hover:text-red-300 rounded-full transition-colors text-white/70"
-              title="Salir de la proyección"
-            >
-              <span className="material-symbols-outlined text-lg leading-none">cancel</span>
+              <span className="material-symbols-outlined text-base">fullscreen</span>
+              <span>Proyectar</span>
             </button>
           </div>
         </div>
-      )}
-    </div>
-  )
+
+        {/* Slide Reader Section */}
+        <div className="max-w-4xl w-full mx-auto px-4 mt-6 flex flex-col gap-6">
+          {/* 16:9 Slide Player Container */}
+          <div className="bg-black rounded-2xl border border-gray-200 overflow-hidden relative shadow-lg group">
+            <div className="aspect-video w-full flex items-center justify-center">
+              {renderSlideContent(currentSlide)}
+            </div>
+
+            {/* Navigation Overlays */}
+            <button
+              onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+              disabled={currentIdx === 0}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 disabled:opacity-0 transition-opacity z-20"
+              title="Anterior"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+              disabled={currentIdx === slides.length - 1}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 disabled:opacity-0 transition-opacity z-20"
+              title="Siguiente"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_right</span>
+            </button>
+          </div>
+
+          {/* Slide Navigation Dots */}
+          <div className="flex justify-center flex-wrap gap-1.5">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => updateSlideIdx(idx)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  idx === currentIdx 
+                    ? 'bg-[var(--color-deep-green)] w-6' 
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                title={`Ir a diapositiva ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Ficha de Contenido */}
+          {ficha ? (
+            <div className="card p-6 md:p-8 bg-white border border-gray-150 shadow-sm rounded-2xl space-y-6 mt-2">
+              <div className="border-b border-gray-100 pb-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70">Ficha de estudio</span>
+                <h1 className="text-2xl font-extrabold text-[var(--color-deep-green)] mt-1">{ficha.title || currentSlide?.title}</h1>
+                {ficha.subtitle && (
+                  <p className="text-sm font-semibold text-gray-500 mt-1">{ficha.subtitle}</p>
+                )}
+              </div>
+
+              {ficha.summary && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Resumen</h3>
+                  <p className="text-sm text-[var(--color-dark-gray)]/85 leading-relaxed whitespace-pre-line font-medium">
+                    {ficha.summary}
+                  </p>
+                </div>
+              )}
+
+              {ficha.keyIdeas && ficha.keyIdeas.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Ideas Fuerza</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {ficha.keyIdeas.map((idea, idx) => (
+                      <div key={idx} className="p-5 rounded-2xl border border-[var(--color-deep-green)]/8 bg-[var(--color-light-green)]/5 flex flex-col gap-2">
+                        <h4 className="font-bold text-[var(--color-deep-green)] text-sm">{idea.title}</h4>
+                        <p className="text-xs leading-relaxed text-[var(--color-dark-gray)]/80 font-medium whitespace-pre-line">
+                          {idea.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {ficha.closingIdea && (
+                <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100/50 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800/60">Idea de Cierre</h3>
+                  <p className="text-sm font-bold text-emerald-900 leading-relaxed italic">
+                    “{ficha.closingIdea}”
+                  </p>
+                </div>
+              )}
+
+              {ficha.glossary && ficha.glossary.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Glosario Breve</h3>
+                  <div className="divide-y divide-gray-100 border border-gray-150 rounded-2xl overflow-hidden bg-gray-50/50">
+                    {ficha.glossary.map((item, idx) => (
+                      <div key={idx} className="p-4 flex flex-col md:flex-row md:items-start gap-2 md:gap-6">
+                        <span className="font-bold text-xs text-[var(--color-deep-green)] md:w-1/4 shrink-0 uppercase tracking-wider">{item.term}</span>
+                        <p className="text-xs text-[var(--color-dark-gray)]/80 font-medium leading-relaxed md:w-3/4">
+                          {item.definition}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-400 text-xs italic">
+              Esta diapositiva no contiene ficha de estudio adicional.
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 }
