@@ -20,7 +20,7 @@ serve(async (req) => {
     const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
 
     const body = await req.json();
-    const { eventId, subject, message, extraRecipients } = body;
+    const { eventId, subject, message, extraRecipients, testMode, preview } = body;
 
     if (!eventId || !subject || !message) {
       return new Response(JSON.stringify({ error: 'Missing required fields: eventId, subject, message' }), {
@@ -107,6 +107,21 @@ serve(async (req) => {
 
     const fullTemplate = headerHtml + middleHtml + footerHtml;
 
+    // Handle preview mode
+    if (preview === true) {
+      const emailHtml = fullTemplate
+        .replaceAll('\${subject}', subject)
+        .replaceAll('\${message}', message.replace(/\n/g, '<br>')) // Convert text newlines to html
+        .replaceAll('\${nombre}', 'Nombre Destinatario (Prueba)')
+        .replaceAll('{{evento}}', event.title || '')
+        .replaceAll('{{coordinador}}', event.coordinator || 'Leandro Velasques');
+
+      return new Response(JSON.stringify({ success: true, html: emailHtml }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
     // 3. Fetch active registrations
     const { data: registrations, error: regErr } = await supabase
       .from('registrations')
@@ -122,28 +137,35 @@ serve(async (req) => {
     }
 
     // 4. Compile recipients
-    const recipients: Array<{ email: string; name: string }> = [];
+    let recipients: Array<{ email: string; name: string }> = [];
 
-    if (registrations) {
-      registrations.forEach((r) => {
-        const p = r.participants;
-        if (p && p.email) {
-          recipients.push({
-            email: p.email,
-            name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Participante',
-          });
-        }
+    if (testMode === true) {
+      recipients.push({
+        email: 'info@leandrovelasques.com.ar',
+        name: 'Leandro Velasques (Prueba)',
       });
-    }
+    } else {
+      if (registrations) {
+        registrations.forEach((r) => {
+          const p = r.participants;
+          if (p && p.email) {
+            recipients.push({
+              email: p.email,
+              name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Participante',
+            });
+          }
+        });
+      }
 
-    // Add extra recipients if any
-    if (Array.isArray(extraRecipients)) {
-      extraRecipients.forEach((emailStr) => {
-        const clean = emailStr.trim();
-        if (clean && !recipients.some(r => r.email.toLowerCase() === clean.toLowerCase())) {
-          recipients.push({ email: clean, name: 'Invitado' });
-        }
-      });
+      // Add extra recipients if any
+      if (Array.isArray(extraRecipients)) {
+        extraRecipients.forEach((emailStr) => {
+          const clean = emailStr.trim();
+          if (clean && !recipients.some(r => r.email.toLowerCase() === clean.toLowerCase())) {
+            recipients.push({ email: clean, name: 'Invitado' });
+          }
+        });
+      }
     }
 
     if (recipients.length === 0) {
@@ -209,7 +231,7 @@ serve(async (req) => {
           event_id: event.id,
           recipient_email: recipient.email,
           recipient_name: recipient.name,
-          type: 'broadcast',
+          type: testMode ? 'broadcast_test' : 'broadcast',
           subject: subject,
           body: emailHtml,
           status: status,

@@ -34,6 +34,10 @@ export default function EventDetail() {
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [broadcastExtra, setBroadcastExtra] = useState('')
   const [sendingBroadcast, setSendingBroadcast] = useState(false)
+  const [modalTab, setModalTab] = useState('edit')
+  const [loadingPreview, setLoadingPreview] = useState(false)
+  const [previewHtml, setPreviewHtml] = useState('')
+  const [testingBroadcast, setTestingBroadcast] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -161,10 +165,65 @@ export default function EventDetail() {
       setBroadcastMessage('')
       setBroadcastExtra('')
       setShowBroadcastModal(false)
+      setModalTab('edit')
     } catch (err) {
       alert('Error al enviar el comunicado: ' + (err.message || String(err)))
     } finally {
       setSendingBroadcast(false)
+    }
+  }
+
+  const handlePreviewBroadcast = async () => {
+    if (!broadcastSubject.trim() || !broadcastMessage.trim()) {
+      alert('Por favor, escribí un asunto y mensaje primero para poder previsualizar.')
+      setModalTab('edit')
+      return
+    }
+
+    setLoadingPreview(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-broadcast', {
+        body: {
+          eventId: event.id,
+          subject: broadcastSubject,
+          message: broadcastMessage,
+          preview: true
+        }
+      })
+
+      if (error) throw error
+      setPreviewHtml(data.html)
+    } catch (err) {
+      alert('Error al generar la previsualización: ' + (err.message || String(err)))
+      setModalTab('edit')
+    } finally {
+      setLoadingPreview(false)
+    }
+  }
+
+  const handleTestBroadcast = async () => {
+    if (!broadcastSubject.trim() || !broadcastMessage.trim()) {
+      alert('Por favor, completá el asunto y el mensaje antes de enviar la prueba.')
+      return
+    }
+
+    setTestingBroadcast(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-broadcast', {
+        body: {
+          eventId: event.id,
+          subject: broadcastSubject,
+          message: broadcastMessage,
+          testMode: true
+        }
+      })
+
+      if (error) throw error
+      alert('¡Correo de prueba enviado con éxito a tu casilla info@leandrovelasques.com.ar!')
+    } catch (err) {
+      alert('Error al enviar el correo de prueba: ' + (err.message || String(err)))
+    } finally {
+      setTestingBroadcast(false)
     }
   }
 
@@ -533,17 +592,20 @@ export default function EventDetail() {
 
       {/* Broadcast/Comunicado Modal */}
       {showBroadcastModal && (
-        <div className="modal-overlay p-4 z-50">
-          <div className="card p-6 max-w-lg w-full relative animate-fade-in">
+        <div className="modal-overlay p-4 z-50 animate-fade-in">
+          <div className="card p-6 max-w-2xl w-full relative animate-scale-in flex flex-col max-h-[90vh]">
             <button 
-              onClick={() => setShowBroadcastModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => {
+                setShowBroadcastModal(false)
+                setModalTab('edit')
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
 
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-[var(--color-light-green)]/30 flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-light-green)]/30 flex items-center justify-center flex-shrink-0">
                 <span className="material-symbols-outlined text-2xl text-[var(--color-deep-green)]">campaign</span>
               </div>
               <div>
@@ -552,80 +614,161 @@ export default function EventDetail() {
               </div>
             </div>
 
-            <form onSubmit={handleSendBroadcast} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
-                  Asunto del Correo
-                </label>
-                <input 
-                  type="text"
-                  required
-                  placeholder="Ej: Cambio de horario o aula / Nueva información de acceso"
-                  value={broadcastSubject}
-                  onChange={(e) => setBroadcastSubject(e.target.value)}
-                  className="form-input"
-                />
-              </div>
+            {/* Modal Tabs */}
+            <div className="flex border-b border-gray-200/80 mb-5">
+              <button 
+                type="button"
+                onClick={() => setModalTab('edit')}
+                className={`py-2.5 px-4 font-bold text-xs uppercase tracking-wider border-b-2 transition-colors ${modalTab === 'edit' ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              >
+                Redacción
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setModalTab('preview')
+                  handlePreviewBroadcast()
+                }}
+                className={`py-2.5 px-4 font-bold text-xs uppercase tracking-wider border-b-2 transition-colors ${modalTab === 'preview' ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              >
+                Previsualizar
+              </button>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
-                  Mensaje personalizado
-                </label>
-                <textarea 
-                  required
-                  rows="6"
-                  placeholder="Escribí el cuerpo del mensaje. Podés usar texto normal o HTML básico. Los saltos de línea se respetarán en el mail final."
-                  value={broadcastMessage}
-                  onChange={(e) => setBroadcastMessage(e.target.value)}
-                  className="form-input"
-                  style={{ resize: 'vertical', minHeight: '120px' }}
-                />
-              </div>
+            <div className="flex-1 overflow-y-auto pr-1">
+              {modalTab === 'edit' ? (
+                <form onSubmit={handleSendBroadcast} id="broadcast-form" className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                      Asunto del Correo
+                    </label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Ej: Cambio de horario o aula / Nueva información de acceso"
+                      value={broadcastSubject}
+                      onChange={(e) => setBroadcastSubject(e.target.value)}
+                      className="form-input"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
-                  Correos adicionales (Opcional)
-                </label>
-                <input 
-                  type="text"
-                  placeholder="Ej: mail1@test.com, mail2@test.com (separados por coma)"
-                  value={broadcastExtra}
-                  onChange={(e) => setBroadcastExtra(e.target.value)}
-                  className="form-input"
-                />
-                <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">
-                  Envia copias de este correo a personas que no estén inscritas en el evento.
-                </p>
-              </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                      Mensaje personalizado
+                    </label>
+                    <textarea 
+                      required
+                      rows="6"
+                      placeholder="Escribí el cuerpo del mensaje. Podés usar texto normal o HTML básico. Los saltos de línea se respetarán en el mail final."
+                      value={broadcastMessage}
+                      onChange={(e) => setBroadcastMessage(e.target.value)}
+                      className="form-input"
+                      style={{ resize: 'vertical', minHeight: '160px' }}
+                    />
+                  </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                  <div>
+                    <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                      Correos adicionales (Opcional)
+                    </label>
+                    <input 
+                      type="text"
+                      placeholder="Ej: mail1@test.com, mail2@test.com (separados por coma)"
+                      value={broadcastExtra}
+                      onChange={(e) => setBroadcastExtra(e.target.value)}
+                      className="form-input"
+                    />
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">
+                      Envia copias de este correo a personas que no estén inscritas en el evento.
+                    </p>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-xs text-[var(--color-dark-gray)]/60">
+                    Así es como el email llegará a los participantes (con sus respectivos datos dinámicos):
+                  </p>
+                  {loadingPreview ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                      <span className="material-symbols-outlined text-3xl animate-spin text-[var(--color-deep-green)]">sync</span>
+                      <p className="text-sm font-semibold text-[var(--color-dark-gray)]/50">Generando previsualización...</p>
+                    </div>
+                  ) : (
+                    <iframe 
+                      srcDoc={previewHtml} 
+                      className="w-full border border-gray-200 rounded-xl bg-gray-50" 
+                      style={{ height: '360px' }} 
+                      title="Previsualización de Email"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-gray-100 flex-shrink-0">
+              {/* Botón de prueba a la izquierda */}
+              <button 
+                type="button"
+                onClick={handleTestBroadcast}
+                className="btn-secondary !py-2 !px-4 text-xs !bg-amber-50/50 !text-amber-700 !border-amber-200 hover:!bg-amber-600 hover:!text-white"
+                disabled={sendingBroadcast || testingBroadcast || loadingPreview}
+              >
+                {testingBroadcast ? (
+                  <>
+                    <span className="material-symbols-outlined text-xs animate-spin">sync</span>
+                    Enviando prueba...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-xs">mark_email_read</span>
+                    Enviar prueba a mi casilla
+                  </>
+                )}
+              </button>
+
+              <div className="flex gap-2">
                 <button 
                   type="button"
-                  onClick={() => setShowBroadcastModal(false)}
-                  className="btn-secondary !py-2.5"
-                  disabled={sendingBroadcast}
+                  onClick={() => {
+                    setShowBroadcastModal(false)
+                    setModalTab('edit')
+                  }}
+                  className="btn-secondary !py-2 !px-5 text-xs"
+                  disabled={sendingBroadcast || testingBroadcast}
                 >
                   Cancelar
                 </button>
-                <button 
-                  type="submit"
-                  className="btn-primary !py-2.5"
-                  disabled={sendingBroadcast}
-                >
-                  {sendingBroadcast ? (
-                    <>
-                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-sm">send</span>
-                      Enviar a Todos
-                    </>
-                  )}
-                </button>
+                {modalTab === 'edit' ? (
+                  <button 
+                    type="submit"
+                    form="broadcast-form"
+                    className="btn-primary !py-2 !px-5 text-xs"
+                    disabled={sendingBroadcast || testingBroadcast}
+                  >
+                    {sendingBroadcast ? (
+                      <>
+                        <span className="material-symbols-outlined text-xs animate-spin">sync</span>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-xs">send</span>
+                        Enviar a Todos
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    onClick={() => setModalTab('edit')}
+                    className="btn-primary !py-2 !px-5 text-xs"
+                  >
+                    <span className="material-symbols-outlined text-xs">edit</span>
+                    Volver a Editar
+                  </button>
+                )}
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
