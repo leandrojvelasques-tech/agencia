@@ -29,6 +29,11 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true)
   const [modalityCounts, setModalityCounts] = useState({ presencial: 0, virtual: 0 })
   const [feedbackCount, setFeedbackCount] = useState(0)
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false)
+  const [broadcastSubject, setBroadcastSubject] = useState('')
+  const [broadcastMessage, setBroadcastMessage] = useState('')
+  const [broadcastExtra, setBroadcastExtra] = useState('')
+  const [sendingBroadcast, setSendingBroadcast] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -127,6 +132,42 @@ export default function EventDetail() {
     }
   }
 
+  const handleSendBroadcast = async (e) => {
+    e.preventDefault()
+    if (!broadcastSubject.trim() || !broadcastMessage.trim()) {
+      alert('Por favor, completá el asunto y el mensaje.')
+      return
+    }
+
+    setSendingBroadcast(true)
+    try {
+      const extraRecipients = broadcastExtra
+        ? broadcastExtra.split(',').map(email => email.trim()).filter(Boolean)
+        : []
+
+      const { data, error } = await supabase.functions.invoke('send-broadcast', {
+        body: {
+          eventId: event.id,
+          subject: broadcastSubject,
+          message: broadcastMessage,
+          extraRecipients
+        }
+      })
+
+      if (error) throw error
+
+      alert(`¡Mensaje enviado exitosamente a ${data.sentCount} destinatarios!`)
+      setBroadcastSubject('')
+      setBroadcastMessage('')
+      setBroadcastExtra('')
+      setShowBroadcastModal(false)
+    } catch (err) {
+      alert('Error al enviar el comunicado: ' + (err.message || String(err)))
+    } finally {
+      setSendingBroadcast(false)
+    }
+  }
+
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
     { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas', count: null },
@@ -155,6 +196,13 @@ export default function EventDetail() {
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setShowBroadcastModal(true)} 
+            className="btn-ghost !text-[var(--color-deep-green)] hover:!bg-[var(--color-light-green)]/15"
+          >
+            <span className="material-symbols-outlined text-lg">campaign</span>
+            <span className="hidden sm:inline">Enviar Novedad</span>
+          </button>
           <button onClick={() => window.print()} className="btn-ghost">
             <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
             <span className="hidden sm:inline">Exportar</span>
@@ -482,6 +530,105 @@ export default function EventDetail() {
           )}
         </div>
       </div>
+
+      {/* Broadcast/Comunicado Modal */}
+      {showBroadcastModal && (
+        <div className="modal-overlay p-4 z-50">
+          <div className="card p-6 max-w-lg w-full relative animate-fade-in">
+            <button 
+              onClick={() => setShowBroadcastModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-light-green)]/30 flex items-center justify-center">
+                <span className="material-symbols-outlined text-2xl text-[var(--color-deep-green)]">campaign</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[var(--color-dark-gray)]">Enviar Comunicado / Novedad</h3>
+                <p className="text-xs text-[var(--color-dark-gray)]/50">Se enviará a los {stats?.totalRegistered || 0} participantes registrados activos.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSendBroadcast} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                  Asunto del Correo
+                </label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Ej: Cambio de horario o aula / Nueva información de acceso"
+                  value={broadcastSubject}
+                  onChange={(e) => setBroadcastSubject(e.target.value)}
+                  className="form-input"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                  Mensaje personalizado
+                </label>
+                <textarea 
+                  required
+                  rows="6"
+                  placeholder="Escribí el cuerpo del mensaje. Podés usar texto normal o HTML básico. Los saltos de línea se respetarán en el mail final."
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  className="form-input"
+                  style={{ resize: 'vertical', minHeight: '120px' }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-1.5">
+                  Correos adicionales (Opcional)
+                </label>
+                <input 
+                  type="text"
+                  placeholder="Ej: mail1@test.com, mail2@test.com (separados por coma)"
+                  value={broadcastExtra}
+                  onChange={(e) => setBroadcastExtra(e.target.value)}
+                  className="form-input"
+                />
+                <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">
+                  Envia copias de este correo a personas que no estén inscritas en el evento.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button 
+                  type="button"
+                  onClick={() => setShowBroadcastModal(false)}
+                  className="btn-secondary !py-2.5"
+                  disabled={sendingBroadcast}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="btn-primary !py-2.5"
+                  disabled={sendingBroadcast}
+                >
+                  {sendingBroadcast ? (
+                    <>
+                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-sm">send</span>
+                      Enviar a Todos
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
