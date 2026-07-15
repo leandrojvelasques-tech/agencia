@@ -305,37 +305,13 @@ export default function EventParticipants() {
       })
 
       // If status changed to cancelled, trigger cancellation email
-      if (isStatusChanged && form.status === 'cancelled') {
-        try {
-          fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              registrationId: editingParticipant.registrationId,
-              type: 'cancellation'
-            })
-          }).catch(err => console.error('Error triggering cancellation email:', err))
-        } catch (err) {
-          console.error('Error triggering cancellation email:', err)
-        }
-      }
+      // Email cancellation is now handled by Supabase Database Webhook (Edge Function)
+      // No manual fetch needed here.
     } else {
       const newReg = await addParticipantManual(id, payload)
       // If newly added manually, and has email, trigger welcome email
-      if (newReg && payload.email) {
-        try {
-          fetch('/api/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              registrationId: newReg.id,
-              type: 'welcome'
-            })
-          }).catch(err => console.error('Error triggering welcome email:', err))
-        } catch (err) {
-          console.error('Error triggering welcome email:', err)
-        }
-      }
+      // Email welcome is now handled by Supabase Database Webhook (Edge Function)
+      // No manual fetch needed here.
     }
     
     setForm({ first_name: '', last_name: '', email: '', phone: '', notes: '', attendance_mode: 'presencial' })
