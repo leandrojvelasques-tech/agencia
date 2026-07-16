@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useStore } from '../../store/useStore'
 
 const STATUS_CONFIG = {
@@ -8,6 +8,8 @@ const STATUS_CONFIG = {
   viewed: { label: 'Visto por Cliente', color: 'blue', icon: 'visibility' },
   accepted: { label: 'Aprobado', color: 'green', icon: 'check_circle' },
   revision_requested: { label: 'Cambios Solicitados', color: 'orange', icon: 'rate_review' },
+  completed_pending: { label: 'Finalizado (P. Pago)', color: 'amber', icon: 'pending_actions' },
+  completed_paid: { label: 'Finalizado (Pagado)', color: 'emerald', icon: 'task_alt' },
   rejected: { label: 'Rechazado', color: 'red', icon: 'cancel' },
 }
 
@@ -19,10 +21,71 @@ export default function CrmProposalsDashboard() {
   const [copiedId, setCopiedId] = useState(null)
   const [sendingEmailId, setSendingEmailId] = useState(null)
   const [toast, setToast] = useState(null)
+  const [expandedClients, setExpandedClients] = useState({})
 
   useEffect(() => {
     fetchProposals()
   }, [])
+
+  const clientGroups = useMemo(() => {
+    const groups = {}
+    proposals.forEach(p => {
+      const clientName = p.client_name || p.crm_clients?.name || 'Cliente sin nombre'
+      const clientCompany = p.client_company || p.crm_clients?.company || ''
+      const key = p.client_id || clientName
+      if (!groups[key]) {
+        groups[key] = {
+          clientId: p.client_id,
+          clientName,
+          clientCompany,
+          proposals: [],
+          totals: {
+            draft: 0,
+            sent: 0,
+            viewed: 0,
+            accepted: 0,
+            revision_requested: 0,
+            rejected: 0,
+            completed_pending: 0,
+            completed_paid: 0,
+          },
+          counts: {
+            draft: 0,
+            sent: 0,
+            viewed: 0,
+            accepted: 0,
+            revision_requested: 0,
+            rejected: 0,
+            completed_pending: 0,
+            completed_paid: 0,
+          }
+        }
+      }
+      groups[key].proposals.push(p)
+      const status = p.status
+      if (groups[key].totals[status] !== undefined) {
+        groups[key].totals[status] += Number(p.total_amount || 0)
+        groups[key].counts[status] += 1
+      }
+    })
+    return Object.values(groups)
+  }, [proposals])
+
+  const searchedGroups = useMemo(() => {
+    if (!search) return clientGroups
+    const q = search.toLowerCase()
+    return clientGroups.filter(g => 
+      g.clientName.toLowerCase().includes(q) || 
+      g.clientCompany.toLowerCase().includes(q)
+    )
+  }, [clientGroups, search])
+
+  const toggleClientExpand = (key) => {
+    setExpandedClients(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
+  }
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -153,8 +216,9 @@ export default function CrmProposalsDashboard() {
     })
 
   // Summary stats
-  const totalAmount = proposals.reduce((sum, p) => sum + (p.status === 'accepted' ? Number(p.total_amount) : 0), 0)
+  const totalAmount = proposals.reduce((sum, p) => sum + (['accepted', 'completed_pending', 'completed_paid'].includes(p.status) ? Number(p.total_amount) : 0), 0)
   const countAccepted = proposals.filter(p => p.status === 'accepted').length
+  const countCompleted = proposals.filter(p => p.status === 'completed_pending' || p.status === 'completed_paid').length
   const countSent = proposals.filter(p => p.status === 'sent' || p.status === 'viewed').length
   const countPending = proposals.filter(p => p.status === 'draft').length
   const countRevision = proposals.filter(p => p.status === 'revision_requested').length
@@ -192,16 +256,20 @@ export default function CrmProposalsDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Total Aprobado</p>
-          <p className="text-xl md:text-2xl font-extrabold text-[var(--color-deep-green)] mt-1">
-            ${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <p className="text-xl md:text-2xl font-extrabold text-[var(--color-deep-green)] mt-1 font-mono">
+            ${totalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
           </p>
         </div>
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Aprobados</p>
           <p className="text-xl md:text-2xl font-extrabold text-emerald-600 mt-1">{countAccepted}</p>
+        </div>
+        <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Finalizados</p>
+          <p className="text-xl md:text-2xl font-extrabold text-teal-600 mt-1">{countCompleted}</p>
         </div>
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Enviados / Vistos</p>
@@ -242,6 +310,8 @@ export default function CrmProposalsDashboard() {
             <option value="viewed">Visto por Cliente</option>
             <option value="revision_requested">Cambios Solicitados</option>
             <option value="accepted">Aprobado</option>
+            <option value="completed_pending">Finalizado (P. Pago)</option>
+            <option value="completed_paid">Finalizado (Pagado)</option>
             <option value="rejected">Rechazado</option>
           </select>
         </div>
@@ -262,6 +332,13 @@ export default function CrmProposalsDashboard() {
             title="Vista Tablero Kanban"
           >
             <span className="material-symbols-outlined text-sm">view_column</span>
+          </button>
+          <button
+            onClick={() => setViewMode('report')}
+            className={`p-1.5 rounded-md flex items-center transition-all ${viewMode === 'report' ? 'bg-white shadow-sm text-[var(--color-deep-green)]' : 'text-gray-400 hover:text-gray-600'}`}
+            title="Reporte por Cliente"
+          >
+            <span className="material-symbols-outlined text-sm">analytics</span>
           </button>
         </div>
       </div>
@@ -371,7 +448,138 @@ export default function CrmProposalsDashboard() {
             )
           })}
         </div>
-      ) : (
+      ) : viewMode === 'report' ? (
+          <div className="space-y-6 animate-fade-in">
+            {searchedGroups.length === 0 ? (
+              <div className="card p-12 text-center bg-white shadow-sm border border-[var(--color-deep-green)]/5">
+                <span className="material-symbols-outlined text-5xl text-[var(--color-dark-gray)]/20 mb-4 block">groups</span>
+                <p className="text-lg font-semibold text-[var(--color-dark-gray)]/40">No hay datos de clientes para mostrar</p>
+              </div>
+            ) : (
+              searchedGroups.map(group => {
+                const groupKey = group.clientId || group.clientName
+                const isExpanded = !!expandedClients[groupKey]
+                const totalProposalsCount = group.proposals.length
+                const totalClientAmount = group.proposals.reduce((sum, p) => sum + Number(p.total_amount || 0), 0)
+
+                return (
+                  <div key={groupKey} className="card bg-white shadow-sm border border-[var(--color-deep-green)]/5 overflow-hidden">
+                    {/* Client Row / Header */}
+                    <div 
+                      onClick={() => toggleClientExpand(groupKey)}
+                      className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[var(--color-deep-green)]/2 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--color-deep-green)]/8 text-[var(--color-deep-green)] flex items-center justify-center font-bold shrink-0">
+                          <span className="material-symbols-outlined text-xl">person</span>
+                        </div>
+                        <div>
+                          <h3 className="text-base font-extrabold text-[var(--color-dark-gray)] leading-snug">
+                            {group.clientName}
+                          </h3>
+                          {group.clientCompany && (
+                            <p className="text-xs text-[var(--color-dark-gray)]/50 font-semibold">{group.clientCompany}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6 self-end sm:self-auto">
+                        <div className="text-right">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Total Presupuestado</p>
+                          <p className="text-base font-extrabold text-[var(--color-deep-green)] font-mono">
+                            ${totalClientAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                          </p>
+                        </div>
+                        <div className="text-right min-w-[70px]">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Propuestas</p>
+                          <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">{totalProposalsCount}</p>
+                        </div>
+                        <span className="material-symbols-outlined text-gray-400 select-none transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Status breakdown bar */}
+                    <div className="px-5 py-3 bg-[var(--color-refined-gray)]/30 border-t border-b border-gray-100 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-[var(--color-dark-gray)]/70">
+                      <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 uppercase tracking-widest mr-1">Estados:</span>
+                      {Object.entries(STATUS_CONFIG).map(([statusKey, statusCfg]) => {
+                        const count = group.counts[statusKey] || 0
+                        const total = group.totals[statusKey] || 0
+                        if (count === 0) return null
+                        return (
+                          <span key={statusKey} className="flex items-center gap-1.5">
+                            <span className={`status-dot status-dot-${statusCfg.color}`} />
+                            <span>{statusCfg.label}: <strong className="text-[var(--color-deep-green)]">{count}</strong> (${total.toLocaleString('es-AR', { maximumFractionDigits: 0 })})</span>
+                          </span>
+                        )
+                      })}
+                    </div>
+
+                    {/* Expanded Details List */}
+                    {isExpanded && (
+                      <div className="p-4 bg-gray-50/50 border-t border-gray-100 space-y-3">
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 px-2">Detalle de Propuestas</h4>
+                        <div className="overflow-x-auto rounded-xl border border-gray-200/80 bg-white">
+                          <table className="data-table">
+                            <thead>
+                              <tr>
+                                <th>Nro</th>
+                                <th>Título / Propuesta</th>
+                                <th>Fecha/Vencimiento</th>
+                                <th>Estado</th>
+                                <th className="text-right">Monto</th>
+                                <th className="w-28">Acciones</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {group.proposals.map(proposal => {
+                                const pStatusCfg = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft
+                                return (
+                                  <tr key={proposal.id}>
+                                    <td className="font-mono text-xs font-bold text-[var(--color-dark-gray)]/60">
+                                      {proposal.proposal_number ? `#${proposal.proposal_number.toString().padStart(4, '0')}` : '—'}
+                                    </td>
+                                    <td>
+                                      <div className="font-bold text-[var(--color-deep-green)] text-sm">{proposal.title}</div>
+                                      {proposal.subtitle && <div className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">{proposal.subtitle}</div>}
+                                    </td>
+                                    <td className="text-xs text-[var(--color-dark-gray)]/70">
+                                      {proposal.valid_until ? new Date(proposal.valid_until).toLocaleDateString('es-AR') : '—'}
+                                    </td>
+                                    <td>
+                                      <span className={`badge badge-${pStatusCfg.color}`}>
+                                        <span className={`status-dot status-dot-${pStatusCfg.color}`} />
+                                        {pStatusCfg.label}
+                                      </span>
+                                    </td>
+                                    <td className="text-right font-mono font-bold text-sm">
+                                      ${Number(proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td>
+                                      <div className="flex items-center gap-1">
+                                        <Link to={`/admin/presupuestos/${proposal.id}/editar`} className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-[var(--color-deep-green)] flex items-center justify-center" title="Editar">
+                                          <span className="material-symbols-outlined text-base">edit</span>
+                                        </Link>
+                                        <a href={`/presupuesto/${proposal.share_token}`} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-gray-500 flex items-center justify-center" title="Ver Propuesta">
+                                          <span className="material-symbols-outlined text-base">open_in_new</span>
+                                        </a>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        ) : (
         <div className="space-y-4">
           {filtered.map((proposal) => {
             const statusCfg = STATUS_CONFIG[proposal.status] || STATUS_CONFIG.draft

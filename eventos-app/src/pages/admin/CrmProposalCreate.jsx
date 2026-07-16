@@ -602,6 +602,8 @@ export default function CrmProposalCreate() {
                   { value: 'draft', label: 'Borrador' },
                   { value: 'sent', label: 'Enviado' },
                   { value: 'accepted', label: 'Aprobado' },
+                  { value: 'completed_pending', label: 'Finalizado (P. Pago)' },
+                  { value: 'completed_paid', label: 'Finalizado (Pagado)' },
                   { value: 'rejected', label: 'Rechazado' }
                 ].map(st => (
                   <button

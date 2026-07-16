@@ -192,6 +192,22 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(79, 76, 77, 0.1);
   color: var(--color-dark-gray);
 }
+.badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1e3a8a;
+}
+.badge-orange {
+  background: rgba(249, 115, 22, 0.15);
+  color: #7c2d12;
+}
+.badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #78350f;
+}
+.badge-emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #064e3b;
+}
 
 /* Status dot */
 .status-dot {
@@ -204,6 +220,10 @@ h1, h2, h3, h4, h5, h6 {
 .status-dot-yellow { background: #f59e0b; }
 .status-dot-red { background: #ef4444; }
 .status-dot-gray { background: #9ca3af; }
+.status-dot-blue { background: #3b82f6; }
+.status-dot-orange { background: #f97316; }
+.status-dot-amber { background: #f59e0b; }
+.status-dot-emerald { background: #10b981; }
 
 /* Table styles */
 .data-table {
