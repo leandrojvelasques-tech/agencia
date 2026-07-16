@@ -529,6 +529,10 @@ export default function CrmProposalLanding() {
                   </span>
                 </div>
               ))
+            ) : proposal.payment_details?.schedule ? (
+              <div className="p-3.5 text-center text-xs font-semibold text-[var(--color-dark-gray)]/50 rounded-lg bg-[var(--color-refined-gray)]/30 border border-gray-100/80">
+                Sin plan de pagos fraccionado (Pago único al finalizar / contra entrega).
+              </div>
             ) : (
               <>
                 <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">

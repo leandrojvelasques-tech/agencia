@@ -1388,23 +1388,43 @@ export default function CrmProposalCreate() {
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
-                    <div>
-                      <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar)</p>
+                  {(form.payment_details?.schedule && form.payment_details.schedule.length > 0) ? (
+                    form.payment_details.schedule.map((item, idx) => (
+                      <div key={item.id || idx} className={`flex justify-between items-center p-3 rounded-lg ${idx === 0 ? 'bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10' : 'bg-[var(--color-refined-gray)]/50 border border-gray-100'}`}>
+                        <div>
+                          <p className={`font-bold ${idx === 0 ? 'text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]/85'}`}>{item.name}</p>
+                          <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Corresponde al {item.percentage}% del total.</p>
+                        </div>
+                        <span className={`font-mono font-bold ${idx === 0 ? 'text-sm text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]'}`}>
+                          ${(Number(form.total_amount || 0) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    ))
+                  ) : form.payment_details?.schedule ? (
+                    <div className="p-3.5 text-center text-xs font-semibold text-[var(--color-dark-gray)]/50 rounded-lg bg-[var(--color-refined-gray)]/30 border border-gray-100/80">
+                      Sin plan de pagos fraccionado (Pago único al finalizar / contra entrega).
                     </div>
-                    <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
-                      ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
+                        <div>
+                          <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar)</p>
+                        </div>
+                        <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
+                          ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
-                    <div>
-                      <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar)</p>
-                    </div>
-                    <span className="font-mono font-bold text-[var(--color-dark-gray)]">
-                      ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
+                        <div>
+                          <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar)</p>
+                        </div>
+                        <span className="font-mono font-bold text-[var(--color-dark-gray)]">
+                          ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
