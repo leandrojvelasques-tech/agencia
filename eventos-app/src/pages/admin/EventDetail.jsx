@@ -40,6 +40,94 @@ export default function EventDetail() {
   const [previewHtml, setPreviewHtml] = useState('')
   const [testingBroadcast, setTestingBroadcast] = useState(false)
 
+  const surveyStatsSummary = useMemo(() => {
+    if (!registrations || registrations.length === 0) return null
+
+    const titulos = {}
+    const delegaciones = {}
+    const suscripciones = {
+      'Paga': 0,
+      'Gratuita/Ninguna': 0,
+      'No especificado': 0
+    }
+    
+    registrations.forEach(r => {
+      const resp = r.survey_responses || {}
+      
+      // Carrera / Titulo
+      let cleanCarrera = ''
+      const profesionVal = (resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || '').trim()
+      const lowerProf = profesionVal.toLowerCase()
+      
+      if (lowerProf.includes('estudiante')) {
+        cleanCarrera = 'Estudiante'
+      } else if (lowerProf.includes('otro') || lowerProf.includes('externo')) {
+        cleanCarrera = 'Externo'
+      } else {
+        const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
+        cleanCarrera = carreraVal.trim()
+        
+        if (!cleanCarrera || cleanCarrera === '—') {
+          cleanCarrera = profesionVal
+        }
+      }
+      
+      if (!cleanCarrera || cleanCarrera === '—') {
+        cleanCarrera = 'No especificado'
+      }
+
+      titulos[cleanCarrera] = (titulos[cleanCarrera] || 0) + 1
+
+      // Delegacion
+      const delVal = resp['delegacion'] || resp['Delegación'] || resp.delegacion || ''
+      let cleanDel = delVal.trim()
+      if (!cleanDel || cleanDel === '—') {
+        cleanDel = 'No especificado'
+      }
+      delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
+
+      // Suscripciones LLM
+      let subVal = null
+      Object.keys(resp).forEach(k => {
+        const lowerKey = k.toLowerCase()
+        if (lowerKey.includes('suscrip') || lowerKey.includes('pagando') || lowerKey.includes('paga o') || lowerKey.includes('paga/')) {
+          subVal = resp[k]
+        }
+      })
+      
+      if (subVal !== null && subVal !== undefined) {
+        const valStr = String(subVal).trim()
+        const lowerVal = valStr.toLowerCase()
+        
+        const isTrue = subVal === true || lowerVal === 'true' || lowerVal === 'sí' || lowerVal === 'si'
+        const isPaidTerm = lowerVal.includes('paga') || lowerVal.includes('pagando') || lowerVal.includes('suscripción') || lowerVal.includes('suscripcion')
+        const commonServices = ['claude', 'chatgpt', 'gemini', 'julius', 'copilot', 'midjourney', 'pro']
+        const hasService = commonServices.some(service => lowerVal.includes(service))
+        const isNegative = lowerVal.includes('no ') || lowerVal.includes('ningun') || lowerVal.includes('gratis') || lowerVal === 'no'
+        
+        if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
+          suscripciones['Paga'] = (suscripciones['Paga'] || 0) + 1
+        } else if (subVal === false || lowerVal === 'false' || isNegative || lowerVal === '—' || lowerVal === '') {
+          suscripciones['Gratuita/Ninguna'] = (suscripciones['Gratuita/Ninguna'] || 0) + 1
+        } else {
+          suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+        }
+      } else {
+        suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+      }
+    })
+
+    const sortedTitulos = Object.entries(titulos)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    const sortedDelegaciones = Object.entries(delegaciones)
+      .sort((a, b) => b[1] - a[1])
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+
+    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones, suscripciones }
+  }, [registrations])
+
   useEffect(() => {
     async function loadData() {
       setLoading(true)
@@ -229,93 +317,6 @@ export default function EventDetail() {
     }
   }
 
-  const surveyStatsSummary = useMemo(() => {
-    if (!registrations || registrations.length === 0) return null
-
-    const titulos = {}
-    const delegaciones = {}
-    const suscripciones = {
-      'Paga': 0,
-      'Gratuita/Ninguna': 0,
-      'No especificado': 0
-    }
-    
-    registrations.forEach(r => {
-      const resp = r.survey_responses || {}
-      
-      // Carrera / Titulo
-      let cleanCarrera = ''
-      const profesionVal = (resp['Profesión/Ocupación'] || resp['Profesión'] || resp.profesion || '').trim()
-      const lowerProf = profesionVal.toLowerCase()
-      
-      if (lowerProf.includes('estudiante')) {
-        cleanCarrera = 'Estudiante'
-      } else if (lowerProf.includes('otro') || lowerProf.includes('externo')) {
-        cleanCarrera = 'Externo'
-      } else {
-        const carreraVal = resp['Carrera'] || resp.profesion_carrera || resp.profesion_estudiante_carrera || ''
-        cleanCarrera = carreraVal.trim()
-        
-        if (!cleanCarrera || cleanCarrera === '—') {
-          cleanCarrera = profesionVal
-        }
-      }
-      
-      if (!cleanCarrera || cleanCarrera === '—') {
-        cleanCarrera = 'No especificado'
-      }
-
-      titulos[cleanCarrera] = (titulos[cleanCarrera] || 0) + 1
-
-      // Delegacion
-      const delVal = resp['delegacion'] || resp['Delegación'] || resp.delegacion || ''
-      let cleanDel = delVal.trim()
-      if (!cleanDel || cleanDel === '—') {
-        cleanDel = 'No especificado'
-      }
-      delegaciones[cleanDel] = (delegaciones[cleanDel] || 0) + 1
-
-      // Suscripciones LLM
-      let subVal = null
-      Object.keys(resp).forEach(k => {
-        const lowerKey = k.toLowerCase()
-        if (lowerKey.includes('suscrip') || lowerKey.includes('pagando') || lowerKey.includes('paga o') || lowerKey.includes('paga/')) {
-          subVal = resp[k]
-        }
-      })
-      
-      if (subVal !== null && subVal !== undefined) {
-        const valStr = String(subVal).trim()
-        const lowerVal = valStr.toLowerCase()
-        
-        const isTrue = subVal === true || lowerVal === 'true' || lowerVal === 'sí' || lowerVal === 'si'
-        const isPaidTerm = lowerVal.includes('paga') || lowerVal.includes('pagando') || lowerVal.includes('suscripción') || lowerVal.includes('suscripcion')
-        const commonServices = ['claude', 'chatgpt', 'gemini', 'julius', 'copilot', 'midjourney', 'pro']
-        const hasService = commonServices.some(service => lowerVal.includes(service))
-        const isNegative = lowerVal.includes('no ') || lowerVal.includes('ningun') || lowerVal.includes('gratis') || lowerVal === 'no'
-        
-        if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
-          suscripciones['Paga'] = (suscripciones['Paga'] || 0) + 1
-        } else if (subVal === false || lowerVal === 'false' || isNegative || lowerVal === '—' || lowerVal === '') {
-          suscripciones['Gratuita/Ninguna'] = (suscripciones['Gratuita/Ninguna'] || 0) + 1
-        } else {
-          suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
-        }
-      } else {
-        suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
-      }
-    })
-
-    const sortedTitulos = Object.entries(titulos)
-      .sort((a, b) => b[1] - a[1])
-      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
-
-    const sortedDelegaciones = Object.entries(delegaciones)
-      .sort((a, b) => b[1] - a[1])
-      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
-
-    return { titulos: sortedTitulos, delegaciones: sortedDelegaciones, suscripciones }
-  }, [registrations])
 
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
