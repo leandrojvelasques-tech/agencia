@@ -234,7 +234,7 @@ export default function EventLanding() {
             </div>
           </div>
           {(() => {
-            const hasPresencial = event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0' && event.max_capacity_presencial !== null && event.max_capacity_presencial !== undefined;
+            const hasPresencial = event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0';
             if (event.organizer || (hasPresencial && event.location)) {
               return (
                 <div className="mt-4 pt-4 border-t border-[var(--color-deep-green)]/8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in">
