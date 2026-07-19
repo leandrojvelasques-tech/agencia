@@ -418,3 +418,123 @@ CREATE POLICY "Public update crm_proposals" ON crm_proposals
 -- ALTER TABLE crm_proposals DROP CONSTRAINT IF EXISTS crm_proposals_status_check;
 -- ALTER TABLE crm_proposals ADD CONSTRAINT crm_proposals_status_check 
 --   CHECK (status IN ('draft', 'sent', 'viewed', 'accepted', 'rejected', 'revision_requested'));
+
+-- =====================================================
+-- 13. STUDENTS (Alumnos)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS students (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    photo_url TEXT,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    billing_type TEXT NOT NULL CHECK (billing_type IN ('por_clase', 'frecuente', 'pago_mensual')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TRIGGER update_students_updated_at
+    BEFORE UPDATE ON students
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- 14. RECURRING CLASSES (Clases Recurrentes)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS recurring_classes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    day_of_week INTEGER NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    instructor TEXT NOT NULL DEFAULT 'Leandro Velasques',
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TRIGGER update_recurring_classes_updated_at
+    BEFORE UPDATE ON recurring_classes
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- 15. CLASS ENROLLMENTS (Alumnos Estables en Clases)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS class_enrollments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    class_id UUID NOT NULL REFERENCES recurring_classes(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(class_id, student_id)
+);
+
+-- =====================================================
+-- 16. CLASS SESSIONS (Sesiones por Fecha)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS class_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    class_id UUID NOT NULL REFERENCES recurring_classes(id) ON DELETE CASCADE,
+    session_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(class_id, session_date)
+);
+
+-- =====================================================
+-- 17. CLASS ATTENDANCE (Asistencias de Alumnos)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS class_attendance (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id UUID NOT NULL REFERENCES class_sessions(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    status TEXT NOT NULL CHECK (status IN ('present', 'absent', 'late')),
+    marked_by TEXT NOT NULL DEFAULT 'admin',
+    marked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(session_id, student_id)
+);
+
+-- =====================================================
+-- ROW LEVEL SECURITY (RLS) FOR NEW TABLES
+-- =====================================================
+ALTER TABLE students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recurring_classes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_attendance ENABLE ROW LEVEL SECURITY;
+
+-- Admin policies (full access)
+CREATE POLICY "Admin full access students" ON students 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admin full access recurring_classes" ON recurring_classes 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admin full access class_enrollments" ON class_enrollments 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admin full access class_sessions" ON class_sessions 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admin full access class_attendance" ON class_attendance 
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- Public policies (read-only fallbacks)
+CREATE POLICY "Public read students" ON students 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public read recurring_classes" ON recurring_classes 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public read class_enrollments" ON class_enrollments 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public read class_sessions" ON class_sessions 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public read class_attendance" ON class_attendance 
+    FOR SELECT USING (true);
+

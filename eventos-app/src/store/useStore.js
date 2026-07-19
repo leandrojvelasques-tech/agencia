@@ -14,6 +14,10 @@ export const useStore = create((set, get) => ({
   proposals: [],
   agendaTemplates: [],
   crmClients: [],
+  students: [],
+  recurringClasses: [],
+  classSessions: [],
+  classAttendance: [],
 
   // Auth
   login: async (email, password) => {
@@ -696,4 +700,243 @@ export const useStore = create((set, get) => ({
     }
     return { success: false, error }
   },
+
+  // Students Actions
+  fetchStudents: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('first_name', { ascending: true })
+    if (!error && data) {
+      set({ students: data })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  createStudent: async (studentData, enrollmentClassIds = []) => {
+    const { data, error } = await supabase
+      .from('students')
+      .insert([studentData])
+      .select()
+      .single()
+    if (!error && data) {
+      // Create enrollments
+      if (enrollmentClassIds.length > 0) {
+        const enrolls = enrollmentClassIds.map(classId => ({
+          class_id: classId,
+          student_id: data.id
+        }))
+        await supabase.from('class_enrollments').insert(enrolls)
+      }
+      // update state
+      set(state => ({
+        students: [...state.students, data].sort((a, b) => a.first_name.localeCompare(b.first_name))
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  updateStudent: async (id, studentData, enrollmentClassIds = null) => {
+    const { data, error } = await supabase
+      .from('students')
+      .update(studentData)
+      .eq('id', id)
+      .select()
+      .single()
+    if (!error && data) {
+      if (enrollmentClassIds !== null) {
+        // Delete existing and insert new
+        await supabase.from('class_enrollments').delete().eq('student_id', id)
+        if (enrollmentClassIds.length > 0) {
+          const enrolls = enrollmentClassIds.map(classId => ({
+            class_id: classId,
+            student_id: id
+          }))
+          await supabase.from('class_enrollments').insert(enrolls)
+        }
+      }
+      set(state => ({
+        students: state.students.map(s => s.id === id ? data : s)
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  deleteStudent: async (id) => {
+    const { error } = await supabase
+      .from('students')
+      .delete()
+      .eq('id', id)
+    if (!error) {
+      set(state => ({
+        students: state.students.filter(s => s.id !== id)
+      }))
+      return { success: true }
+    }
+    return { success: false, error }
+  },
+
+  // Recurring Classes Actions
+  fetchRecurringClasses: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('recurring_classes')
+      .select('*, class_enrollments(*, students(*))')
+      .order('name', { ascending: true })
+    if (!error && data) {
+      set({ recurringClasses: data })
+    }
+    set({ isLoading: false })
+    return data || []
+  },
+
+  createRecurringClass: async (classData) => {
+    const { data, error } = await supabase
+      .from('recurring_classes')
+      .insert([classData])
+      .select()
+      .single()
+    if (!error && data) {
+      const formatted = { ...data, class_enrollments: [] }
+      set(state => ({
+        recurringClasses: [...state.recurringClasses, formatted].sort((a, b) => a.name.localeCompare(b.name))
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  updateRecurringClass: async (id, classData) => {
+    const { data, error } = await supabase
+      .from('recurring_classes')
+      .update(classData)
+      .eq('id', id)
+      .select()
+      .single()
+    if (!error && data) {
+      set(state => ({
+        recurringClasses: state.recurringClasses.map(c => c.id === id ? { ...c, ...data } : c)
+      }))
+      return { success: true, data }
+    }
+    return { success: false, error }
+  },
+
+  deleteRecurringClass: async (id) => {
+    const { error } = await supabase
+      .from('recurring_classes')
+      .delete()
+      .eq('id', id)
+    if (!error) {
+      set(state => ({
+        recurringClasses: state.recurringClasses.filter(c => c.id !== id)
+      }))
+      return { success: true }
+    }
+    return { success: false, error }
+  },
+
+  // Attendance Actions
+  getOrCreateClassSession: async (classId, dateStr) => {
+    const { data: existing, error } = await supabase
+      .from('class_sessions')
+      .select('*')
+      .eq('class_id', classId)
+      .eq('session_date', dateStr)
+      .maybeSingle()
+    
+    if (existing) return existing
+    
+    const { data: created, error: createError } = await supabase
+      .from('class_sessions')
+      .insert([{ class_id: classId, session_date: dateStr }])
+      .select()
+      .single()
+    
+    if (createError) {
+      console.error("Error creating session:", createError)
+    }
+    return created
+  },
+
+  fetchClassAttendance: async (sessionId) => {
+    const { data, error } = await supabase
+      .from('class_attendance')
+      .select('*')
+      .eq('session_id', sessionId)
+    return data || []
+  },
+
+  saveClassAttendance: async (sessionId, attendanceList) => {
+    const { error: delError } = await supabase
+      .from('class_attendance')
+      .delete()
+      .eq('session_id', sessionId)
+    
+    if (delError) {
+      console.error("Error clearing old attendance:", delError)
+      return { success: false, error: delError }
+    }
+    
+    if (attendanceList.length > 0) {
+      const records = attendanceList.map(a => ({
+        session_id: sessionId,
+        student_id: a.student_id,
+        status: a.status,
+        marked_by: 'admin'
+      }))
+      const { error: insError } = await supabase
+        .from('class_attendance')
+        .insert(records)
+      
+      if (insError) {
+        console.error("Error inserting attendance:", insError)
+        return { success: false, error: insError }
+      }
+    }
+    return { success: true }
+  },
+
+  fetchMonthlyClassReport: async (classId, year, month) => {
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+    const lastDay = new Date(year, month, 0).getDate()
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+
+    const { data: sessions, error: sError } = await supabase
+      .from('class_sessions')
+      .select('*')
+      .eq('class_id', classId)
+      .gte('session_date', startDate)
+      .lte('session_date', endDate)
+      .order('session_date', { ascending: true })
+
+    if (sError) return { sessions: [], attendanceMap: {} }
+
+    if (!sessions || sessions.length === 0) {
+      return { sessions: [], attendanceMap: {} }
+    }
+
+    const sessionIds = sessions.map(s => s.id)
+    const { data: attendance, error: aError } = await supabase
+      .from('class_attendance')
+      .select('*')
+      .in('session_id', sessionIds)
+
+    if (aError) return { sessions, attendanceMap: {} }
+
+    const attendanceMap = {}
+    attendance.forEach(att => {
+      if (!attendanceMap[att.student_id]) {
+        attendanceMap[att.student_id] = {}
+      }
+      attendanceMap[att.student_id][att.session_id] = att.status
+    })
+
+    return { sessions, attendanceMap }
+  }
 }))
+

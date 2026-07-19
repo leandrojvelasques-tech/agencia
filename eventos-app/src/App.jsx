@@ -14,6 +14,7 @@ import EventMinuta from './pages/admin/EventMinuta'
 import EventSatisfaction from './pages/admin/EventSatisfaction'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
+import ClassesDashboard from './pages/admin/ClassesDashboard.jsx'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="eventos/:id/satisfaccion" element={<EventSatisfaction />} />
           <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
           <Route path="configuracion" element={<SettingsDashboard />} />
+          <Route path="clases" element={<ClassesDashboard />} />
           
           {/* CRM Private Routes */}
           <Route path="crm" element={<CrmDashboard />} />

@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore'
 
 const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
+  { to: '/admin/clases', icon: 'fact_check', label: 'Clases y Asistencia' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
   { to: '/admin/presupuestos', icon: 'request_quote', label: 'Presupuestos' },
   { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
