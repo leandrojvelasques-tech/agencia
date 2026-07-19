@@ -56,6 +56,7 @@ export default function EventCreate() {
     requirements: '',
     coordinator: 'Leandro Velasques',
     organizer: '',
+    location: '',
     event_date: '',
     offered_dates: [],
     start_time: '',
@@ -232,6 +233,7 @@ export default function EventCreate() {
             registration_mode: data.registration_mode || 'both',
             max_capacity_presencial: (data.max_capacity_presencial !== null && data.max_capacity_presencial !== undefined) ? data.max_capacity_presencial : '',
             max_capacity_virtual: (data.max_capacity_virtual !== null && data.max_capacity_virtual !== undefined) ? data.max_capacity_virtual : '',
+            location: data.location || '',
             is_public: data.status === 'published' || data.status === 'in_progress',
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
@@ -443,6 +445,7 @@ export default function EventCreate() {
               ...updated,
               max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
               max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
+              location: updated.location || '',
               is_public: updated.status === 'published' || updated.status === 'in_progress',
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
@@ -526,6 +529,7 @@ export default function EventCreate() {
             ...updated,
             max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
             max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
+            location: updated.location || '',
             is_public: updated.status === 'published' || updated.status === 'in_progress',
             show_on_home: updated.show_on_home || false,
             live_link: updated.live_link || '',
@@ -1170,18 +1174,32 @@ export default function EventCreate() {
                   </div>
 
                   {form.max_capacity_presencial !== 0 && form.max_capacity_presencial !== '0' && (
-                    <div className="animate-fade-in pt-2 border-t border-[var(--color-refined-gray)]">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2.5 block">
-                        Cupo Máximo Presencial
-                      </label>
-                      <input
-                        type="number"
-                        className="form-input w-full !py-2.5 !px-3.5 text-sm"
-                        placeholder="Sin límite de cupo (vacío)"
-                        value={form.max_capacity_presencial === 0 ? '' : form.max_capacity_presencial}
-                        onChange={e => update('max_capacity_presencial', e.target.value === '' ? '' : Number(e.target.value))}
-                        min={1}
-                      />
+                    <div className="animate-fade-in pt-2 border-t border-[var(--color-refined-gray)] space-y-3">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2.5 block">
+                          Cupo Máximo Presencial
+                        </label>
+                        <input
+                          type="number"
+                          className="form-input w-full !py-2.5 !px-3.5 text-sm"
+                          placeholder="Sin límite de cupo (vacío)"
+                          value={form.max_capacity_presencial === 0 ? '' : form.max_capacity_presencial}
+                          onChange={e => update('max_capacity_presencial', e.target.value === '' ? '' : Number(e.target.value))}
+                          min={1}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2.5 block">
+                          Dirección / Lugar físico del evento
+                        </label>
+                        <input
+                          type="text"
+                          className="form-input w-full !py-2.5 !px-3.5 text-sm"
+                          placeholder="Ej: Rawson 235, Trelew"
+                          value={form.location || ''}
+                          onChange={e => update('location', e.target.value)}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>

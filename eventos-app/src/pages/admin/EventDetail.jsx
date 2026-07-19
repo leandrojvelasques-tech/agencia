@@ -424,6 +424,12 @@ export default function EventDetail() {
             </div>
           </div>
         </div>
+        {event.location && (
+          <div className="mt-4 pt-4 border-t border-[var(--color-deep-green)]/8 flex items-center gap-2 animate-fade-in">
+            <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">location_on</span>
+            <p className="text-sm font-medium text-[var(--color-dark-gray)]/60">Lugar / Dirección: <span className="font-semibold text-[var(--color-dark-gray)]">{event.location}</span></p>
+          </div>
+        )}
         {event.description_short && (
           <p className="mt-6 pt-6 border-t border-[var(--color-deep-green)]/8 text-sm text-[var(--color-dark-gray)]/70 leading-relaxed">
             {event.description_short}

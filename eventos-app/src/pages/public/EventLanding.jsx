@@ -233,12 +233,33 @@ export default function EventLanding() {
               </div>
             </div>
           </div>
-          {event.organizer && (
-            <div className="mt-4 pt-4 border-t border-[var(--color-deep-green)]/8 flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">apartment</span>
-              <p className="text-sm font-medium text-[var(--color-dark-gray)]/60">Organiza: <span className="font-semibold text-[var(--color-dark-gray)]">{event.organizer}</span></p>
-            </div>
-          )}
+          {(() => {
+            const hasPresencial = event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0' && event.max_capacity_presencial !== null && event.max_capacity_presencial !== undefined;
+            if (event.organizer || (hasPresencial && event.location)) {
+              return (
+                <div className="mt-4 pt-4 border-t border-[var(--color-deep-green)]/8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in">
+                  {event.organizer && (
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">apartment</span>
+                      <p className="text-sm font-medium text-[var(--color-dark-gray)]/60">Organiza: <span className="font-semibold text-[var(--color-dark-gray)]">{event.organizer}</span></p>
+                    </div>
+                  )}
+                  {hasPresencial && event.location && (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 hover:bg-[var(--color-deep-green)]/15 border border-[var(--color-deep-green)]/20 rounded-full transition-all duration-300 w-fit cursor-pointer self-start sm:self-auto shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-base">location_on</span>
+                      <span>Ver ubicación: {event.location}</span>
+                    </a>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
 
 
