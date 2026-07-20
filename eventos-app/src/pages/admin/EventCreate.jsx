@@ -13,9 +13,16 @@ const DEFAULT_SATISFACTION_QUESTIONS = [
   { key: 'score_content', label: 'Interés del Contenido', desc: '¿Qué tan útil y aplicable te resultó el contenido visto?' }
 ]
 
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return 'uuid-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
+}
+
 const normalizeAgenda = (agenda) => {
   if (!agenda || !Array.isArray(agenda) || agenda.length === 0) {
-    return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
+    return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
   }
   // Check if it's already in the new format (each item has a title and a blocks array)
   if ('blocks' in agenda[0]) {
@@ -25,16 +32,16 @@ const normalizeAgenda = (agenda) => {
       end_time: c.end_time || '',
       break_duration: c.break_duration || 0,
       blocks: Array.isArray(c.blocks) ? c.blocks.map(b => ({
-        id: b.id || crypto.randomUUID(),
+        id: b.id || generateUUID(),
         title: b.title || '',
         subtitle: b.subtitle || '',
         description: b.description || ''
-      })) : [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
+      })) : [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
     }))
   }
   // If it's the old format [{ time, block, topic }]
   const blocks = agenda.map((item, idx) => ({
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     title: item.block || `Bloque ${idx + 1}`,
     subtitle: '',
     description: item.topic || ''
@@ -269,7 +276,7 @@ export default function EventCreate() {
     const newClassNum = nextAgenda.length + 1
     return {
       ...prev,
-      agenda: [...nextAgenda, { title: `Clase ${newClassNum}`, start_time: '', end_time: '', break_duration: 0, blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
+      agenda: [...nextAgenda, { title: `Clase ${newClassNum}`, start_time: '', end_time: '', break_duration: 0, blocks: [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
     }
   })
 
@@ -296,7 +303,7 @@ export default function EventCreate() {
       const newBlockNum = nextBlocks.length + 1
       return {
         ...c,
-        blocks: [...nextBlocks, { id: crypto.randomUUID(), title: `Bloque ${newBlockNum}`, subtitle: '', description: '' }]
+        blocks: [...nextBlocks, { id: generateUUID(), title: `Bloque ${newBlockNum}`, subtitle: '', description: '' }]
       }
     })
   }))

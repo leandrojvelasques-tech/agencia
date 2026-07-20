@@ -65,6 +65,38 @@ export default function CoworkerAttendance() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const getClosestDateForDayOfWeek = (targetDayOfWeek) => {
+    const today = new Date()
+    const currentDay = today.getDay()
+    const diff = (currentDay - targetDayOfWeek + 7) % 7
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() - diff)
+    return targetDate.toISOString().split('T')[0]
+  }
+
+  const handleDateChange = (dateVal) => {
+    if (currentClass) {
+      const [year, month, day] = dateVal.split('-').map(Number)
+      const dateObj = new Date(year, month - 1, day)
+      const dateDayOfWeek = dateObj.getDay()
+
+      if (dateDayOfWeek !== currentClass.day_of_week) {
+        const scheduledDayName = DAYS_OF_WEEK.find(d => d.value === currentClass.day_of_week)?.label
+        const selectedDayName = DAYS_OF_WEEK.find(d => d.value === dateDayOfWeek)?.label
+        
+        const confirmChange = window.confirm(
+          `Esta clase está programada para los días [${scheduledDayName}].\n` +
+          `Has seleccionado un día [${selectedDayName}].\n\n` +
+          `¿Estás seguro de que deseas registrar la asistencia en esta fecha?`
+        )
+        if (!confirmChange) {
+          return
+        }
+      }
+    }
+    setSelectedDate(dateVal)
+  }
+
   // Load Class details on mount
   useEffect(() => {
     if (token) {
@@ -72,6 +104,14 @@ export default function CoworkerAttendance() {
       loadAllActiveStudents()
     }
   }, [token])
+
+  // Default date to closest matching day of week when class loads
+  useEffect(() => {
+    if (currentClass) {
+      const defaultDate = getClosestDateForDayOfWeek(currentClass.day_of_week)
+      setSelectedDate(defaultDate)
+    }
+  }, [currentClass])
 
   // Load attendance whenever date or class is loaded
   useEffect(() => {
@@ -302,7 +342,7 @@ export default function CoworkerAttendance() {
           <input
             type="date"
             value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
+            onChange={e => handleDateChange(e.target.value)}
             className="w-full text-sm font-semibold bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-3 py-3 text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
           />
         </div>

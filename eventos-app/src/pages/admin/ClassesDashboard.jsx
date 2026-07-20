@@ -113,6 +113,7 @@ export default function ClassesDashboard() {
   const [currentSession, setCurrentSession] = useState(null)
   const [studentSearchQuery, setStudentSearchQuery] = useState('')
   const [studentSearchResults, setStudentSearchResults] = useState([])
+  const [monthlySummary, setMonthlySummary] = useState({ sessions: [], attendanceMap: {} })
 
   // Reports Tab State
   const [reportClassId, setReportClassId] = useState('')
@@ -141,6 +142,67 @@ export default function ClassesDashboard() {
       }
     })
   }, [])
+
+  const getClosestDateForDayOfWeek = (targetDayOfWeek) => {
+    const today = new Date()
+    const currentDay = today.getDay()
+    const diff = (currentDay - targetDayOfWeek + 7) % 7
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() - diff)
+    return targetDate.toISOString().split('T')[0]
+  }
+
+  const loadMonthlySummary = async (classId) => {
+    try {
+      const now = new Date()
+      const data = await fetchMonthlyClassReport(classId, now.getFullYear(), now.getMonth() + 1)
+      setMonthlySummary(data || { sessions: [], attendanceMap: {} })
+    } catch (err) {
+      console.error("Error loading monthly summary:", err)
+    }
+  }
+
+  const handleDateChange = (dateVal) => {
+    const selectedClass = recurringClasses.find(c => c.id === selectedClassId)
+    if (selectedClass) {
+      const [year, month, day] = dateVal.split('-').map(Number)
+      const dateObj = new Date(year, month - 1, day)
+      const dateDayOfWeek = dateObj.getDay()
+
+      if (dateDayOfWeek !== selectedClass.day_of_week) {
+        const scheduledDayName = DAYS_OF_WEEK.find(d => d.value === selectedClass.day_of_week)?.label
+        const selectedDayName = DAYS_OF_WEEK.find(d => d.value === dateDayOfWeek)?.label
+        
+        const confirmChange = window.confirm(
+          `Esta clase está programada para los días [${scheduledDayName}].\n` +
+          `Has seleccionado un día [${selectedDayName}].\n\n` +
+          `¿Estás seguro de que deseas registrar la asistencia en esta fecha?`
+        )
+        if (!confirmChange) {
+          return
+        }
+      }
+    }
+    setSelectedDate(dateVal)
+  }
+
+  // Default date to closest matching day of week when class changes
+  useEffect(() => {
+    if (selectedClassId) {
+      const cls = recurringClasses.find(c => c.id === selectedClassId)
+      if (cls) {
+        const defaultDate = getClosestDateForDayOfWeek(cls.day_of_week)
+        setSelectedDate(defaultDate)
+      }
+    }
+  }, [selectedClassId])
+
+  // Fetch monthly summary when class changes or recurringClasses changes
+  useEffect(() => {
+    if (selectedClassId) {
+      loadMonthlySummary(selectedClassId)
+    }
+  }, [selectedClassId, recurringClasses])
 
   // ---------------------------------------------------
   // ATTENDANCE TAB LOGIC
@@ -697,6 +759,112 @@ export default function ClassesDashboard() {
 
       {activeTab === 'attendance' && (
         <div className="space-y-6">
+          {/* Resumen Mensual de Asistencia */}
+          {selectedClassId && monthlySummary.sessions && monthlySummary.sessions.length > 0 && (
+            <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 space-y-4 shadow-sm">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">
+                  Resumen de Clases - {MONTHS.find(m => m.value === (new Date().getMonth() + 1))?.label} {new Date().getFullYear()}
+                </h3>
+                <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
+                  {monthlySummary.sessions.length} Clases Dictadas
+                </span>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+                {monthlySummary.sessions.map(s => {
+                  let presentCount = 0
+                  let lateCount = 0
+                  let absentCount = 0
+                  const presentStudents = []
+
+                  students.forEach(student => {
+                    const isEnrolled = recurringClasses.find(c => c.id === selectedClassId)?.class_enrollments?.some(ce => ce.student_id === student.id)
+                    const status = monthlySummary.attendanceMap[student.id]?.[s.id]
+                    
+                    if (status === 'present') {
+                      presentCount++
+                      presentStudents.push(student)
+                    } else if (status === 'late') {
+                      lateCount++
+                      presentStudents.push(student)
+                    } else if (status === 'absent') {
+                      absentCount++
+                    } else if (isEnrolled) {
+                      absentCount++
+                    }
+                  })
+
+                  const [year, month, day] = s.session_date.split('-').map(Number)
+                  const dateObj = new Date(year, month - 1, day)
+                  const dayName = DAYS_OF_WEEK.find(d => d.value === dateObj.getDay())?.label?.substring(0, 3)
+
+                  return (
+                    <div 
+                      key={s.id} 
+                      onClick={() => setSelectedDate(s.session_date)}
+                      className={`flex-shrink-0 card p-3.5 bg-[var(--color-refined-gray)]/50 border border-gray-100 rounded-premium w-[150px] cursor-pointer hover:border-[var(--color-deep-green)]/30 hover:bg-white transition-all group ${
+                        selectedDate === s.session_date ? 'ring-2 ring-[var(--color-deep-green)]/20 bg-white border-[var(--color-deep-green)]/20' : ''
+                      }`}
+                    >
+                      <p className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 uppercase tracking-wide group-hover:text-[var(--color-deep-green)]/60 transition-colors">
+                        {dayName} {day}
+                      </p>
+                      <div className="mt-2.5 space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-[var(--color-dark-gray)]">{presentCount + lateCount}</span>
+                          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Presentes</span>
+                        </div>
+                        {lateCount > 0 && (
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-semibold text-amber-600">{lateCount} tarde</span>
+                          </div>
+                        )}
+                        {absentCount > 0 && (
+                          <div className="flex items-center justify-between text-[10px] text-[var(--color-dark-gray)]/40">
+                            <span>{absentCount} ausentes</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {presentStudents.length > 0 && (
+                        <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center">
+                          <div className="flex -space-x-1.5 overflow-hidden">
+                            {presentStudents.slice(0, 3).map(ps => {
+                              const av = getAvatarProps(ps.first_name, ps.last_name)
+                              return ps.photo_url ? (
+                                <img
+                                  key={ps.id}
+                                  src={ps.photo_url}
+                                  alt={`${ps.first_name} ${ps.last_name}`}
+                                  title={`${ps.first_name} ${ps.last_name}`}
+                                  className="inline-block h-5 w-5 rounded-full ring-2 ring-white object-cover"
+                                />
+                              ) : (
+                                <div
+                                  key={ps.id}
+                                  title={`${ps.first_name} ${ps.last_name}`}
+                                  className="inline-block h-5 w-5 rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-bold"
+                                  style={av.style}
+                                >
+                                  {av.initials}
+                                </div>
+                              )
+                            })}
+                          </div>
+                          {presentStudents.length > 3 && (
+                            <span className="text-[9px] font-bold text-[var(--color-dark-gray)]/40 ml-1.5">
+                              +{presentStudents.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
@@ -719,7 +887,7 @@ export default function ClassesDashboard() {
                 <input
                   type="date"
                   value={selectedDate}
-                  onChange={e => setSelectedDate(e.target.value)}
+                  onChange={e => handleDateChange(e.target.value)}
                   className="w-full text-sm font-semibold bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-3 py-3 text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
                 />
               </div>

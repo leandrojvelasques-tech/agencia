@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
-import { exportPresentationToPdf } from '../../lib/pdfExport'
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return 'uuid-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
+}
 
 export default function CrmPresentationsDashboard() {
   const navigate = useNavigate()
@@ -74,7 +76,7 @@ export default function CrmPresentationsDashboard() {
 
     const initialSlides = [
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         layout: 'image',
         title: 'Diapositiva 1',
         mediaUrl: '',

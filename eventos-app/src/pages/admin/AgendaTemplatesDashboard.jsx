@@ -1,15 +1,25 @@
+import { useState, useEffect } from 'react'
+import { useStore } from '../../store/useStore'
+
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return 'uuid-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
+}
+
 const sanitizeAgenda = (agenda) => {
   if (!agenda || !Array.isArray(agenda)) return []
   return agenda.map(session => ({
     ...session,
     blocks: Array.isArray(session.blocks) 
       ? session.blocks.map(block => ({
-          id: block.id || crypto.randomUUID(),
+          id: block.id || generateUUID(),
           title: block.title || '',
           subtitle: block.subtitle || '',
           description: block.description || ''
         }))
-      : [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
+      : [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
   }))
 }
 
@@ -52,7 +62,7 @@ export default function AgendaTemplatesDashboard() {
           start_time: '18:00',
           end_time: '21:00',
           break_duration: 15,
-          blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
+          blocks: [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
         }
       ]
     })
@@ -87,7 +97,7 @@ export default function AgendaTemplatesDashboard() {
           start_time: '18:00',
           end_time: '21:00',
           break_duration: 0,
-          blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
+          blocks: [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
         }
       ]
     }))
@@ -117,7 +127,7 @@ export default function AgendaTemplatesDashboard() {
       const blockNumber = updatedAgenda[classIdx].blocks.length + 1
       updatedAgenda[classIdx].blocks = [
         ...updatedAgenda[classIdx].blocks,
-        { id: crypto.randomUUID(), title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
+        { id: generateUUID(), title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
       ]
       return { ...prev, agenda: updatedAgenda }
     })

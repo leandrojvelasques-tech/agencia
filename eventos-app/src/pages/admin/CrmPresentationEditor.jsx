@@ -3,6 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { exportPresentationToPdf } from '../../lib/pdfExport'
 
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return 'uuid-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
+}
+
 const LAYOUTS = [
   { id: 'image', name: 'Solo Imagen (16:9)', icon: 'image', desc: 'Diapositiva prediseñada de 16:9' }
 ]
@@ -160,7 +167,7 @@ export default function CrmPresentationEditor() {
 
   const handleAddGuideItem = () => {
     const newItem = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       type: 'diapo',
       title: '',
       details: ''
@@ -170,7 +177,7 @@ export default function CrmPresentationEditor() {
 
   const handleAddSlideToGuide = () => {
     const newItem = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       type: 'diapo',
       title: selectedSlide?.title || 'Diapositiva',
       details: ''
@@ -241,7 +248,7 @@ export default function CrmPresentationEditor() {
 
   const handleAddSlide = () => {
     const newSlide = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       layout: 'image',
       title: 'Diapositiva ' + (slides.length + 1),
       mediaUrl: '',
@@ -258,7 +265,7 @@ export default function CrmPresentationEditor() {
     if (!selectedSlide) return
     const duplicated = {
       ...selectedSlide,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       title: `${selectedSlide.title} (Copia)`
     }
     const idx = slides.findIndex(s => s.id === selectedSlideId)
@@ -353,7 +360,7 @@ export default function CrmPresentationEditor() {
           .getPublicUrl(fileName)
         
         newImportedSlides.push({
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           layout: 'image',
           pill: '',
           title: file.name.split('.')[0],
