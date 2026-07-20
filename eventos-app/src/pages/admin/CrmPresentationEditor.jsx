@@ -30,20 +30,29 @@ export default function CrmPresentationEditor() {
   const fileInputRef = useRef(null)
   const slidesImportInputRef = useRef(null)
 
+  const [agendaTemplates, setAgendaTemplates] = useState([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [eventAgenda, setEventAgenda] = useState([])
+
   useEffect(() => {
-    async function loadEvents() {
+    async function loadEventsAndTemplates() {
       try {
-        const { data, error } = await supabase
+        const { data: eventsData } = await supabase
           .from('events')
           .select('id, title, event_date')
           .order('event_date', { ascending: false })
-        if (error) throw error
-        setEvents(data || [])
+        setEvents(eventsData || [])
+
+        const { data: templatesData } = await supabase
+          .from('agenda_templates')
+          .select('id, name, agenda')
+          .order('name', { ascending: true })
+        setAgendaTemplates(templatesData || [])
       } catch (err) {
-        console.error('Error loading events:', err)
+        console.error('Error loading events/templates:', err)
       }
     }
-    loadEvents()
+    loadEventsAndTemplates()
   }, [])
 
   const showToast = (message, type = 'success') => {
@@ -78,6 +87,10 @@ export default function CrmPresentationEditor() {
           setSlides(loadedSlides)
           if (loadedSlides.length > 0) {
             setSelectedSlideId(loadedSlides[0].id)
+            const firstTemplateId = loadedSlides.find(s => s.agendaTemplateId)?.agendaTemplateId
+            if (firstTemplateId) {
+              setSelectedTemplateId(firstTemplateId)
+            }
           }
         }
       } catch (err) {
@@ -89,6 +102,57 @@ export default function CrmPresentationEditor() {
     }
     load()
   }, [id, isEdit])
+
+  useEffect(() => {
+    async function fetchAgenda() {
+      if (!eventId) {
+        setEventAgenda([])
+        return
+      }
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('agenda')
+          .eq('id', eventId)
+          .single()
+        if (!error && data) {
+          setEventAgenda(data.agenda || [])
+        }
+      } catch (err) {
+        console.error('Error fetching event agenda:', err)
+      }
+    }
+    fetchAgenda()
+  }, [eventId])
+
+  useEffect(() => {
+    if (selectedSlide?.agendaTemplateId) {
+      setSelectedTemplateId(selectedSlide.agendaTemplateId)
+    }
+  }, [selectedSlideId])
+
+  // Get blocks from event agenda
+  const eventBlocks = Array.isArray(eventAgenda)
+    ? eventAgenda.flatMap(session => session.blocks || []).map(b => ({ ...b, source: 'event' }))
+    : []
+
+  // Get blocks from selected template agenda
+  const selectedTemplate = agendaTemplates.find(t => t.id === selectedTemplateId)
+  const templateBlocks = selectedTemplate && Array.isArray(selectedTemplate.agenda)
+    ? selectedTemplate.agenda.flatMap(session => session.blocks || []).map(b => ({ ...b, source: 'template' }))
+    : []
+
+  // Combined blocks
+  const blocksList = [...eventBlocks, ...templateBlocks]
+
+  const getSlideBlockInfo = (slide) => {
+    if (!slide) return { bloque: '', tema: '' }
+    const block = blocksList.find(b => (b.id || b.title) === slide.blockId)
+    return {
+      bloque: block ? block.title : (slide.bloque || ''),
+      tema: block ? (block.subtitle || '') : (slide.tema || '')
+    }
+  }
 
   const selectedSlide = slides.find(s => s.id === selectedSlideId)
 
@@ -394,27 +458,30 @@ export default function CrmPresentationEditor() {
       )
     }
 
-    const { mediaUrl, bloque, tema } = selectedSlide
+    const { mediaUrl } = selectedSlide
+    const blockInfo = getSlideBlockInfo(selectedSlide)
+    const displayBloque = blockInfo.bloque
+    const displayTema = blockInfo.tema
 
     return (
       <div 
         className="absolute inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-2xl border border-gray-800 shadow-2xl"
       >
         {/* Bloque and Tema Overlay */}
-        {(bloque || tema) && (
+        {(displayBloque || displayTema) && (
           <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 select-none pointer-events-none max-w-[80%]">
-            {bloque && (
+            {displayBloque && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C1]"></span>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[150px]" title={bloque}>
-                  {bloque}
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[150px]" title={displayBloque}>
+                  {displayBloque}
                 </span>
               </div>
             )}
-            {tema && (
+            {displayTema && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg text-white">
-                <span className="text-[10px] font-bold tracking-wide truncate max-w-[200px]" title={tema}>
-                  {tema}
+                <span className="text-[10px] font-bold tracking-wide truncate max-w-[200px]" title={displayTema}>
+                  {displayTema}
                 </span>
               </div>
             )}
@@ -574,26 +641,29 @@ export default function CrmPresentationEditor() {
                       </span>
                     </div>
                     <p className="text-xs font-bold text-[var(--color-deep-green)] truncate">{s.title || 'Sin Título'}</p>
-                    {(s.bloque || s.tema) && (
-                      <div className="flex flex-wrap gap-1 mt-0.5 select-none pointer-events-none">
-                        {s.bloque && (
-                          <span 
-                            className="text-[8px] bg-[var(--color-deep-green)]/10 text-[var(--color-deep-green)] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide truncate max-w-[90px]" 
-                            title={s.bloque}
-                          >
-                            {s.bloque}
-                          </span>
-                        )}
-                        {s.tema && (
-                          <span 
-                            className="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium truncate max-w-[90px]" 
-                            title={s.tema}
-                          >
-                            {s.tema}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {(() => {
+                      const blockInfo = getSlideBlockInfo(s)
+                      return (blockInfo.bloque || blockInfo.tema) && (
+                        <div className="flex flex-wrap gap-1 mt-0.5 select-none pointer-events-none">
+                          {blockInfo.bloque && (
+                            <span 
+                              className="text-[8px] bg-[var(--color-deep-green)]/10 text-[var(--color-deep-green)] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide truncate max-w-[90px]" 
+                              title={blockInfo.bloque}
+                            >
+                              {blockInfo.bloque}
+                            </span>
+                          )}
+                          {blockInfo.tema && (
+                            <span 
+                              className="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium truncate max-w-[90px]" 
+                              title={blockInfo.tema}
+                            >
+                              {blockInfo.tema}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })()}
                     <p className="text-[9px] text-[var(--color-dark-gray)]/50 capitalize font-medium">{s.layout}</p>
                   </div>
                 )
@@ -746,28 +816,153 @@ export default function CrmPresentationEditor() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Bloque</label>
-                        <input
-                          type="text"
-                          value={selectedSlide.bloque || ''}
-                          onChange={(e) => handleUpdateSlideField('bloque', e.target.value)}
-                          placeholder="Bloque 1..."
-                          className="form-input border border-gray-200 text-xs font-semibold"
-                        />
+                    {/* Source Selection: Event or Template */}
+                    <div className="space-y-3 p-3.5 bg-gray-50 border border-gray-150 rounded-xl">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-405 block">Origen de Bloques</span>
+                      
+                      {/* Agenda Template selector */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-bold text-gray-450 uppercase">Plantilla de Agenda</label>
+                        <select
+                          value={selectedTemplateId}
+                          onChange={(e) => {
+                            const tId = e.target.value
+                            setSelectedTemplateId(tId)
+                          }}
+                          className="bg-white border border-gray-250 rounded-premium px-2.5 py-1.5 text-xs text-[var(--color-dark-gray)] outline-none focus:border-[var(--color-deep-green)] cursor-pointer font-semibold"
+                        >
+                          <option value="">-- Sin Plantilla --</option>
+                          {agendaTemplates.map(t => (
+                            <option key={t.id} value={t.id}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                      <div>
-                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Tema</label>
-                        <input
-                          type="text"
-                          value={selectedSlide.tema || ''}
-                          onChange={(e) => handleUpdateSlideField('tema', e.target.value)}
-                          placeholder="Tema 1.1..."
-                          className="form-input border border-gray-200 text-xs font-semibold"
-                        />
-                      </div>
+
+                      {/* Event Agenda indication */}
+                      {eventId && (
+                        <div className="text-[9px] text-gray-500 font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg p-2 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm leading-none">check_circle</span>
+                          <span>Agenda del Evento cargada ({eventBlocks.length} bloques).</span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Block selection dropdown */}
+                    {blocksList.length > 0 ? (
+                      <div className="space-y-3.5">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Seleccionar Bloque</label>
+                          <select
+                            value={selectedSlide.blockId || ''}
+                            onChange={(e) => {
+                              const bId = e.target.value
+                              const block = blocksList.find(b => (b.id || b.title) === bId)
+                              
+                              if (block) {
+                                setSlides(prev => prev.map(s => {
+                                  if (s.id === selectedSlideId) {
+                                    return { 
+                                      ...s, 
+                                      blockId: block.id, 
+                                      agendaTemplateId: block.source === 'template' ? selectedTemplateId : '',
+                                      bloque: block.title,
+                                      tema: block.subtitle || ''
+                                    }
+                                  }
+                                  return s
+                                }))
+                              } else {
+                                setSlides(prev => prev.map(s => {
+                                  if (s.id === selectedSlideId) {
+                                    return { 
+                                      ...s, 
+                                      blockId: '', 
+                                      agendaTemplateId: '',
+                                      bloque: '',
+                                      tema: ''
+                                    }
+                                  }
+                                  return s
+                                }))
+                              }
+                            }}
+                            className="bg-white border border-gray-250 rounded-premium px-2.5 py-1.5 text-xs text-[var(--color-dark-gray)] outline-none focus:border-[var(--color-deep-green)] cursor-pointer font-bold"
+                          >
+                            <option value="">-- Ninguno / Personalizado --</option>
+                            {eventBlocks.length > 0 && (
+                              <optgroup label="Bloques del Evento">
+                                {eventBlocks.map(b => (
+                                  <option key={b.id || b.title} value={b.id || b.title}>
+                                    {b.title}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
+                            {templateBlocks.length > 0 && (
+                              <optgroup label={`Bloques de: ${selectedTemplate?.name}`}>
+                                {templateBlocks.map(b => (
+                                  <option key={b.id || b.title} value={b.id || b.title}>
+                                    {b.title}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
+                          </select>
+                        </div>
+
+                        {/* If no block is selected (custom text), show normal inputs */}
+                        {!selectedSlide.blockId && (
+                          <div className="grid grid-cols-2 gap-3 bg-gray-50/50 p-3 rounded-xl border border-gray-200 border-dashed">
+                            <div>
+                              <label className="text-[9px] font-bold uppercase text-gray-450 block mb-1">Bloque Manual</label>
+                              <input
+                                type="text"
+                                value={selectedSlide.bloque || ''}
+                                onChange={(e) => handleUpdateSlideField('bloque', e.target.value)}
+                                placeholder="Bloque 1..."
+                                className="form-input border border-gray-200 text-xs font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold uppercase text-gray-450 block mb-1">Tema Manual</label>
+                              <input
+                                type="text"
+                                value={selectedSlide.tema || ''}
+                                onChange={(e) => handleUpdateSlideField('tema', e.target.value)}
+                                placeholder="Tema 1.1..."
+                                className="form-input border border-gray-200 text-xs font-semibold"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Fallback manual inputs if no blocks are available in event/templates */
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Bloque</label>
+                          <input
+                            type="text"
+                            value={selectedSlide.bloque || ''}
+                            onChange={(e) => handleUpdateSlideField('bloque', e.target.value)}
+                            placeholder="Bloque 1..."
+                            className="form-input border border-gray-200 text-xs font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Tema</label>
+                          <input
+                            type="text"
+                            value={selectedSlide.tema || ''}
+                            onChange={(e) => handleUpdateSlideField('tema', e.target.value)}
+                            placeholder="Tema 1.1..."
+                            className="form-input border border-gray-200 text-xs font-semibold"
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-2">Archivo de Diapositiva (16:9)</label>

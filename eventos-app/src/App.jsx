@@ -39,6 +39,7 @@ import EventFeedback from './pages/public/EventFeedback'
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
 import CrmProposalLanding from './pages/public/CrmProposalLanding'
+import CoworkerAttendance from './pages/public/CoworkerAttendance'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -117,6 +118,7 @@ export default function App() {
         {/* CRM Client Shared Route */}
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
+        <Route path="/clase/:token/asistencia" element={<CoworkerAttendance />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />

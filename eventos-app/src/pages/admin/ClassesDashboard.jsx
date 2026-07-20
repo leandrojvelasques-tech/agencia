@@ -61,7 +61,7 @@ export default function ClassesDashboard() {
     createRecurringClass,
     updateRecurringClass,
     deleteRecurringClass,
-    getOrCreateClassSession,
+    fetchClassSession,
     fetchClassAttendance,
     saveClassAttendance,
     fetchMonthlyClassReport
@@ -154,9 +154,9 @@ export default function ClassesDashboard() {
   const loadAttendanceData = async () => {
     try {
       setIsActionLoading(true)
-      // 1. Get or create session
-      const session = await getOrCreateClassSession(selectedClassId, selectedDate)
-      setCurrentSession(session)
+      // 1. Fetch class session (do not auto-create in db)
+      const session = await fetchClassSession(selectedClassId, selectedDate)
+      setCurrentSession(session || null)
       setSessionNotes(session?.notes || '')
 
       // 2. Fetch marked attendance for this session
@@ -172,12 +172,13 @@ export default function ClassesDashboard() {
       const currentClass = recurringClasses.find(c => c.id === selectedClassId)
       const enrolledStudents = currentClass?.class_enrollments?.map(ce => ce.students) || []
 
-      // 4. Merge: if already marked, use status; if not, check if student is enrolled (default: present)
+      // 4. Merge: if session exists, default unmarked to 'absent'; if new date, default to '' (unmarked)
+      const defaultStatus = session ? 'absent' : ''
       const merged = enrolledStudents.map(student => {
         if (!student) return null
         return {
           student,
-          status: markedMap[student.id] || 'present'
+          status: markedMap[student.id] || defaultStatus
         }
       }).filter(Boolean)
 
@@ -232,26 +233,18 @@ export default function ClassesDashboard() {
   }
 
   const handleSaveAttendance = async () => {
-    if (!currentSession) return
     setIsActionLoading(true)
     try {
-      // 1. Update session notes if changed
-      if (sessionNotes !== currentSession.notes) {
-        await supabase
-          .from('class_sessions')
-          .update({ notes: sessionNotes })
-          .eq('id', currentSession.id)
-      }
-
-      // 2. Save attendance records
+      // Save attendance records
       const records = attendanceList.map(a => ({
         student_id: a.student.id,
-        status: a.status
+        status: a.status || 'absent'
       }))
 
-      const res = await saveClassAttendance(currentSession.id, records)
+      const res = await saveClassAttendance(selectedClassId, selectedDate, sessionNotes, records)
       if (res.success) {
         showToast('Asistencia guardada correctamente')
+        setCurrentSession(res.session)
         fetchRecurringClasses() // reload classes to refresh enrollments
       } else {
         throw new Error(res.error?.message)
@@ -262,6 +255,22 @@ export default function ClassesDashboard() {
     } finally {
       setIsActionLoading(false)
     }
+  }
+
+  const handleShareAttendanceLink = () => {
+    const selectedClass = recurringClasses.find(c => c.id === selectedClassId)
+    if (!selectedClass || !selectedClass.share_token) {
+      showToast('Selecciona una clase válida', 'error')
+      return
+    }
+
+    const shareUrl = `${window.location.origin}/clase/${selectedClass.share_token}/asistencia`
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showToast('Link de asistencia copiado al portapapeles. ¡Envíaselo a tu compañera!')
+    }).catch(err => {
+      console.error(err)
+      showToast('Error al copiar el link', 'error')
+    })
   }
 
   // ---------------------------------------------------
@@ -689,7 +698,7 @@ export default function ClassesDashboard() {
       {activeTab === 'attendance' && (
         <div className="space-y-6">
           <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-2">Clase Recurrente</label>
                 <select
@@ -722,6 +731,17 @@ export default function ClassesDashboard() {
                 >
                   <span className="material-symbols-outlined text-lg">sync</span>
                   Recargar
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleShareAttendanceLink}
+                  disabled={!selectedClassId}
+                  className="btn-primary w-full py-3 h-[45px] text-sm bg-[var(--color-deep-green)] text-white"
+                  title="Compartir enlace de asistencia para tu compañera"
+                >
+                  <span className="material-symbols-outlined text-lg">share</span>
+                  Compartir Link
                 </button>
               </div>
             </div>

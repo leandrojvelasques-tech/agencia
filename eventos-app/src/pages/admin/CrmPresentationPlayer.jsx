@@ -17,6 +17,8 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   const [exportProgress, setExportProgress] = useState('')
   const isGuideClickNavigationRef = useRef(false)
 
+  const [blocksList, setBlocksList] = useState([])
+
   const isPresenterWindow = new URLSearchParams(window.location.search).get('presenter') === 'true'
 
   // BroadcastChannel for real-time synchronization between audience and presenter windows
@@ -484,6 +486,34 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
           if (loadedSlides.length > 0) {
             setSelectedGuideItemId(`auto-slide-${loadedSlides[0].id}`)
           }
+
+          // Fetch event agenda if exists
+          let evBlocks = []
+          if (data.event_id) {
+            const { data: evData, error: evError } = await supabase
+              .from('events')
+              .select('agenda')
+              .eq('id', data.event_id)
+              .single()
+            if (!evError && evData && Array.isArray(evData.agenda)) {
+              evBlocks = evData.agenda.flatMap(s => s.blocks || [])
+            }
+          }
+
+          // Fetch template agendas if any slides reference templates
+          let tempBlocks = []
+          const templateIds = [...new Set(loadedSlides.map(s => s.agendaTemplateId).filter(Boolean))]
+          if (templateIds.length > 0) {
+            const { data: tempData, error: tempError } = await supabase
+              .from('agenda_templates')
+              .select('agenda')
+              .in('id', templateIds)
+            if (!tempError && tempData) {
+              tempBlocks = tempData.flatMap(t => Array.isArray(t.agenda) ? t.agenda.flatMap(s => s.blocks || []) : [])
+            }
+          }
+
+          setBlocksList([...evBlocks, ...tempBlocks])
         }
       } catch (err) {
         console.error('Error loading presentation:', err)
@@ -495,6 +525,15 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
     }
     load()
   }, [id])
+
+  const getSlideBlockInfo = (slide) => {
+    if (!slide) return { bloque: '', tema: '' }
+    const block = blocksList.find(b => (b.id || b.title) === slide.blockId)
+    return {
+      bloque: block ? block.title : (slide.bloque || ''),
+      tema: block ? (block.subtitle || '') : (slide.tema || '')
+    }
+  }
 
   // Timer loop for presenter mode
   useEffect(() => {
@@ -841,26 +880,28 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
               className="flex-1 bg-black rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center aspect-video relative min-h-0 cursor-pointer"
               onClick={handleSlideClick}
             >
-              {/* Bloque and Tema Overlay */}
-              {(currentSlide?.bloque || currentSlide?.tema) && (
-                <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 select-none pointer-events-none max-w-[80%]">
-                  {currentSlide.bloque && (
-                    <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-lg shadow-lg">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C1]"></span>
-                      <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[120px]" title={currentSlide.bloque}>
-                        {currentSlide.bloque}
-                      </span>
-                    </div>
-                  )}
-                  {currentSlide.tema && (
-                    <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-lg shadow-lg text-white">
-                      <span className="text-[8px] font-bold tracking-wide truncate max-w-[150px]" title={currentSlide.tema}>
-                        {currentSlide.tema}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {(() => {
+                const blockInfo = getSlideBlockInfo(currentSlide)
+                return (blockInfo.bloque || blockInfo.tema) && (
+                  <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 select-none pointer-events-none max-w-[80%]">
+                    {blockInfo.bloque && (
+                      <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-lg shadow-lg">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C1]"></span>
+                        <span className="text-[8px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[120px]" title={blockInfo.bloque}>
+                          {blockInfo.bloque}
+                        </span>
+                      </div>
+                    )}
+                    {blockInfo.tema && (
+                      <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-lg shadow-lg text-white">
+                        <span className="text-[8px] font-bold tracking-wide truncate max-w-[150px]" title={blockInfo.tema}>
+                          {blockInfo.tema}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {currentSlide?.mediaUrl ? (
                 <img src={currentSlide.mediaUrl} className="w-full h-full object-contain select-none pointer-events-none" alt="Current Slide" />
@@ -1186,25 +1227,28 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   // Slide Layout Rendering helper
   const renderSlideContent = (slide) => {
     if (!slide) return null
-    const { mediaUrl, bloque, tema } = slide
+    const { mediaUrl } = slide
+    const blockInfo = getSlideBlockInfo(slide)
+    const displayBloque = blockInfo.bloque
+    const displayTema = blockInfo.tema
 
     return (
       <div className="w-full h-full relative overflow-hidden bg-black flex items-center justify-center aspect-video">
         {/* Bloque and Tema Overlay */}
-        {(bloque || tema) && (
+        {(displayBloque || displayTema) && (
           <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 select-none pointer-events-none max-w-[80%]">
-            {bloque && (
+            {displayBloque && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C1]"></span>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[180px]" title={bloque}>
-                  {bloque}
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[180px]" title={displayBloque}>
+                  {displayBloque}
                 </span>
               </div>
             )}
-            {tema && (
+            {displayTema && (
               <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg text-white">
-                <span className="text-[10px] font-bold tracking-wide truncate max-w-[250px]" title={tema}>
-                  {tema}
+                <span className="text-[10px] font-bold tracking-wide truncate max-w-[250px]" title={displayTema}>
+                  {displayTema}
                 </span>
               </div>
             )}

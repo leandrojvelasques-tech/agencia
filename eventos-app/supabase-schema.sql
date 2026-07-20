@@ -452,6 +452,7 @@ CREATE TABLE IF NOT EXISTS recurring_classes (
     end_time TIME NOT NULL,
     instructor TEXT NOT NULL DEFAULT 'Leandro Velasques',
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    share_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -537,4 +538,17 @@ CREATE POLICY "Public read class_sessions" ON class_sessions
 
 CREATE POLICY "Public read class_attendance" ON class_attendance 
     FOR SELECT USING (true);
+
+-- Public write access for coworker attendance link
+CREATE POLICY "Public insert class_sessions" ON class_sessions 
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public update class_sessions" ON class_sessions 
+    FOR UPDATE USING (true);
+
+CREATE POLICY "Public insert class_attendance" ON class_attendance 
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public update class_attendance" ON class_attendance 
+    FOR UPDATE USING (true);
 

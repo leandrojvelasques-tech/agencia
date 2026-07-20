@@ -841,26 +841,14 @@ export const useStore = create((set, get) => ({
   },
 
   // Attendance Actions
-  getOrCreateClassSession: async (classId, dateStr) => {
-    const { data: existing, error } = await supabase
+  fetchClassSession: async (classId, dateStr) => {
+    const { data, error } = await supabase
       .from('class_sessions')
       .select('*')
       .eq('class_id', classId)
       .eq('session_date', dateStr)
       .maybeSingle()
-    
-    if (existing) return existing
-    
-    const { data: created, error: createError } = await supabase
-      .from('class_sessions')
-      .insert([{ class_id: classId, session_date: dateStr }])
-      .select()
-      .single()
-    
-    if (createError) {
-      console.error("Error creating session:", createError)
-    }
-    return created
+    return data
   },
 
   fetchClassAttendance: async (sessionId) => {
@@ -871,11 +859,52 @@ export const useStore = create((set, get) => ({
     return data || []
   },
 
-  saveClassAttendance: async (sessionId, attendanceList) => {
+  saveClassAttendance: async (classId, dateStr, notes, attendanceList) => {
+    // 1. Get or create session
+    let { data: session, error: sErr } = await supabase
+      .from('class_sessions')
+      .select('*')
+      .eq('class_id', classId)
+      .eq('session_date', dateStr)
+      .maybeSingle()
+    
+    if (sErr) {
+      console.error("Error checking session:", sErr)
+      return { success: false, error: sErr }
+    }
+
+    if (!session) {
+      const { data: created, error: createError } = await supabase
+        .from('class_sessions')
+        .insert([{ class_id: classId, session_date: dateStr, notes }])
+        .select()
+        .single()
+      
+      if (createError) {
+        console.error("Error creating session:", createError)
+        return { success: false, error: createError }
+      }
+      session = created
+    } else {
+      const { data: updated, error: updateError } = await supabase
+        .from('class_sessions')
+        .update({ notes })
+        .eq('id', session.id)
+        .select()
+        .single()
+      
+      if (updateError) {
+        console.error("Error updating session notes:", updateError)
+        return { success: false, error: updateError }
+      }
+      session = updated
+    }
+
+    // 2. Clear old attendance
     const { error: delError } = await supabase
       .from('class_attendance')
       .delete()
-      .eq('session_id', sessionId)
+      .eq('session_id', session.id)
     
     if (delError) {
       console.error("Error clearing old attendance:", delError)
@@ -884,7 +913,7 @@ export const useStore = create((set, get) => ({
     
     if (attendanceList.length > 0) {
       const records = attendanceList.map(a => ({
-        session_id: sessionId,
+        session_id: session.id,
         student_id: a.student_id,
         status: a.status,
         marked_by: 'admin'
@@ -898,7 +927,7 @@ export const useStore = create((set, get) => ({
         return { success: false, error: insError }
       }
     }
-    return { success: true }
+    return { success: true, session }
   },
 
   fetchMonthlyClassReport: async (classId, year, month) => {
@@ -937,6 +966,15 @@ export const useStore = create((set, get) => ({
     })
 
     return { sessions, attendanceMap }
+  },
+
+  fetchClassByShareToken: async (token) => {
+    const { data, error } = await supabase
+      .from('recurring_classes')
+      .select('*, class_enrollments(*, students(*))')
+      .eq('share_token', token)
+      .maybeSingle()
+    return data
   }
 }))
 

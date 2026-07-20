@@ -1,5 +1,17 @@
-import { useState, useEffect } from 'react'
-import { useStore } from '../../store/useStore'
+const sanitizeAgenda = (agenda) => {
+  if (!agenda || !Array.isArray(agenda)) return []
+  return agenda.map(session => ({
+    ...session,
+    blocks: Array.isArray(session.blocks) 
+      ? session.blocks.map(block => ({
+          id: block.id || crypto.randomUUID(),
+          title: block.title || '',
+          subtitle: block.subtitle || '',
+          description: block.description || ''
+        }))
+      : [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
+  }))
+}
 
 export default function AgendaTemplatesDashboard() {
   const { agendaTemplates, fetchAgendaTemplates, createAgendaTemplate, updateAgendaTemplate, deleteAgendaTemplate, isLoading } = useStore()
@@ -40,7 +52,7 @@ export default function AgendaTemplatesDashboard() {
           start_time: '18:00',
           end_time: '21:00',
           break_duration: 15,
-          blocks: [{ title: 'Bloque 1', description: '' }]
+          blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
         }
       ]
     })
@@ -53,7 +65,7 @@ export default function AgendaTemplatesDashboard() {
     setForm({
       name: selectedTemplate.name,
       description: selectedTemplate.description || '',
-      agenda: JSON.parse(JSON.stringify(selectedTemplate.agenda || []))
+      agenda: sanitizeAgenda(selectedTemplate.agenda || [])
     })
   }
 
@@ -75,7 +87,7 @@ export default function AgendaTemplatesDashboard() {
           start_time: '18:00',
           end_time: '21:00',
           break_duration: 0,
-          blocks: [{ title: 'Bloque 1', description: '' }]
+          blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
         }
       ]
     }))
@@ -105,7 +117,7 @@ export default function AgendaTemplatesDashboard() {
       const blockNumber = updatedAgenda[classIdx].blocks.length + 1
       updatedAgenda[classIdx].blocks = [
         ...updatedAgenda[classIdx].blocks,
-        { title: `Bloque ${blockNumber}`, description: '' }
+        { id: crypto.randomUUID(), title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
       ]
       return { ...prev, agenda: updatedAgenda }
     })
@@ -149,7 +161,7 @@ export default function AgendaTemplatesDashboard() {
     const templateData = {
       name: form.name.trim(),
       description: form.description.trim(),
-      agenda: form.agenda
+      agenda: sanitizeAgenda(form.agenda)
     }
 
     let result
@@ -414,6 +426,13 @@ export default function AgendaTemplatesDashboard() {
                               <span className="material-symbols-outlined text-base">close</span>
                             </button>
                           </div>
+                          <input
+                            type="text"
+                            value={block.subtitle || ''}
+                            onChange={(e) => updateBlockField(classIdx, blockIdx, 'subtitle', e.target.value)}
+                            placeholder="Subtítulo del bloque..."
+                            className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50 text-gray-500 font-medium"
+                          />
                           <textarea
                             value={block.description}
                             onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}

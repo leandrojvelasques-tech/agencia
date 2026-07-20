@@ -15,7 +15,7 @@ const DEFAULT_SATISFACTION_QUESTIONS = [
 
 const normalizeAgenda = (agenda) => {
   if (!agenda || !Array.isArray(agenda) || agenda.length === 0) {
-    return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }]
+    return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
   }
   // Check if it's already in the new format (each item has a title and a blocks array)
   if ('blocks' in agenda[0]) {
@@ -25,14 +25,18 @@ const normalizeAgenda = (agenda) => {
       end_time: c.end_time || '',
       break_duration: c.break_duration || 0,
       blocks: Array.isArray(c.blocks) ? c.blocks.map(b => ({
+        id: b.id || crypto.randomUUID(),
         title: b.title || '',
+        subtitle: b.subtitle || '',
         description: b.description || ''
-      })) : [{ title: 'Bloque 1', description: '' }]
+      })) : [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
     }))
   }
   // If it's the old format [{ time, block, topic }]
   const blocks = agenda.map((item, idx) => ({
+    id: crypto.randomUUID(),
     title: item.block || `Bloque ${idx + 1}`,
+    subtitle: '',
     description: item.topic || ''
   }))
   return [{ title: 'Clase 1', start_time: '', end_time: '', break_duration: 0, blocks }]
@@ -265,7 +269,7 @@ export default function EventCreate() {
     const newClassNum = nextAgenda.length + 1
     return {
       ...prev,
-      agenda: [...nextAgenda, { title: `Clase ${newClassNum}`, start_time: '', end_time: '', break_duration: 0, blocks: [{ title: 'Bloque 1', description: '' }] }]
+      agenda: [...nextAgenda, { title: `Clase ${newClassNum}`, start_time: '', end_time: '', break_duration: 0, blocks: [{ id: crypto.randomUUID(), title: 'Bloque 1', subtitle: '', description: '' }] }]
     }
   })
 
@@ -292,7 +296,7 @@ export default function EventCreate() {
       const newBlockNum = nextBlocks.length + 1
       return {
         ...c,
-        blocks: [...nextBlocks, { title: `Bloque ${newBlockNum}`, description: '' }]
+        blocks: [...nextBlocks, { id: crypto.randomUUID(), title: `Bloque ${newBlockNum}`, subtitle: '', description: '' }]
       }
     })
   }))
@@ -1092,6 +1096,16 @@ export default function EventCreate() {
                                 <span className="material-symbols-outlined text-base">close</span>
                               </button>
                             )}
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Subtítulo</label>
+                            <input
+                              className="form-input !py-2.5 !px-3 text-sm"
+                              placeholder="Subtítulo del bloque..."
+                              value={b.subtitle || ''}
+                              onChange={e => updateBlock(classIdx, blockIdx, 'subtitle', e.target.value)}
+                            />
                           </div>
                           
                           <div className="space-y-1">
