@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS events (
     contact_info TEXT,
     satisfaction_questions JSONB DEFAULT NULL,
     registrations_open BOOLEAN DEFAULT FALSE,
+    allow_multiple_registrations BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -113,6 +114,7 @@ CREATE TABLE IF NOT EXISTS registrations (
     confirmation_sent BOOLEAN NOT NULL DEFAULT FALSE,
     unique_token TEXT NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
     payment_receipt_url TEXT,
+    parent_registration_id UUID REFERENCES registrations(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -552,4 +554,13 @@ CREATE POLICY "Public insert class_attendance" ON class_attendance
 
 CREATE POLICY "Public update class_attendance" ON class_attendance 
     FOR UPDATE USING (true);
+
+CREATE POLICY "Public insert students" ON students 
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public update students" ON students 
+    FOR UPDATE USING (true);
+
+CREATE POLICY "Public insert class_enrollments" ON class_enrollments 
+    FOR INSERT WITH CHECK (true);
 

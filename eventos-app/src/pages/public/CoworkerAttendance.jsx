@@ -60,6 +60,21 @@ export default function CoworkerAttendance() {
   const [studentSearchQuery, setStudentSearchQuery] = useState('')
   const [studentSearchResults, setStudentSearchResults] = useState([])
 
+  // Student modal states
+  const [editingStudent, setEditingStudent] = useState(null)
+  const [studentModalOpen, setStudentModalOpen] = useState(false)
+  const [studentForm, setStudentForm] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    photo_url: '',
+    start_date: new Date().toISOString().split('T')[0],
+    billing_type: 'pago_mensual',
+    status: 'active'
+  })
+  const [isCreatingStudent, setIsCreatingStudent] = useState(false)
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
@@ -231,6 +246,133 @@ export default function CoworkerAttendance() {
     )
   }
 
+  const handleOpenStudentModal = (student = null) => {
+    if (student) {
+      setEditingStudent(student)
+      setStudentForm({
+        first_name: student.first_name || '',
+        last_name: student.last_name || '',
+        email: student.email || '',
+        phone: student.phone || '',
+        photo_url: student.photo_url || '',
+        start_date: student.start_date || new Date().toISOString().split('T')[0],
+        billing_type: student.billing_type || 'pago_mensual',
+        status: student.status || 'active'
+      })
+    } else {
+      setEditingStudent(null)
+      setStudentForm({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        photo_url: '',
+        start_date: new Date().toISOString().split('T')[0],
+        billing_type: 'pago_mensual',
+        status: 'active'
+      })
+    }
+    setStudentModalOpen(true)
+  }
+
+  const handleStudentSubmit = async (e) => {
+    e.preventDefault()
+    if (!studentForm.first_name || !studentForm.last_name) {
+      showToast('Por favor, ingresa nombre y apellido', 'error')
+      return
+    }
+
+    setIsCreatingStudent(true)
+    try {
+      if (editingStudent) {
+        // Update Student
+        const { data: updatedStudent, error: sErr } = await supabase
+          .from('students')
+          .update(studentForm)
+          .eq('id', editingStudent.id)
+          .select()
+          .single()
+
+        if (sErr) throw sErr
+
+        // Update UI
+        setAttendanceList(prev =>
+          prev.map(item => item.student.id === editingStudent.id ? { ...item, student: updatedStudent } : item)
+        )
+        setAllActiveStudents(prev =>
+          prev.map(s => s.id === editingStudent.id ? updatedStudent : s).sort((a, b) => a.first_name.localeCompare(b.first_name))
+        )
+        showToast(`Alumno ${updatedStudent.first_name} actualizado`)
+      } else {
+        // Insert Student
+        const { data: newStudent, error: sErr } = await supabase
+          .from('students')
+          .insert([studentForm])
+          .select()
+          .single()
+
+        if (sErr) throw sErr
+
+        // Insert enrollment
+        const { error: eErr } = await supabase
+          .from('class_enrollments')
+          .insert([{
+            student_id: newStudent.id,
+            class_id: currentClass.id
+          }])
+
+        if (eErr) throw eErr
+
+        // Add to UI
+        setAttendanceList(prev => [...prev, { student: newStudent, status: 'present' }])
+        setAllActiveStudents(prev => [...prev, newStudent].sort((a, b) => a.first_name.localeCompare(b.first_name)))
+        showToast(`Alumno ${newStudent.first_name} creado y agregado`)
+      }
+      setStudentModalOpen(false)
+    } catch (err) {
+      console.error(err)
+      showToast('Error al guardar alumno: ' + err.message, 'error')
+    } finally {
+      setIsCreatingStudent(false)
+    }
+  }
+
+  const handleRemoveStudentFromClass = async (studentId) => {
+    const confirmRemove = window.confirm(
+      "¿Deseas desvincular a este alumno de la clase de forma definitiva?"
+    )
+    if (!confirmRemove) return
+
+    setIsCreatingStudent(true)
+    try {
+      // Unenroll from database
+      const { error } = await supabase
+        .from('class_enrollments')
+        .delete()
+        .eq('student_id', studentId)
+        .eq('class_id', currentClass.id)
+
+      if (error) throw error
+
+      // Also delete attendance if saved
+      if (currentSession) {
+        await supabase
+          .from('class_attendance')
+          .delete()
+          .eq('session_id', currentSession.id)
+          .eq('student_id', studentId)
+      }
+
+      setAttendanceList(prev => prev.filter(item => item.student.id !== studentId))
+      showToast('Alumno desvinculado de la clase')
+    } catch (err) {
+      console.error(err)
+      showToast('Error al quitar alumno: ' + err.message, 'error')
+    } finally {
+      setIsCreatingStudent(false)
+    }
+  }
+
   const handleSaveAttendance = async () => {
     if (!currentClass) return
     setSaving(true)
@@ -364,12 +506,12 @@ export default function CoworkerAttendance() {
           </div>
         ) : (
           <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 shadow-md">
-            <div className="flex justify-between items-center mb-5">
-            <h2 className="text-sm font-bold text-[var(--color-deep-green)] uppercase tracking-wider">Lista de Asistencia</h2>
-            <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
-              {attendanceList.length} Alumnos
-            </span>
-          </div>
+            <div className="flex justify-between items-center mb-5 gap-2">
+              <h2 className="text-sm font-bold text-[var(--color-deep-green)] uppercase tracking-wider">Lista de Asistencia</h2>
+              <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
+                {attendanceList.length} Alumnos
+              </span>
+            </div>
 
           {/* Quick Add Casual Student Search */}
           <div className="relative mb-5">
@@ -432,9 +574,25 @@ export default function CoworkerAttendance() {
                         </div>
                       )}
                       <div>
-                        <h4 className="text-xs font-bold text-[var(--color-dark-gray)] leading-tight">
-                          {item.student.first_name} {item.student.last_name}
-                        </h4>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-[var(--color-dark-gray)] leading-tight">
+                            {item.student.first_name} {item.student.last_name}
+                          </h4>
+                          <button
+                            onClick={() => handleOpenStudentModal(item.student)}
+                            className="p-0.5 text-[var(--color-dark-gray)]/30 hover:text-[var(--color-deep-green)] transition-colors cursor-pointer flex items-center"
+                            title="Editar Alumno"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleRemoveStudentFromClass(item.student.id)}
+                            className="p-0.5 text-[var(--color-dark-gray)]/30 hover:text-red-500 transition-colors cursor-pointer flex items-center"
+                            title="Quitar de la clase"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">close</span>
+                          </button>
+                        </div>
                         <span className={`text-[9px] font-bold uppercase tracking-wider text-${BILLING_LABELS[item.student.billing_type]?.color || 'gray'}-600`}>
                           {BILLING_LABELS[item.student.billing_type]?.label || item.student.billing_type}
                         </span>
@@ -503,22 +661,122 @@ export default function CoworkerAttendance() {
 
             {/* Save Action Sticky Area */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-              <div className="max-w-md mx-auto">
+              <div className="max-w-md mx-auto flex gap-3">
+                <button
+                  onClick={() => handleOpenStudentModal()}
+                  className="btn-secondary py-3 text-xs font-bold flex justify-center items-center gap-1 border border-[var(--color-deep-green)]/15 text-[var(--color-deep-green)] hover:bg-[var(--color-refined-gray)] flex-shrink-0 px-3 cursor-pointer rounded-premium"
+                  title="Registrar nuevo alumno"
+                >
+                  <span className="material-symbols-outlined text-base">person_add</span>
+                  <span>+ Alumno</span>
+                </button>
                 <button
                   onClick={handleSaveAttendance}
                   disabled={saving || attendanceList.length === 0}
-                  className="btn-primary w-full py-3.5 text-sm font-bold flex justify-center items-center gap-2 shadow-lg"
+                  className="btn-primary flex-1 py-3.5 text-sm font-bold flex justify-center items-center gap-2 shadow-lg cursor-pointer"
                 >
                   {saving ? (
                     <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                   ) : (
                     <span className="material-symbols-outlined text-lg">save</span>
                   )}
-                  Guardar Asistencia de Hoy
+                  Guardar Asistencia
                 </button>
               </div>
             </div>
           </>
+        )}
+
+        {studentModalOpen && (
+          <div className="modal-overlay">
+            <div className="bg-white rounded-premium max-w-2xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-100 animate-fade-in mx-4">
+              <h2 className="text-xl font-extrabold text-[var(--color-deep-green)] mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined">person</span>
+                {editingStudent ? 'Editar Alumno' : 'Nuevo Alumno'}
+              </h2>
+
+              <form onSubmit={handleStudentSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Nombre *</label>
+                    <input
+                      type="text"
+                      required
+                      value={studentForm.first_name}
+                      onChange={e => setStudentForm(prev => ({ ...prev, first_name: e.target.value }))}
+                      placeholder="Ej: Juan"
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Apellido *</label>
+                    <input
+                      type="text"
+                      required
+                      value={studentForm.last_name}
+                      onChange={e => setStudentForm(prev => ({ ...prev, last_name: e.target.value }))}
+                      placeholder="Ej: Pérez"
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Teléfono (WhatsApp)</label>
+                    <input
+                      type="text"
+                      value={studentForm.phone}
+                      onChange={e => setStudentForm(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Ej: +54 9 11 12345678"
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Email</label>
+                    <input
+                      type="email"
+                      value={studentForm.email}
+                      onChange={e => setStudentForm(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Ej: juan.perez@email.com"
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Tipo de Tarifa / Pago</label>
+                    <select
+                      value={studentForm.billing_type}
+                      onChange={e => setStudentForm(prev => ({ ...prev, billing_type: e.target.value }))}
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    >
+                      <option value="pago_mensual">Pago Mensual</option>
+                      <option value="por_clase">Por Clase</option>
+                      <option value="frecuente">Frecuente</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setStudentModalOpen(false)}
+                    className="btn-secondary py-2.5 px-5 text-sm font-bold cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreatingStudent}
+                    className="btn-primary py-2.5 px-6 text-sm font-bold flex items-center gap-2 cursor-pointer"
+                  >
+                    {isCreatingStudent ? (
+                      <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-lg">save</span>
+                    )}
+                    {editingStudent ? 'Actualizar Alumno' : 'Guardar Alumno'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     </div>

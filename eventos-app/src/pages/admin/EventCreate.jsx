@@ -91,6 +91,7 @@ export default function EventCreate() {
     notification_recipients: [],
     satisfaction_questions: DEFAULT_SATISFACTION_QUESTIONS,
     registrations_open: false,
+    allow_multiple_registrations: false,
   })
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -261,6 +262,7 @@ export default function EventCreate() {
               ? data.satisfaction_questions
               : DEFAULT_SATISFACTION_QUESTIONS,
             registrations_open: data.registrations_open || false,
+            allow_multiple_registrations: data.allow_multiple_registrations || false,
           })
         }
         setLoading(false)
@@ -493,6 +495,7 @@ export default function EventCreate() {
                 ? updated.satisfaction_questions
                 : DEFAULT_SATISFACTION_QUESTIONS,
               registrations_open: updated.registrations_open || false,
+              allow_multiple_registrations: updated.allow_multiple_registrations || false,
             })
             setSaved(true)
             setTimeout(() => setSaved(false), 3000)
@@ -573,6 +576,7 @@ export default function EventCreate() {
             event_materials: updated.event_materials || [],
             has_survey: updated.has_survey || false,
             registrations_open: updated.registrations_open || false,
+            allow_multiple_registrations: updated.allow_multiple_registrations || false,
           })
           savedSlug = updated.slug
         }
@@ -1299,6 +1303,26 @@ export default function EventCreate() {
                     }`}
                   >
                     {form.registrations_open ? 'Activado' : 'Desactivado'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--color-dark-gray)]">Permitir Inscripción Múltiple</p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50">Permite a un interesado inscribir a su pareja o acompañante a la vez</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update('allow_multiple_registrations', !form.allow_multiple_registrations);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                      form.allow_multiple_registrations
+                        ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                        : 'bg-gray-100 text-gray-500 border-gray-300'
+                    }`}
+                  >
+                    {form.allow_multiple_registrations ? 'Activado' : 'Desactivado'}
                   </button>
                 </div>
               </div>

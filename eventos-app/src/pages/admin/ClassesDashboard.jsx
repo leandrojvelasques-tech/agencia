@@ -128,6 +128,7 @@ export default function ClassesDashboard() {
   const [studentSearchQuery, setStudentSearchQuery] = useState('')
   const [studentSearchResults, setStudentSearchResults] = useState([])
   const [monthlySummary, setMonthlySummary] = useState({ sessions: [], attendanceMap: {} })
+  const [showMobileSummary, setShowMobileSummary] = useState(false)
 
   // Reports Tab State
   const [reportClassId, setReportClassId] = useState('')
@@ -327,6 +328,59 @@ export default function ClassesDashboard() {
     }
   }
 
+  const handleRemoveStudentFromClass = async (studentId) => {
+    const isEnrolled = recurringClasses
+      .find(c => c.id === selectedClassId)
+      ?.class_enrollments?.some(ce => ce.student_id === studentId)
+
+    if (isEnrolled) {
+      const confirmUnenroll = window.confirm(
+        "Este alumno está inscripto en esta clase recurrente.\n" +
+        "¿Deseas desvincularlo de la clase para que no vuelva a aparecer en la lista?"
+      )
+      if (!confirmUnenroll) return
+
+      setIsActionLoading(true)
+      try {
+        const { error } = await supabase
+          .from('class_enrollments')
+          .delete()
+          .eq('student_id', studentId)
+          .eq('class_id', selectedClassId)
+
+        if (error) throw error
+        showToast('Alumno desvinculado de la clase')
+        fetchRecurringClasses() // Reload to refresh checklist
+      } catch (err) {
+        console.error(err)
+        showToast('Error al desvincular alumno: ' + err.message, 'error')
+      } finally {
+        setIsActionLoading(false)
+      }
+    } else {
+      // Casual student: remove from UI. Delete from database if session is saved.
+      if (currentSession) {
+        setIsActionLoading(true)
+        try {
+          const { error } = await supabase
+            .from('class_attendance')
+            .delete()
+            .eq('session_id', currentSession.id)
+            .eq('student_id', studentId)
+          
+          if (error) throw error
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setIsActionLoading(false)
+        }
+      }
+      
+      setAttendanceList(prev => prev.filter(item => item.student.id !== studentId))
+      showToast('Alumno quitado de la planilla')
+    }
+  }
+
   // Handle student search in Attendance tab
   useEffect(() => {
     if (studentSearchQuery.trim()) {
@@ -503,7 +557,7 @@ export default function ClassesDashboard() {
         billing_type: 'pago_mensual',
         status: 'active'
       })
-      setStudentEnrolledClasses([])
+      setStudentEnrolledClasses(selectedClassId ? [selectedClassId] : [])
       setPhotoPreview(null)
     }
     setPhotoFile(null)
@@ -558,6 +612,9 @@ export default function ClassesDashboard() {
 
       if (res.success) {
         showToast(editingStudent ? 'Alumno actualizado' : 'Alumno creado')
+        if (!editingStudent && activeTab === 'attendance') {
+          setAttendanceList(prev => [...prev, { student: res.data, status: 'present' }])
+        }
         setStudentModalOpen(false)
         fetchRecurringClasses()
       } else {
@@ -892,142 +949,162 @@ export default function ClassesDashboard() {
 
       {activeTab === 'attendance' && (
         <div className="space-y-6">
-          {/* Resumen Mensual de Asistencia */}
+          {/* Collapsible Mobile Summary Toggle */}
           {selectedClassId && combinedSessions.length > 0 && (
-            <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 space-y-4 shadow-sm">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">
-                  Resumen de Clases - {MONTHS.find(m => m.value === (new Date().getMonth() + 1))?.label} {new Date().getFullYear()}
-                </h3>
-                <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
-                  {combinedSessions.filter(s => !s.isVirtual && s.status === 'held').length} Clases Dictadas
+            <div className="md:hidden flex justify-between items-center bg-white p-3.5 border border-[var(--color-deep-green)]/5 rounded-premium shadow-sm mb-4">
+              <span className="text-xs font-bold text-[var(--color-dark-gray)] uppercase tracking-wider">
+                Resumen del Mes
+              </span>
+              <button
+                onClick={() => setShowMobileSummary(!showMobileSummary)}
+                className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5 border border-[var(--color-deep-green)]/10 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">
+                  {showMobileSummary ? 'keyboard_arrow_up' : 'bar_chart'}
                 </span>
-              </div>
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
-                {combinedSessions.map(s => {
-                  let presentCount = 0
-                  let lateCount = 0
-                  let absentCount = 0
-                  const presentStudents = []
+                <span>{showMobileSummary ? 'Ocultar Resumen' : 'Ver Resumen'}</span>
+              </button>
+            </div>
+          )}
 
-                  if (!s.isVirtual && s.status === 'held') {
-                    students.forEach(student => {
-                      const isEnrolled = recurringClasses.find(c => c.id === selectedClassId)?.class_enrollments?.some(ce => ce.student_id === student.id)
-                      const status = monthlySummary.attendanceMap[student.id]?.[s.id]
-                      
-                      if (status === 'present') {
-                        presentCount++
-                        presentStudents.push(student)
-                      } else if (status === 'late') {
-                        lateCount++
-                        presentStudents.push(student)
-                      } else if (status === 'absent') {
-                        absentCount++
-                      } else if (isEnrolled) {
-                        absentCount++
-                      }
-                    })
-                  }
+          {/* The actual monthly summary wrapper */}
+          {selectedClassId && combinedSessions.length > 0 && (
+            <div className={`${showMobileSummary ? 'block' : 'hidden'} md:block mb-4`}>
+              <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">
+                    Resumen de Clases - {MONTHS.find(m => m.value === (new Date().getMonth() + 1))?.label} {new Date().getFullYear()}
+                  </h3>
+                  <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
+                    {combinedSessions.filter(s => !s.isVirtual && s.status === 'held').length} Clases Dictadas
+                  </span>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+                  {combinedSessions.map(s => {
+                    let presentCount = 0
+                    let lateCount = 0
+                    let absentCount = 0
+                    const presentStudents = []
 
-                  const [year, month, day] = s.session_date.split('-').map(Number)
-                  const dateObj = new Date(year, month - 1, day)
-                  const dayName = DAYS_OF_WEEK.find(d => d.value === dateObj.getDay())?.label?.substring(0, 3)
-                  const isFuture = s.session_date > new Date().toISOString().split('T')[0]
+                    if (!s.isVirtual && s.status === 'held') {
+                      students.forEach(student => {
+                        const isEnrolled = recurringClasses.find(c => c.id === selectedClassId)?.class_enrollments?.some(ce => ce.student_id === student.id)
+                        const status = monthlySummary.attendanceMap[student.id]?.[s.id]
+                        
+                        if (status === 'present') {
+                          presentCount++
+                          presentStudents.push(student)
+                        } else if (status === 'late') {
+                          lateCount++
+                          presentStudents.push(student)
+                        } else if (status === 'absent') {
+                          absentCount++
+                        } else if (isEnrolled) {
+                          absentCount++
+                        }
+                      })
+                    }
 
-                  return (
-                    <div 
-                      key={s.id} 
-                      onClick={() => setSelectedDate(s.session_date)}
-                      className={`flex-shrink-0 card p-3.5 bg-[var(--color-refined-gray)]/50 border border-gray-100 rounded-premium w-[150px] cursor-pointer hover:border-[var(--color-deep-green)]/30 hover:bg-white transition-all group ${
-                        selectedDate === s.session_date ? 'ring-2 ring-[var(--color-deep-green)]/20 bg-white border-[var(--color-deep-green)]/20' : ''
-                      }`}
-                    >
-                      <p className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 uppercase tracking-wide group-hover:text-[var(--color-deep-green)]/60 transition-colors">
-                        {dayName} {day}
-                      </p>
-                      
-                      {s.status === 'suspended' ? (
-                        <div className="mt-2.5 space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
-                              Suspendida
-                            </span>
-                          </div>
-                          <p className="text-[9px] text-[var(--color-dark-gray)]/40 truncate mt-1">
-                            {s.notes || 'Feriado/Sin clase'}
-                          </p>
-                        </div>
-                      ) : s.status === 'empty' ? (
-                        <div className="mt-2.5 space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            {isFuture ? (
-                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
-                                Futura
+                    const [year, month, day] = s.session_date.split('-').map(Number)
+                    const dateObj = new Date(year, month - 1, day)
+                    const dayName = DAYS_OF_WEEK.find(d => d.value === dateObj.getDay())?.label?.substring(0, 3)
+                    const isFuture = s.session_date > new Date().toISOString().split('T')[0]
+
+                    return (
+                      <div 
+                        key={s.id} 
+                        onClick={() => setSelectedDate(s.session_date)}
+                        className={`flex-shrink-0 card p-3.5 bg-[var(--color-refined-gray)]/50 border border-gray-100 rounded-premium w-[150px] cursor-pointer hover:border-[var(--color-deep-green)]/30 hover:bg-white transition-all group ${
+                          selectedDate === s.session_date ? 'ring-2 ring-[var(--color-deep-green)]/20 bg-white border-[var(--color-deep-green)]/20' : ''
+                        }`}
+                      >
+                        <p className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 uppercase tracking-wide group-hover:text-[var(--color-deep-green)]/60 transition-colors">
+                          {dayName} {day}
+                        </p>
+                        
+                        {s.status === 'suspended' ? (
+                          <div className="mt-2.5 space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
+                                Suspendida
                               </span>
-                            ) : (
-                              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                                Sin Registro
+                            </div>
+                            <p className="text-[9px] text-[var(--color-dark-gray)]/40 truncate mt-1">
+                              {s.notes || 'Feriado/Sin clase'}
+                            </p>
+                          </div>
+                        ) : s.status === 'empty' ? (
+                          <div className="mt-2.5 space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              {isFuture ? (
+                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
+                                  Futura
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                                  Sin Registro
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[9px] text-[var(--color-dark-gray)]/40 mt-1">
+                              {isFuture ? 'Clase programada' : 'No se tomó asistencia'}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="mt-2.5 space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-bold text-[var(--color-dark-gray)]">{presentCount + lateCount}</span>
+                              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Presentes</span>
+                            </div>
+                            {lateCount > 0 && (
+                              <div className="flex items-center justify-between text-[10px]">
+                                <span className="font-semibold text-amber-600">{lateCount} tarde</span>
+                              </div>
+                            )}
+                            {absentCount > 0 && (
+                              <div className="flex items-center justify-between text-[10px] text-[var(--color-dark-gray)]/40">
+                                <span>{absentCount} ausentes</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {s.status === 'held' && presentStudents.length > 0 && (
+                          <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center">
+                            <div className="flex -space-x-1.5 overflow-hidden">
+                              {presentStudents.slice(0, 3).map(ps => {
+                                const av = getAvatarProps(ps.first_name, ps.last_name)
+                                return ps.photo_url ? (
+                                  <img
+                                    key={ps.id}
+                                    src={ps.photo_url}
+                                    alt={`${ps.first_name} ${ps.last_name}`}
+                                    title={`${ps.first_name} ${ps.last_name}`}
+                                    className="inline-block h-5 w-5 rounded-full ring-2 ring-white object-cover"
+                                  />
+                                ) : (
+                                  <div
+                                    key={ps.id}
+                                    title={`${ps.first_name} ${ps.last_name}`}
+                                    className="inline-block h-5 w-5 rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-bold"
+                                    style={av.style}
+                                  >
+                                    {av.initials}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            {presentStudents.length > 3 && (
+                              <span className="text-[9px] font-bold text-[var(--color-dark-gray)]/40 ml-1.5">
+                                +{presentStudents.length - 3}
                               </span>
                             )}
                           </div>
-                          <p className="text-[9px] text-[var(--color-dark-gray)]/40 mt-1">
-                            {isFuture ? 'Clase programada' : 'No se tomó asistencia'}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="mt-2.5 space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-[var(--color-dark-gray)]">{presentCount + lateCount}</span>
-                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Presentes</span>
-                          </div>
-                          {lateCount > 0 && (
-                            <div className="flex items-center justify-between text-[10px]">
-                              <span className="font-semibold text-amber-600">{lateCount} tarde</span>
-                            </div>
-                          )}
-                          {absentCount > 0 && (
-                            <div className="flex items-center justify-between text-[10px] text-[var(--color-dark-gray)]/40">
-                              <span>{absentCount} ausentes</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {s.status === 'held' && presentStudents.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center">
-                          <div className="flex -space-x-1.5 overflow-hidden">
-                            {presentStudents.slice(0, 3).map(ps => {
-                              const av = getAvatarProps(ps.first_name, ps.last_name)
-                              return ps.photo_url ? (
-                                <img
-                                  key={ps.id}
-                                  src={ps.photo_url}
-                                  alt={`${ps.first_name} ${ps.last_name}`}
-                                  title={`${ps.first_name} ${ps.last_name}`}
-                                  className="inline-block h-5 w-5 rounded-full ring-2 ring-white object-cover"
-                                />
-                              ) : (
-                                <div
-                                  key={ps.id}
-                                  title={`${ps.first_name} ${ps.last_name}`}
-                                  className="inline-block h-5 w-5 rounded-full ring-2 ring-white flex items-center justify-center text-[8px] font-bold"
-                                  style={av.style}
-                                >
-                                  {av.initials}
-                                </div>
-                              )
-                            })}
-                          </div>
-                          {presentStudents.length > 3 && (
-                            <span className="text-[9px] font-bold text-[var(--color-dark-gray)]/40 ml-1.5">
-                              +{presentStudents.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -1107,12 +1184,22 @@ export default function ClassesDashboard() {
               ) : (
                 <div className="lg:col-span-2 space-y-4">
                   <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-center mb-6 gap-3">
                       <h2 className="text-lg font-bold text-[var(--color-deep-green)]">Lista de Asistencia</h2>
-                    <span className="text-xs font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-3 py-1 rounded-full">
-                      {attendanceList.length} Alumnos
-                    </span>
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenStudentModal()}
+                          className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1 bg-[var(--color-deep-green)] text-white hover:bg-[var(--color-deep-green)]/90 border-none cursor-pointer"
+                          title="Crear un alumno nuevo"
+                        >
+                          <span className="material-symbols-outlined text-sm">person_add</span>
+                          <span>+ Alumno</span>
+                        </button>
+                        <span className="text-xs font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-3 py-1 rounded-full">
+                          {attendanceList.length} Alumnos
+                        </span>
+                      </div>
+                    </div>
 
                   <div className="relative mb-6">
                     <div className="flex items-center gap-2 bg-[var(--color-refined-gray)]/60 rounded-[var(--radius-premium)] px-4 py-2 border border-[var(--color-deep-green)]/5">
@@ -1175,9 +1262,25 @@ export default function ClassesDashboard() {
                                 </div>
                               )}
                               <div>
-                                <h4 className="text-sm font-bold text-[var(--color-dark-gray)] leading-snug">
-                                  {item.student.first_name} {item.student.last_name}
-                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-bold text-[var(--color-dark-gray)] leading-snug">
+                                    {item.student.first_name} {item.student.last_name}
+                                  </h4>
+                                  <button
+                                    onClick={() => handleOpenStudentModal(item.student)}
+                                    className="p-0.5 text-[var(--color-dark-gray)]/30 hover:text-[var(--color-deep-green)] transition-colors cursor-pointer flex items-center"
+                                    title="Editar Alumno"
+                                  >
+                                    <span className="material-symbols-outlined text-[15px]">edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveStudentFromClass(item.student.id)}
+                                    className="p-0.5 text-[var(--color-dark-gray)]/30 hover:text-red-500 transition-colors cursor-pointer flex items-center"
+                                    title="Quitar de la clase"
+                                  >
+                                    <span className="material-symbols-outlined text-[15px]">close</span>
+                                  </button>
+                                </div>
                                 <span className={`text-[10px] font-bold uppercase tracking-wider text-${BILLING_LABELS[item.student.billing_type]?.color || 'gray'}-600`}>
                                   {BILLING_LABELS[item.student.billing_type]?.label || item.student.billing_type}
                                 </span>

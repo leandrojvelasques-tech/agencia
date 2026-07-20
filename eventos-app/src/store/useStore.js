@@ -314,7 +314,7 @@ export const useStore = create((set, get) => ({
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
-    const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, ...pData } = participantData
+    const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, ...pData } = participantData
 
     // Check capacity for chosen modality and selected date
     const maxCap = attendance_mode === 'presencial' ? event.max_capacity_presencial : event.max_capacity_virtual;
@@ -332,8 +332,10 @@ export const useStore = create((set, get) => ({
 
       const { count, error: countErr } = await query
       
-      if (!countErr && count >= Number(maxCap)) {
-        return { success: false, error: `Disculpas, los cupos para la modalidad ${attendance_mode} están agotados para la fecha seleccionada.` }
+      // If second participant is present, we need 2 spots!
+      const spotsNeeded = secondParticipant ? 2 : 1
+      if (!countErr && (count + spotsNeeded - 1) >= Number(maxCap)) {
+        return { success: false, error: `Disculpas, no hay cupos suficientes para la modalidad ${attendance_mode} en la fecha seleccionada.` }
       }
     }
 
@@ -377,6 +379,59 @@ export const useStore = create((set, get) => ({
     if (rErr) {
       if (rErr.code === '23505') return { success: false, error: 'Ya estás inscripto en este evento' }
       return { success: false, error: 'Error al procesar la inscripción' }
+    }
+
+    // 3. Register second participant if present
+    if (secondParticipant && secondParticipant.first_name && secondParticipant.last_name) {
+      try {
+        let p2Id
+        // Find existing by email if email is provided
+        if (secondParticipant.email) {
+          const { data: existing2 } = await supabase
+            .from('participants')
+            .select('id')
+            .eq('email', secondParticipant.email)
+            .maybeSingle()
+          
+          if (existing2) {
+            p2Id = existing2.id
+            await supabase.from('participants').update(secondParticipant).eq('id', p2Id)
+          }
+        }
+
+        if (!p2Id) {
+          const { data: novel2, error: pErr2 } = await supabase
+            .from('participants')
+            .insert([{
+              first_name: secondParticipant.first_name,
+              last_name: secondParticipant.last_name,
+              email: secondParticipant.email || null,
+              phone: secondParticipant.phone || null
+            }])
+            .select()
+            .single()
+          
+          if (!pErr2 && novel2) {
+            p2Id = novel2.id
+          }
+        }
+
+        if (p2Id) {
+          await supabase
+            .from('registrations')
+            .insert([{
+              event_id: event.id,
+              participant_id: p2Id,
+              source: 'self_registration',
+              status: 'confirmed',
+              attendance_mode,
+              selected_date,
+              parent_registration_id: registration.id
+            }])
+        }
+      } catch (err) {
+        console.error("Error registering second participant:", err)
+      }
     }
 
     return { success: true, registration, participant: pData }

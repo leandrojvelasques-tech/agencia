@@ -20,6 +20,8 @@ export default function EventRegister() {
   const [showEmailWarning, setShowEmailWarning] = useState(false)
   const [paymentReceiptUrl, setPaymentReceiptUrl] = useState('')
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const [hasCompanion, setHasCompanion] = useState(false)
+  const [secondParticipant, setSecondParticipant] = useState({ first_name: '', last_name: '', email: '', phone: '' })
 
   // Matriculados padron state variables
   const [matriculadosList, setMatriculadosList] = useState([])
@@ -276,6 +278,13 @@ export default function EventRegister() {
       return
     }
 
+    if (hasCompanion) {
+      if (!secondParticipant.first_name || !secondParticipant.last_name) {
+        setError('El nombre y apellido del acompañante son obligatorios')
+        return
+      }
+    }
+
     if (!survey.profesion) {
       setError('El campo Profesión / Ocupación Actual es obligatorio')
       return
@@ -374,7 +383,8 @@ export default function EventRegister() {
     const result = await selfRegister(slug, {
       ...form,
       survey_responses: surveyResponses,
-      payment_receipt_url: paymentReceiptUrl || null
+      payment_receipt_url: paymentReceiptUrl || null,
+      secondParticipant: hasCompanion ? secondParticipant : null
     })
     if (result.success) {
       navigate(`/evento/${slug}/confirmacion`, { state: { selectedDate: form.selected_date } })
@@ -434,6 +444,72 @@ export default function EventRegister() {
             </label>
             <input className="form-input" placeholder="Ej: Comodoro Rivadavia" value={form.telegram || ''} onChange={e => setForm(p => ({ ...p, telegram: e.target.value }))} />
           </div>
+
+          {/* Partner / Companion registration fields */}
+          {event && event.allow_multiple_registrations && (
+            <div className="space-y-4 pt-4 border-t border-[var(--color-deep-green)]/10">
+              <label className="flex items-center gap-2.5 text-sm font-semibold text-[var(--color-dark-gray)] cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hasCompanion}
+                  onChange={e => setHasCompanion(e.target.checked)}
+                  className="rounded text-[var(--color-deep-green)] focus:ring-[var(--color-deep-green)] w-4 h-4 cursor-pointer"
+                />
+                <span>Inscribirme con un acompañante / pareja (ej. Pareja de baile)</span>
+              </label>
+
+              {hasCompanion && (
+                <div className="card p-4 bg-[var(--color-refined-gray)]/45 border border-[var(--color-deep-green)]/10 rounded-premium space-y-4 animate-fade-in">
+                  <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-2">Datos del Acompañante</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1.5 block">Nombre del Acompañante *</label>
+                      <input
+                        className="form-input"
+                        placeholder="Nombre de tu pareja"
+                        value={secondParticipant.first_name}
+                        onChange={e => setSecondParticipant(p => ({ ...p, first_name: e.target.value }))}
+                        required={hasCompanion}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1.5 block">Apellido del Acompañante *</label>
+                      <input
+                        className="form-input"
+                        placeholder="Apellido de tu pareja"
+                        value={secondParticipant.last_name}
+                        onChange={e => setSecondParticipant(p => ({ ...p, last_name: e.target.value }))}
+                        required={hasCompanion}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1.5 block">Teléfono (WhatsApp)</label>
+                    <input
+                      type="tel"
+                      className="form-input"
+                      placeholder="+54 9 ..."
+                      value={secondParticipant.phone}
+                      onChange={e => setSecondParticipant(p => ({ ...p, phone: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1.5 block">Email</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="pareja@email.com"
+                      value={secondParticipant.email}
+                      onChange={e => setSecondParticipant(p => ({ ...p, email: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Date Selector */}
           {availableDates.length > 1 && (

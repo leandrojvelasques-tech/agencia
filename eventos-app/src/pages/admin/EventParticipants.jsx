@@ -152,6 +152,13 @@ export default function EventParticipants() {
     return responses['delegacion'] || responses['Delegación'] || responses.delegacion || '—';
   }
 
+  const getParentName = (parentRegId) => {
+    if (!parentRegId) return null
+    const parent = registrations.find(reg => reg.id === parentRegId)
+    if (!parent) return null
+    return `${parent.participants?.first_name} ${parent.participants?.last_name}`
+  }
+
   const sortedAndFiltered = [...registrations]
     .filter(r => {
       if (!search) return true
@@ -481,7 +488,14 @@ export default function EventParticipants() {
                     <tr key={r.id}>
                       <td className="font-semibold text-[var(--color-dark-gray)]">
                         <div className="flex flex-col">
-                          <span>{r.participants?.first_name} {r.participants?.last_name}</span>
+                          <span className="flex items-center gap-1.5 flex-wrap">
+                            <span>{r.participants?.first_name} {r.participants?.last_name}</span>
+                            {r.parent_registration_id && (
+                              <span className="text-[9px] text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 px-1.5 py-0.5 rounded-full font-bold border border-[var(--color-deep-green)]/10" title={`Inscripto por ${getParentName(r.parent_registration_id) || 'otro participante'}`}>
+                                Acompañante de {getParentName(r.parent_registration_id) || 'otro'}
+                              </span>
+                            )}
+                          </span>
                           <span className={`text-[10px] uppercase tracking-wider font-bold ${r.status === 'confirmed' ? 'text-green-600' : r.status === 'cancelled' ? 'text-red-500' : 'text-amber-500'}`}>
                             {r.status === 'confirmed' ? 'Confirmado' : r.status === 'cancelled' ? 'Cancelado' : 'Registrado'}
                           </span>
@@ -531,8 +545,13 @@ export default function EventParticipants() {
               <div key={r.id} className="card p-4 bg-white shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col">
-                    <span className="font-bold text-[var(--color-dark-gray)] text-base">
-                      {r.participants?.first_name} {r.participants?.last_name}
+                    <span className="font-bold text-[var(--color-dark-gray)] text-base flex flex-wrap items-center gap-1.5">
+                      <span>{r.participants?.first_name} {r.participants?.last_name}</span>
+                      {r.parent_registration_id && (
+                        <span className="text-[9px] text-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 px-1.5 py-0.5 rounded-full font-bold border border-[var(--color-deep-green)]/10">
+                          Acompañante de {getParentName(r.parent_registration_id) || 'otro'}
+                        </span>
+                      )}
                     </span>
                     <span className="text-xs text-[var(--color-dark-gray)]/50">
                       Inscrito: {r.registered_at ? format(new Date(r.registered_at), "dd/MM/yyyy HH:mm") : '—'}
