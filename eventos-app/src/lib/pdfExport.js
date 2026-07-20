@@ -14,12 +14,87 @@ const loadImage = (url) => {
   })
 }
 
+const drawRoundRect = (ctx, x, y, width, height, radius) => {
+  if (ctx.roundRect) {
+    ctx.roundRect(x, y, width, height, radius)
+  } else {
+    ctx.beginPath()
+    ctx.moveTo(x + radius, y)
+    ctx.lineTo(x + width - radius, y)
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+    ctx.lineTo(x + width, y + height - radius)
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+    ctx.lineTo(x + radius, y + height)
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+    ctx.lineTo(x, y + radius)
+    ctx.quadraticCurveTo(x, y, x + radius, y)
+    ctx.closePath()
+  }
+}
+
+const drawBloqueTemaBadges = (ctx, bloque, tema) => {
+  if (!bloque && !tema) return
+
+  let currentX = 50 // Starting left position
+  const y = 50 // Top position
+  const height = 48
+  const paddingX = 20
+
+  ctx.save()
+  ctx.textBaseline = 'middle'
+
+  if (bloque) {
+    ctx.font = 'bold 20px sans-serif'
+    const textWidth = ctx.measureText(bloque.toUpperCase()).width
+    const bgWidth = textWidth + paddingX * 2 + 20 // text + padding + circle space
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    drawRoundRect(ctx, currentX, y, bgWidth, height, 10)
+    ctx.fill()
+    ctx.stroke()
+
+    // Draw green dot
+    ctx.fillStyle = '#A8D5C1'
+    ctx.beginPath()
+    ctx.arc(currentX + paddingX + 5, y + height / 2, 6, 0, 2 * Math.PI)
+    ctx.fill()
+
+    // Draw text
+    ctx.fillStyle = '#A8D5C1'
+    ctx.fillText(bloque.toUpperCase(), currentX + paddingX + 22, y + height / 2)
+
+    currentX += bgWidth + 15
+  }
+
+  if (tema) {
+    ctx.font = 'bold 20px sans-serif'
+    const textWidth = ctx.measureText(tema).width
+    const bgWidth = textWidth + paddingX * 2
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    drawRoundRect(ctx, currentX, y, bgWidth, height, 10)
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(tema, currentX + paddingX, y + height / 2)
+  }
+
+  ctx.restore()
+}
+
 /**
  * Draws a slide image to fit a 2048x1152 canvas (contain) and returns a JPEG data URL.
  * Using high resolution (2048x1152) and JPEG at 0.88 quality keeps text/details sharp
  * while reducing the file size to 1/20th compared to PNG, staying well under the 50MB limit.
  */
-const drawImageSlide = (img) => {
+const drawImageSlide = (img, slide) => {
   const canvas = document.createElement('canvas')
   canvas.width = 2048
   canvas.height = 1152
@@ -49,6 +124,11 @@ const drawImageSlide = (img) => {
   ctx.imageSmoothingQuality = 'high'
   
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+  
+  if (slide) {
+    drawBloqueTemaBadges(ctx, slide.bloque, slide.tema)
+  }
+
   return canvas.toDataURL('image/jpeg', 0.88)
 }
 
@@ -84,6 +164,9 @@ const drawPlaceholderSlide = (slide, index, total) => {
   ctx.font = 'bold 44px sans-serif'
   ctx.textAlign = 'right'
   ctx.fillText(`${index + 1} / ${total}`, 1888, 100)
+
+  // Draw Bloque/Tema badges if present
+  drawBloqueTemaBadges(ctx, slide.bloque, slide.tema)
 
   // Slide Title (centered, wrapped)
   ctx.fillStyle = '#ffffff'
@@ -144,7 +227,7 @@ export async function exportPresentationToPdf(title, slides, onProgress = null) 
     try {
       if (slide.mediaUrl) {
         const img = await loadImage(slide.mediaUrl)
-        const dataUrl = drawImageSlide(img)
+        const dataUrl = drawImageSlide(img, slide)
         slideImages.push(dataUrl)
       } else {
         slideImages.push(drawPlaceholderSlide(slide, i, total))

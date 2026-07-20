@@ -182,7 +182,9 @@ export default function CrmPresentationEditor() {
       title: 'Diapositiva ' + (slides.length + 1),
       mediaUrl: '',
       notes: '',
-      showFooterLogo: false
+      showFooterLogo: false,
+      bloque: '',
+      tema: ''
     }
     setSlides(prev => [...prev, newSlide])
     setSelectedSlideId(newSlide.id)
@@ -298,7 +300,9 @@ export default function CrmPresentationEditor() {
           quoteAuthor: '',
           cards: [],
           notes: '',
-          showFooterLogo: false // Hide footer by default for full screen images
+          showFooterLogo: false, // Hide footer by default for full screen images
+          bloque: '',
+          tema: ''
         })
       }
 
@@ -390,12 +394,33 @@ export default function CrmPresentationEditor() {
       )
     }
 
-    const { mediaUrl } = selectedSlide
+    const { mediaUrl, bloque, tema } = selectedSlide
 
     return (
       <div 
         className="absolute inset-0 w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-2xl border border-gray-800 shadow-2xl"
       >
+        {/* Bloque and Tema Overlay */}
+        {(bloque || tema) && (
+          <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 select-none pointer-events-none max-w-[80%]">
+            {bloque && (
+              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A8D5C1]"></span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A8D5C1] truncate max-w-[150px]" title={bloque}>
+                  {bloque}
+                </span>
+              </div>
+            )}
+            {tema && (
+              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg shadow-lg text-white">
+                <span className="text-[10px] font-bold tracking-wide truncate max-w-[200px]" title={tema}>
+                  {tema}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {mediaUrl ? (
           <img src={mediaUrl} className="w-full h-full object-contain select-none pointer-events-none" alt="Diapositiva" />
         ) : (
@@ -549,6 +574,26 @@ export default function CrmPresentationEditor() {
                       </span>
                     </div>
                     <p className="text-xs font-bold text-[var(--color-deep-green)] truncate">{s.title || 'Sin Título'}</p>
+                    {(s.bloque || s.tema) && (
+                      <div className="flex flex-wrap gap-1 mt-0.5 select-none pointer-events-none">
+                        {s.bloque && (
+                          <span 
+                            className="text-[8px] bg-[var(--color-deep-green)]/10 text-[var(--color-deep-green)] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide truncate max-w-[90px]" 
+                            title={s.bloque}
+                          >
+                            {s.bloque}
+                          </span>
+                        )}
+                        {s.tema && (
+                          <span 
+                            className="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium truncate max-w-[90px]" 
+                            title={s.tema}
+                          >
+                            {s.tema}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <p className="text-[9px] text-[var(--color-dark-gray)]/50 capitalize font-medium">{s.layout}</p>
                   </div>
                 )
@@ -699,6 +744,29 @@ export default function CrmPresentationEditor() {
                         placeholder="Diapositiva 1..."
                         className="form-input border border-gray-200 font-bold"
                       />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Bloque</label>
+                        <input
+                          type="text"
+                          value={selectedSlide.bloque || ''}
+                          onChange={(e) => handleUpdateSlideField('bloque', e.target.value)}
+                          placeholder="Bloque 1..."
+                          className="form-input border border-gray-200 text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">Tema</label>
+                        <input
+                          type="text"
+                          value={selectedSlide.tema || ''}
+                          onChange={(e) => handleUpdateSlideField('tema', e.target.value)}
+                          placeholder="Tema 1.1..."
+                          className="form-input border border-gray-200 text-xs font-semibold"
+                        />
+                      </div>
                     </div>
 
                     <div>
