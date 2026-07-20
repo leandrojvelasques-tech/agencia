@@ -295,16 +295,42 @@ export default function EventCreate() {
     agenda: prev.agenda.map((c, idx) => idx === classIdx ? { ...c, [field]: value } : c)
   }))
 
-  const addBlock = (classIdx) => setForm(prev => ({
+  const addBlock = (classIdx, type = 'block') => setForm(prev => ({
     ...prev,
     agenda: prev.agenda.map((c, idx) => {
       if (idx !== classIdx) return c
       const nextBlocks = Array.isArray(c.blocks) ? c.blocks : []
-      const newBlockNum = nextBlocks.length + 1
+      const blockNumber = nextBlocks.filter(b => !b.type || b.type === 'block').length + 1
+      
+      let newBlock
+      if (type === 'break') {
+        newBlock = { id: generateUUID(), type: 'break', duration: 15 }
+      } else if (type === 'custom') {
+        newBlock = { id: generateUUID(), type: 'custom', title: 'Consultas / Q&A', duration: 15, description: '' }
+      } else {
+        newBlock = { id: generateUUID(), type: 'block', title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
+      }
+      
       return {
         ...c,
-        blocks: [...nextBlocks, { id: generateUUID(), title: `Bloque ${newBlockNum}`, subtitle: '', description: '' }]
+        blocks: [...nextBlocks, newBlock]
       }
+    })
+  }))
+
+  const moveBlock = (classIdx, blockIdx, direction) => setForm(prev => ({
+    ...prev,
+    agenda: prev.agenda.map((c, idx) => {
+      if (idx !== classIdx) return c
+      const blocks = [...(c.blocks || [])]
+      const targetIdx = direction === 'up' ? blockIdx - 1 : blockIdx + 1
+      if (targetIdx >= 0 && targetIdx < blocks.length) {
+        const temp = blocks[blockIdx]
+        blocks[blockIdx] = blocks[targetIdx]
+        blocks[targetIdx] = temp
+        return { ...c, blocks }
+      }
+      return c
     })
   }))
 
@@ -1030,15 +1056,30 @@ export default function EventCreate() {
                           onChange={e => updateClassTitle(classIdx, e.target.value)}
                         />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => addBlock(classIdx)}
-                          className="btn-ghost text-xs !text-[var(--color-deep-green)] !py-1.5"
-                          title="Agregar Bloque a esta Clase"
-                        >
-                          <span className="material-symbols-outlined text-base">add_box</span> + Bloque
-                        </button>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1 bg-white/60 p-1 rounded-lg border border-[var(--color-deep-green)]/10">
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'block')}
+                            className="text-[10px] font-bold text-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/5 px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-xs leading-none">add</span> + Bloque
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'break')}
+                            className="text-[10px] font-bold text-amber-700 hover:bg-amber-50 px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-xs leading-none">coffee</span> + Break
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'custom')}
+                            className="text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-xs leading-none">forum</span> + Especial
+                          </button>
+                        </div>
                         {form.agenda.length > 1 && (
                           <button
                             type="button"
@@ -1084,48 +1125,149 @@ export default function EventCreate() {
                     </div>
 
                     <div className="space-y-3 pl-4 border-l-2 border-[var(--color-deep-green)]/10">
-                      {(c.blocks || []).map((b, blockIdx) => (
-                        <div key={blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-white border border-[var(--color-deep-green)]/5 relative group space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <input
-                              className="form-input !py-2.5 !px-3 text-sm font-semibold w-full bg-[var(--color-refined-gray)]/50"
-                              placeholder="Nombre (ej: Bloque 1)"
-                              value={b.title || ''}
-                              onChange={e => updateBlock(classIdx, blockIdx, 'title', e.target.value)}
-                            />
-                            {c.blocks.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeBlock(classIdx, blockIdx)}
-                                className="text-red-400 hover:text-red-600 transition-colors p-1"
-                                title="Eliminar Bloque"
-                              >
-                                <span className="material-symbols-outlined text-base">close</span>
-                              </button>
+                      {(c.blocks || []).map((b, blockIdx) => {
+                        const blockType = b.type || 'block'
+                        return (
+                          <div 
+                            key={b.id || blockIdx} 
+                            className={`p-3.5 rounded-xl border space-y-2.5 shadow-sm transition-all relative ${
+                              blockType === 'break' 
+                                ? 'bg-amber-50/50 border-amber-200' 
+                                : blockType === 'custom'
+                                  ? 'bg-indigo-50/30 border-indigo-150'
+                                  : 'bg-white border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-2 flex-1">
+                                {blockType === 'break' && (
+                                  <>
+                                    <span className="material-symbols-outlined text-amber-700 text-sm">coffee</span>
+                                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Break / Receso</span>
+                                  </>
+                                )}
+                                {blockType === 'custom' && (
+                                  <>
+                                    <span className="material-symbols-outlined text-indigo-700 text-sm">forum</span>
+                                    <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Actividad Especial</span>
+                                  </>
+                                )}
+                                {blockType === 'block' && (
+                                  <input
+                                    className="form-input !py-2.5 !px-3 text-sm font-semibold w-full bg-[var(--color-refined-gray)]/50"
+                                    placeholder="Nombre (ej: Bloque 1)"
+                                    value={b.title || ''}
+                                    onChange={e => updateBlock(classIdx, blockIdx, 'title', e.target.value)}
+                                  />
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {/* Move Up */}
+                                <button
+                                  type="button"
+                                  disabled={blockIdx === 0}
+                                  onClick={() => moveBlock(classIdx, blockIdx, 'up')}
+                                  className={`text-gray-405 hover:text-gray-600 p-0.5 rounded cursor-pointer ${blockIdx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                  title="Subir"
+                                >
+                                  <span className="material-symbols-outlined text-sm leading-none">arrow_upward</span>
+                                </button>
+                                {/* Move Down */}
+                                <button
+                                  type="button"
+                                  disabled={blockIdx === c.blocks.length - 1}
+                                  onClick={() => moveBlock(classIdx, blockIdx, 'down')}
+                                  className={`text-gray-405 hover:text-gray-600 p-0.5 rounded cursor-pointer ${blockIdx === c.blocks.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                  title="Bajar"
+                                >
+                                  <span className="material-symbols-outlined text-sm leading-none">arrow_downward</span>
+                                </button>
+                                {/* Remove */}
+                                <button
+                                  type="button"
+                                  onClick={() => removeBlock(classIdx, blockIdx)}
+                                  className="text-red-400 hover:text-red-600 cursor-pointer p-0.5"
+                                  title="Eliminar"
+                                >
+                                  <span className="material-symbols-outlined text-base leading-none">close</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Render different fields depending on blockType */}
+                            {blockType === 'break' && (
+                              <div className="flex items-center gap-2">
+                                <label className="text-[10px] font-bold text-amber-800 uppercase">Duración (Minutos):</label>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={b.duration || 15}
+                                  onChange={(e) => updateBlock(classIdx, blockIdx, 'duration', parseInt(e.target.value) || 0)}
+                                  className="w-20 px-2 py-1 text-xs border border-amber-200 rounded bg-white text-amber-900 focus:outline-none focus:border-amber-500 font-bold"
+                                />
+                              </div>
+                            )}
+
+                            {blockType === 'custom' && (
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="col-span-2">
+                                    <input
+                                      type="text"
+                                      value={b.title}
+                                      onChange={(e) => updateBlock(classIdx, blockIdx, 'title', e.target.value)}
+                                      placeholder="Título de la actividad (Ej. Consultas / Dudas)"
+                                      className="w-full p-2 text-xs border border-indigo-150 rounded bg-white text-indigo-900 focus:outline-none focus:border-indigo-500 font-semibold"
+                                    />
+                                  </div>
+                                  <div className="col-span-1 flex items-center gap-1.5">
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={b.duration || 15}
+                                      onChange={(e) => updateBlock(classIdx, blockIdx, 'duration', parseInt(e.target.value) || 0)}
+                                      className="w-full p-2 text-xs border border-indigo-150 rounded bg-white text-indigo-900 focus:outline-none focus:border-indigo-500 font-bold"
+                                      placeholder="Minutos"
+                                    />
+                                    <span className="text-[10px] text-indigo-800 font-bold">min</span>
+                                  </div>
+                                </div>
+                                <textarea
+                                  value={b.description || ''}
+                                  onChange={(e) => updateBlock(classIdx, blockIdx, 'description', e.target.value)}
+                                  placeholder="Detalle o descripción opcional..."
+                                  rows={1.5}
+                                  className="w-full p-2 text-xs border border-indigo-100 rounded focus:outline-none focus:border-indigo-500 bg-white"
+                                />
+                              </div>
+                            )}
+
+                            {blockType === 'block' && (
+                              <div className="space-y-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Subtítulo</label>
+                                  <input
+                                    className="form-input !py-2.5 !px-3 text-xs"
+                                    placeholder="Subtítulo del bloque..."
+                                    value={b.subtitle || ''}
+                                    onChange={e => updateBlock(classIdx, blockIdx, 'subtitle', e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Descripción General (Visible al cliente)</label>
+                                  <textarea
+                                    className="form-input !py-3 !px-4 text-xs min-h-[120px]"
+                                    placeholder="Qué aprenderá el cliente en este bloque..."
+                                    value={b.description || ''}
+                                    onChange={e => updateBlock(classIdx, blockIdx, 'description', e.target.value)}
+                                  />
+                                </div>
+                              </div>
                             )}
                           </div>
-                          
-                          <div className="space-y-1">
-                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Subtítulo</label>
-                            <input
-                              className="form-input !py-2.5 !px-3 text-sm"
-                              placeholder="Subtítulo del bloque..."
-                              value={b.subtitle || ''}
-                              onChange={e => updateBlock(classIdx, blockIdx, 'subtitle', e.target.value)}
-                            />
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Descripción General (Visible al cliente)</label>
-                            <textarea
-                              className="form-input !py-3 !px-4 text-sm min-h-[200px]"
-                              placeholder="Qué aprenderá el cliente en este bloque..."
-                              value={b.description || ''}
-                              onChange={e => updateBlock(classIdx, blockIdx, 'description', e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 ))}

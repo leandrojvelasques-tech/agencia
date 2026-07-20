@@ -121,14 +121,39 @@ export default function AgendaTemplatesDashboard() {
     })
   }
 
-  const addBlock = (classIdx) => {
+  const addBlock = (classIdx, type = 'block') => {
     setForm(prev => {
       const updatedAgenda = [...prev.agenda]
-      const blockNumber = updatedAgenda[classIdx].blocks.length + 1
-      updatedAgenda[classIdx].blocks = [
-        ...updatedAgenda[classIdx].blocks,
-        { id: generateUUID(), title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
-      ]
+      const blocks = updatedAgenda[classIdx].blocks || []
+      const blockNumber = blocks.filter(b => !b.type || b.type === 'block').length + 1
+      
+      let newBlock
+      if (type === 'break') {
+        newBlock = { id: generateUUID(), type: 'break', duration: 15 }
+      } else if (type === 'custom') {
+        newBlock = { id: generateUUID(), type: 'custom', title: 'Consultas / Q&A', duration: 15, description: '' }
+      } else {
+        newBlock = { id: generateUUID(), type: 'block', title: `Bloque ${blockNumber}`, subtitle: '', description: '' }
+      }
+
+      updatedAgenda[classIdx].blocks = [...blocks, newBlock]
+      return { ...prev, agenda: updatedAgenda }
+    })
+  }
+
+  const moveBlock = (classIdx, blockIdx, direction) => {
+    setForm(prev => {
+      const updatedAgenda = [...prev.agenda]
+      const blocks = [...updatedAgenda[classIdx].blocks]
+      const targetIdx = direction === 'up' ? blockIdx - 1 : blockIdx + 1
+      
+      if (targetIdx >= 0 && targetIdx < blocks.length) {
+        const temp = blocks[blockIdx]
+        blocks[blockIdx] = blocks[targetIdx]
+        blocks[targetIdx] = temp
+        updatedAgenda[classIdx].blocks = blocks
+      }
+      
       return { ...prev, agenda: updatedAgenda }
     })
   }
@@ -407,51 +432,170 @@ export default function AgendaTemplatesDashboard() {
                     <div className="space-y-3 pt-3 border-t border-[var(--color-deep-green)]/5">
                       <div className="flex items-center justify-between">
                         <label className="block text-[10px] font-bold uppercase text-[var(--color-deep-green)]">Bloques de Contenido</label>
-                        <button
-                          type="button"
-                          onClick={() => addBlock(classIdx)}
-                          className="text-[10px] font-bold text-[var(--color-deep-green)] hover:underline flex items-center gap-0.5 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[12px]">add</span>
-                          Agregar Bloque
-                        </button>
+                        <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'block')}
+                            className="text-[9px] font-bold text-[var(--color-deep-green)] hover:bg-white px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[10px]">add</span> + Bloque
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'break')}
+                            className="text-[9px] font-bold text-amber-700 hover:bg-white px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[10px]">coffee</span> + Break
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => addBlock(classIdx, 'custom')}
+                            className="text-[9px] font-bold text-indigo-700 hover:bg-white px-2 py-1 rounded transition-colors flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[10px]">forum</span> + Especial
+                          </button>
+                        </div>
                       </div>
 
-                      {cls.blocks?.map((block, blockIdx) => (
-                        <div key={blockIdx} className="bg-white p-3.5 rounded border border-gray-200 space-y-2.5 shadow-sm">
-                          <div className="flex items-center justify-between gap-4">
-                            <input
-                              type="text"
-                              value={block.title}
-                              onChange={(e) => updateBlockField(classIdx, blockIdx, 'title', e.target.value)}
-                              placeholder="Título del bloque (Ej. Introducción)"
-                              className="flex-1 text-xs font-semibold text-[var(--color-dark-gray)] border-b border-transparent hover:border-gray-200 focus:border-[var(--color-deep-green)] focus:outline-none py-0.5"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(classIdx, blockIdx)}
-                              className="text-red-400 hover:text-red-600 cursor-pointer"
-                              title="Eliminar bloque"
-                            >
-                              <span className="material-symbols-outlined text-base">close</span>
-                            </button>
+                      {cls.blocks?.map((block, blockIdx) => {
+                        const blockType = block.type || 'block'
+                        return (
+                          <div 
+                            key={block.id || blockIdx} 
+                            className={`p-3.5 rounded-xl border space-y-2.5 shadow-sm transition-all ${
+                              blockType === 'break' 
+                                ? 'bg-amber-50/50 border-amber-200' 
+                                : blockType === 'custom'
+                                  ? 'bg-indigo-50/30 border-indigo-150'
+                                  : 'bg-white border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-2 flex-1">
+                                {blockType === 'break' && (
+                                  <>
+                                    <span className="material-symbols-outlined text-amber-700 text-sm">coffee</span>
+                                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Break / Receso</span>
+                                  </>
+                                )}
+                                {blockType === 'custom' && (
+                                  <>
+                                    <span className="material-symbols-outlined text-indigo-700 text-sm">forum</span>
+                                    <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Actividad Especial</span>
+                                  </>
+                                )}
+                                {blockType === 'block' && (
+                                  <input
+                                    type="text"
+                                    value={block.title}
+                                    onChange={(e) => updateBlockField(classIdx, blockIdx, 'title', e.target.value)}
+                                    placeholder="Título del bloque (Ej. Introducción e interfaz)"
+                                    className="flex-1 text-xs font-semibold text-[var(--color-dark-gray)] border-b border-transparent hover:border-gray-200 focus:border-[var(--color-deep-green)] focus:outline-none py-0.5"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {/* Move Up */}
+                                <button
+                                  type="button"
+                                  disabled={blockIdx === 0}
+                                  onClick={() => moveBlock(classIdx, blockIdx, 'up')}
+                                  className={`text-gray-400 hover:text-gray-600 p-0.5 rounded cursor-pointer ${blockIdx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                  title="Subir"
+                                >
+                                  <span className="material-symbols-outlined text-sm leading-none">arrow_upward</span>
+                                </button>
+                                {/* Move Down */}
+                                <button
+                                  type="button"
+                                  disabled={blockIdx === cls.blocks.length - 1}
+                                  onClick={() => moveBlock(classIdx, blockIdx, 'down')}
+                                  className={`text-gray-400 hover:text-gray-600 p-0.5 rounded cursor-pointer ${blockIdx === cls.blocks.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                  title="Bajar"
+                                >
+                                  <span className="material-symbols-outlined text-sm leading-none">arrow_downward</span>
+                                </button>
+                                {/* Remove */}
+                                <button
+                                  type="button"
+                                  onClick={() => removeBlock(classIdx, blockIdx)}
+                                  className="text-red-400 hover:text-red-600 cursor-pointer p-0.5"
+                                  title="Eliminar"
+                                >
+                                  <span className="material-symbols-outlined text-base leading-none">close</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Render different fields depending on blockType */}
+                            {blockType === 'break' && (
+                              <div className="flex items-center gap-2">
+                                <label className="text-[10px] font-bold text-amber-800 uppercase">Duración (Minutos):</label>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={block.duration || 15}
+                                  onChange={(e) => updateBlockField(classIdx, blockIdx, 'duration', parseInt(e.target.value) || 0)}
+                                  className="w-20 px-2 py-1 text-xs border border-amber-200 rounded bg-white text-amber-900 focus:outline-none focus:border-amber-500 font-bold"
+                                />
+                              </div>
+                            )}
+
+                            {blockType === 'custom' && (
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="col-span-2">
+                                    <input
+                                      type="text"
+                                      value={block.title}
+                                      onChange={(e) => updateBlockField(classIdx, blockIdx, 'title', e.target.value)}
+                                      placeholder="Título de la actividad (Ej. Consultas / Dudas)"
+                                      className="w-full p-2 text-xs border border-indigo-150 rounded bg-white text-indigo-900 focus:outline-none focus:border-indigo-500 font-semibold"
+                                    />
+                                  </div>
+                                  <div className="col-span-1 flex items-center gap-1.5">
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={block.duration || 15}
+                                      onChange={(e) => updateBlockField(classIdx, blockIdx, 'duration', parseInt(e.target.value) || 0)}
+                                      className="w-full p-2 text-xs border border-indigo-150 rounded bg-white text-indigo-900 focus:outline-none focus:border-indigo-500 font-bold"
+                                      placeholder="Minutos"
+                                    />
+                                    <span className="text-[10px] text-indigo-800 font-bold">min</span>
+                                  </div>
+                                </div>
+                                <textarea
+                                  value={block.description || ''}
+                                  onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}
+                                  placeholder="Detalle o descripción opcional..."
+                                  rows={1}
+                                  className="w-full p-2 text-xs border border-indigo-100 rounded focus:outline-none focus:border-indigo-500 bg-white"
+                                />
+                              </div>
+                            )}
+
+                            {blockType === 'block' && (
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={block.subtitle || ''}
+                                  onChange={(e) => updateBlockField(classIdx, blockIdx, 'subtitle', e.target.value)}
+                                  placeholder="Subtítulo del bloque..."
+                                  className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50 text-gray-500 font-medium"
+                                />
+                                <textarea
+                                  value={block.description}
+                                  onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}
+                                  placeholder="Descripción de lo que se dictará en este bloque..."
+                                  rows={2}
+                                  className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50"
+                                />
+                              </div>
+                            )}
                           </div>
-                          <input
-                            type="text"
-                            value={block.subtitle || ''}
-                            onChange={(e) => updateBlockField(classIdx, blockIdx, 'subtitle', e.target.value)}
-                            placeholder="Subtítulo del bloque..."
-                            className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50 text-gray-500 font-medium"
-                          />
-                          <textarea
-                            value={block.description}
-                            onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}
-                            placeholder="Descripción de lo que se dictará en este bloque..."
-                            rows={2}
-                            className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50"
-                          />
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
@@ -516,19 +660,50 @@ export default function AgendaTemplatesDashboard() {
                     </div>
 
                     <div className="space-y-3">
-                      {cls.blocks?.map((block, blockIdx) => (
-                        <div key={blockIdx} className="text-xs space-y-1">
-                          <p className="font-bold text-[var(--color-dark-gray)] flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-deep-green)]"></span>
-                            {block.title}
-                          </p>
-                          {block.description && (
-                            <p className="text-[var(--color-dark-gray)]/75 pl-3.5 leading-relaxed">
-                              {block.description}
+                      {cls.blocks?.map((block, blockIdx) => {
+                        const blockType = block.type || 'block'
+                        if (blockType === 'break') {
+                          return (
+                            <div key={blockIdx} className="text-xs flex items-center gap-1.5 text-amber-700 bg-amber-50/50 p-1.5 rounded border border-amber-100">
+                              <span className="material-symbols-outlined text-sm">coffee</span>
+                              <span className="font-bold">Break / Receso ({block.duration || 15} min)</span>
+                            </div>
+                          )
+                        }
+                        if (blockType === 'custom') {
+                          return (
+                            <div key={blockIdx} className="text-xs p-1.5 rounded border border-indigo-100 bg-indigo-50/30 space-y-0.5 text-indigo-900">
+                              <div className="flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-sm">forum</span>
+                                <span className="font-bold">{block.title} ({block.duration || 15} min)</span>
+                              </div>
+                              {block.description && (
+                                <p className="text-[11px] text-indigo-950/80 pl-5">
+                                  {block.description}
+                                </p>
+                              )}
+                            </div>
+                          )
+                        }
+                        return (
+                          <div key={blockIdx} className="text-xs space-y-1">
+                            <p className="font-bold text-[var(--color-dark-gray)] flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-deep-green)]"></span>
+                              {block.title}
                             </p>
-                          )}
-                        </div>
-                      ))}
+                            {block.subtitle && (
+                              <p className="text-[11px] text-[var(--color-dark-gray)]/50 pl-3.5 italic leading-none font-semibold">
+                                {block.subtitle}
+                              </p>
+                            )}
+                            {block.description && (
+                              <p className="text-[var(--color-dark-gray)]/75 pl-3.5 leading-relaxed mt-1">
+                                {block.description}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}

@@ -348,8 +348,23 @@ export default function CoworkerAttendance() {
         </div>
 
         {/* Attendance Area */}
-        <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 shadow-md">
-          <div className="flex justify-between items-center mb-5">
+        {currentSession?.status === 'suspended' ? (
+          <div className="card p-8 text-center bg-red-50/50 border border-red-200/50 flex flex-col items-center justify-center shadow-md">
+            <span className="material-symbols-outlined text-4xl text-red-500 mb-3 block font-light">pause_circle</span>
+            <p className="text-base font-bold text-red-800">Clase Suspendida</p>
+            <p className="text-xs text-red-700/80 mt-1.5 max-w-xs leading-relaxed">
+              Leandro marcó esta clase como suspendida. No es necesario tomar asistencia hoy.
+            </p>
+            {sessionNotes && (
+              <div className="mt-4 p-3 bg-white rounded-premium border border-red-100 w-full text-left">
+                <p className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 uppercase tracking-wider">Motivo:</p>
+                <p className="text-xs font-semibold text-[var(--color-dark-gray)] mt-0.5">{sessionNotes}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 shadow-md">
+            <div className="flex justify-between items-center mb-5">
             <h2 className="text-sm font-bold text-[var(--color-deep-green)] uppercase tracking-wider">Lista de Asistencia</h2>
             <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
               {attendanceList.length} Alumnos
@@ -470,36 +485,41 @@ export default function CoworkerAttendance() {
             </div>
           )}
         </div>
+        )}
 
-        {/* Session Notes */}
-        <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 shadow-md space-y-3">
-          <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">Notas de la Clase</h3>
-          <textarea
-            value={sessionNotes}
-            onChange={e => setSessionNotes(e.target.value)}
-            placeholder="Anotaciones sobre lo dictado hoy en la clase..."
-            rows={3}
-            className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium resize-none text-xs"
-          />
-        </div>
+        {currentSession?.status !== 'suspended' && (
+          <>
+            {/* Session Notes */}
+            <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 shadow-md space-y-3">
+              <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">Notas de la Clase</h3>
+              <textarea
+                value={sessionNotes}
+                onChange={e => setSessionNotes(e.target.value)}
+                placeholder="Anotaciones sobre lo dictado hoy en la clase..."
+                rows={3}
+                className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-[var(--color-dark-gray)] placeholder:text-[var(--color-dark-gray)]/30 focus:ring-2 focus:ring-[var(--color-deep-green)]/20 outline-none transition-all font-medium resize-none text-xs"
+              />
+            </div>
 
-        {/* Save Action Sticky Area */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-          <div className="max-w-md mx-auto">
-            <button
-              onClick={handleSaveAttendance}
-              disabled={saving || attendanceList.length === 0}
-              className="btn-primary w-full py-3.5 text-sm font-bold flex justify-center items-center gap-2 shadow-lg"
-            >
-              {saving ? (
-                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-              ) : (
-                <span className="material-symbols-outlined text-lg">save</span>
-              )}
-              Guardar Asistencia de Hoy
-            </button>
-          </div>
-        </div>
+            {/* Save Action Sticky Area */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+              <div className="max-w-md mx-auto">
+                <button
+                  onClick={handleSaveAttendance}
+                  disabled={saving || attendanceList.length === 0}
+                  className="btn-primary w-full py-3.5 text-sm font-bold flex justify-center items-center gap-2 shadow-lg"
+                >
+                  {saving ? (
+                    <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">save</span>
+                  )}
+                  Guardar Asistencia de Hoy
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

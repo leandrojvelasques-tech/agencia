@@ -297,20 +297,53 @@ export default function EventLanding() {
                       )}
                     </div>
                     <div className="space-y-3 pl-4 border-l border-[var(--color-deep-green)]/10">
-                      {(c.blocks || []).map((b, blockIdx) => (
-                        <div key={blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5">
-                          <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 mb-1">
-                            {b.title || `Bloque ${blockIdx + 1}`}
-                          </p>
-                          {b.description ? (
-                            <p className="text-sm text-[var(--color-dark-gray)]/85 font-medium leading-relaxed">
-                              {b.description}
+                      {(c.blocks || []).map((b, blockIdx) => {
+                        const blockType = b.type || 'block'
+                        if (blockType === 'break') {
+                          return (
+                            <div key={b.id || blockIdx} className="flex items-center gap-2.5 bg-amber-50/60 border border-amber-200/60 rounded-[var(--radius-premium)] p-3 my-2 shadow-sm">
+                              <span className="material-symbols-outlined text-amber-700 text-lg leading-none">coffee</span>
+                              <span className="text-xs font-bold uppercase tracking-widest text-amber-800">Receso / Break ({b.duration || 15} min)</span>
+                            </div>
+                          )
+                        }
+                        if (blockType === 'custom') {
+                          return (
+                            <div key={b.id || blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-indigo-50/50 border border-indigo-150 shadow-sm space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-md text-indigo-700">forum</span>
+                                <span className="text-xs font-bold uppercase tracking-widest text-indigo-800">
+                                  {b.title} {b.duration ? `(${b.duration} min)` : ''}
+                                </span>
+                              </div>
+                              {b.description && (
+                                <p className="text-sm text-indigo-900/80 font-medium leading-relaxed">
+                                  {b.description}
+                                </p>
+                              )}
+                            </div>
+                          )
+                        }
+                        return (
+                          <div key={b.id || blockIdx} className="p-3 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 space-y-1">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70">
+                              {b.title || `Bloque ${blockIdx + 1}`}
                             </p>
-                          ) : (
-                            <p className="text-xs text-[var(--color-dark-gray)]/40 italic">Sin descripción general</p>
-                          )}
-                        </div>
-                      ))}
+                            {b.subtitle && (
+                              <p className="text-xs font-semibold text-[var(--color-dark-gray)]/50 italic leading-none">
+                                {b.subtitle}
+                              </p>
+                            )}
+                            {b.description ? (
+                              <p className="text-sm text-[var(--color-dark-gray)]/85 font-medium leading-relaxed mt-1">
+                                {b.description}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-[var(--color-dark-gray)]/40 italic">Sin descripción general</p>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                     {c.break_duration > 0 && (
                       <div className="flex items-center gap-2.5 bg-[var(--color-light-green)]/15 border border-[var(--color-deep-green)]/10 rounded-[var(--radius-premium)] p-3 my-3 ml-4">

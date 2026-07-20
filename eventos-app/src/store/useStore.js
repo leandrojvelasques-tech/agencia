@@ -859,7 +859,7 @@ export const useStore = create((set, get) => ({
     return data || []
   },
 
-  saveClassAttendance: async (classId, dateStr, notes, attendanceList) => {
+  saveClassAttendance: async (classId, dateStr, notes, attendanceList, status = 'held') => {
     // 1. Get or create session
     let { data: session, error: sErr } = await supabase
       .from('class_sessions')
@@ -876,7 +876,7 @@ export const useStore = create((set, get) => ({
     if (!session) {
       const { data: created, error: createError } = await supabase
         .from('class_sessions')
-        .insert([{ class_id: classId, session_date: dateStr, notes }])
+        .insert([{ class_id: classId, session_date: dateStr, notes, status }])
         .select()
         .single()
       
@@ -888,13 +888,13 @@ export const useStore = create((set, get) => ({
     } else {
       const { data: updated, error: updateError } = await supabase
         .from('class_sessions')
-        .update({ notes })
+        .update({ notes, status })
         .eq('id', session.id)
         .select()
         .single()
       
       if (updateError) {
-        console.error("Error updating session notes:", updateError)
+        console.error("Error updating session:", updateError)
         return { success: false, error: updateError }
       }
       session = updated
@@ -911,6 +911,11 @@ export const useStore = create((set, get) => ({
       return { success: false, error: delError }
     }
     
+    // If class is suspended, we do not save attendance lists
+    if (status === 'suspended') {
+      return { success: true, session }
+    }
+
     if (attendanceList.length > 0) {
       const records = attendanceList.map(a => ({
         session_id: session.id,
@@ -928,6 +933,14 @@ export const useStore = create((set, get) => ({
       }
     }
     return { success: true, session }
+  },
+
+  deleteClassSession: async (sessionId) => {
+    const { error } = await supabase
+      .from('class_sessions')
+      .delete()
+      .eq('id', sessionId)
+    return { success: !error, error }
   },
 
   fetchMonthlyClassReport: async (classId, year, month) => {

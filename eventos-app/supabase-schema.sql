@@ -481,6 +481,7 @@ CREATE TABLE IF NOT EXISTS class_sessions (
     class_id UUID NOT NULL REFERENCES recurring_classes(id) ON DELETE CASCADE,
     session_date DATE NOT NULL DEFAULT CURRENT_DATE,
     notes TEXT,
+    status TEXT NOT NULL DEFAULT 'held' CHECK (status IN ('held', 'suspended')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(class_id, session_date)
 );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
@@ -48,6 +48,19 @@ const getAvatarProps = (firstName, lastName) => {
   }
 }
 
+const getWeekDatesInMonth = (year, month, dayOfWeek) => {
+  const dates = []
+  const date = new Date(year, month - 1, 1)
+  while (date.getDay() !== dayOfWeek) {
+    date.setDate(date.getDate() + 1)
+  }
+  while (date.getMonth() === month - 1) {
+    dates.push(new Date(date).toISOString().split('T')[0])
+    date.setDate(date.getDate() + 7)
+  }
+  return dates
+}
+
 export default function ClassesDashboard() {
   const {
     students,
@@ -64,6 +77,7 @@ export default function ClassesDashboard() {
     fetchClassSession,
     fetchClassAttendance,
     saveClassAttendance,
+    deleteClassSession,
     fetchMonthlyClassReport
   } = useStore()
 
@@ -131,6 +145,54 @@ export default function ClassesDashboard() {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }
+
+  const combinedSessions = useMemo(() => {
+    const selectedClass = recurringClasses.find(c => c.id === selectedClassId)
+    if (!selectedClass) return []
+
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+
+    const scheduledDates = getWeekDatesInMonth(currentYear, currentMonth, selectedClass.day_of_week)
+
+    const dbSessionsByDate = {}
+    if (monthlySummary.sessions) {
+      monthlySummary.sessions.forEach(s => {
+        dbSessionsByDate[s.session_date] = s
+      })
+    }
+
+    const allDatesSet = new Set([
+      ...scheduledDates,
+      ...(monthlySummary.sessions ? monthlySummary.sessions.map(s => s.session_date) : [])
+    ])
+
+    const sortedDates = Array.from(allDatesSet).sort()
+
+    return sortedDates.map(dateStr => {
+      const dbSession = dbSessionsByDate[dateStr]
+      if (dbSession) {
+        return {
+          id: dbSession.id,
+          session_date: dateStr,
+          isVirtual: false,
+          notes: dbSession.notes,
+          status: dbSession.status || 'held',
+          realSession: dbSession
+        }
+      } else {
+        return {
+          id: `virtual-${dateStr}`,
+          session_date: dateStr,
+          isVirtual: true,
+          notes: '',
+          status: 'empty',
+          realSession: null
+        }
+      }
+    })
+  }, [selectedClassId, recurringClasses, monthlySummary])
 
   // Load Initial Data
   useEffect(() => {
@@ -303,7 +365,7 @@ export default function ClassesDashboard() {
         status: a.status || 'absent'
       }))
 
-      const res = await saveClassAttendance(selectedClassId, selectedDate, sessionNotes, records)
+      const res = await saveClassAttendance(selectedClassId, selectedDate, sessionNotes, records, 'held')
       if (res.success) {
         showToast('Asistencia guardada correctamente')
         setCurrentSession(res.session)
@@ -314,6 +376,77 @@ export default function ClassesDashboard() {
     } catch (err) {
       console.error(err)
       showToast('Error al guardar asistencia: ' + err.message, 'error')
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const handleResumeClass = async () => {
+    setIsActionLoading(true)
+    try {
+      const res = await saveClassAttendance(selectedClassId, selectedDate, sessionNotes, [], 'held')
+      if (res.success) {
+        showToast('Clase reanudada con éxito')
+        setCurrentSession(res.session)
+        fetchRecurringClasses()
+        loadAttendanceData()
+      } else {
+        throw new Error(res.error?.message)
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Error al reanudar clase: ' + err.message, 'error')
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const handleSuspendClass = async () => {
+    const reason = window.prompt('Introduce el motivo de la suspensión (ej. Feriado, Vacaciones):', 'Feriado')
+    if (reason === null) return // Canceled prompt
+    
+    setIsActionLoading(true)
+    try {
+      const res = await saveClassAttendance(selectedClassId, selectedDate, reason || 'Suspendida', [], 'suspended')
+      if (res.success) {
+        showToast('Clase suspendida con éxito')
+        setCurrentSession(res.session)
+        setSessionNotes(reason || 'Suspendida')
+        fetchRecurringClasses()
+      } else {
+        throw new Error(res.error?.message)
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Error al suspender clase: ' + err.message, 'error')
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const handleDeleteSheet = async () => {
+    if (!currentSession) return
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar por completo la planilla de esta fecha?\n` +
+      `Se borrarán permanentemente las asistencias guardadas.`
+    )
+    if (!confirmDelete) return
+
+    setIsActionLoading(true)
+    try {
+      const res = await deleteClassSession(currentSession.id)
+      if (res.success) {
+        showToast('Planilla eliminada correctamente')
+        setCurrentSession(null)
+        setSessionNotes('')
+        fetchRecurringClasses()
+        loadAttendanceData() // reload list to default unmarked
+      } else {
+        throw new Error(res.error?.message)
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Error al eliminar planilla: ' + err.message, 'error')
     } finally {
       setIsActionLoading(false)
     }
@@ -760,43 +893,46 @@ export default function ClassesDashboard() {
       {activeTab === 'attendance' && (
         <div className="space-y-6">
           {/* Resumen Mensual de Asistencia */}
-          {selectedClassId && monthlySummary.sessions && monthlySummary.sessions.length > 0 && (
+          {selectedClassId && combinedSessions.length > 0 && (
             <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5 space-y-4 shadow-sm">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-bold text-[var(--color-deep-green)] uppercase tracking-wider">
                   Resumen de Clases - {MONTHS.find(m => m.value === (new Date().getMonth() + 1))?.label} {new Date().getFullYear()}
                 </h3>
                 <span className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 bg-[var(--color-refined-gray)] px-2 py-0.5 rounded-full">
-                  {monthlySummary.sessions.length} Clases Dictadas
+                  {combinedSessions.filter(s => !s.isVirtual && s.status === 'held').length} Clases Dictadas
                 </span>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
-                {monthlySummary.sessions.map(s => {
+                {combinedSessions.map(s => {
                   let presentCount = 0
                   let lateCount = 0
                   let absentCount = 0
                   const presentStudents = []
 
-                  students.forEach(student => {
-                    const isEnrolled = recurringClasses.find(c => c.id === selectedClassId)?.class_enrollments?.some(ce => ce.student_id === student.id)
-                    const status = monthlySummary.attendanceMap[student.id]?.[s.id]
-                    
-                    if (status === 'present') {
-                      presentCount++
-                      presentStudents.push(student)
-                    } else if (status === 'late') {
-                      lateCount++
-                      presentStudents.push(student)
-                    } else if (status === 'absent') {
-                      absentCount++
-                    } else if (isEnrolled) {
-                      absentCount++
-                    }
-                  })
+                  if (!s.isVirtual && s.status === 'held') {
+                    students.forEach(student => {
+                      const isEnrolled = recurringClasses.find(c => c.id === selectedClassId)?.class_enrollments?.some(ce => ce.student_id === student.id)
+                      const status = monthlySummary.attendanceMap[student.id]?.[s.id]
+                      
+                      if (status === 'present') {
+                        presentCount++
+                        presentStudents.push(student)
+                      } else if (status === 'late') {
+                        lateCount++
+                        presentStudents.push(student)
+                      } else if (status === 'absent') {
+                        absentCount++
+                      } else if (isEnrolled) {
+                        absentCount++
+                      }
+                    })
+                  }
 
                   const [year, month, day] = s.session_date.split('-').map(Number)
                   const dateObj = new Date(year, month - 1, day)
                   const dayName = DAYS_OF_WEEK.find(d => d.value === dateObj.getDay())?.label?.substring(0, 3)
+                  const isFuture = s.session_date > new Date().toISOString().split('T')[0]
 
                   return (
                     <div 
@@ -809,24 +945,55 @@ export default function ClassesDashboard() {
                       <p className="text-[10px] font-bold text-[var(--color-dark-gray)]/40 uppercase tracking-wide group-hover:text-[var(--color-deep-green)]/60 transition-colors">
                         {dayName} {day}
                       </p>
-                      <div className="mt-2.5 space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-[var(--color-dark-gray)]">{presentCount + lateCount}</span>
-                          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Presentes</span>
+                      
+                      {s.status === 'suspended' ? (
+                        <div className="mt-2.5 space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">
+                              Suspendida
+                            </span>
+                          </div>
+                          <p className="text-[9px] text-[var(--color-dark-gray)]/40 truncate mt-1">
+                            {s.notes || 'Feriado/Sin clase'}
+                          </p>
                         </div>
-                        {lateCount > 0 && (
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="font-semibold text-amber-600">{lateCount} tarde</span>
+                      ) : s.status === 'empty' ? (
+                        <div className="mt-2.5 space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            {isFuture ? (
+                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
+                                Futura
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                                Sin Registro
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {absentCount > 0 && (
-                          <div className="flex items-center justify-between text-[10px] text-[var(--color-dark-gray)]/40">
-                            <span>{absentCount} ausentes</span>
+                          <p className="text-[9px] text-[var(--color-dark-gray)]/40 mt-1">
+                            {isFuture ? 'Clase programada' : 'No se tomó asistencia'}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-2.5 space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-[var(--color-dark-gray)]">{presentCount + lateCount}</span>
+                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Presentes</span>
                           </div>
-                        )}
-                      </div>
+                          {lateCount > 0 && (
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="font-semibold text-amber-600">{lateCount} tarde</span>
+                            </div>
+                          )}
+                          {absentCount > 0 && (
+                            <div className="flex items-center justify-between text-[10px] text-[var(--color-dark-gray)]/40">
+                              <span>{absentCount} ausentes</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                      {presentStudents.length > 0 && (
+                      {s.status === 'held' && presentStudents.length > 0 && (
                         <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center">
                           <div className="flex -space-x-1.5 overflow-hidden">
                             {presentStudents.slice(0, 3).map(ps => {
@@ -923,10 +1090,25 @@ export default function ClassesDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-4">
-                <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-bold text-[var(--color-deep-green)]">Lista de Asistencia</h2>
+              {currentSession?.status === 'suspended' ? (
+                <div className="lg:col-span-2 card p-8 text-center bg-red-50/50 border border-red-200/50 flex flex-col items-center justify-center shadow-md">
+                  <span className="material-symbols-outlined text-5xl text-red-500 mb-4 block font-light">pause_circle</span>
+                  <p className="text-lg font-bold text-red-800">Esta clase ha sido marcada como SUSPENDIDA</p>
+                  <p className="text-sm text-red-700/80 mt-2 max-w-md leading-relaxed">
+                    No se tomará asistencia para esta fecha. Esto ocurre por feriados, vacaciones o suspensión de actividades.
+                  </p>
+                  {sessionNotes && (
+                    <div className="mt-4 p-3 bg-white rounded-premium border border-red-100 max-w-sm w-full">
+                      <p className="text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider text-left">Motivo:</p>
+                      <p className="text-sm font-semibold text-[var(--color-dark-gray)] text-left mt-1">{sessionNotes}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-lg font-bold text-[var(--color-deep-green)]">Lista de Asistencia</h2>
                     <span className="text-xs font-bold text-[var(--color-dark-gray)]/50 bg-[var(--color-refined-gray)] px-3 py-1 rounded-full">
                       {attendanceList.length} Alumnos
                     </span>
@@ -1047,6 +1229,7 @@ export default function ClassesDashboard() {
                   )}
                 </div>
               </div>
+              )}
 
               <div className="space-y-6">
                 <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 flex flex-col h-full justify-between">
@@ -1061,19 +1244,62 @@ export default function ClassesDashboard() {
                     />
                   </div>
 
-                  <div className="mt-8">
-                    <button
-                      onClick={handleSaveAttendance}
-                      disabled={isActionLoading || attendanceList.length === 0}
-                      className="btn-primary w-full py-4 text-sm font-bold flex justify-center items-center gap-2"
-                    >
-                      {isActionLoading ? (
-                        <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-                      ) : (
-                        <span className="material-symbols-outlined text-lg">save</span>
-                      )}
-                      Guardar Planilla
-                    </button>
+                  <div className="mt-8 space-y-3">
+                    {currentSession?.status === 'suspended' ? (
+                      <>
+                        <button
+                          onClick={handleResumeClass}
+                          disabled={isActionLoading}
+                          className="w-full btn-primary py-3.5 text-sm font-bold flex justify-center items-center gap-2 bg-emerald-600 hover:bg-emerald-700 border-none text-white cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-lg">play_circle</span>
+                          Habilitar Clase (Reanudar)
+                        </button>
+                        <button
+                          onClick={handleDeleteSheet}
+                          disabled={isActionLoading}
+                          className="w-full btn-primary py-3.5 text-sm font-bold flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 border-none text-white cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-lg">delete_forever</span>
+                          Eliminar Planilla
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleSaveAttendance}
+                          disabled={isActionLoading || attendanceList.length === 0}
+                          className="btn-primary w-full py-3.5 text-sm font-bold flex justify-center items-center gap-2"
+                        >
+                          {isActionLoading ? (
+                            <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                          ) : (
+                            <span className="material-symbols-outlined text-lg">save</span>
+                          )}
+                          Guardar Planilla
+                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleSuspendClass}
+                            disabled={isActionLoading}
+                            className="flex-1 btn-secondary py-3 text-xs font-bold flex justify-center items-center gap-1.5 border border-amber-200 text-amber-800 bg-amber-50 hover:bg-amber-100 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-base">pause_circle</span>
+                            Suspender
+                          </button>
+                          {currentSession && (
+                            <button
+                              onClick={handleDeleteSheet}
+                              disabled={isActionLoading}
+                              className="flex-1 btn-secondary py-3 text-xs font-bold flex justify-center items-center gap-1.5 border border-red-200 text-red-800 bg-red-50 hover:bg-red-100 cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-base">delete</span>
+                              Eliminar
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
