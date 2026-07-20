@@ -1,3 +1,8 @@
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+import { exportPresentationToPdf } from '../../lib/pdfExport'
+
 const generateUUID = () => {
   if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
     return window.crypto.randomUUID()
