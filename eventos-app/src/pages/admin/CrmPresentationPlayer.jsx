@@ -512,7 +512,7 @@ export default function CrmPresentationPlayer({ isPublic = false }) {
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      playerRef.current?.requestFullscreen().then(() => {
+      document.documentElement.requestFullscreen().then(() => {
         setIsFullscreen(true)
       }).catch(err => {
         console.error('Error enabling fullscreen:', err)
