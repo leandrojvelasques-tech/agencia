@@ -123,13 +123,13 @@ export default function SettingsDashboard() {
       </div>`,
       '{{link_inscripcion}}': '#',
       '{{link_evento}}': '#',
-      '{{link_reunion}}': '#',
-      '{{link_acceso}}': '#',
+      '{{link_reunion}}': 'https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1',
+      '{{link_acceso}}': 'https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1',
       '{{seccion_acceso}}': `
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
           <tr>
             <td align="center" bgcolor="#285A47" style="border-radius:8px;">
-              <a href="#" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+              <a href="https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_video_communications_logo.svg/120px-Zoom_video_communications_logo.svg.png" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:8px; border:0;" alt="Zoom" />
                 <span style="vertical-align:middle;">Ingresar a Zoom / Unirse al Encuentro</span>
               </a>
@@ -137,7 +137,7 @@ export default function SettingsDashboard() {
           </tr>
         </table>
         <p style="margin:12px 0 0 0; color:#8A9490; font-size:12px; line-height:1.6; text-align:center;">
-          Vínculo directo: <a href="#" style="color:#285A47; font-weight:bold; text-decoration:none;">https://us06web.zoom.us/j/81046473556...</a>
+          Vínculo directo: <a href="https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1" target="_blank" style="color:#285A47; font-weight:bold; text-decoration:none;">https://us06web.zoom.us/j/81046473556...</a>
         </p>
         <div style="margin-top: 20px; text-align: left; background-color: #F4F8F6; border: 1px solid #D1E4DA; border-radius: 12px; padding: 20px; font-family: Arial, sans-serif;">
           <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">🔑 Datos de Acceso a Zoom (Simulado):</strong>
