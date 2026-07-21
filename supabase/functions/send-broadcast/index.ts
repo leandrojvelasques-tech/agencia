@@ -6,6 +6,24 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function parseSender(emailFrom: string) {
+  const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  return { name: "Leandro Velasques", email: emailFrom.trim() };
+}
+
+function parseReplyTo(replyTo: any) {
+  if (Array.isArray(replyTo) && replyTo.length > 0) {
+    return { email: replyTo[0] };
+  }
+  if (typeof replyTo === 'string' && replyTo.includes('@')) {
+    return { email: replyTo };
+  }
+  return undefined;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -16,8 +34,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY') || Deno.env.get('RESEND_API_KEY');
+    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
 
     const body = await req.json();
     const { eventId, subject, message, extraRecipients, testMode, preview } = body;
@@ -193,20 +211,20 @@ serve(async (req) => {
       let status = 'pending';
       let errorMessage = null;
 
-      if (resendApiKey) {
+      if (brevoApiKey) {
         try {
-          const sendResponse = await fetch('https://api.resend.com/emails', {
+          const sendResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
+              'api-key': brevoApiKey,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              from: emailFrom,
-              to: [recipient.email],
+              sender: parseSender(emailFrom),
+              to: [{ email: recipient.email, name: recipient.name }],
               subject: subject,
-              html: emailHtml,
-              reply_to: replyTo
+              htmlContent: emailHtml,
+              ...(parseReplyTo(replyTo) ? { replyTo: parseReplyTo(replyTo) } : {})
             })
           });
           const sendResult = await sendResponse.json();
@@ -222,7 +240,7 @@ serve(async (req) => {
         }
       } else {
         status = 'simulated';
-        errorMessage = 'Simulación: RESEND_API_KEY no configurado en Supabase.';
+        errorMessage = 'Simulación: BREVO_API_KEY no configurado en Supabase.';
       }
 
       // Log email

@@ -120,6 +120,12 @@ function buildProposalEmailHtml({ clientName, title, subtitle, totalAmount, shar
   </div>
 </body>
 </html>`
+function parseSender(emailFrom) {
+  const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  return { name: "Leandro Velasques", email: emailFrom.trim() };
 }
 
 module.exports = async (req, res) => {
@@ -136,11 +142,11 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  const FROM_EMAIL = process.env.FROM_EMAIL || 'Leandro Velasques <onboarding@resend.dev>';
+  const brevoApiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
+  const FROM_EMAIL = process.env.FROM_EMAIL || 'Leandro Velasques <info@leandrovelasques.com.ar>';
 
-  if (!RESEND_API_KEY) {
-    return res.status(500).json({ error: 'RESEND_API_KEY not configured in environment variables' });
+  if (!brevoApiKey) {
+    return res.status(500).json({ error: 'BREVO_API_KEY not configured in environment variables' });
   }
 
   try {
@@ -161,28 +167,28 @@ module.exports = async (req, res) => {
       validUntil,
     })
 
-    const response = await safeFetch('https://api.resend.com/emails', {
+    const response = await safeFetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'api-key': brevoApiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [to],
+        sender: parseSender(FROM_EMAIL),
+        to: [{ email: to, name: clientName || 'Cliente' }],
         subject: `Propuesta Comercial: ${title}`,
-        html: html,
+        htmlContent: html,
       })
     });
 
     const result = await response.json();
 
     if (response.status >= 400) {
-      console.error('Resend API error:', result);
+      console.error('Brevo API error:', result);
       return res.status(response.status).json({ error: result.message || 'Error sending email' });
     }
 
-    return res.status(200).json({ success: true, messageId: result.id });
+    return res.status(200).json({ success: true, messageId: result.messageId || result.id });
   } catch (err) {
     console.error('Error in send-proposal:', err);
     return res.status(500).json({ error: err.message || 'Internal server error' });

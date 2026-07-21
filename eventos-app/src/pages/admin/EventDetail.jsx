@@ -641,7 +641,7 @@ export default function EventDetail() {
               <div className="flex items-center gap-3 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-3">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]">video_camera_back</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de transmisión (Meet)</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Link de transmisión (Meet / Zoom)</p>
                   <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{event.live_link}</p>
                 </div>
                 <a href={ensureAbsoluteUrl(event.live_link)} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-1.5 text-xs flex items-center gap-1">
@@ -652,6 +652,21 @@ export default function EventDetail() {
                   <span className="material-symbols-outlined text-base">content_copy</span>
                   Copiar
                 </button>
+              </div>
+            )}
+
+            {event.zoom_details && (
+              <div className="bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-4 flex flex-col gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Datos de Acceso / Zoom</p>
+                <pre className="text-xs text-[var(--color-dark-gray)] bg-white/70 p-3 rounded-lg overflow-x-auto font-mono whitespace-pre-wrap max-h-[150px]">
+                  {event.zoom_details}
+                </pre>
+                <div className="flex justify-end">
+                  <button onClick={() => copyToClipboard(event.zoom_details)} className="btn-ghost !px-3 !py-1.5 text-xs flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base">content_copy</span>
+                    Copiar datos de Zoom
+                  </button>
+                </div>
               </div>
             )}
           </>

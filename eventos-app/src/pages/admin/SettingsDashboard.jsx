@@ -16,6 +16,8 @@ export default function SettingsDashboard() {
   const [error, setError] = useState('')
   const [expandedLogId, setExpandedLogId] = useState(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [testEmail, setTestEmail] = useState('info@leandrovelasques.com.ar')
+  const [sendingTest, setSendingTest] = useState(false)
 
   // Fetch templates and logs
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function SettingsDashboard() {
       '{{horario}}': '18:00',
       '{{modalidad}}': 'Virtual (Online)',
       '{{coordinador}}': 'Leandro Velasques',
-      '{{duracion}}': '2 horas',
+      '{{duracion}}': '2 horas y media',
       '{{agenda}}': `<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">
         <div style="margin-bottom: 20px;">
           <h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">Módulo 1: Introducción a la IA <span style="font-size: 12px; color: #666; font-weight: normal;">(18:00 - 19:30 hs)</span></h4>
@@ -122,7 +124,35 @@ export default function SettingsDashboard() {
       '{{link_inscripcion}}': '#',
       '{{link_evento}}': '#',
       '{{link_reunion}}': '#',
-      '{{link_acceso}}': '#'
+      '{{link_acceso}}': '#',
+      '{{seccion_acceso}}': `
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
+          <tr>
+            <td align="center" bgcolor="#285A47" style="border-radius:8px;">
+              <a href="#" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_video_communications_logo.svg/120px-Zoom_video_communications_logo.svg.png" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:8px; border:0;" alt="Zoom" />
+                <span style="vertical-align:middle;">Ingresar a Zoom / Unirse al Encuentro</span>
+              </a>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:12px 0 0 0; color:#8A9490; font-size:12px; line-height:1.6; text-align:center;">
+          Vínculo directo: <a href="#" style="color:#285A47; font-weight:bold; text-decoration:none;">https://us06web.zoom.us/j/81046473556...</a>
+        </p>
+        <div style="margin-top: 20px; text-align: left; background-color: #F4F8F6; border: 1px solid #D1E4DA; border-radius: 12px; padding: 20px; font-family: Arial, sans-serif;">
+          <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">🔑 Datos de Acceso a Zoom (Simulado):</strong>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #5A6E65; font-size: 13px; width: 130px; font-weight: bold;">ID de Reunión:</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #1E2824; font-size: 14px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">810 4647 3556</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #5A6E65; font-size: 13px; font-weight: bold;">Código de acceso:</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #1E2824; font-size: 14px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">412858</td>
+            </tr>
+          </table>
+        </div>
+      `
     }
 
     let resolvedBody = body || ''
@@ -132,6 +162,37 @@ export default function SettingsDashboard() {
 
     const isHtml = resolvedBody.trim().startsWith('<') || resolvedBody.includes('<div') || resolvedBody.includes('<table') || resolvedBody.includes('<html')
     return isHtml ? resolvedBody : resolvedBody.replace(/\n/g, '<br>')
+  }
+
+  const handleSendTestEmail = async () => {
+    if (!testEmail.trim()) {
+      alert('Por favor, ingresá un correo electrónico válido.')
+      return
+    }
+
+    setSendingTest(true)
+    try {
+      const { data, error: funcErr } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: selectedTemplateId,
+          registrationId: 'latest',
+          testEmail: testEmail.trim()
+        }
+      })
+
+      if (funcErr) throw funcErr
+      
+      if (data?.success) {
+        alert(`¡Correo de prueba enviado con éxito a ${testEmail.trim()}!`)
+      } else {
+        throw new Error(data?.error || 'Error desconocido al enviar el correo de prueba.')
+      }
+    } catch (err) {
+      console.error('Error al enviar correo de prueba:', err)
+      alert('No se pudo enviar el correo de prueba: ' + (err.message || String(err)))
+    } finally {
+      setSendingTest(false)
+    }
   }
 
   // Refrescar logs
@@ -553,8 +614,36 @@ export default function SettingsDashboard() {
               />
             </div>
             
-            <div className="flex justify-end mt-4 pt-2 border-t border-gray-100">
-              <button onClick={() => setShowPreview(false)} className="btn-primary !px-6 cursor-pointer">
+            <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+                <input
+                  type="email"
+                  placeholder="Correo de prueba"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  className="form-input !py-1.5 !px-3 !text-xs !rounded-lg max-w-[260px]"
+                  style={{ margin: 0 }}
+                />
+                <button
+                  onClick={handleSendTestEmail}
+                  disabled={sendingTest}
+                  className="btn-primary !py-1.5 !px-4 !text-xs !rounded-lg flex items-center gap-1 cursor-pointer"
+                >
+                  {sendingTest ? (
+                    <>
+                      <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-sm">send</span>
+                      Enviar Prueba
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <button onClick={() => setShowPreview(false)} className="btn-ghost !py-1.5 !px-5 !text-xs border border-gray-200 cursor-pointer">
                 Cerrar
               </button>
             </div>

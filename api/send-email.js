@@ -106,6 +106,24 @@ function formatAgendaHtml(agenda) {
   return html.replace(/\n/g, ''); // Remove newlines so they are not replaced by <br> in email mapping
 }
 
+function parseSender(emailFrom) {
+  const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  return { name: "Leandro Velasques", email: emailFrom.trim() };
+}
+
+function parseReplyTo(replyTo) {
+  if (Array.isArray(replyTo) && replyTo.length > 0) {
+    return { email: replyTo[0] };
+  }
+  if (typeof replyTo === 'string' && replyTo.includes('@')) {
+    return { email: replyTo };
+  }
+  return undefined;
+}
+
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -230,8 +248,8 @@ module.exports = async (req, res) => {
       : resolvedBody.replace(/\n/g, '<br>');
 
     // 4. Preparar el envío de email
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+    const brevoApiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
+    const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
     
     // Función auxiliar para realizar el envío y registrar el log en Supabase
     async function sendAndLogEmail(toEmail, toName, emailSubject, htmlContent, isCoordinator = false) {
@@ -239,19 +257,19 @@ module.exports = async (req, res) => {
       let errorMessage = null;
 
       if (toEmail) {
-        if (resendApiKey) {
+        if (brevoApiKey) {
           try {
-            const sendResponse = await safeFetch('https://api.resend.com/emails', {
+            const sendResponse = await safeFetch('https://api.brevo.com/v3/smtp/email', {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${resendApiKey}`,
+                'api-key': brevoApiKey,
                 'Content-Type': 'application/json'
               },
               body: {
-                from: emailFrom,
-                to: [toEmail],
+                sender: parseSender(emailFrom),
+                to: [{ email: toEmail, name: toName }],
                 subject: emailSubject,
-                html: htmlContent
+                htmlContent: htmlContent
               }
             });
             const sendResult = await sendResponse.json();
@@ -268,7 +286,7 @@ module.exports = async (req, res) => {
         } else {
           // Simulado
           status = 'simulated';
-          errorMessage = 'Simulación: RESEND_API_KEY no configurado en Vercel.';
+          errorMessage = 'Simulación: BREVO_API_KEY no configurado en Vercel.';
         }
 
         // Insertar log en la tabla email_logs

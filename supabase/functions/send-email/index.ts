@@ -75,6 +75,149 @@ function formatAgendaHtml(agenda: AgendaItem[] | null | undefined): string {
   return html.replace(/\n/g, ''); // Remove newlines so they are not replaced by <br> in email mapping
 }
 
+function formatDuration(minutes: number | null | undefined): string {
+  if (!minutes) return '2 horas';
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (hours === 0) {
+    return `${remainingMinutes} minutos`;
+  }
+  
+  if (remainingMinutes === 0) {
+    return hours === 1 ? '1 hora' : `${hours} horas`;
+  }
+  
+  if (remainingMinutes === 30) {
+    return hours === 1 ? '1 hora y media' : `${hours} horas y media`;
+  }
+  
+  return hours === 1 
+    ? `1 hora y ${remainingMinutes} minutos` 
+    : `${hours} horas y ${remainingMinutes} minutos`;
+}
+
+function buildAccessSectionHtml(attendanceMode: string, liveLink: string, zoomDetails: string, location: string): string {
+  let html = '';
+  if (attendanceMode === 'virtual') {
+    if (liveLink) {
+      const isZoom = liveLink.includes('zoom.us');
+      let buttonHtml = '';
+      if (isZoom) {
+        buttonHtml = `
+          <a href="${liveLink}" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_video_communications_logo.svg/120px-Zoom_video_communications_logo.svg.png" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:8px; border:0;" alt="Zoom" />
+            <span style="vertical-align:middle;">Ingresar a Zoom / Unirse al Encuentro</span>
+          </a>
+        `;
+      } else {
+        buttonHtml = `
+          <a href="${liveLink}" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+            Ingresar a la Sala / Unirse al Encuentro
+          </a>
+        `;
+      }
+      html += `
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
+          <tr>
+            <td align="center" bgcolor="#285A47" style="border-radius:8px;">
+              ${buttonHtml}
+            </td>
+          </tr>
+        </table>
+        <p style="margin:12px 0 0 0; color:#8A9490; font-size:12px; line-height:1.6; text-align:center;">
+          Vínculo directo: <a href="${liveLink}" target="_blank" style="color:#285A47; font-weight:bold; text-decoration:none;">${liveLink}</a>
+        </p>
+      `;
+    }
+    if (zoomDetails) {
+      const formattedZoom = zoomDetails.replace(/\n/g, '<br>');
+      
+      const idMatch = zoomDetails.match(/(?:ID de reunión|Meeting ID):\s*([0-9\s-]+)/i);
+      const passMatch = zoomDetails.match(/(?:Código de acceso|Passcode):\s*([0-9a-zA-Z]+)/i);
+      const phoneMatch = zoomDetails.match(/(\+\d+[\d,]*#)/);
+      
+      const zoomId = idMatch ? idMatch[1].trim() : '';
+      const zoomPass = passMatch ? passMatch[1].trim() : '';
+      const oneTouchPhone = phoneMatch ? phoneMatch[1].trim() : '';
+      
+      if (zoomId && zoomPass) {
+        html += `
+          <div style="margin-top: 20px; text-align: left; background-color: #F4F8F6; border: 1px solid #D1E4DA; border-radius: 12px; padding: 20px; font-family: Arial, sans-serif;">
+            <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">🔑 Datos de Acceso a Zoom:</strong>
+            
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #5A6E65; font-size: 13px; width: 130px; font-weight: bold;">ID de Reunión:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #1E2824; font-size: 14px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">${zoomId}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #5A6E65; font-size: 13px; font-weight: bold;">Código de acceso:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #E2EDE8; color: #1E2824; font-size: 14px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">${zoomPass}</td>
+              </tr>
+              ${oneTouchPhone ? `
+              <tr>
+                <td style="padding: 8px 0; color: #5A6E65; font-size: 13px; font-weight: bold;">Móvil un toque:</td>
+                <td style="padding: 8px 0; color: #285A47; font-size: 13px; font-weight: bold; font-family: monospace;">
+                  <a href="tel:${oneTouchPhone}" style="color: #285A47; text-decoration: underline;">${oneTouchPhone}</a>
+                </td>
+              </tr>
+              ` : ''}
+            </table>
+            
+            <div style="border-top: 1px dashed #C8DDD3; padding-top: 12px; margin-top: 6px;">
+              <p style="margin: 0 0 6px 0; font-size: 11px; color: #72857C; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Detalles Completos de la Invitación:</p>
+              <div style="font-size: 11px; line-height: 1.45; color: #5A6E65; font-family: monospace; background-color: #FFFFFF; border: 1px solid #E2EDE8; border-radius: 6px; padding: 12px; max-height: 110px; overflow-y: auto; white-space: pre-wrap;">${formattedZoom}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        html += `
+          <div style="margin-top: 20px; text-align: left; background-color: #F7FAF8; border: 1px solid #D9E8E0; border-radius: 12px; padding: 20px; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.55; color: #303A36;">
+            <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">🔑 Datos de Acceso a la Reunión:</strong>
+            <div style="white-space: pre-wrap; font-family: monospace; background: #ffffff; border: 1px solid #e2ece7; border-radius: 6px; padding: 12px; color: #4F4C4D;">${formattedZoom}</div>
+          </div>
+        `;
+      }
+    }
+    if (!liveLink && !zoomDetails) {
+      html += `
+        <p style="margin:0; color:#4F4C4D; font-size:14px; line-height:1.6; text-align:center;">
+          El enlace de acceso virtual estará disponible próximamente.
+        </p>
+      `;
+    }
+  } else {
+    const loc = location || 'Sede del Consejo Profesional de Ciencias Económicas del Chubut';
+    html += `
+      <div style="text-align: left; background-color: #F7FAF8; border: 1px solid #D9E8E0; border-radius: 10px; padding: 18px; font-family: Arial, sans-serif;">
+        <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">📍 Lugar del Encuentro (Presencial):</strong>
+        <p style="margin: 0; color: #303A36; font-size: 15px; font-weight: bold;">${loc}</p>
+        <p style="margin: 6px 0 0 0; color: #747D79; font-size: 13px; line-height: 1.45;">Te esperamos directamente en la dirección indicada. ¡Por favor planifica tu llegada con tiempo!</p>
+      </div>
+    `;
+  }
+  return html.replace(/\n/g, ''); // Remove newlines for template safety
+}
+
+function parseSender(emailFrom: string) {
+  const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  return { name: "Leandro Velasques", email: emailFrom.trim() };
+}
+
+function parseReplyTo(replyTo: any) {
+  if (Array.isArray(replyTo) && replyTo.length > 0) {
+    return { email: replyTo[0] };
+  }
+  if (typeof replyTo === 'string' && replyTo.includes('@')) {
+    return { email: replyTo };
+  }
+  return undefined;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -110,25 +253,43 @@ serve(async (req) => {
       emailType = body.type;
     }
 
-    if (!registrationId || !emailType) {
-      return new Response(JSON.stringify({ error: 'Missing registrationId or type' }), {
+    if (!emailType) {
+      return new Response(JSON.stringify({ error: 'Missing type' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
 
     // 1. Fetch registration, participant, and event
-    const { data: reg, error: regErr } = await supabase
-      .from('registrations')
-      .select('*, participants(*), events(*)')
-      .eq('id', registrationId)
-      .single();
-
-    if (regErr || !reg) {
-      return new Response(JSON.stringify({ error: `Registration not found: ${regErr?.message}` }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 404,
-      });
+    let reg;
+    if (registrationId && registrationId !== 'latest') {
+      const { data, error: regErr } = await supabase
+        .from('registrations')
+        .select('*, participants(*), events(*)')
+        .eq('id', registrationId)
+        .single();
+        
+      if (regErr || !data) {
+        return new Response(JSON.stringify({ error: `Registration not found: ${regErr?.message}` }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404,
+        });
+      }
+      reg = data;
+    } else {
+      const { data, error: regErr } = await supabase
+        .from('registrations')
+        .select('*, participants(*), events(*)')
+        .order('created_at', { ascending: false })
+        .limit(1);
+        
+      if (regErr || !data || data.length === 0) {
+        return new Response(JSON.stringify({ error: `No se encontraron inscripciones registradas en el sistema para simular los datos de prueba.` }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404,
+        });
+      }
+      reg = data[0];
     }
 
     const participant = reg.participants;
@@ -165,6 +326,13 @@ serve(async (req) => {
     const eventUrl = `${domain}/evento/${event.slug}`;
     const liveLink = event.live_link || '';
 
+    const accessSectionHtml = buildAccessSectionHtml(
+      reg.attendance_mode || 'presencial',
+      event.live_link || '',
+      event.zoom_details || '',
+      event.location || ''
+    );
+
     const placeholders: Record<string, string> = {
       '{{nombre}}': participant.first_name || '',
       '{{apellido}}': participant.last_name || '',
@@ -172,12 +340,14 @@ serve(async (req) => {
       '{{fecha}}': dateStr,
       '{{horario}}': event.start_time || '',
       '{{modalidad}}': modalityStr,
+      '{{duracion}}': formatDuration(event.duration_minutes),
       '{{coordinador}}': event.coordinator || 'Leandro Velasques',
       '{{agenda}}': formatAgendaHtml(event.agenda),
       '{{link_inscripcion}}': eventUrl,
       '{{link_evento}}': eventUrl,
       '{{link_reunion}}': liveLink,
       '{{link_acceso}}': liveLink,
+      '{{seccion_acceso}}': accessSectionHtml,
       '{{link_cancelacion}}': `https://www.leandrovelasques.com.ar/cancelar.html?token=${reg.unique_token}`
     };
 
@@ -194,8 +364,8 @@ serve(async (req) => {
       : resolvedBody.replace(/\n/g, '<br>');
 
     // 4. Send email helper
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY') || Deno.env.get('RESEND_API_KEY');
+    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
 
     async function sendAndLogEmail(
       toEmail: string,
@@ -208,25 +378,32 @@ serve(async (req) => {
       let status = 'pending';
       let errorMessage: string | null = null;
 
-      if (resendApiKey) {
+      if (brevoApiKey) {
         try {
-          const sendResponse = await fetch('https://api.resend.com/emails', {
+          console.log(`Intentando enviar correo a: ${toEmail} | Asunto: ${emailSubject}`);
+          const payload = {
+            sender: parseSender(emailFrom),
+            to: [{ email: toEmail, name: toName }],
+            subject: emailSubject,
+            htmlContent: htmlContent,
+            ...(parseReplyTo(replyTo) ? { replyTo: parseReplyTo(replyTo) } : {})
+          };
+          console.log("Payload enviado a Brevo:", JSON.stringify(payload).substring(0, 500) + "...");
+          
+          const sendResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
+              'api-key': brevoApiKey,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              from: emailFrom,
-              to: [toEmail],
-              subject: emailSubject,
-              html: htmlContent,
-              ...(replyTo ? { reply_to: replyTo } : {})
-            })
+            body: JSON.stringify(payload)
           });
           const sendResult = await sendResponse.json();
+          console.log(`Respuesta de Brevo (Status ${sendResponse.status}):`, JSON.stringify(sendResult));
+          
           if (sendResponse.status >= 200 && sendResponse.status < 300) {
             status = 'sent';
+            errorMessage = `SUCCESS: ${JSON.stringify(sendResult)}`;
           } else {
             status = 'failed';
             errorMessage = sendResult.message || `Error status: ${sendResponse.status}`;
@@ -234,10 +411,11 @@ serve(async (req) => {
         } catch (err: any) {
           status = 'failed';
           errorMessage = err.message || String(err);
+          console.error("Error capturado durante el fetch a Brevo:", err);
         }
       } else {
         status = 'simulated';
-        errorMessage = 'Simulación: RESEND_API_KEY no configurado en Supabase.';
+        errorMessage = 'Simulación: BREVO_API_KEY no configurado en Supabase.';
       }
 
       try {
@@ -263,21 +441,24 @@ serve(async (req) => {
     const coordinatorEmails = coordinators.map((c: any) => c.email).filter(Boolean);
     const eventReplyTo = coordinatorEmails.length > 0 ? coordinatorEmails : ['leandrojvelasques@gmail.com'];
 
-    // 6. Send email to participant
+    // 6. Send email to participant (or test email)
     let participantResult = { status: 'skipped', errorMessage: null as string | null };
-    if (participant.email) {
+    const targetEmail = body.testEmail || participant.email;
+    const targetSubject = resolvedSubject;
+
+    if (targetEmail) {
       participantResult = await sendAndLogEmail(
-        participant.email,
+        targetEmail,
         `${participant.first_name} ${participant.last_name}`,
-        resolvedSubject,
+        targetSubject,
         emailHtml,
         false,
         eventReplyTo
       );
     }
 
-    // 7. Send email to coordinators
-    if (coordinators.length > 0) {
+    // 7. Send email to coordinators (skip if testEmail is set)
+    if (coordinators.length > 0 && !body.testEmail) {
       const isCancellation = emailType === 'cancellation';
       const coordSubject = isCancellation
         ? `[Cancelación] Inscripción cancelada en: ${event.title}`

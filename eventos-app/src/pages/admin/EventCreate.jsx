@@ -82,6 +82,7 @@ export default function EventCreate() {
     is_public: true,
     show_on_home: false,
     live_link: '',
+    zoom_details: '',
     event_materials: [],
     has_survey: false,
     survey_questions: [],
@@ -249,6 +250,7 @@ export default function EventCreate() {
             is_public: data.status === 'published' || data.status === 'in_progress',
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
+            zoom_details: data.zoom_details || '',
             event_materials: data.event_materials || [],
             has_survey: data.has_survey || false,
             survey_questions: data.survey_questions || [],
@@ -488,6 +490,7 @@ export default function EventCreate() {
               is_public: updated.status === 'published' || updated.status === 'in_progress',
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
+              zoom_details: updated.zoom_details || '',
               event_materials: updated.event_materials || [],
               offered_dates: updated.offered_dates && updated.offered_dates.length > 0 ? updated.offered_dates : (updated.event_date ? [updated.event_date] : []),
               notification_recipients: updated.notification_recipients || [],
@@ -573,6 +576,7 @@ export default function EventCreate() {
             is_public: updated.status === 'published' || updated.status === 'in_progress',
             show_on_home: updated.show_on_home || false,
             live_link: updated.live_link || '',
+            zoom_details: updated.zoom_details || '',
             event_materials: updated.event_materials || [],
             has_survey: updated.has_survey || false,
             registrations_open: updated.registrations_open || false,
@@ -914,12 +918,22 @@ export default function EventCreate() {
             </div>
 
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Link de Transmisión / Google Meet <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Link de Transmisión / Google Meet / Zoom <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
               <input 
                 className="form-input" 
-                placeholder="Ej: https://meet.google.com/abc-defg-hij o link de YouTube Live" 
+                placeholder="Ej: https://meet.google.com/abc-defg-hij o link de Zoom" 
                 value={form.live_link || ''} 
                 onChange={e => update('live_link', e.target.value)} 
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Datos de Acceso / Invitación de Zoom <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
+              <textarea 
+                className="form-input min-h-[100px] font-mono text-xs" 
+                placeholder="Pegá acá la invitación de Zoom (ID de reunión, código de acceso, teléfonos, etc.). Esta información se incluirá en el recordatorio del mismo día." 
+                value={form.zoom_details || ''} 
+                onChange={e => update('zoom_details', e.target.value)} 
               />
             </div>
 

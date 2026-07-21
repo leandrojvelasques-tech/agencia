@@ -48,6 +48,14 @@ function safeFetch(url, options = {}) {
   });
 }
 
+function parseSender(emailFrom) {
+  const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  return { name: "Leandro Velasques", email: emailFrom.trim() };
+}
+
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -84,11 +92,11 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'No se especificaron destinatarios (emails).' });
   }
 
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <onboarding@resend.dev>';
+  const brevoApiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
+  const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
 
-  if (!resendApiKey) {
-    return res.status(500).json({ error: 'RESEND_API_KEY no está configurado en las variables de entorno de Vercel.' });
+  if (!brevoApiKey) {
+    return res.status(500).json({ error: 'BREVO_API_KEY no está configurado en las variables de entorno de Vercel.' });
   }
 
   try {
@@ -256,41 +264,42 @@ module.exports = async (req, res) => {
       </html>
     `;
 
-    // Resend email sending payload:
+    // Brevo email sending payload:
     // To respect attendee privacy, send to the first email, and set the rest in bcc.
-    const toField = [emails[0]];
-    const bccField = emails.slice(1);
+    const toField = [{ email: emails[0] }];
+    const bccField = emails.slice(1).map(email => ({ email }));
 
     const emailPayload = {
-      from: emailFrom,
+      sender: parseSender(emailFrom),
       to: toField,
       subject: `Minuta - ${eventTitle}`,
-      html: emailHtml
+      htmlContent: emailHtml
     };
 
     if (bccField.length > 0) {
       emailPayload.bcc = bccField;
     }
 
-    console.log('Sending request to Resend API...', { to: toField, bccCount: bccField.length });
+    console.log('Sending request to Brevo API...', { toCount: toField.length, bccCount: bccField.length });
 
-    const resendResponse = await safeFetch('https://api.resend.com/emails', {
+    const brevoResponse = await safeFetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`
+        'api-key': brevoApiKey,
+        'Content-Type': 'application/json'
       },
       body: emailPayload
     });
 
-    const resendResult = await resendResponse.json();
+    const brevoResult = await brevoResponse.json();
 
-    if (resendResponse.status >= 200 && resendResponse.status < 300) {
-      return res.status(200).json({ success: true, messageId: resendResult.id });
+    if (brevoResponse.status >= 200 && brevoResponse.status < 300) {
+      return res.status(200).json({ success: true, messageId: brevoResult.messageId || brevoResult.id });
     } else {
-      console.error('Resend API returned error:', resendResult);
-      return res.status(resendResponse.status).json({
-        error: `Resend respondió con error ${resendResponse.status}`,
-        details: resendResult
+      console.error('Brevo API returned error:', brevoResult);
+      return res.status(brevoResponse.status).json({
+        error: `Brevo respondió con error ${brevoResponse.status}`,
+        details: brevoResult
       });
     }
   } catch (err) {
