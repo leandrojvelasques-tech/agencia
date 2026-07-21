@@ -643,9 +643,22 @@ export default function SettingsDashboard() {
                 </button>
               </div>
               
-              <button onClick={() => setShowPreview(false)} className="btn-ghost !py-1.5 !px-5 !text-xs border border-gray-200 cursor-pointer">
-                Cerrar
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(getPreviewHtml());
+                    alert("¡HTML de la plantilla copiado al portapapeles! Puedes pegarlo en tu gestor de correos.");
+                  }}
+                  className="btn-ghost !py-1.5 !px-3.5 !text-xs !rounded-lg border border-gray-200 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm">content_copy</span>
+                  Copiar HTML
+                </button>
+                
+                <button onClick={() => setShowPreview(false)} className="btn-ghost !py-1.5 !px-5 !text-xs border border-gray-200 cursor-pointer">
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         </div>
