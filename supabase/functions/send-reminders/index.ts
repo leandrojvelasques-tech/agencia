@@ -435,6 +435,20 @@ serve(async (req) => {
             resolvedBody = resolvedBody.replaceAll(key, value);
           }
 
+          if (body.isCorrection) {
+            resolvedSubject = `[Envío Corregido] ${resolvedSubject}`;
+            const correctionBanner = `
+              <div style="background-color: #FFF2CC; border: 1px solid #FFE599; color: #7F6000; padding: 12px 18px; margin: 10px auto; max-width: 620px; border-radius: 8px; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.5; font-weight: bold; text-align: center;">
+                ⚠️ El correo previo salió con un error en el formato. Te enviamos la información nuevamente.
+              </div>
+            `;
+            if (resolvedBody.includes('<body')) {
+              resolvedBody = resolvedBody.replace(/(<body[^>]*>)/i, `$1${correctionBanner}`);
+            } else {
+              resolvedBody = correctionBanner + resolvedBody;
+            }
+          }
+
           const emailHtml = resolvedBody.trim().startsWith('<') || resolvedBody.includes('<div') || resolvedBody.includes('<table') || resolvedBody.includes('<html')
             ? resolvedBody
             : resolvedBody.replace(/\n/g, '<br>');
