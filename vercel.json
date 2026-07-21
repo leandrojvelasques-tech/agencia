@@ -30,6 +30,14 @@
             "destination": "/_app/index.html"
         },
         {
+            "source": "/encuesta/:slug",
+            "destination": "/_app/index.html"
+        },
+        {
+            "source": "/presentacion/:id",
+            "destination": "/_app/index.html"
+        },
+        {
             "source": "/clase/:path*",
             "destination": "/_app/index.html"
         },
