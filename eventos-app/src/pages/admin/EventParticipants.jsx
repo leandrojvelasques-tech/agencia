@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
+import { supabase } from '../../lib/supabase'
 
 const getCarrera = (responses) => {
   if (!responses) return '—';
