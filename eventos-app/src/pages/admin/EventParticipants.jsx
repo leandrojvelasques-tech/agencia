@@ -111,8 +111,13 @@ export default function EventParticipants() {
 
   // Tab State
   const searchParams = new URLSearchParams(window.location.search)
-  const initialTab = searchParams.get('tab') === 'survey' ? 'survey' : 'list'
+  const initialTab = searchParams.get('tab') === 'satisfaction' 
+    ? 'satisfaction' 
+    : searchParams.get('tab') === 'survey' 
+      ? 'survey' 
+      : 'list'
   const [activeTab, setActiveTab] = useState(initialTab)
+  const [feedbacks, setFeedbacks] = useState([])
 
   useEffect(() => {
     async function loadData() {
@@ -120,6 +125,14 @@ export default function EventParticipants() {
       const eventData = await getEventById(id)
       setEvent(eventData)
       await fetchEventData(id)
+      
+      const { data: fbData } = await supabase
+        .from('event_feedback')
+        .select('*')
+        .eq('event_id', id)
+        .order('created_at', { ascending: false })
+      setFeedbacks(fbData || [])
+      
       setLoading(false)
     }
     loadData()
@@ -434,8 +447,21 @@ export default function EventParticipants() {
           }`}
         >
           <span className="material-symbols-outlined text-lg">assignment</span>
-          Respuestas de Encuesta
+          Respuestas de Inscripción
         </button>
+        {event.has_satisfaction_survey && (
+          <button
+            onClick={() => setActiveTab('satisfaction')}
+            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all border-b-2 px-1 flex items-center gap-2 shrink-0 ${
+              activeTab === 'satisfaction'
+                ? 'border-[var(--color-deep-green)] text-[var(--color-deep-green)]'
+                : 'border-transparent text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/70'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg">thumb_up</span>
+            Respuestas de Satisfacción
+          </button>
+        )}
       </div>
 
       {/* Tab 1: List of Participants */}
@@ -734,6 +760,160 @@ export default function EventParticipants() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Tab 3: Satisfaction Answers */}
+      {activeTab === 'satisfaction' && (
+        <div className="space-y-6 animate-fade-in">
+          {feedbacks.length === 0 ? (
+            <div className="card p-8 text-center bg-gray-50/50 border-dashed border border-gray-200">
+              <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/20 mb-2 block">assignment_late</span>
+              <p className="text-sm font-semibold text-[var(--color-dark-gray)]/60">Aún no se han recibido respuestas para la encuesta de satisfacción.</p>
+              <p className="text-xs text-[var(--color-dark-gray)]/40 mt-1">Los inscriptos recibirán el link al finalizar el evento o cuando lo envíes manualmente.</p>
+            </div>
+          ) : (() => {
+            const activeSatisfactionQuestions = event.satisfaction_questions && event.satisfaction_questions.length === 5
+              ? event.satisfaction_questions
+              : [
+                  { key: 'score_experience', label: 'Experiencia General' },
+                  { key: 'score_registration', label: 'Proceso de Inscripción' },
+                  { key: 'score_duration', label: 'Duración del Evento' },
+                  { key: 'score_delivery', label: 'Dictado del Taller/Charla' },
+                  { key: 'score_content', label: 'Interés del Contenido' }
+                ];
+
+            const sums = {
+              score_experience: 0,
+              score_registration: 0,
+              score_duration: 0,
+              score_delivery: 0,
+              score_content: 0
+            };
+            feedbacks.forEach(item => {
+              activeSatisfactionQuestions.forEach(q => {
+                sums[q.key] += item[q.key] || 0;
+              });
+            });
+            const avgs = {};
+            let globalSum = 0;
+            activeSatisfactionQuestions.forEach(q => {
+              const avg = sums[q.key] / feedbacks.length;
+              avgs[q.key] = Number(avg.toFixed(1));
+              globalSum += avg;
+            });
+            const globalAverage = Number((globalSum / activeSatisfactionQuestions.length).toFixed(1));
+
+            return (
+              <>
+                {/* Global and Detail Averages Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Global Score Card */}
+                  <div className="card p-6 bg-gradient-to-br from-[var(--color-deep-green)] to-[#1E4334] text-white flex flex-col justify-between shadow-md">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest opacity-70">Calificación Global Promedio</p>
+                      <h3 className="text-5xl font-black mt-4 mb-2 flex items-baseline gap-1">
+                        {globalAverage} <span className="text-lg font-bold opacity-60">/ 5</span>
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-1 mt-4">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const starValue = i + 1;
+                        const isFilled = starValue <= Math.round(globalAverage);
+                        return (
+                          <span key={i} className="material-symbols-outlined text-amber-300" style={{ fontVariationSettings: `"${isFilled ? 'FILL' : 'GRAD'} 1"` }}>
+                            star
+                          </span>
+                        );
+                      })}
+                      <span className="text-xs font-semibold ml-2 opacity-80">{feedbacks.length} respuestas</span>
+                    </div>
+                  </div>
+
+                  {/* Individual Scores */}
+                  <div className="md:col-span-2 card p-6 bg-white shadow-sm space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)]/70 border-b border-[var(--color-deep-green)]/5 pb-2">
+                      Detalle por Pregunta
+                    </h3>
+                    <div className="space-y-3.5">
+                      {activeSatisfactionQuestions.map(q => {
+                        const avg = avgs[q.key] || 0;
+                        const pct = (avg / 5) * 100;
+                        return (
+                          <div key={q.key} className="space-y-1">
+                            <div className="flex justify-between text-xs font-semibold text-[var(--color-dark-gray)]">
+                              <span>{q.label}</span>
+                              <span className="font-bold text-[var(--color-deep-green)]">{avg} / 5</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                              <div className="bg-[var(--color-deep-green)] h-full" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feedbacks Comment Matrix Table */}
+                <div className="card overflow-hidden bg-white shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Asistente</th>
+                          {activeSatisfactionQuestions.map(q => (
+                            <th key={q.key} className="text-center whitespace-nowrap">{q.label}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {feedbacks.map(fb => (
+                          <tr key={fb.id}>
+                            <td className="font-semibold text-[var(--color-dark-gray)]">
+                              {fb.participant_name || 'Participante'}
+                            </td>
+                            {activeSatisfactionQuestions.map(q => {
+                              const score = fb[q.key] || 0;
+                              return (
+                                <td key={q.key} className="text-center font-bold text-[var(--color-deep-green)]">
+                                  {score} ⭐
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Comments List */}
+                <div className="card p-6 bg-white shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/5 pb-2">
+                    Comentarios y Sugerencias Adicionales ({feedbacks.filter(fb => fb.comments && fb.comments.trim()).length})
+                  </h3>
+                  {feedbacks.filter(fb => fb.comments && fb.comments.trim()).length === 0 ? (
+                    <p className="text-xs text-[var(--color-dark-gray)]/40 text-center py-6">No se registraron comentarios adicionales.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {feedbacks.filter(fb => fb.comments && fb.comments.trim()).map(fb => (
+                        <div key={fb.id} className="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-1.5 animate-fade-in">
+                          <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                            <span>{fb.participant_name || 'Participante Anónimo'}</span>
+                            <span>{fb.created_at ? format(new Date(fb.created_at), "dd 'de' MMMM, HH:mm", { locale: es }) : ''}</span>
+                          </div>
+                          <p className="text-xs text-gray-700 font-semibold italic leading-relaxed">
+                            "{fb.comments}"
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 

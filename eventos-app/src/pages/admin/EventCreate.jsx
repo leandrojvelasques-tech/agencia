@@ -58,6 +58,7 @@ export default function EventCreate() {
   const [loading, setLoading] = useState(id ? true : false)
 
   const [step, setStep] = useState(0)
+  const [surveySubTab, setSurveySubTab] = useState('enrollment')
   const [form, setForm] = useState({
     type: 'charla',
     title: '',
@@ -86,6 +87,11 @@ export default function EventCreate() {
     event_materials: [],
     has_survey: false,
     survey_questions: [],
+    has_satisfaction_survey: false,
+    send_reminder_48h: true,
+    send_reminder_24h: true,
+    send_reminder_same_day: true,
+    send_reminder_next_day: false,
     prices: [],
     payment_methods: '',
     contact_info: '',
@@ -254,6 +260,11 @@ export default function EventCreate() {
             event_materials: data.event_materials || [],
             has_survey: data.has_survey || false,
             survey_questions: data.survey_questions || [],
+            has_satisfaction_survey: data.has_satisfaction_survey || false,
+            send_reminder_48h: data.send_reminder_48h !== false,
+            send_reminder_24h: data.send_reminder_24h !== false,
+            send_reminder_same_day: data.send_reminder_same_day !== false,
+            send_reminder_next_day: data.send_reminder_next_day || false,
             offered_dates: data.offered_dates && data.offered_dates.length > 0 ? data.offered_dates : (data.event_date ? [data.event_date] : []),
             video_url: data.video_url || '',
             prices: data.prices || [],
@@ -492,6 +503,13 @@ export default function EventCreate() {
               live_link: updated.live_link || '',
               zoom_details: updated.zoom_details || '',
               event_materials: updated.event_materials || [],
+              has_survey: updated.has_survey || false,
+              survey_questions: updated.survey_questions || [],
+              has_satisfaction_survey: updated.has_satisfaction_survey || false,
+              send_reminder_48h: updated.send_reminder_48h !== false,
+              send_reminder_24h: updated.send_reminder_24h !== false,
+              send_reminder_same_day: updated.send_reminder_same_day !== false,
+              send_reminder_next_day: updated.send_reminder_next_day || false,
               offered_dates: updated.offered_dates && updated.offered_dates.length > 0 ? updated.offered_dates : (updated.event_date ? [updated.event_date] : []),
               notification_recipients: updated.notification_recipients || [],
               satisfaction_questions: updated.satisfaction_questions && updated.satisfaction_questions.length === 5
@@ -1697,6 +1715,80 @@ export default function EventCreate() {
                 </div>
               )}
             </div>
+
+            {/* Recordatorios Automáticos */}
+            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                  Configuración de Recordatorios Automáticos
+                </label>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                  Activá o desactivá los correos electrónicos de recordatorio automático que recibirán los inscriptos de este evento.
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.send_reminder_48h !== false}
+                    onChange={e => update('send_reminder_48h', e.target.checked)}
+                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">Recordatorio 48hs Antes</p>
+                    <p className="text-[9px] text-gray-500">Envía un email 2 días antes del evento</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.send_reminder_24h !== false}
+                    onChange={e => update('send_reminder_24h', e.target.checked)}
+                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">Recordatorio 24hs Antes</p>
+                    <p className="text-[9px] text-gray-500">Envía un email el día anterior al evento</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.send_reminder_same_day !== false}
+                    onChange={e => update('send_reminder_same_day', e.target.checked)}
+                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">Recordatorio Mismo Día</p>
+                    <p className="text-[9px] text-gray-500">Envía un email a primera hora del mismo día</p>
+                  </div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-3 rounded-lg border w-full select-none cursor-pointer ${
+                  form.has_satisfaction_survey
+                    ? 'border-gray-100 bg-gray-50/50'
+                    : 'border-dashed border-gray-200 bg-gray-100/30 opacity-60'
+                }`}>
+                  <input
+                    type="checkbox"
+                    disabled={!form.has_satisfaction_survey}
+                    checked={form.has_satisfaction_survey && form.send_reminder_next_day === true}
+                    onChange={e => update('send_reminder_next_day', e.target.checked)}
+                    className="accent-[var(--color-deep-green)] rounded w-4 h-4 disabled:opacity-40"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">Recordatorio Día Siguiente</p>
+                    <p className="text-[9px] text-gray-500">
+                      {form.has_satisfaction_survey 
+                        ? 'Envía la encuesta de satisfacción 24hs después' 
+                        : 'Requiere activar la encuesta de satisfacción pos-evento'}
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1892,213 +1984,275 @@ export default function EventCreate() {
         )}
 
         {step === 4 && (
-          <div className="space-y-5 animate-fade-in">
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Encuesta de Preguntas Personalizadas</label>
-              <label className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
-                form.has_survey
-                  ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
-                  : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
-              }`}>
-                <input 
-                  type="checkbox" 
-                  checked={form.has_survey || false} 
-                  onChange={e => update('has_survey', e.target.checked)} 
-                  className="mt-1 accent-[var(--color-deep-green)] rounded" 
-                />
-                <div>
-                  <p className="text-sm font-bold text-[var(--color-dark-gray)]">Activar Encuesta para este Evento</p>
-                  <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">
-                    Permite definir preguntas personalizadas que los participantes responderán al inscribirse.
-                  </p>
-                </div>
-              </label>
+          <div className="space-y-6 animate-fade-in">
+            {/* Sub-tabs header */}
+            <div className="flex gap-4 border-b border-[var(--color-deep-green)]/8 pb-3">
+              <button
+                type="button"
+                onClick={() => setSurveySubTab('enrollment')}
+                className={`py-1.5 px-4 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  surveySubTab === 'enrollment'
+                    ? 'bg-[var(--color-deep-green)] text-white'
+                    : 'bg-gray-50 text-[var(--color-dark-gray)]/65 hover:bg-gray-100'
+                }`}
+              >
+                📝 Encuesta de Inscripción
+              </button>
+              <button
+                type="button"
+                onClick={() => setSurveySubTab('satisfaction')}
+                className={`py-1.5 px-4 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  surveySubTab === 'satisfaction'
+                    ? 'bg-[var(--color-deep-green)] text-white'
+                    : 'bg-gray-50 text-[var(--color-dark-gray)]/65 hover:bg-gray-100'
+                }`}
+              >
+                📋 Encuesta de Satisfacción Pos-Evento
+              </button>
             </div>
 
-            {form.has_survey && (
-              <div className="space-y-4 mt-6">
-                <div className="flex items-center justify-between border-b border-[var(--color-deep-green)]/10 pb-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Preguntas de la Encuesta</label>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      const newQ = { id: `q_${Date.now()}`, label: '', type: 'text', required: false, options: '' }
-                      update('survey_questions', [...(form.survey_questions || []), newQ])
-                    }} 
-                    className="btn-ghost text-xs !text-[var(--color-deep-green)] flex items-center gap-1"
-                  >
-                    <span className="material-symbols-outlined text-base">add</span> Agregar pregunta
-                  </button>
+            {/* Sub-tab 1: Enrollment Survey */}
+            {surveySubTab === 'enrollment' && (
+              <div className="space-y-5 animate-fade-in">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Encuesta de Preguntas Personalizadas (Inscripción)</label>
+                  <label className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
+                    form.has_survey
+                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                      : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
+                  }`}>
+                    <input 
+                      type="checkbox" 
+                      checked={form.has_survey || false} 
+                      onChange={e => update('has_survey', e.target.checked)} 
+                      className="mt-1 accent-[var(--color-deep-green)] rounded" 
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">Activar Encuesta para la Inscripción</p>
+                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">
+                        Permite definir preguntas personalizadas que los participantes responderán en el formulario al inscribirse.
+                      </p>
+                    </div>
+                  </label>
                 </div>
 
-                {(!form.survey_questions || form.survey_questions.length === 0) ? (
-                  <div className="p-10 text-center border-2 border-dashed border-[var(--color-deep-green)]/10 rounded-[var(--radius-card)]">
-                    <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/10 mb-2 block">quiz</span>
-                    <p className="text-sm font-medium text-[var(--color-dark-gray)]/30">No has agregado ninguna pregunta aún</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {form.survey_questions.map((q, i) => (
-                      <div key={q.id || i} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/50 border border-[var(--color-deep-green)]/5 relative group space-y-3">
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur rounded p-1 shadow-sm">
-                          {/* Reorder Buttons */}
-                          {i > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const list = [...form.survey_questions]
-                                const temp = list[i]
-                                list[i] = list[i - 1]
-                                list[i - 1] = temp
-                                update('survey_questions', list)
-                              }}
-                              className="text-[var(--color-dark-gray)]/40 hover:text-[var(--color-deep-green)] p-1 flex items-center justify-center"
-                              title="Subir"
-                            >
-                              <span className="material-symbols-outlined text-base">arrow_upward</span>
-                            </button>
-                          )}
-                          {i < form.survey_questions.length - 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const list = [...form.survey_questions]
-                                const temp = list[i]
-                                list[i] = list[i + 1]
-                                list[i + 1] = temp
-                                update('survey_questions', list)
-                              }}
-                              className="text-[var(--color-dark-gray)]/40 hover:text-[var(--color-deep-green)] p-1 flex items-center justify-center"
-                              title="Bajar"
-                            >
-                              <span className="material-symbols-outlined text-base">arrow_downward</span>
-                            </button>
-                          )}
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              const list = form.survey_questions.filter((_, idx) => idx !== i)
-                              update('survey_questions', list)
-                            }} 
-                            className="text-red-400 hover:text-red-600 p-1 flex items-center justify-center"
-                            title="Eliminar"
-                          >
-                            <span className="material-symbols-outlined text-base">close</span>
-                          </button>
-                        </div>
+                {form.has_survey && (
+                  <div className="space-y-4 mt-6">
+                    <div className="flex items-center justify-between border-b border-[var(--color-deep-green)]/10 pb-2">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Preguntas de la Encuesta</label>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const newQ = { id: `q_${Date.now()}`, label: '', type: 'text', required: false, options: '' }
+                          update('survey_questions', [...(form.survey_questions || []), newQ])
+                        }} 
+                        className="btn-ghost text-xs !text-[var(--color-deep-green)] flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-base">add</span> Agregar pregunta
+                      </button>
+                    </div>
 
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Pregunta (Etiqueta) *</label>
-                            <input 
-                              className="form-input !py-2 text-xs" 
-                              placeholder="Ej: ¿Cuál es tu número de matrícula?" 
-                              value={q.label} 
-                              onChange={e => {
-                                const list = [...form.survey_questions]
-                                list[i] = { ...list[i], label: e.target.value }
-                                update('survey_questions', list)
-                              }} 
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Tipo de respuesta</label>
-                            <select 
-                              className="form-input !py-2 text-xs" 
-                              value={q.type} 
-                              onChange={e => {
-                                const list = [...form.survey_questions]
-                                list[i] = { ...list[i], type: e.target.value }
-                                update('survey_questions', list)
-                              }}
-                            >
-                              <option value="text">✍️ Texto corto</option>
-                              <option value="textarea">📝 Texto largo (párrafo)</option>
-                              <option value="select">🔽 Desplegable (Opciones)</option>
-                              <option value="checkbox">☑️ Casilla de verificación (Sí/No)</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {q.type === 'select' && (
-                          <div className="animate-fade-in">
-                            <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Opciones (separadas por comas) *</label>
-                            <input 
-                              className="form-input !py-2 text-xs" 
-                              placeholder="Ej: Contador, Licenciado, Estudiante" 
-                              value={q.options || ''} 
-                              onChange={e => {
-                                const list = [...form.survey_questions]
-                                list[i] = { ...list[i], options: e.target.value }
-                                update('survey_questions', list)
-                              }} 
-                            />
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="checkbox" 
-                            id={`req-${q.id || i}`}
-                            checked={q.required || false} 
-                            onChange={e => {
-                              const list = [...form.survey_questions]
-                              list[i] = { ...list[i], required: e.target.checked }
-                              update('survey_questions', list)
-                            }}
-                            className="accent-[var(--color-deep-green)] rounded"
-                          />
-                          <label htmlFor={`req-${q.id || i}`} className="text-xs font-bold text-[var(--color-dark-gray)]/60 cursor-pointer">Esta pregunta es obligatoria</label>
-                        </div>
+                    {(!form.survey_questions || form.survey_questions.length === 0) ? (
+                      <div className="p-10 text-center border-2 border-dashed border-[var(--color-deep-green)]/10 rounded-[var(--radius-card)]">
+                        <span className="material-symbols-outlined text-4xl text-[var(--color-dark-gray)]/10 mb-2 block">quiz</span>
+                        <p className="text-sm font-medium text-[var(--color-dark-gray)]/30">No has agregado ninguna pregunta aún</p>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-4">
+                        {form.survey_questions.map((q, i) => (
+                          <div key={q.id || i} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/50 border border-[var(--color-deep-green)]/5 relative group space-y-3">
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur rounded p-1 shadow-sm">
+                              {/* Reorder Buttons */}
+                              {i > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const list = [...form.survey_questions]
+                                    const temp = list[i]
+                                    list[i] = list[i - 1]
+                                    list[i - 1] = temp
+                                    update('survey_questions', list)
+                                  }}
+                                  className="text-[var(--color-dark-gray)]/40 hover:text-[var(--color-deep-green)] p-1 flex items-center justify-center cursor-pointer"
+                                  title="Subir"
+                                >
+                                  <span className="material-symbols-outlined text-base">arrow_upward</span>
+                                </button>
+                              )}
+                              {i < form.survey_questions.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const list = [...form.survey_questions]
+                                    const temp = list[i]
+                                    list[i] = list[i + 1]
+                                    list[i + 1] = temp
+                                    update('survey_questions', list)
+                                  }}
+                                  className="text-[var(--color-dark-gray)]/40 hover:text-[var(--color-deep-green)] p-1 flex items-center justify-center cursor-pointer"
+                                  title="Bajar"
+                                >
+                                  <span className="material-symbols-outlined text-base">arrow_downward</span>
+                                </button>
+                              )}
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const list = form.survey_questions.filter((_, idx) => idx !== i)
+                                  update('survey_questions', list)
+                                }} 
+                                className="text-red-400 hover:text-red-650 p-1 flex items-center justify-center cursor-pointer"
+                                title="Eliminar"
+                              >
+                                <span className="material-symbols-outlined text-base">close</span>
+                              </button>
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Pregunta (Etiqueta) *</label>
+                                <input 
+                                  className="form-input !py-2 text-xs" 
+                                  placeholder="Ej: ¿Cuál es tu número de matrícula?" 
+                                  value={q.label} 
+                                  onChange={e => {
+                                    const list = [...form.survey_questions]
+                                    list[i] = { ...list[i], label: e.target.value }
+                                    update('survey_questions', list)
+                                  }} 
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Tipo de respuesta</label>
+                                <select 
+                                  className="form-input !py-2 text-xs bg-white" 
+                                  value={q.type} 
+                                  onChange={e => {
+                                    const list = [...form.survey_questions]
+                                    list[i] = { ...list[i], type: e.target.value }
+                                    update('survey_questions', list)
+                                  }}
+                                >
+                                  <option value="text">✍️ Texto corto</option>
+                                  <option value="textarea">📝 Texto largo (párrafo)</option>
+                                  <option value="select">🔽 Desplegable (Opciones)</option>
+                                  <option value="checkbox">☑️ Casilla de verificación (Sí/No)</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {q.type === 'select' && (
+                              <div className="animate-fade-in">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Opciones (separadas por comas) *</label>
+                                <input 
+                                  className="form-input !py-2 text-xs" 
+                                  placeholder="Ej: Contador, Licenciado, Estudiante" 
+                                  value={q.options || ''} 
+                                  onChange={e => {
+                                    const list = [...form.survey_questions]
+                                    list[i] = { ...list[i], options: e.target.value }
+                                    update('survey_questions', list)
+                                  }} 
+                                />
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                id={`req-${q.id || i}`}
+                                checked={q.required || false} 
+                                onChange={e => {
+                                  const list = [...form.survey_questions]
+                                  list[i] = { ...list[i], required: e.target.checked }
+                                  update('survey_questions', list)
+                                }}
+                                className="accent-[var(--color-deep-green)] rounded"
+                              />
+                              <label htmlFor={`req-${q.id || i}`} className="text-xs font-bold text-[var(--color-dark-gray)]/60 cursor-pointer">Esta pregunta es obligatoria</label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Encuesta de Satisfacción Post-Evento */}
-            <div className="border-t border-[var(--color-deep-green)]/15 pt-6 space-y-4">
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                  Encuesta de Satisfacción Post-Evento (Minuta)
-                </label>
-                <p className="text-xs text-[var(--color-dark-gray)]/50 mb-4">
-                  Personalizá las 5 preguntas que recibirán los asistentes en el correo de la minuta para calificar de 1 a 5 estrellas.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {(form.satisfaction_questions || DEFAULT_SATISFACTION_QUESTIONS).map((q, idx) => (
-                  <div key={q.key} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-dark-gray)]/5 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-[var(--color-deep-green)]">Pregunta {idx + 1} ({q.key === 'score_experience' ? 'Experiencia' : q.key === 'score_registration' ? 'Inscripción' : q.key === 'score_duration' ? 'Duración' : q.key === 'score_delivery' ? 'Dictado' : 'Contenido'})</span>
+            {/* Sub-tab 2: Satisfaction Survey */}
+            {surveySubTab === 'satisfaction' && (
+              <div className="space-y-5 animate-fade-in">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Encuesta de Satisfacción Post-Evento</label>
+                  <label className={`flex items-start gap-3 p-4 rounded-[var(--radius-premium)] border-2 cursor-pointer transition-all ${
+                    form.has_satisfaction_survey
+                      ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5'
+                      : 'border-[var(--color-deep-green)]/8 hover:border-[var(--color-deep-green)]/20'
+                  }`}>
+                    <input 
+                      type="checkbox" 
+                      checked={form.has_satisfaction_survey || false} 
+                      onChange={e => {
+                        const checked = e.target.checked;
+                        update('has_satisfaction_survey', checked);
+                        if (!checked) {
+                          update('send_reminder_next_day', false);
+                        }
+                      }} 
+                      className="mt-1 accent-[var(--color-deep-green)] rounded" 
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-dark-gray)]">Activar Encuesta de Satisfacción</p>
+                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">
+                        Permite a los asistentes calificar el evento y dejar comentarios. Se puede enviar automáticamente un día después o manualmente.
+                      </p>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Etiqueta corta (Ej: Experiencia General)</label>
-                        <input
-                          className="form-input !py-2 text-xs"
-                          value={q.label}
-                          onChange={e => handleUpdateSatisfactionQuestion(idx, 'label', e.target.value)}
-                          placeholder="Ej: Experiencia General"
-                        />
-                       </div>
-                       <div>
-                         <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Pregunta completa (Ej: ¿Cómo calificarías tu experiencia...?)</label>
-                         <input
-                           className="form-input !py-2 text-xs"
-                           value={q.desc}
-                           onChange={e => handleUpdateSatisfactionQuestion(idx, 'desc', e.target.value)}
-                           placeholder="¿Cómo calificarías...?"
-                         />
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
+                  </label>
+                </div>
 
+                {form.has_satisfaction_survey && (
+                  <div className="space-y-4">
+                    <div className="border-b border-[var(--color-deep-green)]/10 pb-2">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Preguntas de la Encuesta de Satisfacción</label>
+                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-1">
+                        Personalizá las 5 preguntas que recibirán los asistentes en la encuesta para calificar de 1 a 5 estrellas.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {(form.satisfaction_questions || DEFAULT_SATISFACTION_QUESTIONS).map((q, idx) => (
+                        <div key={q.key} className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-dark-gray)]/5 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-[var(--color-deep-green)]">Pregunta {idx + 1} ({q.key === 'score_experience' ? 'Experiencia' : q.key === 'score_registration' ? 'Inscripción' : q.key === 'score_duration' ? 'Duración' : q.key === 'score_delivery' ? 'Dictado' : 'Contenido'})</span>
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Etiqueta corta (Ej: Experiencia General)</label>
+                              <input
+                                className="form-input !py-2 text-xs"
+                                value={q.label}
+                                onChange={e => handleUpdateSatisfactionQuestion(idx, 'label', e.target.value)}
+                                placeholder="Ej: Experiencia General"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40 mb-1 block">Pregunta completa (Ej: ¿Cómo calificarías tu experiencia...?)</label>
+                              <input
+                                className="form-input !py-2 text-xs"
+                                value={q.desc}
+                                onChange={e => handleUpdateSatisfactionQuestion(idx, 'desc', e.target.value)}
+                                placeholder="¿Cómo calificarías...?"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -20,6 +20,7 @@ export default function SettingsDashboard() {
   const [sendingTest, setSendingTest] = useState(false)
   const [events, setEvents] = useState([])
   const [selectedEventId, setSelectedEventId] = useState('')
+  const [sendTime, setSendTime] = useState('08:00')
 
   // Fetch templates and logs
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function SettingsDashboard() {
         if (welcomeTemp) {
           setSubject(welcomeTemp.subject)
           setBody(welcomeTemp.body)
+          setSendTime(welcomeTemp.send_time || '09:00')
         }
 
         // Fetch logs
@@ -76,6 +78,7 @@ export default function SettingsDashboard() {
     if (temp) {
       setSubject(temp.subject)
       setBody(temp.body)
+      setSendTime(temp.send_time || '08:00')
       setSaveSuccess(false)
       setError('')
     }
@@ -94,6 +97,7 @@ export default function SettingsDashboard() {
         .update({
           subject,
           body,
+          send_time: sendTime,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedTemplateId)
@@ -139,6 +143,8 @@ export default function SettingsDashboard() {
       '{{link_evento}}': '#',
       '{{link_reunion}}': 'https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1',
       '{{link_acceso}}': 'https://us06web.zoom.us/j/81046473556?pwd=ElWaw3gg12CKGHsbHO1WXwTpw2MFGI.1',
+      '{{link_encuesta}}': 'https://www.leandrovelasques.com.ar/encuesta/taller-ia',
+      '{{link_cancelacion}}': 'https://www.leandrovelasques.com.ar/cancelar',
       '{{seccion_acceso}}': `
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
           <tr>
@@ -249,6 +255,9 @@ export default function SettingsDashboard() {
     { tag: '{{agenda}}', desc: 'Agenda o programa del evento (formateado en HTML)' },
     { tag: '{{link_inscripcion}}', desc: 'Enlace a la landing page del evento (alias: {{link_evento}})' },
     { tag: '{{link_reunion}}', desc: 'Enlace de acceso a la reunión virtual (alias: {{link_acceso}})' },
+    { tag: '{{seccion_acceso}}', desc: 'Tarjeta HTML con Zoom / Ubicación física' },
+    { tag: '{{link_encuesta}}', desc: 'Enlace directo a la encuesta de satisfacción pos-evento' },
+    { tag: '{{link_cancelacion}}', desc: 'Enlace para cancelar la inscripción' }
   ]
 
   return (
@@ -298,7 +307,7 @@ export default function SettingsDashboard() {
                 Editar Plantilla
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6 bg-[var(--color-refined-gray)]/40 p-1 rounded-xl border border-[var(--color-deep-green)]/5">
                 <button
                   type="button"
                   onClick={() => handleTemplateChange('welcome')}
@@ -354,6 +363,17 @@ export default function SettingsDashboard() {
                 >
                   Recordatorio (Mismo Día)
                 </button>
+                <button
+                  type="button"
+                  onClick={() => handleTemplateChange('reminder_next_day')}
+                  className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    selectedTemplateId === 'reminder_next_day'
+                      ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
+                      : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
+                  }`}
+                >
+                  Recordatorio (Día Sig.)
+                </button>
               </div>
 
               <form onSubmit={handleSaveTemplate} className="space-y-4">
@@ -367,6 +387,31 @@ export default function SettingsDashboard() {
                   <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-lg animate-fade-in flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-sm">check_circle</span>
                     <span>Plantilla guardada con éxito en Supabase.</span>
+                  </div>
+                )}
+
+                {selectedTemplateId.startsWith('reminder_') && (
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1.5 block">
+                      Horario de Envío Automático
+                    </label>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/45 mb-2 leading-relaxed">
+                      Selecciona la hora a la que debe enviarse el recordatorio (Hora de Argentina GMT-3).
+                    </p>
+                    <select
+                      value={sendTime}
+                      onChange={e => setSendTime(e.target.value)}
+                      className="form-input text-sm max-w-[200px] bg-white border border-gray-200"
+                    >
+                      {Array.from({ length: 24 }).map((_, h) => {
+                        const hrStr = String(h).padStart(2, '0') + ':00';
+                        return (
+                          <option key={hrStr} value={hrStr}>
+                            {hrStr} hs
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                 )}
 

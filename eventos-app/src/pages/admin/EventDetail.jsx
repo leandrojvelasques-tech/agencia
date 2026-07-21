@@ -39,6 +39,37 @@ export default function EventDetail() {
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [previewHtml, setPreviewHtml] = useState('')
   const [testingBroadcast, setTestingBroadcast] = useState(false)
+  const [sendingSatisfaction, setSendingSatisfaction] = useState(false)
+
+  const handleSendSatisfactionSurvey = async () => {
+    const confirmSend = window.confirm(
+      '¿Estás seguro de que querés enviar el correo de encuesta de satisfacción a todos los participantes confirmados/asistentes que no lo hayan recibido aún?'
+    )
+    if (!confirmSend) return
+
+    setSendingSatisfaction(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-reminders', {
+        body: {
+          eventId: event.id,
+          type: 'reminder_next_day'
+        }
+      })
+
+      if (error) throw error
+
+      if (data && data.success) {
+        alert(`¡Encuesta de satisfacción enviada con éxito! Se procesaron ${data.processed || 0} correos.`)
+      } else {
+        alert('Se ejecutó el envío pero no se procesó ningún correo nuevo (tal vez ya fueron enviados).')
+      }
+    } catch (err) {
+      console.error('Error al enviar la encuesta:', err)
+      alert('Error al enviar la encuesta: ' + (err.message || String(err)))
+    } finally {
+      setSendingSatisfaction(false)
+    }
+  }
 
   const surveyStatsSummary = useMemo(() => {
     if (!registrations || registrations.length === 0) return null
@@ -320,10 +351,10 @@ export default function EventDetail() {
 
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
-    { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas', count: null },
+    { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas de Inscripción', count: null },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
-    { to: `/admin/eventos/${id}/satisfaccion`, icon: 'thumb_up', label: 'Satisfacción', count: feedbackCount },
+    { to: `/admin/eventos/${id}/participantes?tab=satisfaction`, icon: 'thumb_up', label: 'Encuesta de Satisfacción', count: feedbackCount },
   ]
   const materials = event.event_materials?.filter(m => m.type !== 'image') || []
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
@@ -346,6 +377,19 @@ export default function EventDetail() {
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {event.has_satisfaction_survey && (
+            <button 
+              onClick={handleSendSatisfactionSurvey} 
+              disabled={sendingSatisfaction}
+              className="btn-ghost !text-[var(--color-deep-green)] hover:!bg-[var(--color-light-green)]/15 cursor-pointer disabled:opacity-50 flex items-center gap-1"
+              title="Enviar encuesta de satisfacción a los participantes ahora"
+            >
+              <span className="material-symbols-outlined text-lg">thumb_up</span>
+              <span className="hidden sm:inline">
+                {sendingSatisfaction ? 'Enviando...' : 'Enviar Encuesta'}
+              </span>
+            </button>
+          )}
           <button 
             onClick={() => setShowBroadcastModal(true)} 
             className="btn-ghost !text-[var(--color-deep-green)] hover:!bg-[var(--color-light-green)]/15"

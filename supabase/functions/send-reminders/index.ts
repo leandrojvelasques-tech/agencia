@@ -231,14 +231,25 @@ serve(async (req) => {
     const brevoApiKey = Deno.env.get('BREVO_API_KEY') || Deno.env.get('RESEND_API_KEY');
     const emailFrom = Deno.env.get('EMAIL_FROM') || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
 
-    // 1. Obtener fecha de hoy y de mañana en Buenos Aires (GMT-3)
+    // Parse body for manual/test triggers
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (_) {
+      // Empty body is fine for CRON triggers
+    }
+
+    const isManualOrTest = !!(body.eventId || body.testEmail || body.type);
+
+    // 1. Obtener fecha de hoy, mañana y ayer en Buenos Aires (GMT-3)
     const todayGMT3 = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"}));
     const todayStr = todayGMT3.toISOString().split('T')[0];
+    const currentHour = todayGMT3.getHours();
 
     const tomorrowGMT3 = new Date(todayGMT3.getTime() + 24 * 60 * 60 * 1000);
     const tomorrowStr = tomorrowGMT3.toISOString().split('T')[0];
 
-    console.log(`Buscando eventos para hoy (${todayStr}) y mañana (${tomorrowStr})...`);
+    console.log(`Buscando eventos para hoy (${todayStr}), mañana (${tomorrowStr})... Hora actual: ${currentHour}hs`);
 
     // 2. Obtener todas las plantillas de correo
     const { data: templatesData, error: tempErr } = await supabase
@@ -265,45 +276,98 @@ serve(async (req) => {
         return;
       }
 
-      // Obtener eventos publicados para la fecha
-      const { data: events, error: evErr } = await supabase
+      // Validar hora de envío si no es ejecución manual o de test
+      const sendTime = template.send_time || '08:00';
+      const scheduledHour = parseInt(sendTime.split(':')[0], 10);
+      if (!isManualOrTest && scheduledHour !== currentHour) {
+        console.log(`Omitiendo recordatorio "${type}" porque está programado para las ${sendTime} y la hora actual es ${currentHour}hs.`);
+        return;
+      }
+
+      // Obtener eventos publicados para la fecha (o el evento específico si es manual)
+      let query = supabase
         .from('events')
         .select('*')
-        .eq('event_date', dateStr)
         .eq('status', 'published');
 
+      if (body.eventId) {
+        query = query.eq('id', body.eventId);
+      } else {
+        query = query.eq('event_date', dateStr);
+      }
+
+      const { data: events, error: evErr } = await query;
+
       if (evErr || !events || events.length === 0) {
-        console.log(`No hay eventos publicados para la fecha: ${dateStr}`);
+        console.log(`No hay eventos coincidentes para procesar en la fecha: ${dateStr} (Recordatorio: ${type})`);
         return;
       }
 
       for (const event of events) {
-        console.log(`Procesando recordatorios para el evento: "${event.title}" (${type})`);
+        // Validar si el recordatorio está activo para este evento en particular
+        let isReminderEnabled = true;
+        if (type === 'reminder_48h') isReminderEnabled = event.send_reminder_48h !== false;
+        else if (type === 'reminder_24h') isReminderEnabled = event.send_reminder_24h !== false;
+        else if (type === 'reminder_same_day') isReminderEnabled = event.send_reminder_same_day !== false;
+        else if (type === 'reminder_next_day') {
+          isReminderEnabled = event.send_reminder_next_day === true && event.has_satisfaction_survey === true;
+        }
 
-        // Obtener inscritos activos (no cancelados)
-        const { data: registrations, error: regErr } = await supabase
+        if (!isReminderEnabled) {
+          console.log(`Recordatorio "${type}" desactivado para el evento: "${event.title}". Omitiendo.`);
+          continue;
+        }
+
+        console.log(`Procesando recordatorio "${type}" para el evento: "${event.title}"`);
+
+        // Obtener inscritos activos
+        let regQuery = supabase
           .from('registrations')
           .select('*, participants(*)')
           .eq('event_id', event.id)
           .neq('status', 'cancelled');
 
-        if (regErr || !registrations || registrations.length === 0) {
-          console.log(`No hay inscriptos para el evento: "${event.title}"`);
-          continue;
+        let registrations: any[] = [];
+        if (body.testEmail) {
+          // Simulación de prueba para Leandro
+          const { data: testRegs } = await regQuery;
+          const matchingReg = testRegs?.find(r => r.participants?.email?.toLowerCase() === body.testEmail.toLowerCase());
+          if (matchingReg) {
+            registrations = [matchingReg];
+          } else {
+            registrations = [{
+              attendance_mode: 'virtual',
+              unique_token: 'test-token-reminder',
+              participants: {
+                first_name: 'Juan (Test)',
+                last_name: 'Pérez',
+                email: body.testEmail
+              }
+            }];
+          }
+        } else {
+          const { data: regData, error: regErr } = await regQuery;
+          if (regErr || !regData || regData.length === 0) {
+            console.log(`No hay inscriptos para el evento: "${event.title}"`);
+            continue;
+          }
+          registrations = regData;
         }
 
-        // Obtener logs ya enviados para evitar duplicados
-        const { data: logsData } = await supabase
-          .from('email_logs')
-          .select('recipient_email')
-          .eq('event_id', event.id)
-          .eq('type', type);
-
+        // Obtener logs ya enviados para evitar duplicados (sólo si no es un correo de prueba específico)
         const sentEmails = new Set();
-        if (logsData) {
-          logsData.forEach(log => {
-            if (log.recipient_email) sentEmails.add(log.recipient_email.toLowerCase());
-          });
+        if (!body.testEmail) {
+          const { data: logsData } = await supabase
+            .from('email_logs')
+            .select('recipient_email')
+            .eq('event_id', event.id)
+            .eq('type', type);
+
+          if (logsData) {
+            logsData.forEach(log => {
+              if (log.recipient_email) sentEmails.add(log.recipient_email.toLowerCase());
+            });
+          }
         }
 
         for (const reg of registrations) {
@@ -311,7 +375,7 @@ serve(async (req) => {
           if (!participant || !participant.email) continue;
 
           const emailLower = participant.email.toLowerCase();
-          if (sentEmails.has(emailLower)) {
+          if (!body.testEmail && sentEmails.has(emailLower)) {
             console.log(`Recordatorio "${type}" ya fue enviado anteriormente a: ${participant.email}`);
             continue;
           }
@@ -359,6 +423,7 @@ serve(async (req) => {
             '{{link_reunion}}': liveLink,
             '{{link_acceso}}': liveLink,
             '{{seccion_acceso}}': accessSectionHtml,
+            '{{link_encuesta}}': `${domain}/encuesta/${event.slug}`,
             '{{link_cancelacion}}': `https://www.leandrovelasques.com.ar/cancelar.html?token=${reg.unique_token}`
           };
 
@@ -414,20 +479,22 @@ serve(async (req) => {
             errorMessage = 'Simulación: BREVO_API_KEY no configurado en Supabase.';
           }
 
-          // Guardar log
-          try {
-            await supabase.from('email_logs').insert({
-              event_id: event.id,
-              recipient_email: participant.email,
-              recipient_name: `${participant.first_name} ${participant.last_name}`,
-              type: type,
-              subject: resolvedSubject,
-              body: emailHtml,
-              status: status,
-              error_message: errorMessage
-            });
-          } catch (dbErr) {
-            console.error('Error guardando logs en Supabase:', dbErr);
+          // Guardar log si no es una prueba específica para Leandro
+          if (!body.testEmail) {
+            try {
+              await supabase.from('email_logs').insert({
+                event_id: event.id,
+                recipient_email: participant.email,
+                recipient_name: `${participant.first_name} ${participant.last_name}`,
+                type: type,
+                subject: resolvedSubject,
+                body: emailHtml,
+                status: status,
+                error_message: errorMessage
+              });
+            } catch (dbErr) {
+              console.error('Error guardando logs en Supabase:', dbErr);
+            }
           }
 
           results.push({
@@ -441,16 +508,37 @@ serve(async (req) => {
       }
     }
 
-    // 1. Procesar recordatorio de 48hs antes del evento (para pasado mañana)
-    const afterTomorrowGMT3 = new Date(todayGMT3.getTime() + 2 * 24 * 60 * 60 * 1000);
-    const afterTomorrowStr = afterTomorrowGMT3.toISOString().split('T')[0];
-    await processRemindersForDate(afterTomorrowStr, 'reminder_48h');
+    if (body.type) {
+      if (body.type === 'reminder_48h') {
+        const afterTomorrowGMT3 = new Date(todayGMT3.getTime() + 2 * 24 * 60 * 60 * 1000);
+        const afterTomorrowStr = afterTomorrowGMT3.toISOString().split('T')[0];
+        await processRemindersForDate(afterTomorrowStr, 'reminder_48h');
+      } else if (body.type === 'reminder_24h') {
+        await processRemindersForDate(tomorrowStr, 'reminder_24h');
+      } else if (body.type === 'reminder_same_day') {
+        await processRemindersForDate(todayStr, 'reminder_same_day');
+      } else if (body.type === 'reminder_next_day') {
+        const yesterdayGMT3 = new Date(todayGMT3.getTime() - 24 * 60 * 60 * 1000);
+        const yesterdayStr = yesterdayGMT3.toISOString().split('T')[0];
+        await processRemindersForDate(yesterdayStr, 'reminder_next_day');
+      }
+    } else {
+      // 1. Procesar recordatorio de 48hs antes del evento (para pasado mañana)
+      const afterTomorrowGMT3 = new Date(todayGMT3.getTime() + 2 * 24 * 60 * 60 * 1000);
+      const afterTomorrowStr = afterTomorrowGMT3.toISOString().split('T')[0];
+      await processRemindersForDate(afterTomorrowStr, 'reminder_48h');
 
-    // 2. Procesar recordatorio de 24hs antes del evento (para mañana)
-    await processRemindersForDate(tomorrowStr, 'reminder_24h');
+      // 2. Procesar recordatorio de 24hs antes del evento (para mañana)
+      await processRemindersForDate(tomorrowStr, 'reminder_24h');
 
-    // 3. Procesar recordatorio del mismo día (para hoy)
-    await processRemindersForDate(todayStr, 'reminder_same_day');
+      // 3. Procesar recordatorio del mismo día (para hoy)
+      await processRemindersForDate(todayStr, 'reminder_same_day');
+
+      // 4. Procesar recordatorio del día siguiente (para ayer)
+      const yesterdayGMT3 = new Date(todayGMT3.getTime() - 24 * 60 * 60 * 1000);
+      const yesterdayStr = yesterdayGMT3.toISOString().split('T')[0];
+      await processRemindersForDate(yesterdayStr, 'reminder_next_day');
+    }
 
     return new Response(JSON.stringify({ success: true, processed: results.length, details: results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -389,6 +389,7 @@ serve(async (req) => {
       '{{link_reunion}}': liveLink,
       '{{link_acceso}}': liveLink,
       '{{seccion_acceso}}': accessSectionHtml,
+      '{{link_encuesta}}': `${domain}/encuesta/${event.slug}`,
       '{{link_cancelacion}}': `https://www.leandrovelasques.com.ar/cancelar.html?token=${reg.unique_token}`
     };
 
