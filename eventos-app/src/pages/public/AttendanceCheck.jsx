@@ -1,8 +1,47 @@
 import { useParams } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Component } from 'react'
 import { useStore } from '../../store/useStore'
 
-export default function AttendanceCheck() {
+// Error Boundary to prevent blank screen crashes on unexpected data
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('AttendanceCheck ErrorBoundary caught an error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
+          <div className="card p-8 max-w-md w-full text-center">
+            <span className="material-symbols-outlined text-5xl text-red-500 mb-4 block">error</span>
+            <h2 className="text-xl font-bold text-[var(--color-deep-green)] mb-2">Ocurrió un error al cargar la asistencia</h2>
+            <p className="text-xs text-[var(--color-dark-gray)]/70 mb-6">
+              Por favor, recargá la página o intentá nuevamente en unos minutos.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary py-2 px-6 text-sm"
+            >
+              Recargar página
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function AttendanceCheckContent() {
   const { slug } = useParams()
   const { getEventBySlug, fetchEventData, registrations, markAttendance } = useStore()
   const [event, setEvent] = useState(null)
@@ -18,60 +57,20 @@ export default function AttendanceCheck() {
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const eventData = await getEventBySlug(slug)
-      if (eventData) {
-        setEvent(eventData)
-        await fetchEventData(eventData.id)
+      try {
+        const eventData = await getEventBySlug(slug)
+        if (eventData) {
+          setEvent(eventData)
+          await fetchEventData(eventData.id)
+        }
+      } catch (err) {
+        console.error('Error loading event data:', err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     init()
   }, [slug])
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center p-4">Cargando...</div>
-  }
-
-  if (!event || (event.status !== 'in_progress' && event.status !== 'published' && event.status !== 'completed')) {
-    return (
-      <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
-        <div className="text-center animate-fade-in">
-          <span className="material-symbols-outlined text-6xl text-[var(--color-dark-gray)]/20 mb-4 block">event_busy</span>
-          <h1 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-2">Asistencia no disponible</h1>
-          <p className="text-[var(--color-dark-gray)]/60 font-medium">El registro de asistencia no está habilitado en este momento.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const eventRegs = registrations
-    .filter(r => r.status !== 'cancelled')
-    .map(r => ({
-      ...r,
-      // In Supabase with join, it's often r.participants (plural in select)
-      participant: r.participants,
-    }))
-
-  // Sort registrations alphabetically by name
-  const sortedRegs = [...eventRegs].sort((a, b) => {
-    const nameA = `${a.participant?.first_name || ''} ${a.participant?.last_name || ''}`.trim().toLowerCase()
-    const nameB = `${b.participant?.first_name || ''} ${b.participant?.last_name || ''}`.trim().toLowerCase()
-    return nameA.localeCompare(nameB)
-  })
-
-  // Filter list based on search term
-  const filtered = search.trim() !== ''
-    ? sortedRegs.filter(r =>
-        r.participant?.first_name?.toLowerCase().includes(search.toLowerCase()) ||
-        r.participant?.last_name?.toLowerCase().includes(search.toLowerCase())
-      )
-    : sortedRegs
-
-  const handleConfirm = async (reg) => {
-    await markAttendance(reg.id, 'present', 'self')
-    setSelectedReg(reg)
-    setConfirmed(true)
-  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -93,8 +92,86 @@ export default function AttendanceCheck() {
     }
   }, [isOpen])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
+        <div className="text-center animate-fade-in">
+          <p className="font-heading text-base font-bold text-[var(--color-deep-green)] tracking-widest animate-pulse">
+            CARGANDO ASISTENCIA...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!event || (event.status !== 'in_progress' && event.status !== 'published' && event.status !== 'completed')) {
+    return (
+      <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
+        <div className="text-center animate-fade-in">
+          <span className="material-symbols-outlined text-6xl text-[var(--color-dark-gray)]/20 mb-4 block">event_busy</span>
+          <h1 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-2">Asistencia no disponible</h1>
+          <p className="text-[var(--color-dark-gray)]/60 font-medium">El registro de asistencia no está habilitado en este momento.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Safe helper to extract participant object
+  const getParticipant = (r) => {
+    if (!r) return {}
+    let p = r.participants || r.participant
+    if (Array.isArray(p)) p = p[0]
+    return p || {}
+  }
+
+  // Safe helper for full name
+  const getFullName = (p) => {
+    const fn = (p?.first_name || '').toString().trim()
+    const ln = (p?.last_name || '').toString().trim()
+    const full = `${fn} ${ln}`.trim()
+    return full || 'Participante sin nombre'
+  }
+
+  const eventRegs = (registrations || [])
+    .filter(r => r && r.status !== 'cancelled')
+    .map(r => ({
+      ...r,
+      participant: getParticipant(r),
+    }))
+
+  // Sort registrations alphabetically by name
+  const sortedRegs = [...eventRegs].sort((a, b) => {
+    const nameA = getFullName(a.participant).toLowerCase()
+    const nameB = getFullName(b.participant).toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
+
+  // Filter list based on search term
+  const searchLower = search.trim().toLowerCase()
+  const filtered = searchLower !== ''
+    ? sortedRegs.filter(r => {
+        const p = r.participant
+        const fn = (p.first_name || '').toString().toLowerCase()
+        const ln = (p.last_name || '').toString().toLowerCase()
+        const email = (p.email || '').toString().toLowerCase()
+        return fn.includes(searchLower) || ln.includes(searchLower) || email.includes(searchLower)
+      })
+    : sortedRegs
+
+  const handleConfirm = async (reg) => {
+    if (!reg) return
+    try {
+      await markAttendance(reg.id, 'present', 'self')
+      setSelectedReg(reg)
+      setConfirmed(true)
+    } catch (err) {
+      console.error('Error marking attendance:', err)
+    }
+  }
+
   if (confirmed) {
     const p = selectedReg?.participant
+    const fullName = getFullName(p)
     return (
       <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center animate-fade-in">
@@ -102,7 +179,7 @@ export default function AttendanceCheck() {
             <span className="material-symbols-outlined text-5xl text-[var(--color-deep-green)]">check_circle</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-3 text-[var(--color-deep-green)]">¡Asistencia registrada!</h1>
-          {p && <p className="text-lg text-[var(--color-dark-gray)] font-medium mb-2">Hola, {p.first_name} {p.last_name}</p>}
+          <p className="text-lg text-[var(--color-dark-gray)] font-medium mb-2">Hola, {fullName}</p>
           <p className="text-base text-[var(--color-dark-gray)]/60 mb-8">Gracias por participar en <strong>{event.title}</strong></p>
           <a href="https://www.leandrovelasques.com.ar" className="text-sm font-semibold text-[var(--color-deep-green)]/60 hover:text-[var(--color-deep-green)] transition-colors">
             leandrovelasques.com.ar
@@ -111,6 +188,9 @@ export default function AttendanceCheck() {
       </div>
     )
   }
+
+  const selectedParticipant = selectedReg ? selectedReg.participant : null
+  const selectedFullName = selectedParticipant ? getFullName(selectedParticipant) : ''
 
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)]">
@@ -145,14 +225,14 @@ export default function AttendanceCheck() {
               {selectedReg ? (
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] font-bold text-xs shrink-0">
-                    {selectedReg.participant?.first_name?.charAt(0)}{selectedReg.participant?.last_name?.charAt(0)}
+                    {(selectedParticipant?.first_name?.charAt(0) || selectedFullName?.charAt(0) || '?').toUpperCase()}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[var(--color-dark-gray)] leading-tight">
-                      {selectedReg.participant?.first_name} {selectedReg.participant?.last_name}
+                      {selectedFullName}
                     </p>
                     <p className="text-[10px] text-[var(--color-dark-gray)]/50">
-                      {selectedReg.participant?.email || 'Sin email'}
+                      {selectedParticipant?.email || 'Sin email'}
                     </p>
                   </div>
                 </div>
@@ -201,7 +281,10 @@ export default function AttendanceCheck() {
                     </p>
                   ) : (
                     filtered.map(r => {
+                      const p = r.participant
+                      const name = getFullName(p)
                       const isSelected = selectedReg?.id === r.id
+                      const initial = (p?.first_name?.charAt(0) || name?.charAt(0) || '?').toUpperCase()
                       return (
                         <button
                           key={r.id}
@@ -218,14 +301,14 @@ export default function AttendanceCheck() {
                           }`}
                         >
                           <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] font-bold text-xs shrink-0">
-                            {r.participant?.first_name?.charAt(0)}{r.participant?.last_name?.charAt(0)}
+                            {initial}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-[var(--color-dark-gray)] truncate">
-                              {r.participant?.first_name} {r.participant?.last_name}
+                              {name}
                             </p>
                             <p className="text-[10px] text-[var(--color-dark-gray)]/50 truncate">
-                              {r.participant?.email || 'Sin email'}
+                              {p?.email || 'Sin email'}
                             </p>
                           </div>
                           {isSelected && (
@@ -256,5 +339,13 @@ export default function AttendanceCheck() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function AttendanceCheck() {
+  return (
+    <ErrorBoundary>
+      <AttendanceCheckContent />
+    </ErrorBoundary>
   )
 }
