@@ -116,8 +116,15 @@ export default function ClassesDashboard() {
     start_time: '20:00',
     end_time: '21:30',
     instructor: 'Leandro Velasques',
-    status: 'active'
+    status: 'active',
+    is_recurring: true,
+    specific_date: ''
   })
+
+  // Import from Event State
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importEvents, setImportEvents] = useState([])
+  const [selectedEventId, setSelectedEventId] = useState('')
 
   // Attendance Tab State
   const [selectedClassId, setSelectedClassId] = useState('')
@@ -155,7 +162,9 @@ export default function ClassesDashboard() {
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() + 1
 
-    const scheduledDates = getWeekDatesInMonth(currentYear, currentMonth, selectedClass.day_of_week)
+    const scheduledDates = selectedClass.is_recurring !== false
+      ? getWeekDatesInMonth(currentYear, currentMonth, selectedClass.day_of_week)
+      : (selectedClass.specific_date ? [selectedClass.specific_date] : [])
 
     const dbSessionsByDate = {}
     if (monthlySummary.sessions) {
@@ -228,21 +237,24 @@ export default function ClassesDashboard() {
   const handleDateChange = (dateVal) => {
     const selectedClass = recurringClasses.find(c => c.id === selectedClassId)
     if (selectedClass) {
-      const [year, month, day] = dateVal.split('-').map(Number)
-      const dateObj = new Date(year, month - 1, day)
-      const dateDayOfWeek = dateObj.getDay()
-
-      if (dateDayOfWeek !== selectedClass.day_of_week) {
-        const scheduledDayName = DAYS_OF_WEEK.find(d => d.value === selectedClass.day_of_week)?.label
-        const selectedDayName = DAYS_OF_WEEK.find(d => d.value === dateDayOfWeek)?.label
+      if (selectedClass.is_recurring === false) {
+        if (dateVal !== selectedClass.specific_date) {
+          if (!window.confirm(`La fecha elegida (${dateVal}) es diferente de la fecha programada para esta clase única (${selectedClass.specific_date}). ¿Deseas continuar?`)) {
+            return
+          }
+        }
+      } else {
+        const [year, month, day] = dateVal.split('-').map(Number)
+        const dateObj = new Date(year, month - 1, day)
+        const dateDayOfWeek = dateObj.getDay()
         
-        const confirmChange = window.confirm(
-          `Esta clase está programada para los días [${scheduledDayName}].\n` +
-          `Has seleccionado un día [${selectedDayName}].\n\n` +
-          `¿Estás seguro de que deseas registrar la asistencia en esta fecha?`
-        )
-        if (!confirmChange) {
-          return
+        if (dateDayOfWeek !== selectedClass.day_of_week) {
+          const selectedDayName = DAYS_OF_WEEK.find(d => d.value === dateDayOfWeek)?.label
+          const targetDayName = DAYS_OF_WEEK.find(d => d.value === selectedClass.day_of_week)?.label
+          
+          if (!window.confirm(`Esta clase está programada para los días ${targetDayName}. Has seleccionado un día ${selectedDayName}. ¿Estás seguro de registrar la asistencia en esta fecha?`)) {
+            return
+          }
         }
       }
     }
@@ -254,8 +266,12 @@ export default function ClassesDashboard() {
     if (selectedClassId) {
       const cls = recurringClasses.find(c => c.id === selectedClassId)
       if (cls) {
-        const defaultDate = getClosestDateForDayOfWeek(cls.day_of_week)
-        setSelectedDate(defaultDate)
+        if (cls.is_recurring === false && cls.specific_date) {
+          setSelectedDate(cls.specific_date)
+        } else {
+          const defaultDate = getClosestDateForDayOfWeek(cls.day_of_week)
+          setSelectedDate(defaultDate)
+        }
       }
     }
   }, [selectedClassId])
@@ -657,7 +673,9 @@ export default function ClassesDashboard() {
         start_time: cls.start_time?.substring(0, 5) || '20:00',
         end_time: cls.end_time?.substring(0, 5) || '21:30',
         instructor: cls.instructor || 'Leandro Velasques',
-        status: cls.status || 'active'
+        status: cls.status || 'active',
+        is_recurring: cls.is_recurring !== false,
+        specific_date: cls.specific_date || ''
       })
     } else {
       setEditingClass(null)
@@ -667,7 +685,9 @@ export default function ClassesDashboard() {
         start_time: '20:00',
         end_time: '21:30',
         instructor: 'Leandro Velasques',
-        status: 'active'
+        status: 'active',
+        is_recurring: true,
+        specific_date: ''
       })
     }
     setClassModalOpen(true)
@@ -680,13 +700,25 @@ export default function ClassesDashboard() {
       return
     }
 
+    if (classForm.is_recurring === false && !classForm.specific_date) {
+      showToast('La fecha específica es obligatoria para clases eventuales', 'error')
+      return
+    }
+
     setIsActionLoading(true)
     try {
+      const submissionData = { ...classForm }
+      if (submissionData.is_recurring === false && submissionData.specific_date) {
+        const [year, month, day] = submissionData.specific_date.split('-').map(Number)
+        const dateObj = new Date(year, month - 1, day)
+        submissionData.day_of_week = dateObj.getDay()
+      }
+
       let res
       if (editingClass) {
-        res = await updateRecurringClass(editingClass.id, classForm)
+        res = await updateRecurringClass(editingClass.id, submissionData)
       } else {
-        res = await createRecurringClass(classForm)
+        res = await createRecurringClass(submissionData)
       }
 
       if (res.success) {
@@ -717,6 +749,110 @@ export default function ClassesDashboard() {
         console.error(err)
         showToast('Error al eliminar clase: ' + err.message, 'error')
       }
+    }
+  }
+
+  const handleOpenImportModal = async () => {
+    setIsActionLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, title, event_date')
+        .neq('status', 'cancelled')
+        .order('event_date', { ascending: false })
+      
+      if (error) throw error
+      setImportEvents(data || [])
+      setSelectedEventId(data && data.length > 0 ? data[0].id : '')
+      setImportModalOpen(true)
+    } catch (err) {
+      console.error(err)
+      showToast('Error al cargar eventos: ' + err.message, 'error')
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const handleImportFromEvent = async () => {
+    if (!selectedEventId || !selectedClassId) return
+    setIsActionLoading(true)
+    try {
+      const { data: regs, error: rErr } = await supabase
+        .from('registrations')
+        .select('*, participants(*)')
+        .eq('event_id', selectedEventId)
+        .neq('status', 'cancelled')
+      
+      if (rErr) throw rErr
+      if (!regs || regs.length === 0) {
+        showToast('No hay alumnos registrados en el evento seleccionado', 'warning')
+        setImportModalOpen(false)
+        return
+      }
+
+      let importCount = 0
+      let alreadyEnrolledCount = 0
+
+      const currentClass = recurringClasses.find(c => c.id === selectedClassId)
+      const enrolledStudentIds = new Set(currentClass?.class_enrollments?.map(ce => ce.student_id) || [])
+
+      for (const reg of regs) {
+        const p = reg.participants
+        if (!p) continue
+
+        let student = students.find(s => 
+          (s.email && p.email && s.email.toLowerCase() === p.email.toLowerCase()) || 
+          (`${s.first_name} ${s.last_name}`).toLowerCase() === (`${p.first_name} ${p.last_name}`).toLowerCase()
+        )
+
+        if (!student) {
+          const { data: newStudent, error: sErr } = await supabase
+            .from('students')
+            .insert([{
+              first_name: p.first_name,
+              last_name: p.last_name,
+              email: p.email || null,
+              phone: p.phone || null,
+              billing_type: 'por_clase',
+              status: 'active',
+              start_date: new Date().toISOString().split('T')[0]
+            }])
+            .select()
+            .single()
+
+          if (sErr) throw sErr
+          student = newStudent
+          students.push(student) 
+        }
+
+        if (!enrolledStudentIds.has(student.id)) {
+          const { error: eErr } = await supabase
+            .from('class_enrollments')
+            .insert([{
+              class_id: selectedClassId,
+              student_id: student.id
+            }])
+          
+          if (eErr) {
+            console.error("Error enrolling student:", eErr)
+          } else {
+            importCount++
+          }
+        } else {
+          alreadyEnrolledCount++
+        }
+      }
+
+      showToast(`Importación completada: ${importCount} alumnos importados. ${alreadyEnrolledCount} ya estaban inscritos.`)
+      setImportModalOpen(false)
+      
+      await fetchStudents()
+      await fetchRecurringClasses()
+    } catch (err) {
+      console.error(err)
+      showToast('Error al importar alumnos: ' + err.message, 'error')
+    } finally {
+      setIsActionLoading(false)
     }
   }
 
@@ -1112,7 +1248,7 @@ export default function ClassesDashboard() {
           <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-2">Clase Recurrente</label>
+                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-2">Clase / Sesión</label>
                 <select
                   value={selectedClassId}
                   onChange={e => setSelectedClassId(e.target.value)}
@@ -1121,7 +1257,7 @@ export default function ClassesDashboard() {
                   <option value="" disabled>Selecciona una clase</option>
                   {recurringClasses.filter(c => c.status === 'active').map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label} {c.start_time.substring(0, 5)}hs)
+                      {c.name} ({c.is_recurring === false ? `Clase Única: ${c.specific_date}` : `${DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label} ${c.start_time.substring(0, 5)}hs`})
                     </option>
                   ))}
                 </select>
@@ -1186,7 +1322,16 @@ export default function ClassesDashboard() {
                   <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5">
                     <div className="flex justify-between items-center mb-6 gap-3">
                       <h2 className="text-lg font-bold text-[var(--color-deep-green)]">Lista de Asistencia</h2>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => handleOpenImportModal()}
+                          className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1 border border-[var(--color-deep-green)]/15 text-[var(--color-deep-green)] hover:bg-[var(--color-refined-gray)] cursor-pointer"
+                          title="Importar inscriptos de un taller o charla"
+                          disabled={!selectedClassId}
+                        >
+                          <span className="material-symbols-outlined text-sm">download</span>
+                          <span>Importar de Evento</span>
+                        </button>
                         <button
                           onClick={() => handleOpenStudentModal()}
                           className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1 bg-[var(--color-deep-green)] text-white hover:bg-[var(--color-deep-green)]/90 border-none cursor-pointer"
@@ -1545,7 +1690,7 @@ export default function ClassesDashboard() {
           <div className="card p-5 bg-white border border-[var(--color-deep-green)]/5">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-2">Clase Recurrente</label>
+                <label className="block text-xs font-bold text-[var(--color-dark-gray)]/60 uppercase tracking-wider mb-2">Clase / Sesión</label>
                 <select
                   value={reportClassId}
                   onChange={e => setReportClassId(e.target.value)}
@@ -1554,7 +1699,7 @@ export default function ClassesDashboard() {
                   <option value="" disabled>Selecciona una clase</option>
                   {recurringClasses.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label})
+                      {c.name} ({c.is_recurring === false ? `Clase Única: ${c.specific_date}` : DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label})
                     </option>
                   ))}
                 </select>
@@ -1735,8 +1880,13 @@ export default function ClassesDashboard() {
                 <div key={cls.id} className="card p-6 bg-white border border-[var(--color-deep-green)]/5 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-heading font-extrabold text-[var(--color-deep-green)] text-lg">
-                        {cls.name}
+                      <h3 className="font-heading font-extrabold text-[var(--color-deep-green)] text-lg flex items-center gap-1.5 flex-wrap">
+                        <span>{cls.name}</span>
+                        {cls.is_recurring === false && (
+                          <span className="text-[10px] bg-indigo-50 border border-indigo-150 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                            Clase Única
+                          </span>
+                        )}
                       </h3>
                       <span className={`badge ${cls.status === 'active' ? 'badge-green' : 'badge-gray'}`}>
                         {cls.status === 'active' ? 'Activo' : 'Inactivo'}
@@ -1746,7 +1896,7 @@ export default function ClassesDashboard() {
                     <div className="space-y-2 mt-4 text-sm font-semibold text-[var(--color-dark-gray)]/75">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px] text-[var(--color-dark-gray)]/45">calendar_today</span>
-                        <span>Día: {DAYS_OF_WEEK.find(d => d.value === cls.day_of_week)?.label}</span>
+                        <span>Día: {cls.is_recurring === false ? `Única vez (${cls.specific_date})` : DAYS_OF_WEEK.find(d => d.value === cls.day_of_week)?.label}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px] text-[var(--color-dark-gray)]/45">schedule</span>
@@ -1911,7 +2061,7 @@ export default function ClassesDashboard() {
                           }}
                           className="rounded text-[var(--color-deep-green)] focus:ring-[var(--color-deep-green)]"
                         />
-                        <span>{c.name} ({DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label})</span>
+                        <span>{c.name} ({c.is_recurring === false ? `Clase Única: ${c.specific_date}` : DAYS_OF_WEEK.find(d => d.value === c.day_of_week)?.label})</span>
                       </label>
                     ))}
                   </div>
@@ -1949,7 +2099,7 @@ export default function ClassesDashboard() {
           <div className="bg-white rounded-premium max-w-lg w-full p-6 shadow-xl border border-gray-100 animate-fade-in">
             <h2 className="text-xl font-extrabold text-[var(--color-deep-green)] mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined">calendar_today</span>
-              {editingClass ? 'Editar Clase Recurrente' : 'Nueva Clase Recurrente'}
+              {editingClass ? (classForm.is_recurring === false ? 'Editar Clase Única' : 'Editar Clase Recurrente') : (classForm.is_recurring === false ? 'Nueva Clase Única' : 'Nueva Clase Recurrente')}
             </h2>
 
             <form onSubmit={handleClassSubmit} className="space-y-4">
@@ -1965,19 +2115,60 @@ export default function ClassesDashboard() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Día de la Semana</label>
-                  <select
-                    value={classForm.day_of_week}
-                    onChange={e => setClassForm(prev => ({ ...prev, day_of_week: Number(e.target.value) }))}
-                    className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Tipo de Clase</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setClassForm(prev => ({ ...prev, is_recurring: true }))}
+                    className={`py-2 px-4 rounded-premium text-sm font-bold border transition-all cursor-pointer ${
+                      classForm.is_recurring !== false
+                        ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                        : 'bg-gray-100 border-gray-200 text-[var(--color-dark-gray)]/60 hover:bg-gray-150'
+                    }`}
                   >
-                    {DAYS_OF_WEEK.map(d => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
-                    ))}
-                  </select>
+                    🔁 Recurrente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setClassForm(prev => ({ ...prev, is_recurring: false }))}
+                    className={`py-2 px-4 rounded-premium text-sm font-bold border transition-all cursor-pointer ${
+                      classForm.is_recurring === false
+                        ? 'bg-[var(--color-deep-green)] text-white border-[var(--color-deep-green)]'
+                        : 'bg-gray-100 border-gray-200 text-[var(--color-dark-gray)]/60 hover:bg-gray-150'
+                    }`}
+                  >
+                    📅 Eventual (Única vez)
+                  </button>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {classForm.is_recurring !== false ? (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Día de la Semana</label>
+                    <select
+                      value={classForm.day_of_week}
+                      onChange={e => setClassForm(prev => ({ ...prev, day_of_week: Number(e.target.value) }))}
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    >
+                      {DAYS_OF_WEEK.map(d => (
+                        <option key={d.value} value={d.value}>{d.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Fecha Específica *</label>
+                    <input
+                      type="date"
+                      required={classForm.is_recurring === false}
+                      value={classForm.specific_date}
+                      onChange={e => setClassForm(prev => ({ ...prev, specific_date: e.target.value }))}
+                      className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Profesor / Instructor</label>
@@ -2047,6 +2238,64 @@ export default function ClassesDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {importModalOpen && (
+        <div className="modal-overlay">
+          <div className="bg-white rounded-premium max-w-md w-full p-6 shadow-xl border border-gray-100 animate-fade-in">
+            <h2 className="text-xl font-extrabold text-[var(--color-deep-green)] mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined">download</span>
+              Importar de Evento
+            </h2>
+            <p className="text-xs text-[var(--color-dark-gray)]/60 mb-6 leading-relaxed">
+              Selecciona uno de tus eventos publicados para traer la información de sus inscriptos a la lista de asistencia de esta clase. Los participantes se agregarán automáticamente como alumnos de pago por clase.
+            </p>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-[var(--color-dark-gray)]">Seleccionar Evento</label>
+                {importEvents.length === 0 ? (
+                  <p className="text-xs text-red-500 font-semibold">No se encontraron eventos activos en el sistema.</p>
+                ) : (
+                  <select
+                    value={selectedEventId}
+                    onChange={e => setSelectedEventId(e.target.value)}
+                    className="w-full bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-4 py-2.5 text-sm text-[var(--color-dark-gray)] outline-none cursor-pointer focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+                  >
+                    {importEvents.map(ev => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.title} ({ev.event_date})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setImportModalOpen(false)}
+                  className="px-6 py-2.5 rounded-premium text-sm font-bold text-[var(--color-dark-gray)] hover:bg-[var(--color-refined-gray)] transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={isActionLoading || !selectedEventId}
+                  onClick={handleImportFromEvent}
+                  className="btn-primary py-2.5 px-6"
+                >
+                  {isActionLoading ? (
+                    <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                  )}
+                  Importar Alumnos
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

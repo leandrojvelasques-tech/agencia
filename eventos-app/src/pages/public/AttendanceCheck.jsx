@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../../store/useStore'
 
 export default function AttendanceCheck() {
@@ -10,6 +10,10 @@ export default function AttendanceCheck() {
   const [search, setSearch] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const [selectedReg, setSelectedReg] = useState(null)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const dropdownRef = useRef(null)
+  const searchInputRef = useRef(null)
 
   useEffect(() => {
     async function init() {
@@ -48,18 +52,46 @@ export default function AttendanceCheck() {
       participant: r.participants,
     }))
 
-  const filtered = search.length >= 2
-    ? eventRegs.filter(r =>
+  // Sort registrations alphabetically by name
+  const sortedRegs = [...eventRegs].sort((a, b) => {
+    const nameA = `${a.participant?.first_name || ''} ${a.participant?.last_name || ''}`.trim().toLowerCase()
+    const nameB = `${b.participant?.first_name || ''} ${b.participant?.last_name || ''}`.trim().toLowerCase()
+    return nameA.localeCompare(nameB)
+  })
+
+  // Filter list based on search term
+  const filtered = search.trim() !== ''
+    ? sortedRegs.filter(r =>
         r.participant?.first_name?.toLowerCase().includes(search.toLowerCase()) ||
         r.participant?.last_name?.toLowerCase().includes(search.toLowerCase())
       )
-    : []
+    : sortedRegs
 
   const handleConfirm = async (reg) => {
     await markAttendance(reg.id, 'present', 'self')
     setSelectedReg(reg)
     setConfirmed(true)
   }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  // Auto-focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [isOpen])
 
   if (confirmed) {
     const p = selectedReg?.participant
@@ -98,46 +130,129 @@ export default function AttendanceCheck() {
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title}</p>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-6" ref={dropdownRef}>
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
             Buscá tu nombre
           </label>
-          <input
-            className="form-input"
-            placeholder="Escribí tu nombre o apellido..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            autoFocus
-          />
-
-          {search.length >= 2 && (
-            <div className="mt-4 space-y-2 animate-fade-in">
-              {filtered.length === 0 ? (
-                <p className="text-sm text-[var(--color-dark-gray)]/40 text-center py-4">No se encontraron coincidencias</p>
+          
+          <div className="relative">
+            {/* Dropdown Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-full flex items-center justify-between p-4 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] border border-[var(--color-deep-green)]/10 hover:border-[var(--color-deep-green)]/30 transition-all text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-deep-green)]/20"
+            >
+              {selectedReg ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] font-bold text-xs shrink-0">
+                    {selectedReg.participant?.first_name?.charAt(0)}{selectedReg.participant?.last_name?.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-dark-gray)] leading-tight">
+                      {selectedReg.participant?.first_name} {selectedReg.participant?.last_name}
+                    </p>
+                    <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                      {selectedReg.participant?.email || 'Sin email'}
+                    </p>
+                  </div>
+                </div>
               ) : (
-                filtered.map(r => (
-                  <button
-                    key={r.id}
-                    onClick={() => handleConfirm(r)}
-                    className="w-full flex items-center gap-4 p-4 rounded-[var(--radius-premium)] border border-[var(--color-deep-green)]/10 hover:border-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/5 transition-all text-left"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] font-bold text-sm">
-                      {r.participant?.first_name?.charAt(0)}{r.participant?.last_name?.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-[var(--color-dark-gray)]">{r.participant?.first_name} {r.participant?.last_name}</p>
-                      <p className="text-xs text-[var(--color-dark-gray)]/50">{r.participant?.email || 'Sin email'}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-[var(--color-deep-green)]">check_circle</span>
-                  </button>
-                ))
+                <span className="text-sm text-[var(--color-dark-gray)]/40 font-medium">
+                  Seleccioná tu nombre de la lista...
+                </span>
               )}
-            </div>
-          )}
+              <span className="material-symbols-outlined text-[var(--color-dark-gray)]/60 select-none">
+                {isOpen ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
 
-          {search.length > 0 && search.length < 2 && (
-            <p className="text-xs text-[var(--color-dark-gray)]/30 mt-2">Escribí al menos 2 caracteres para buscar</p>
-          )}
+            {/* Dropdown Dropbox Menu */}
+            {isOpen && (
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-[var(--color-deep-green)]/10 rounded-[var(--radius-premium)] shadow-[var(--shadow-premium)] z-50 overflow-hidden animate-fade-in">
+                {/* Search field inside dropdown */}
+                <div className="p-3 border-b border-[var(--color-refined-gray)] sticky top-0 bg-white z-10 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm text-[var(--color-dark-gray)]/40 select-none">
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    ref={searchInputRef}
+                    className="w-full text-sm outline-none bg-transparent py-1 text-[var(--color-dark-gray)] font-medium"
+                    placeholder="Buscar por nombre o apellido..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className="material-symbols-outlined text-sm text-[var(--color-dark-gray)]/40 hover:text-[var(--color-dark-gray)]/85 select-none focus:outline-none"
+                    >
+                      close
+                    </button>
+                  )}
+                </div>
+
+                {/* Dropdown Items list */}
+                <div className="max-h-60 overflow-y-auto p-2 space-y-1">
+                  {filtered.length === 0 ? (
+                    <p className="text-xs text-[var(--color-dark-gray)]/45 text-center py-6">
+                      No se encontraron coincidencias
+                    </p>
+                  ) : (
+                    filtered.map(r => {
+                      const isSelected = selectedReg?.id === r.id
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedReg(r)
+                            setIsOpen(false)
+                            setSearch('')
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[var(--color-deep-green)]/10 border-l-4 border-[var(--color-deep-green)]'
+                              : 'hover:bg-[var(--color-deep-green)]/5'
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-[var(--color-deep-green)]/10 flex items-center justify-center text-[var(--color-deep-green)] font-bold text-xs shrink-0">
+                            {r.participant?.first_name?.charAt(0)}{r.participant?.last_name?.charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[var(--color-dark-gray)] truncate">
+                              {r.participant?.first_name} {r.participant?.last_name}
+                            </p>
+                            <p className="text-[10px] text-[var(--color-dark-gray)]/50 truncate">
+                              {r.participant?.email || 'Sin email'}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <span className="material-symbols-outlined text-sm text-[var(--color-deep-green)] shrink-0 select-none">
+                              check
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Confirm Button */}
+          <div className="mt-6">
+            <button
+              onClick={() => selectedReg && handleConfirm(selectedReg)}
+              disabled={!selectedReg}
+              className="w-full btn-primary py-4 text-center justify-center font-bold tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined">how_to_reg</span>
+              Confirmar asistencia
+            </button>
+          </div>
         </div>
       </main>
     </div>

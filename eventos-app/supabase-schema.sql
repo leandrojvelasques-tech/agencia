@@ -455,6 +455,8 @@ CREATE TABLE IF NOT EXISTS recurring_classes (
     instructor TEXT NOT NULL DEFAULT 'Leandro Velasques',
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
     share_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+    is_recurring BOOLEAN NOT NULL DEFAULT true,
+    specific_date DATE DEFAULT null,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
