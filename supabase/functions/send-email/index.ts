@@ -415,7 +415,8 @@ serve(async (req) => {
       emailSubject: string,
       htmlContent: string,
       isCoordinator = false,
-      replyTo?: string | string[]
+      replyTo?: string | string[],
+      logType = emailType
     ) {
       let status = 'pending';
       let errorMessage: string | null = null;
@@ -465,7 +466,7 @@ serve(async (req) => {
           event_id: event.id,
           recipient_email: toEmail,
           recipient_name: toName,
-          type: isCoordinator ? `coordinator_${emailType}` : emailType,
+          type: isCoordinator ? `coordinator_${logType}` : logType,
           subject: emailSubject,
           body: htmlContent,
           status: status,
@@ -497,6 +498,52 @@ serve(async (req) => {
         false,
         eventReplyTo
       );
+
+      // Si es una inscripción realizada el mismo día del evento y tiene los recordatorios del mismo día activos,
+      // enviamos de inmediato el recordatorio del mismo día para que reciba el link de acceso a Zoom/ubicación.
+      const todayGMT3 = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"}));
+      const todayStr = todayGMT3.toISOString().split('T')[0];
+      const isSameDayRegistration = event.event_date === todayStr;
+
+      if (emailType === 'welcome' && isSameDayRegistration && event.send_reminder_same_day !== false && !body.testEmail) {
+        console.log(`[SameDayTrigger] Inscripción el mismo día del evento. Enviando recordatorio del mismo día de forma inmediata.`);
+        try {
+          const { data: reminderTemplate, error: reminderErr } = await supabase
+            .from('email_templates')
+            .select('*')
+            .eq('id', 'reminder_same_day')
+            .single();
+
+          if (!reminderErr && reminderTemplate) {
+            let remSubject = reminderTemplate.subject;
+            let remBody = reminderTemplate.body;
+
+            for (const [key, value] of Object.entries(placeholders)) {
+              remSubject = remSubject.replaceAll(key, value);
+              remBody = remBody.replaceAll(key, value);
+            }
+
+            const remHtml = remBody.trim().startsWith('<') || remBody.includes('<div') || remBody.includes('<table') || remBody.includes('<html')
+              ? remBody
+              : remBody.replace(/\n/g, '<br>');
+
+            await sendAndLogEmail(
+              targetEmail,
+              `${participant.first_name} ${participant.last_name}`,
+              remSubject,
+              remHtml,
+              false,
+              eventReplyTo,
+              'reminder_same_day'
+            );
+            console.log(`[SameDayTrigger] Recordatorio del mismo día enviado e insertado en logs exitosamente.`);
+          } else {
+            console.error(`[SameDayTrigger] No se encontró la plantilla reminder_same_day o hubo error:`, reminderErr);
+          }
+        } catch (err) {
+          console.error(`[SameDayTrigger] Error enviando recordatorio del mismo día automático:`, err);
+        }
+      }
     }
 
     // 7. Send email to coordinators (skip if testEmail is set)
