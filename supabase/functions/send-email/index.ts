@@ -277,19 +277,49 @@ serve(async (req) => {
       }
       reg = data;
     } else {
-      const { data, error: regErr } = await supabase
+      let query = supabase
         .from('registrations')
         .select('*, participants(*), events(*)')
-        .order('created_at', { ascending: false })
-        .limit(1);
-        
-      if (regErr || !data || data.length === 0) {
-        return new Response(JSON.stringify({ error: `No se encontraron inscripciones registradas en el sistema para simular los datos de prueba.` }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 404,
-        });
+        .order('created_at', { ascending: false });
+
+      if (body.eventId) {
+        query = query.eq('event_id', body.eventId);
       }
-      reg = data[0];
+
+      const { data, error: regErr } = await query.limit(1);
+        
+      if (!data || data.length === 0) {
+        // If no registrations for this event, construct a mock one
+        if (body.eventId) {
+          const { data: eventData } = await supabase
+            .from('events')
+            .select('*')
+            .eq('id', body.eventId)
+            .single();
+
+          if (eventData) {
+            reg = {
+              attendance_mode: 'virtual',
+              unique_token: 'test-token',
+              participants: {
+                first_name: 'Juan',
+                last_name: 'Pérez',
+                email: body.testEmail || 'leandrojvelasques@gmail.com'
+              },
+              events: eventData
+            };
+          }
+        }
+
+        if (!reg) {
+          return new Response(JSON.stringify({ error: `No se encontraron inscripciones ni eventos registrados en el sistema para simular los datos de prueba.` }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 404,
+          });
+        }
+      } else {
+        reg = data[0];
+      }
     }
 
     const participant = reg.participants;
@@ -333,6 +363,16 @@ serve(async (req) => {
       event.location || ''
     );
 
+    let tipoEventoStr = 'Taller';
+    if (event.type === 'charla') {
+      tipoEventoStr = 'Charla';
+    }
+    if (event.title.toLowerCase().includes('inteligencia artificial') || event.title.toLowerCase().includes('ia ')) {
+      tipoEventoStr = 'Taller de Inteligencia Artificial';
+    } else if (event.title.toLowerCase().includes('tango')) {
+      tipoEventoStr = 'Clase de Tango';
+    }
+
     const placeholders: Record<string, string> = {
       '{{nombre}}': participant.first_name || '',
       '{{apellido}}': participant.last_name || '',
@@ -340,6 +380,7 @@ serve(async (req) => {
       '{{fecha}}': dateStr,
       '{{horario}}': event.start_time || '',
       '{{modalidad}}': modalityStr,
+      '{{tipo_evento}}': tipoEventoStr,
       '{{duracion}}': formatDuration(event.duration_minutes),
       '{{coordinador}}': event.coordinator || 'Leandro Velasques',
       '{{agenda}}': formatAgendaHtml(event.agenda),

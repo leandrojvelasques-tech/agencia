@@ -333,6 +333,16 @@ serve(async (req) => {
             event.location || ''
           );
 
+          let tipoEventoStr = 'Taller';
+          if (event.type === 'charla') {
+            tipoEventoStr = 'Charla';
+          }
+          if (event.title.toLowerCase().includes('inteligencia artificial') || event.title.toLowerCase().includes('ia ')) {
+            tipoEventoStr = 'Taller de Inteligencia Artificial';
+          } else if (event.title.toLowerCase().includes('tango')) {
+            tipoEventoStr = 'Clase de Tango';
+          }
+
           const placeholders: Record<string, string> = {
             '{{nombre}}': participant.first_name || '',
             '{{apellido}}': participant.last_name || '',
@@ -340,6 +350,7 @@ serve(async (req) => {
             '{{fecha}}': dateFormatted,
             '{{horario}}': event.start_time || '',
             '{{modalidad}}': modalityStr,
+            '{{tipo_evento}}': tipoEventoStr,
             '{{duracion}}': formatDuration(event.duration_minutes),
             '{{coordinador}}': event.coordinator || 'Leandro Velasques',
             '{{agenda}}': formatAgendaHtml(event.agenda),

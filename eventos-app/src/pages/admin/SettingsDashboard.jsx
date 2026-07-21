@@ -18,6 +18,8 @@ export default function SettingsDashboard() {
   const [showPreview, setShowPreview] = useState(false)
   const [testEmail, setTestEmail] = useState('info@leandrovelasques.com.ar')
   const [sendingTest, setSendingTest] = useState(false)
+  const [events, setEvents] = useState([])
+  const [selectedEventId, setSelectedEventId] = useState('')
 
   // Fetch templates and logs
   useEffect(() => {
@@ -46,6 +48,17 @@ export default function SettingsDashboard() {
           .limit(100)
         if (lErr) throw lErr
         setLogs(lData || [])
+
+        // Fetch events for testing selector
+        const { data: evs, error: evsErr } = await supabase
+          .from('events')
+          .select('id, title')
+          .order('event_date', { ascending: false })
+        if (evsErr) throw evsErr
+        setEvents(evs || [])
+        if (evs && evs.length > 0) {
+          setSelectedEventId(evs[0].id)
+        }
       } catch (err) {
         console.error('Error cargando datos de configuración:', err)
         setError('Error al cargar la información.')
@@ -104,8 +117,9 @@ export default function SettingsDashboard() {
     const mockPlaceholders = {
       '{{nombre}}': 'Juan',
       '{{apellido}}': 'Pérez',
-      '{{evento}}': 'Taller de IA para Ciencias Económicas',
-      '{{fecha}}': '2026-07-21',
+      '{{evento}}': 'Taller de Inteligencia Artificial para Profesionales de Ciencias Económicas',
+      '{{tipo_evento}}': 'Taller de Inteligencia Artificial',
+      '{{fecha}}': '21 de julio de 2026',
       '{{horario}}': '18:00',
       '{{modalidad}}': 'Virtual (Online)',
       '{{coordinador}}': 'Leandro Velasques',
@@ -176,6 +190,7 @@ export default function SettingsDashboard() {
         body: {
           type: selectedTemplateId,
           registrationId: 'latest',
+          eventId: selectedEventId,
           testEmail: testEmail.trim()
         }
       })
@@ -225,6 +240,7 @@ export default function SettingsDashboard() {
     { tag: '{{nombre}}', desc: 'Nombre del inscripto' },
     { tag: '{{apellido}}', desc: 'Apellido del inscripto' },
     { tag: '{{evento}}', desc: 'Título oficial del evento' },
+    { tag: '{{tipo_evento}}', desc: 'Tipo o nombre corto del evento' },
     { tag: '{{fecha}}', desc: 'Fecha de asistencia' },
     { tag: '{{horario}}', desc: 'Hora de inicio del evento' },
     { tag: '{{modalidad}}', desc: 'Modalidad de asistencia (Presencial / Virtual)' },
@@ -615,13 +631,27 @@ export default function SettingsDashboard() {
             </div>
             
             <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+              <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                {events.length > 0 && (
+                  <select
+                    value={selectedEventId}
+                    onChange={(e) => setSelectedEventId(e.target.value)}
+                    className="form-input !py-1.5 !px-2 !text-xs !rounded-lg max-w-[260px] bg-white border border-gray-200"
+                    style={{ margin: 0 }}
+                  >
+                    {events.map(ev => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.title}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   type="email"
                   placeholder="Correo de prueba"
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}
-                  className="form-input !py-1.5 !px-3 !text-xs !rounded-lg max-w-[260px]"
+                  className="form-input !py-1.5 !px-3 !text-xs !rounded-lg max-w-[200px]"
                   style={{ margin: 0 }}
                 />
                 <button
