@@ -35,68 +35,97 @@ export default function EventMinuta() {
     async function loadData() {
       try {
         setLoading(true)
-        const eventData = await getEventById(id)
-        setEvent(eventData)
-        await fetchEventData(id)
-
-        // Auto populate presentation link if materials exist
-        if (eventData?.event_materials && Array.isArray(eventData.event_materials)) {
-          const presMat = eventData.event_materials.find(m => m.type === 'presentation' || m.url?.includes('.pdf'))
-          if (presMat?.url) {
-            setPresentationLink(presMat.url)
-          }
+        let eventData = await getEventById(id)
+        if (!eventData) {
+          const { data: d1 } = await supabase.from('events').select('*, event_materials(*)').eq('id', id).maybeSingle()
+          eventData = d1
+        }
+        if (!eventData) {
+          const { data: d2 } = await supabase.from('events').select('*, event_materials(*)').eq('slug', id).maybeSingle()
+          eventData = d2
         }
 
-        // Fetch CRM presentations
-        let activePres = null
-        try {
-          const { data: presData } = await supabase
-            .from('crm_presentations')
-            .select('id, title, slides, event_id')
-            .order('created_at', { ascending: false })
+        setEvent(eventData)
 
-          if (presData && presData.length > 0) {
-            setCrmPresentations(presData)
-            activePres = presData.find(p => p.event_id === id) || presData[0]
-            if (activePres) {
-              setSelectedPresentationId(activePres.id)
-              if (activePres.slides && Array.isArray(activePres.slides) && activePres.slides.length > 0) {
-                const sl = activePres.slides[0]
-                setSelectedSlideId(sl.id || 'slide-0')
-                setAttachedSlideInfo({
-                  presentationId: activePres.id,
-                  presentationTitle: activePres.title,
-                  slideId: sl.id || 'slide-0',
-                  slideTitle: sl.title || 'Diapositiva 1',
-                  mediaUrl: sl.mediaUrl || '',
-                  ficha: sl.ficha || null,
-                  notes: sl.notes || ''
-                })
-              }
+        if (eventData) {
+          const targetId = eventData.id || id
+          await fetchEventData(targetId)
+
+          // Auto populate presentation link if materials exist
+          if (eventData.event_materials && Array.isArray(eventData.event_materials)) {
+            const presMat = eventData.event_materials.find(m => m.type === 'presentation' || m.url?.includes('.pdf'))
+            if (presMat?.url) {
+              setPresentationLink(presMat.url)
             }
           }
-        } catch (err) {
-          console.error('Error fetching CRM presentations:', err)
-        }
 
-        const draft = localStorage.getItem(`minuta_draft_${id}`)
-        if (draft) {
+          // Fetch CRM presentations
           try {
-            const parsed = JSON.parse(draft)
-            if (parsed.summary) setSummary(parsed.summary)
-            if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
-            if (Array.isArray(parsed.observations)) setObservations(parsed.observations)
-            if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
-            if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
-            if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
-            if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
-            if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
-            if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
-            if (parsed.selectedPresentationId) setSelectedPresentationId(parsed.selectedPresentationId)
-            if (parsed.selectedSlideId) setSelectedSlideId(parsed.selectedSlideId)
-            if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
-          } catch (e) {
-            console.error("Error loading draft", e)
+            const { data: presData } = await supabase
+              .from('crm_presentations')
+              .select('id, title, slides, event_id')
+              .order('created_at', { ascending: false })
+
+            if (presData && presData.length > 0) {
+              setCrmPresentations(presData)
+              const match = presData.find(p => p.event_id === targetId)
+              if (match) {
+                setSelectedPresentationId(match.id)
+                if (match.slides && Array.isArray(match.slides) && match.slides.length > 0) {
+                  const sl = match.slides[0]
+                  setSelectedSlideId(sl.id || 'slide-0')
+                  setAttachedSlideInfo({
+                    presentationId: match.id,
+                    presentationTitle: match.title,
+                    slideId: sl.id || 'slide-0',
+                    slideTitle: sl.title || 'Diapositiva 1',
+                    mediaUrl: sl.mediaUrl || '',
+                    ficha: sl.ficha || null,
+                    notes: sl.notes || ''
+                  })
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching CRM presentations:', err)
+          }
+
+          // Load draft if available
+          const draft = localStorage.getItem(`minuta_draft_${targetId}`) || localStorage.getItem(`minuta_draft_${id}`)
+          if (draft) {
+            try {
+              const parsed = JSON.parse(draft)
+              if (parsed.summary) setSummary(parsed.summary)
+              if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
+              if (Array.isArray(parsed.observations)) setObservations(parsed.observations)
+              if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
+              if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
+              if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
+              if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
+              if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
+              if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
+              if (parsed.selectedPresentationId) setSelectedPresentationId(parsed.selectedPresentationId)
+              if (parsed.selectedSlideId) setSelectedSlideId(parsed.selectedSlideId)
+              if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
+            } catch (e) {
+              console.error("Error loading draft", e)
+            }
+          }
+
+          // Check sent status
+          try {
+            const { data: reportData } = await supabase.from('event_reports').select('*').eq('event_id', targetId).maybeSingle()
+            if (reportData && reportData.sent) {
+              setIsSent(true)
+              setSentAt(reportData.sent_at)
+              const draft = localStorage.getItem(`minuta_draft_${targetId}`)
+              if (!draft) {
+                if (reportData.summary) setSummary(reportData.summary)
+                if (reportData.photo_url) setPhotoUrl(reportData.photo_url)
+              }
+            }
+          } catch (err) {
+            console.error('Error checking sent status:', err)
           }
         }
       } catch (err) {
@@ -106,25 +135,7 @@ export default function EventMinuta() {
       }
     }
 
-    const checkSentStatus = async () => {
-      try {
-        const { data } = await supabase.from('event_reports').select('*').eq('event_id', id).maybeSingle()
-        if (data && data.sent) {
-          setIsSent(true)
-          setSentAt(data.sent_at)
-          const draft = localStorage.getItem(`minuta_draft_${id}`)
-          if (!draft) {
-            if (data.summary) setSummary(data.summary)
-            if (data.photo_url) setPhotoUrl(data.photo_url)
-          }
-        }
-      } catch (err) {
-        console.error('Error checking sent status:', err)
-      }
-    }
-
     loadData()
-    checkSentStatus()
   }, [id])
 
   if (loading) return <div className="text-center py-20"><p className="animate-pulse text-[var(--color-deep-green)] font-bold">Cargando minuta...</p></div>
