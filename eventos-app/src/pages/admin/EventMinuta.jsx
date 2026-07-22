@@ -39,19 +39,40 @@ export default function EventMinuta() {
         setEvent(eventData)
         await fetchEventData(id)
 
+        // Auto populate presentation link if materials exist
+        if (eventData?.event_materials && Array.isArray(eventData.event_materials)) {
+          const presMat = eventData.event_materials.find(m => m.type === 'presentation' || m.url?.includes('.pdf'))
+          if (presMat?.url) {
+            setPresentationLink(presMat.url)
+          }
+        }
+
         // Fetch CRM presentations
+        let activePres = null
         try {
           const { data: presData } = await supabase
             .from('crm_presentations')
             .select('id, title, slides, event_id')
             .order('created_at', { ascending: false })
 
-          if (presData) {
+          if (presData && presData.length > 0) {
             setCrmPresentations(presData)
-            // Pre-select if a presentation is associated with this event
-            const match = presData.find(p => p.event_id === id)
-            if (match) {
-              setSelectedPresentationId(match.id)
+            activePres = presData.find(p => p.event_id === id) || presData[0]
+            if (activePres) {
+              setSelectedPresentationId(activePres.id)
+              if (activePres.slides && Array.isArray(activePres.slides) && activePres.slides.length > 0) {
+                const sl = activePres.slides[0]
+                setSelectedSlideId(sl.id || 'slide-0')
+                setAttachedSlideInfo({
+                  presentationId: activePres.id,
+                  presentationTitle: activePres.title,
+                  slideId: sl.id || 'slide-0',
+                  slideTitle: sl.title || 'Diapositiva 1',
+                  mediaUrl: sl.mediaUrl || '',
+                  ficha: sl.ficha || null,
+                  notes: sl.notes || ''
+                })
+              }
             }
           }
         } catch (err) {
