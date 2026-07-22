@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useStore } from '../store/useStore'
+import { ErrorBoundary } from '../components/ErrorBoundary'
 
 const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
@@ -113,7 +114,9 @@ export default function AdminLayout() {
 
         {/* Page content */}
         <main className="flex-1 p-6 lg:p-8 animate-fade-in">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

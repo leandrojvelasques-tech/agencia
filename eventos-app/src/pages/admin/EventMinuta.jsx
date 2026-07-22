@@ -135,7 +135,11 @@ export default function EventMinuta() {
       const att = (attendance || []).find(a => a.registration_id === r.id)
       return att?.status === 'present' || att?.status === 'late'
     })
-    .map(r => r.participants || r.participant)
+    .map(r => {
+      let p = r.participants || r.participant
+      if (Array.isArray(p)) return p[0]
+      return p
+    })
     .filter(Boolean)
 
   const formattedEventDate = (() => {
