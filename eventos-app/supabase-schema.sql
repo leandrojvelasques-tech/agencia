@@ -249,6 +249,13 @@ CREATE POLICY "Public insert participants" ON participants
 CREATE POLICY "Public insert attendance (self)" ON attendance
     FOR INSERT WITH CHECK (marked_by = 'self');
 
+CREATE POLICY "Public read attendance" ON attendance
+    FOR SELECT USING (true);
+
+CREATE POLICY "Public update attendance" ON attendance
+    FOR UPDATE USING (true) WITH CHECK (marked_by = 'self');
+
+
 -- =====================================================
 -- VIEWS (helper views for dashboard stats)
 -- =====================================================

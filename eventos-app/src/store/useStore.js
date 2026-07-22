@@ -482,7 +482,12 @@ export const useStore = create((set, get) => ({
 
     const { data, error } = await query.select().single()
 
-    if (!error && data) {
+    if (error) {
+      console.error('Error in markAttendance:', error)
+      throw error
+    }
+
+    if (data) {
       set(state => ({
         attendance: state.attendance.some(a => a.registration_id === registrationId)
           ? state.attendance.map(a => a.registration_id === registrationId ? data : a)

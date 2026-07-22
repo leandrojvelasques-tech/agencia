@@ -17,6 +17,7 @@ export default function EventSatisfaction() {
   const [event, setEvent] = useState(null)
   const [feedbacks, setFeedbacks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
   
   // Stats
   const [averages, setAverages] = useState({})
@@ -124,16 +125,26 @@ export default function EventSatisfaction() {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-[var(--color-deep-green)]/8">
-        <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2">
-          <span className="material-symbols-outlined text-xl">arrow_back</span>
-        </Link>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1">
-            Resultados de Encuestas
-          </p>
-          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
+      <div className="flex items-center justify-between gap-3 mb-8 pb-6 border-b border-[var(--color-deep-green)]/8">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link to={`/admin/eventos/${id}`} className="btn-ghost !p-2">
+            <span className="material-symbols-outlined text-xl">arrow_back</span>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1">
+              Resultados de Encuestas
+            </p>
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight truncate">{event.title}</h1>
+          </div>
         </div>
+
+        <button
+          onClick={() => setShowPreviewModal(true)}
+          className="btn-secondary flex items-center gap-2 text-xs font-bold shrink-0"
+        >
+          <span className="material-symbols-outlined text-base">visibility</span>
+          <span>Vista Previa (Participante)</span>
+        </button>
       </div>
 
       {totalResponses === 0 ? (
@@ -299,6 +310,93 @@ export default function EventSatisfaction() {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* Modal Vista Previa Encuesta (Participante) */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-[var(--color-refined-gray)] w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
+            {/* Modal Bar */}
+            <div className="bg-[var(--color-deep-green)] text-white px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-400">preview</span>
+                <span className="font-bold text-sm">Vista Previa: Encuesta de Satisfacción</span>
+              </div>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                title="Cerrar vista previa"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body - Simulated Participant view */}
+            <div className="p-6 md:p-8 overflow-y-auto space-y-6">
+              {/* Header inside feedback form */}
+              <div className="text-center max-w-lg mx-auto border-b border-[var(--color-deep-green)]/10 pb-6">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-dark-gray)]/50 block mb-1">
+                  Encuesta de Satisfacción (Modo Previsualización)
+                </span>
+                <h2 className="text-2xl font-black text-[var(--color-deep-green)]">{event.title}</h2>
+                {event.subtitle && <p className="text-xs text-[var(--color-dark-gray)]/70 mt-1">{event.subtitle}</p>}
+                <p className="text-xs text-gray-500 mt-4 leading-relaxed bg-white/70 p-3 rounded-lg border border-gray-100">
+                  Tu opinión es fundamental para nosotros. Por favor, tómate un minuto para evaluar los siguientes aspectos. Tus respuestas son totalmente anónimas.
+                </p>
+              </div>
+
+              {/* Questions */}
+              <div className="space-y-6">
+                {questions.map((q, idx) => (
+                  <div key={q.key || idx} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div className="flex justify-between items-start">
+                      <label className="text-sm font-bold text-gray-800">
+                        {idx + 1}. {q.label} <span className="text-red-500">*</span>
+                      </label>
+                    </div>
+                    {q.desc && <p className="text-xs text-gray-500">{q.desc}</p>}
+
+                    {/* Interactive dummy stars */}
+                    <div className="flex items-center gap-2 pt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          className="p-1 text-gray-300 hover:text-amber-400 transition-colors focus:outline-none"
+                        >
+                          <span className="material-symbols-outlined text-3xl">star</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Additional Comments */}
+                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                  <label className="text-sm font-bold text-gray-800 block">
+                    Comentarios o sugerencias <span className="text-xs font-normal text-gray-400">(Opcional)</span>
+                  </label>
+                  <textarea
+                    readOnly
+                    placeholder="Escribe aquí tus comentarios, aspectos a mejorar o sugerencias..."
+                    className="form-input min-h-[90px] text-xs bg-gray-50/50 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              {/* Submit button preview */}
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  disabled
+                  className="btn-primary w-full py-3 text-sm font-extrabold opacity-90 shadow-md cursor-not-allowed"
+                >
+                  Enviar Encuesta (Vista Previa)
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

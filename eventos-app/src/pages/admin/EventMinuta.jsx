@@ -25,12 +25,37 @@ export default function EventMinuta() {
   const [uploadingField, setUploadingField] = useState(null)
   const [includeSurvey, setIncludeSurvey] = useState(true)
 
+  // Presentation & Slide selection state
+  const [crmPresentations, setCrmPresentations] = useState([])
+  const [selectedPresentationId, setSelectedPresentationId] = useState('')
+  const [selectedSlideId, setSelectedSlideId] = useState('')
+  const [attachedSlideInfo, setAttachedSlideInfo] = useState(null)
+
   useEffect(() => {
     async function loadData() {
       setLoading(true)
       const eventData = await getEventById(id)
       setEvent(eventData)
       await fetchEventData(id)
+
+      // Fetch CRM presentations
+      try {
+        const { data: presData } = await supabase
+          .from('crm_presentations')
+          .select('id, title, slides, event_id')
+          .order('created_at', { ascending: false })
+
+        if (presData) {
+          setCrmPresentations(presData)
+          // Pre-select if a presentation is associated with this event
+          const match = presData.find(p => p.event_id === id)
+          if (match) {
+            setSelectedPresentationId(match.id)
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching CRM presentations:', err)
+      }
 
       const draft = localStorage.getItem(`minuta_draft_${id}`)
       if (draft) {
@@ -45,6 +70,9 @@ export default function EventMinuta() {
           if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
           if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
           if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
+          if (parsed.selectedPresentationId) setSelectedPresentationId(parsed.selectedPresentationId)
+          if (parsed.selectedSlideId) setSelectedSlideId(parsed.selectedSlideId)
+          if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
         } catch (e) {
           console.error("Error loading draft", e)
         }
@@ -127,8 +155,6 @@ export default function EventMinuta() {
     } finally {
       setUploadingField(null)
     }
-  }
-
   const handleSaveDraft = () => {
     const draft = {
       summary,
@@ -139,7 +165,10 @@ export default function EventMinuta() {
       includeAttendees,
       includeAbsentees,
       externalEmails,
-      includeSurvey
+      includeSurvey,
+      selectedPresentationId,
+      selectedSlideId,
+      attachedSlideInfo
     }
     localStorage.setItem(`minuta_draft_${id}`, JSON.stringify(draft))
     setToast('Borrador guardado exitosamente en este dispositivo')
@@ -217,6 +246,7 @@ export default function EventMinuta() {
       observations: observations.filter(o => o.trim()),
       photoUrl,
       presentationLink,
+      attachedSlideInfo,
       extraFiles: extraFiles ? [extraFiles] : [],
       attendees: includeAttendees ? presentRegs.map(r => {
         const p = getParticipant(r)
@@ -497,9 +527,115 @@ export default function EventMinuta() {
         <div className="pt-4 border-t border-[var(--color-deep-green)]/10">
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Archivos Adjuntos</label>
           <div className="space-y-4">
+            {/* Diapositiva Destacada / Ficha de Estudio */}
+            <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-[var(--color-deep-green)]/10 space-y-3">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)] block flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-base">slideshow</span>
+                Diapositiva Destacada del Evento (Ficha de Estudio)
+              </label>
+              
+              <div className="grid md:grid-cols-2 gap-3">
+                {/* Selector de Presentación */}
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 mb-1 block">Presentación:</label>
+                  <select
+                    className="form-input text-xs"
+                    value={selectedPresentationId}
+                    onChange={(e) => {
+                      setSelectedPresentationId(e.target.value)
+                      setSelectedSlideId('')
+                      setAttachedSlideInfo(null)
+                    }}
+                  >
+                    <option value="">-- Seleccionar Presentación CRM --</option>
+                    {crmPresentations.map(p => (
+                      <option key={p.id} value={p.id}>{p.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Selector de Diapositiva */}
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 mb-1 block">Diapositiva / Slide:</label>
+                  <select
+                    className="form-input text-xs"
+                    disabled={!selectedPresentationId}
+                    value={selectedSlideId}
+                    onChange={(e) => {
+                      const sId = e.target.value
+                      setSelectedSlideId(sId)
+                      const pres = crmPresentations.find(p => p.id === selectedPresentationId)
+                      const sl = pres?.slides?.find(s => s.id === sId)
+                      if (sl) {
+                        const info = {
+                          presentationId: pres.id,
+                          presentationTitle: pres.title,
+                          slideId: sl.id,
+                          slideTitle: sl.title || 'Diapositiva',
+                          mediaUrl: sl.mediaUrl || '',
+                          ficha: sl.ficha || null,
+                          notes: sl.notes || ''
+                        }
+                        setAttachedSlideInfo(info)
+                      } else {
+                        setAttachedSlideInfo(null)
+                      }
+                    }}
+                  >
+                    <option value="">-- Seleccionar Diapositiva --</option>
+                    {crmPresentations
+                      .find(p => p.id === selectedPresentationId)
+                      ?.slides?.map((s, idx) => (
+                        <option key={s.id} value={s.id}>
+                          Diapositiva {idx + 1}: {s.title || `Diapo ${idx + 1}`} {s.ficha?.title ? `(Ficha: ${s.ficha.title})` : ''}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Vista Previa de la diapositiva seleccionada */}
+              {attachedSlideInfo && (
+                <div className="mt-3 p-3 bg-white rounded-lg border border-emerald-200 flex flex-col sm:flex-row gap-3 items-start relative group">
+                  {attachedSlideInfo.mediaUrl && (
+                    <img
+                      src={attachedSlideInfo.mediaUrl}
+                      alt="Slide preview"
+                      className="w-full sm:w-36 h-24 object-cover rounded border border-gray-100 shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <span className="badge badge-green text-[10px] mb-1 inline-block">Diapositiva adjunta</span>
+                    <h5 className="font-bold text-xs text-gray-800 truncate">{attachedSlideInfo.slideTitle}</h5>
+                    {attachedSlideInfo.ficha?.title && (
+                      <p className="text-[11px] text-gray-600 font-medium truncate">
+                        Ficha: {attachedSlideInfo.ficha.title}
+                      </p>
+                    )}
+                    {attachedSlideInfo.ficha?.summary && (
+                      <p className="text-[10px] text-gray-500 line-clamp-2 mt-1">
+                        {attachedSlideInfo.ficha.summary}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedSlideId('')
+                      setAttachedSlideInfo(null)
+                    }}
+                    className="text-red-500 hover:text-red-700 p-1 text-xs font-semibold self-start shrink-0 cursor-pointer"
+                    title="Desadjuntar diapositiva"
+                  >
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                Archivo o Enlace de la Presentación
+                Archivo o Enlace de la Presentación Completa (PDF)
               </label>
               <div className="flex gap-2">
                 <input
@@ -529,7 +665,7 @@ export default function EventMinuta() {
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube la presentación como PDF o pega un enlace externo.</p>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube la presentación completa en PDF para que los participantes la puedan descargar.</p>
               {presentationLink && (
                 <div className="flex items-center gap-2 mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
                   <span className="material-symbols-outlined text-red-600">picture_as_pdf</span>
@@ -659,15 +795,49 @@ export default function EventMinuta() {
               </div>
             )}
 
-            {(photoUrl || presentationLink || extraFiles) && (
+            {/* Slide / Ficha de Estudio preview */}
+            {attachedSlideInfo && (
+              <div className="mb-8 border border-emerald-200 bg-gradient-to-br from-white to-emerald-50/40 rounded-xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-emerald-600 text-lg">slideshow</span>
+                  <h4 className="text-[13px] font-extrabold text-[var(--color-deep-green)] uppercase tracking-wider">
+                    Diapositiva Destacada del Evento
+                  </h4>
+                </div>
+
+                {attachedSlideInfo.mediaUrl && (
+                  <img
+                    src={attachedSlideInfo.mediaUrl}
+                    alt={attachedSlideInfo.slideTitle}
+                    className="w-full h-auto max-h-80 object-contain rounded-lg border border-gray-200 mb-4 bg-black/5"
+                  />
+                )}
+
+                {attachedSlideInfo.ficha && (
+                  <div className="bg-white/80 p-4 rounded-lg border border-emerald-100 space-y-2 text-xs">
+                    <h5 className="font-bold text-sm text-gray-800">{attachedSlideInfo.ficha.title || attachedSlideInfo.slideTitle}</h5>
+                    {attachedSlideInfo.ficha.summary && (
+                      <p className="text-gray-600 leading-relaxed">{attachedSlideInfo.ficha.summary}</p>
+                    )}
+                    {attachedSlideInfo.ficha.closingIdea && (
+                      <p className="text-emerald-800 font-semibold italic pt-2 border-t border-emerald-100">
+                        💡 Idea Clave: {attachedSlideInfo.ficha.closingIdea}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(photoUrl || presentationLink || extraFiles || attachedSlideInfo) && (
               <div className="mt-8 pt-6 border-t border-[var(--color-dark-gray)]/10">
-                <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-4">Materiales del Evento</h4>
+                <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-4">Materiales y Descargas</h4>
                 
                 {presentationLink && (
                   <div className="mb-3">
-                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
+                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-deep-green)] hover:bg-[#1f4738] rounded-[var(--radius-normal)] text-xs font-bold text-white transition-colors shadow-sm">
                       <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                      Ver Presentación Utilizada
+                      Descargar Presentación Completa (PDF)
                     </a>
                   </div>
                 )}

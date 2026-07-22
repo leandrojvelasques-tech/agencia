@@ -74,30 +74,78 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Método no permitido. Utilizar POST.' });
   }
 
-  const {
-    eventTitle,
-    eventDate,
-    coordinator,
-    summary,
-    observations = [],
-    photoUrl,
-    presentationLink,
-    extraFiles = [],
-    attendees = [],
-    emails = [],
-    surveyLink
-  } = req.body;
+    const {
+      eventTitle,
+      eventDate,
+      coordinator,
+      summary,
+      observations = [],
+      photoUrl,
+      presentationLink,
+      attachedSlideInfo,
+      extraFiles = [],
+      attendees = [],
+      emails = [],
+      surveyLink
+    } = req.body;
 
-  if (emails.length === 0) {
-    return res.status(400).json({ error: 'No se especificaron destinatarios (emails).' });
-  }
+    if (emails.length === 0) {
+      return res.status(400).json({ error: 'No se especificaron destinatarios (emails).' });
+    }
 
-  const brevoApiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
-  const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
+    const brevoApiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY;
+    const emailFrom = process.env.EMAIL_FROM || 'Notificaciones Leandro Velasques <info@leandrovelasques.com.ar>';
 
-  if (!brevoApiKey) {
-    return res.status(500).json({ error: 'BREVO_API_KEY no está configurado en las variables de entorno de Vercel.' });
-  }
+    if (!brevoApiKey) {
+      return res.status(500).json({ error: 'BREVO_API_KEY no está configurado en las variables de entorno de Vercel.' });
+    }
+
+    // Construct attached slide HTML section
+    let slideHtml = '';
+    if (attachedSlideInfo) {
+      slideHtml = `
+        <div style="margin-bottom: 30px; border: 1px solid #a7f3d0; background-color: #f0fdf4; border-radius: 10px; padding: 20px; font-family: sans-serif;">
+          <div style="margin-bottom: 12px;">
+            <span style="display: inline-block; font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Diapositiva Destacada / Ficha de Estudio</span>
+          </div>
+          ${attachedSlideInfo.mediaUrl ? `
+            <div style="text-align: center; margin-bottom: 15px;">
+              <img src="${attachedSlideInfo.mediaUrl}" alt="${attachedSlideInfo.slideTitle || 'Slide'}" style="max-width: 100%; height: auto; max-height: 320px; object-fit: contain; border-radius: 8px; border: 1px solid #d1fae5;" />
+            </div>
+          ` : ''}
+          ${attachedSlideInfo.ficha ? `
+            <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+              <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #065f46;">${attachedSlideInfo.ficha.title || attachedSlideInfo.slideTitle}</h4>
+              ${attachedSlideInfo.ficha.summary ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #374151; line-height: 1.5;">${attachedSlideInfo.ficha.summary}</p>` : ''}
+              ${attachedSlideInfo.ficha.closingIdea ? `<p style="margin: 8px 0 0 0; font-size: 12px; font-weight: 700; font-style: italic; color: #047857; border-top: 1px solid #ecfdf5; padding-top: 8px;">💡 Idea Clave: ${attachedSlideInfo.ficha.closingIdea}</p>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Construct attachments/materials HTML section
+    let materialsHtml = '';
+    const hasPresentation = !!presentationLink;
+    const hasPhoto = !!photoUrl;
+    const hasExtra = Array.isArray(extraFiles) && extraFiles.length > 0 && !!extraFiles[0];
+
+    if (hasPresentation || hasPhoto || hasExtra || attachedSlideInfo) {
+      materialsHtml = `
+        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px dashed #e5e7eb; font-family: sans-serif;">
+          <h3 style="color: #285A47; font-size: 16px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px;">Materiales y Descargas</h3>
+          <div style="margin-top: 15px;">
+      `;
+
+      if (hasPresentation) {
+        materialsHtml += `
+          <div style="margin-bottom: 12px;">
+            <a href="${presentationLink}" target="_blank" style="display: inline-block; padding: 12px 20px; background-color: #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
+              📄 Descargar Presentación Completa (PDF)
+            </a>
+          </div>
+        `;
+      }
 
   try {
     // Format date in Spanish (es-AR)
@@ -241,6 +289,9 @@ module.exports = async (req, res) => {
 
             <!-- Observations Section -->
             ${observationsHtml}
+
+            <!-- Attached Slide / Ficha de estudio -->
+            ${slideHtml}
 
             <!-- Material Attachments -->
             ${materialsHtml}
