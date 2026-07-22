@@ -26,12 +26,6 @@ export default function EventFeedback() {
     score_delivery: 0,
     score_content: 0
   })
-  const [wantsSubscription, setWantsSubscription] = useState(false)
-  const [subName, setSubName] = useState('')
-  const [subEmail, setSubEmail] = useState('')
-  const [subProfession, setSubProfession] = useState('Contador Público')
-  const [subOtherProfession, setSubOtherProfession] = useState('')
-
   const [comments, setComments] = useState('')
   const [hoveredScores, setHoveredScores] = useState({
     score_experience: 0,
@@ -46,7 +40,7 @@ export default function EventFeedback() {
       try {
         const { data, error } = await supabase
           .from('events')
-          .select('id, title, subtitle, status, satisfaction_questions, satisfaction_show_interest_option, satisfaction_interest_question_text, satisfaction_show_comments_option, satisfaction_comments_label, satisfaction_comments_desc')
+          .select('id, title, subtitle, status, satisfaction_questions, satisfaction_show_comments_option, satisfaction_comments_label, satisfaction_comments_desc')
           .eq('slug', slug)
           .single()
         
@@ -81,23 +75,8 @@ export default function EventFeedback() {
       return
     }
 
-    if (wantsSubscription) {
-      if (!subName.trim() || !subEmail.trim()) {
-        alert('Por favor, completa tu Nombre y Correo Electrónico para suscribirte a la base de datos.')
-        return
-      }
-    }
-
     setSubmitting(true)
     try {
-      let subDetails = ''
-      if (wantsSubscription) {
-        const prof = subProfession === 'Otro' ? `Otro (${subOtherProfession.trim() || 'No especificado'})` : subProfession
-        subDetails = `\n\n[SOLICITUD DE SUSCRIPCIÓN A BASE DE DATOS]\nNombre: ${subName.trim()}\nEmail: ${subEmail.trim()}\nProfesión/Título: ${prof}`
-      }
-
-      const finalComments = (comments.trim() + subDetails).trim() || null
-
       const payload = {
         event_id: event.id,
         score_experience: scores.score_experience,
@@ -105,7 +84,7 @@ export default function EventFeedback() {
         score_duration: scores.score_duration,
         score_delivery: scores.score_delivery,
         score_content: scores.score_content,
-        comments: finalComments
+        comments: comments.trim() || null
       }
 
       const { error } = await supabase
@@ -113,25 +92,6 @@ export default function EventFeedback() {
         .insert(payload)
       
       if (error) throw error
-
-      // Save to participants database if subscription is requested
-      if (wantsSubscription) {
-        try {
-          const prof = subProfession === 'Otro' ? subOtherProfession.trim() || 'Otro' : subProfession
-          const nameParts = subName.trim().split(' ')
-          const firstName = nameParts[0] || subName.trim()
-          const lastName = nameParts.slice(1).join(' ') || ''
-
-          await supabase.from('participants').upsert({
-            email: subEmail.trim(),
-            first_name: firstName,
-            last_name: lastName,
-            profession: prof
-          }, { onConflict: 'email' })
-        } catch (subErr) {
-          console.error('Error saving subscription participant:', subErr)
-        }
-      }
 
       setSubmitted(true)
     } catch (err) {
@@ -254,91 +214,6 @@ export default function EventFeedback() {
               )
             })}
           </div>
-
-          {/* Formulario / Opt-in de Suscripción a la Base de Datos */}
-          {event?.satisfaction_show_interest_option !== false && (
-            <div className="pt-4 border-t border-gray-100 space-y-3">
-              <label className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/80 cursor-pointer transition-all hover:bg-emerald-50">
-                <input
-                  type="checkbox"
-                  checked={wantsSubscription}
-                  onChange={e => setWantsSubscription(e.target.checked)}
-                  className="mt-1 accent-[var(--color-deep-green)] rounded w-4 h-4"
-                />
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    {event?.satisfaction_interest_question_text || 'Deseo suscribirme para recibir notificaciones sobre nuevos cursos y capacitaciones'}
-                  </p>
-                  <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
-                    Sumate a la lista de difusión oficial para enterarte antes que nadie sobre vacantes y nuevos talleres de IA y Automatización.
-                  </p>
-                </div>
-              </label>
-
-              {/* Campos desplegables de Registro al marcar la casilla */}
-              {wantsSubscription && (
-                <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm space-y-4 animate-fade-in">
-                  <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                    <span className="material-symbols-outlined text-emerald-600 text-lg">person_add</span>
-                    <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900">Datos para la suscripción</p>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-600 block mb-1">Nombre y Apellido *</label>
-                      <input
-                        className="form-input text-xs w-full"
-                        placeholder="Ej: Laura González"
-                        value={subName}
-                        onChange={e => setSubName(e.target.value)}
-                        required={wantsSubscription}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-600 block mb-1">Correo Electrónico *</label>
-                      <input
-                        type="email"
-                        className="form-input text-xs w-full"
-                        placeholder="ejemplo@email.com"
-                        value={subEmail}
-                        onChange={e => setSubEmail(e.target.value)}
-                        required={wantsSubscription}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-600 block mb-1">Profesión / Título</label>
-                      <select
-                        className="form-input text-xs w-full bg-white cursor-pointer"
-                        value={subProfession}
-                        onChange={e => setSubProfession(e.target.value)}
-                      >
-                        <option value="Licenciado en Administración">Licenciado en Administración</option>
-                        <option value="Contador Público">Contador Público</option>
-                        <option value="Licenciado en Economía">Licenciado en Economía</option>
-                        <option value="Estudiante Universitario">Estudiante Universitario</option>
-                        <option value="Otro">Otro (Especificar)</option>
-                      </select>
-                    </div>
-
-                    {subProfession === 'Otro' && (
-                      <div>
-                        <label className="text-[10px] font-bold text-gray-600 block mb-1">Especificar Profesión *</label>
-                        <input
-                          className="form-input text-xs w-full"
-                          placeholder="Ej: Abogado, Ingeniero, Emprendedor..."
-                          value={subOtherProfession}
-                          onChange={e => setSubOtherProfession(e.target.value)}
-                          required={wantsSubscription && subProfession === 'Otro'}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Comments Free Field */}
           {event?.satisfaction_show_comments_option !== false && (
