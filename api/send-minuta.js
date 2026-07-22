@@ -86,7 +86,8 @@ module.exports = async (req, res) => {
       extraFiles = [],
       attendees = [],
       emails = [],
-      surveyLink
+      surveyLink,
+      attendanceLink
     } = req.body;
 
     if (emails.length === 0) {
@@ -296,9 +297,20 @@ module.exports = async (req, res) => {
             <!-- Material Attachments -->
             ${materialsHtml}
 
+            <!-- Attendance Link Callout Section -->
+            ${attendanceLink ? `
+              <div style="margin-top: 25px; padding: 18px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; text-align: center; font-family: sans-serif;">
+                <p style="margin: 0 0 6px 0; font-size: 13px; font-weight: bold; color: #166534;">📋 ¿Estuviste presente y no pudiste marcar asistencia?</p>
+                <p style="margin: 0 0 12px 0; font-size: 12px; color: #15803d; line-height: 1.4;">Podés registrar tu presente directamente desde el siguiente enlace:</p>
+                <a href="${attendanceLink}" target="_blank" style="display: inline-block; padding: 9px 18px; background-color: #166534; border-radius: 6px; font-size: 12px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
+                  Marcar Mi Asistencia
+                </a>
+              </div>
+            ` : ''}
+
             <!-- Survey Callout Section -->
             ${surveyLink ? `
-              <div style="margin-top: 30px; padding: 22px; bg-color: #fffbeb; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; text-align: center; font-family: sans-serif;">
+              <div style="margin-top: 25px; padding: 22px; background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; text-align: center; font-family: sans-serif;">
                 <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: bold; color: #b45309;">⭐ ¡Tu opinión nos importa!</p>
                 <p style="margin: 0 0 15px 0; font-size: 12px; color: #78350f; line-height: 1.45;">Te invitamos a responder una breve encuesta de satisfacción de 5 preguntas sobre tu experiencia.</p>
                 <a href="${surveyLink}" target="_blank" style="display: inline-block; padding: 11px 22px; background-color: #d97706; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.15);">

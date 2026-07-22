@@ -24,6 +24,7 @@ export default function EventMinuta() {
   const [toast, setToast] = useState('')
   const [uploadingField, setUploadingField] = useState(null)
   const [includeSurvey, setIncludeSurvey] = useState(true)
+  const [includeAttendanceLink, setIncludeAttendanceLink] = useState(true)
 
   // Presentation & Slide selection state
   const [crmPresentations, setCrmPresentations] = useState([])
@@ -312,7 +313,8 @@ export default function EventMinuta() {
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
       }).filter(Boolean) : [],
       emails: finalEmails,
-      surveyLink: includeSurvey ? `${window.location.origin}/encuesta/${event.slug}` : null
+      surveyLink: includeSurvey ? `${window.location.origin}/encuesta/${event.slug}` : null,
+      attendanceLink: includeAttendanceLink ? `${window.location.origin}/asistencia/${event.slug}` : null
     }
 
     console.log('DEBUG MINUTA PAYLOAD:', payload)
@@ -561,6 +563,10 @@ export default function EventMinuta() {
               <label className="flex items-center gap-3 cursor-pointer pt-2 border-t border-[var(--color-deep-green)]/10 mt-1">
                 <input type="checkbox" checked={includeSurvey} onChange={e => setIncludeSurvey(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
                 <span className="text-sm font-semibold text-[var(--color-deep-green)]">⭐ Incluir link a Encuesta de Satisfacción</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer pt-1">
+                <input type="checkbox" checked={includeAttendanceLink} onChange={e => setIncludeAttendanceLink(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
+                <span className="text-sm font-semibold text-emerald-800">📋 Incluir link de Marcación de Asistencia (por si no pudieron marcar)</span>
               </label>
             </div>
             
