@@ -112,6 +112,7 @@ export default function EventCreate() {
 
   const [associatedPresentations, setAssociatedPresentations] = useState([])
   const [availablePresentations, setAvailablePresentations] = useState([])
+  const [showSatisfactionPreviewModal, setShowSatisfactionPreviewModal] = useState(false)
 
   useEffect(() => {
     fetchAgendaTemplates()
@@ -2213,11 +2214,21 @@ export default function EventCreate() {
 
                 {form.has_satisfaction_survey && (
                   <div className="space-y-4">
-                    <div className="border-b border-[var(--color-deep-green)]/10 pb-2">
-                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Preguntas de la Encuesta de Satisfacción</label>
-                      <p className="text-xs text-[var(--color-dark-gray)]/50 mt-1">
-                        Personalizá las 5 preguntas que recibirán los asistentes en la encuesta para calificar de 1 a 5 estrellas.
-                      </p>
+                    <div className="border-b border-[var(--color-deep-green)]/10 pb-2 flex justify-between items-center">
+                      <div>
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">Preguntas de la Encuesta de Satisfacción</label>
+                        <p className="text-xs text-[var(--color-dark-gray)]/50 mt-1">
+                          Personalizá las 5 preguntas que recibirán los asistentes en la encuesta para calificar de 1 a 5 estrellas.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowSatisfactionPreviewModal(true)}
+                        className="btn-secondary text-xs font-bold flex items-center gap-1.5 shrink-0"
+                      >
+                        <span className="material-symbols-outlined text-base">visibility</span>
+                        <span>Vista Previa de Encuesta</span>
+                      </button>
                     </div>
 
                     <div className="space-y-4">
@@ -2312,6 +2323,88 @@ export default function EventCreate() {
           </button>
         )}
       </div>
+
+      {/* Modal Vista Previa Encuesta de Satisfacción (Modo Edición) */}
+      {showSatisfactionPreviewModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-[var(--color-refined-gray)] w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="bg-[var(--color-deep-green)] text-white px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-400">preview</span>
+                <span className="font-bold text-sm">Vista Previa: Encuesta de Satisfacción Pos-Evento</span>
+              </div>
+              <button
+                onClick={() => setShowSatisfactionPreviewModal(false)}
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                title="Cerrar vista previa"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 md:p-8 overflow-y-auto space-y-6">
+              <div className="text-center max-w-lg mx-auto border-b border-[var(--color-deep-green)]/10 pb-6">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-dark-gray)]/50 block mb-1">
+                  Encuesta de Satisfacción (Vista Previa de Participante)
+                </span>
+                <h2 className="text-2xl font-black text-[var(--color-deep-green)]">{form.title || 'Título del Evento'}</h2>
+                {form.subtitle && <p className="text-xs text-[var(--color-dark-gray)]/70 mt-1">{form.subtitle}</p>}
+                <p className="text-xs text-gray-500 mt-4 leading-relaxed bg-white/70 p-3 rounded-lg border border-gray-100">
+                  Tu opinión es fundamental para nosotros. Por favor, tómate un minuto para evaluar los siguientes aspectos. Tus respuestas son totalmente anónimas.
+                </p>
+              </div>
+
+              {/* Questions */}
+              <div className="space-y-6">
+                {(form.satisfaction_questions || DEFAULT_SATISFACTION_QUESTIONS).map((q, idx) => (
+                  <div key={q.key || idx} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div className="flex justify-between items-start">
+                      <label className="text-sm font-bold text-gray-800">
+                        {idx + 1}. {q.desc || q.label} <span className="text-red-500">*</span>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          className="p-1 text-gray-300 hover:text-amber-400 transition-colors focus:outline-none"
+                        >
+                          <span className="material-symbols-outlined text-3xl">star</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                  <label className="text-sm font-bold text-gray-800 block">
+                    Comentarios o sugerencias <span className="text-xs font-normal text-gray-400">(Opcional)</span>
+                  </label>
+                  <textarea
+                    readOnly
+                    placeholder="Escribe aquí tus comentarios, aspectos a mejorar o sugerencias..."
+                    className="form-input min-h-[90px] text-xs bg-gray-50/50 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  disabled
+                  className="btn-primary w-full py-3 text-sm font-extrabold opacity-90 shadow-md cursor-not-allowed"
+                >
+                  Enviar Encuesta (Vista Previa)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
