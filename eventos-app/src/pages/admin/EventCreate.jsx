@@ -113,6 +113,12 @@ export default function EventCreate() {
   const [associatedPresentations, setAssociatedPresentations] = useState([])
   const [availablePresentations, setAvailablePresentations] = useState([])
   const [showSatisfactionPreviewModal, setShowSatisfactionPreviewModal] = useState(false)
+  const [showSatisfactionSendModal, setShowSatisfactionSendModal] = useState(false)
+  const [surveyTargetGroup, setSurveyTargetGroup] = useState('present') // 'present' | 'all' | 'custom'
+  const [surveyCustomEmails, setSurveyCustomEmails] = useState('')
+  const [surveyTestEmail, setSurveyTestEmail] = useState('info@leandrovelasques.com.ar')
+  const [sendingSurveyFromEditor, setSendingSurveyFromEditor] = useState(false)
+  const [testingSurveyFromEditor, setTestingSurveyFromEditor] = useState(false)
 
   useEffect(() => {
     fetchAgendaTemplates()
@@ -612,6 +618,138 @@ export default function EventCreate() {
       setSaveError('Error al guardar para vista previa: ' + err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleTestSurveySendFromEditor = async () => {
+    if (!surveyTestEmail || !surveyTestEmail.includes('@')) {
+      alert('Ingresá un correo de prueba válido.')
+      return
+    }
+
+    setTestingSurveyFromEditor(true)
+    try {
+      const payload = {
+        eventId: existingEvent?.id || id,
+        eventTitle: form.title || 'Evento',
+        eventDate: form.event_date,
+        coordinator: form.coordinator || 'Lic. Leandro Velasques',
+        summary: 'Este es un envío de prueba directo de la Encuesta de Satisfacción Pos-Evento.',
+        emails: [surveyTestEmail.trim()],
+        surveyLink: `${window.location.origin}/encuesta/${form.slug}`
+      }
+
+      const res = await fetch('/api/send-minuta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Error al enviar correo de prueba')
+      }
+
+      alert(`¡Correo de prueba de encuesta enviado exitosamente a ${surveyTestEmail}!`)
+    } catch (err) {
+      alert('Error en el envío de prueba: ' + err.message)
+    } finally {
+      setTestingSurveyFromEditor(false)
+    }
+  }
+
+  const handleOfficialSurveySendFromEditor = async () => {
+    if (!existingEvent?.id && !id) {
+      alert('Debés guardar el evento al menos una vez para poder enviar la encuesta a los destinatarios.')
+      return
+    }
+
+    const eventIdToQuery = existingEvent?.id || id
+
+    setSendingSurveyFromEditor(true)
+    try {
+      let targetEmails = []
+
+      if (surveyTargetGroup === 'custom') {
+        targetEmails = surveyCustomEmails
+          .split(',')
+          .map(e => e.trim())
+          .filter(e => e && e.includes('@'))
+      } else {
+        const { data: regsData } = await supabase
+          .from('registrations')
+          .select('id, attendance_mode, participant:participants(email), participants(email)')
+          .eq('event_id', eventIdToQuery)
+          .neq('status', 'cancelled')
+
+        const getEmail = (r) => {
+          let p = r?.participants || r?.participant
+          if (Array.isArray(p)) return p[0]?.email
+          return p?.email
+        }
+
+        if (surveyTargetGroup === 'present') {
+          const { data: attData } = await supabase
+            .from('attendance')
+            .select('registration_id, status')
+            .eq('event_id', eventIdToQuery)
+
+          const presentRegIds = new Set(
+            (attData || [])
+              .filter(a => a.status === 'present' || a.status === 'late')
+              .map(a => a.registration_id)
+          )
+
+          const presentRegs = (regsData || []).filter(r => presentRegIds.has(r.id))
+          targetEmails = [...new Set(presentRegs.map(getEmail).filter(Boolean))]
+        } else {
+          // 'all'
+          targetEmails = [...new Set((regsData || []).map(getEmail).filter(Boolean))]
+        }
+      }
+
+      if (targetEmails.length === 0) {
+        alert('No se encontraron destinatarios para el grupo seleccionado.')
+        return
+      }
+
+      const groupLabel = surveyTargetGroup === 'present'
+        ? 'ASISTENTES CONFIRMADOS'
+        : surveyTargetGroup === 'all'
+        ? 'TODOS LOS INSCRIPTOS'
+        : 'EMAILS PERSONALIZADOS'
+
+      if (!window.confirm(`¿Estás seguro de enviar la Encuesta de Satisfacción a ${targetEmails.length} destinatarios (${groupLabel})?`)) {
+        return
+      }
+
+      const payload = {
+        eventId: eventIdToQuery,
+        eventTitle: form.title || 'Evento',
+        eventDate: form.event_date,
+        coordinator: form.coordinator || 'Lic. Leandro Velasques',
+        summary: 'Te invitamos a responder nuestra Encuesta de Satisfacción para evaluar tu experiencia en el taller y ayudarnos a seguir mejorando.',
+        emails: targetEmails,
+        surveyLink: `${window.location.origin}/encuesta/${form.slug}`
+      }
+
+      const res = await fetch('/api/send-minuta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Error al enviar la encuesta')
+      }
+
+      alert(`¡Encuesta de satisfacción enviada exitosamente a ${targetEmails.length} destinatarios!`)
+      setShowSatisfactionSendModal(false)
+    } catch (err) {
+      alert('Error al enviar la encuesta: ' + err.message)
+    } finally {
+      setSendingSurveyFromEditor(false)
     }
   }
 
@@ -2221,14 +2359,24 @@ export default function EventCreate() {
                           Personalizá las 5 preguntas que recibirán los asistentes en la encuesta para calificar de 1 a 5 estrellas.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowSatisfactionPreviewModal(true)}
-                        className="btn-secondary text-xs font-bold flex items-center gap-1.5 shrink-0"
-                      >
-                        <span className="material-symbols-outlined text-base">visibility</span>
-                        <span>Vista Previa de Encuesta</span>
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setShowSatisfactionSendModal(true)}
+                          className="btn-primary text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-xs"
+                        >
+                          <span className="material-symbols-outlined text-base">send</span>
+                          <span>Enviar Encuesta por Email</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowSatisfactionPreviewModal(true)}
+                          className="btn-secondary text-xs font-bold flex items-center gap-1.5 shrink-0"
+                        >
+                          <span className="material-symbols-outlined text-base">visibility</span>
+                          <span>Vista Previa</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -2450,6 +2598,132 @@ export default function EventCreate() {
                   className="btn-primary w-full py-3 text-sm font-extrabold opacity-90 shadow-md cursor-not-allowed"
                 >
                   Enviar Encuesta (Vista Previa)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de Envío de Encuesta de Satisfacción (Modo Edición) */}
+      {showSatisfactionSendModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl my-8 relative flex flex-col">
+            <div className="bg-[var(--color-deep-green)] text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-400">send</span>
+                <span className="font-bold text-sm">Enviar Encuesta de Satisfacción</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSatisfactionSendModal(false)}
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-600 block mb-2">
+                  Seleccionar Destinatarios:
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="surveyTargetGroupEditor"
+                      value="present"
+                      checked={surveyTargetGroup === 'present'}
+                      onChange={() => setSurveyTargetGroup('present')}
+                      className="mt-1 accent-[var(--color-deep-green)]"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Solo Asistentes Confirmados (Presentes)</p>
+                      <p className="text-[11px] text-gray-500">Envía únicamente a los participantes marcados como 'Presente' o 'Tarde' en asistencia.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="surveyTargetGroupEditor"
+                      value="all"
+                      checked={surveyTargetGroup === 'all'}
+                      onChange={() => setSurveyTargetGroup('all')}
+                      className="mt-1 accent-[var(--color-deep-green)]"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Todos los Inscriptos al Evento</p>
+                      <p className="text-[11px] text-gray-500">Envía a la totalidad de los inscriptos al evento.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="surveyTargetGroupEditor"
+                      value="custom"
+                      checked={surveyTargetGroup === 'custom'}
+                      onChange={() => setSurveyTargetGroup('custom')}
+                      className="mt-1 accent-[var(--color-deep-green)]"
+                    />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-gray-800">Correos Personalizados / Específicos</p>
+                      <p className="text-[11px] text-gray-500">Escribí manualmente los emails separados por coma.</p>
+                      {surveyTargetGroup === 'custom' && (
+                        <input
+                          className="form-input text-xs mt-2 w-full"
+                          placeholder="email1@ejemplo.com, email2@ejemplo.com"
+                          value={surveyCustomEmails}
+                          onChange={e => setSurveyCustomEmails(e.target.value)}
+                        />
+                      )}
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Envío de Prueba */}
+              <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+                <p className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">mark_email_unread</span>
+                  Envío de Prueba Individual
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    className="form-input text-xs flex-1 bg-white"
+                    placeholder="info@leandrovelasques.com.ar"
+                    value={surveyTestEmail}
+                    onChange={e => setSurveyTestEmail(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleTestSurveySendFromEditor}
+                    disabled={testingSurveyFromEditor}
+                    className="btn-secondary !py-2 text-xs font-bold shrink-0"
+                  >
+                    {testingSurveyFromEditor ? 'Enviando prueba...' : 'Enviar Prueba'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Acciones principales */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSatisfactionSendModal(false)}
+                  className="btn-ghost text-xs font-bold flex-1"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOfficialSurveySendFromEditor}
+                  disabled={sendingSurveyFromEditor}
+                  className="btn-primary text-xs font-bold flex-1 justify-center py-2.5 shadow-md"
+                >
+                  {sendingSurveyFromEditor ? 'Enviando...' : 'Enviar Encuesta'}
                 </button>
               </div>
             </div>
