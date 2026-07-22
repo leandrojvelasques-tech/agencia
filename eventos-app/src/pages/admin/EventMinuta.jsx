@@ -588,116 +588,34 @@ export default function EventMinuta() {
         <div className="pt-4 border-t border-[var(--color-deep-green)]/10">
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-3 block">Archivos Adjuntos</label>
           <div className="space-y-4">
-            {/* Diapositiva Destacada / Ficha de Estudio */}
-            <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-[var(--color-deep-green)]/10 space-y-3">
+            {/* Selector de Presentación del Evento */}
+            <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-[var(--color-deep-green)]/10 space-y-2">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)] block flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-base">slideshow</span>
-                Diapositiva Destacada del Evento <span className="text-[10px] font-normal text-gray-400 font-sans lowercase">(opcional - sólo si quieres resaltar 1 slide)</span>
+                Seleccionar Presentación del Evento (CRM)
               </label>
               
-              <div className="grid md:grid-cols-2 gap-3">
-                {/* Selector de Presentación */}
-                <div>
-                  <label className="text-[10px] font-bold text-gray-500 mb-1 block">Presentación:</label>
-                  <select
-                    className="form-input text-xs"
-                    value={selectedPresentationId}
-                    onChange={(e) => {
-                      const presId = e.target.value
-                      setSelectedPresentationId(presId)
-                      setSelectedSlideId('')
-                      setAttachedSlideInfo(null)
+              <div>
+                <select
+                  className="form-input text-xs"
+                  value={selectedPresentationId}
+                  onChange={(e) => {
+                    const presId = e.target.value
+                    setSelectedPresentationId(presId)
 
-                      const pres = crmPresentations.find(p => p.id === presId)
-                      if (pres && pres.pdf_url) {
-                        setPresentationLink(pres.pdf_url)
-                      }
-                    }}
-                  >
-                    <option value="">-- Seleccionar Presentación CRM --</option>
-                    {crmPresentations.map(p => (
-                      <option key={p.id} value={p.id}>{p.title}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Selector de Diapositiva */}
-                <div>
-                  <label className="text-[10px] font-bold text-gray-500 mb-1 block">Diapositiva / Slide:</label>
-                  <select
-                    className="form-input text-xs"
-                    disabled={!selectedPresentationId}
-                    value={selectedSlideId}
-                    onChange={(e) => {
-                      const sId = e.target.value
-                      setSelectedSlideId(sId)
-                      const pres = crmPresentations.find(p => p.id === selectedPresentationId)
-                      const sl = pres?.slides?.find(s => s.id === sId)
-                      if (sl) {
-                        const info = {
-                          presentationId: pres.id,
-                          presentationTitle: pres.title,
-                          slideId: sl.id,
-                          slideTitle: sl.title || 'Diapositiva',
-                          mediaUrl: sl.mediaUrl || '',
-                          ficha: sl.ficha || null,
-                          notes: sl.notes || ''
-                        }
-                        setAttachedSlideInfo(info)
-                      } else {
-                        setAttachedSlideInfo(null)
-                      }
-                    }}
-                  >
-                    <option value="">-- Seleccionar Diapositiva --</option>
-                    {crmPresentations
-                      .find(p => p.id === selectedPresentationId)
-                      ?.slides?.map((s, idx) => (
-                        <option key={s.id} value={s.id}>
-                          Diapositiva {idx + 1}: {s.title || `Diapo ${idx + 1}`} {s.ficha?.title ? `(Ficha: ${s.ficha.title})` : ''}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                    const pres = crmPresentations.find(p => p.id === presId)
+                    if (pres && pres.pdf_url) {
+                      setPresentationLink(pres.pdf_url)
+                    }
+                  }}
+                >
+                  <option value="">-- Seleccionar Presentación CRM --</option>
+                  {crmPresentations.map(p => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-1">Al seleccionar una presentación, su enlace se vinculará automáticamente a la minuta.</p>
               </div>
-
-              {/* Vista Previa de la diapositiva seleccionada */}
-              {attachedSlideInfo && (
-                <div className="mt-3 p-3 bg-white rounded-lg border border-emerald-200 flex flex-col sm:flex-row gap-3 items-start relative group">
-                  {attachedSlideInfo.mediaUrl && (
-                    <img
-                      src={attachedSlideInfo.mediaUrl}
-                      alt="Slide preview"
-                      className="w-full sm:w-36 h-24 object-cover rounded border border-gray-100 shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <span className="badge badge-green text-[10px] mb-1 inline-block">Diapositiva adjunta</span>
-                    <h5 className="font-bold text-xs text-gray-800 truncate">{attachedSlideInfo.slideTitle}</h5>
-                    {attachedSlideInfo.ficha?.title && (
-                      <p className="text-[11px] text-gray-600 font-medium truncate">
-                        Ficha: {attachedSlideInfo.ficha.title}
-                      </p>
-                    )}
-                    {attachedSlideInfo.ficha?.summary && (
-                      <p className="text-[10px] text-gray-500 line-clamp-2 mt-1">
-                        {attachedSlideInfo.ficha.summary}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedSlideId('')
-                      setAttachedSlideInfo(null)
-                    }}
-                    className="text-red-500 hover:text-red-700 p-1 text-xs font-semibold self-start shrink-0 cursor-pointer"
-                    title="Desadjuntar diapositiva"
-                  >
-                    <span className="material-symbols-outlined text-base">close</span>
-                  </button>
-                </div>
-              )}
             </div>
 
             <div>
