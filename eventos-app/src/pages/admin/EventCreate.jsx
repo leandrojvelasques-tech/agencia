@@ -2260,6 +2260,75 @@ export default function EventCreate() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Opciones Adicionales de la Encuesta */}
+                    <div className="pt-6 border-t border-[var(--color-deep-green)]/10 space-y-4">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                        Campos Adicionales de la Encuesta
+                      </label>
+
+                      {/* Checkbox de Interés en Próximas Capacitaciones */}
+                      <label className="flex items-start gap-3 p-4 rounded-[var(--radius-premium)] bg-white border border-gray-200 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.satisfaction_show_interest_option !== false}
+                          onChange={e => update('satisfaction_show_interest_option', e.target.checked)}
+                          className="mt-1 accent-[var(--color-deep-green)] rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-gray-800">Pregunta de Interés sobre Próximas Capacitaciones (Sí/No)</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            Permite a los asistentes marcar si desean ser informados sobre futuros eventos o capacitaciones de IA.
+                          </p>
+                          {form.satisfaction_show_interest_option !== false && (
+                            <input
+                              className="form-input text-xs mt-2"
+                              value={form.satisfaction_interest_question_text || '¿Deseas ser informado/a sobre próximas capacitaciones en Inteligencia Artificial y Automatizaciones?'}
+                              onChange={e => update('satisfaction_interest_question_text', e.target.value)}
+                              placeholder="Ej: ¿Deseas ser informado sobre próximas capacitaciones?"
+                            />
+                          )}
+                        </div>
+                      </label>
+
+                      {/* Campo Libre de Comentarios */}
+                      <label className="flex items-start gap-3 p-4 rounded-[var(--radius-premium)] bg-white border border-gray-200 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.satisfaction_show_comments_option !== false}
+                          onChange={e => update('satisfaction_show_comments_option', e.target.checked)}
+                          className="mt-1 accent-[var(--color-deep-green)] rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-gray-800">Campo Libre de Comentarios y Sugerencias</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            Habilita una casilla de texto abierto para que los participantes dejen comentarios o sugerencias.
+                          </p>
+                          {form.satisfaction_show_comments_option !== false && (
+                            <div className="grid sm:grid-cols-2 gap-3 mt-2">
+                              <div>
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Título del Campo Libre</label>
+                                <input
+                                  className="form-input text-xs"
+                                  value={form.satisfaction_comments_label || 'Comentarios y sugerencias libres'}
+                                  onChange={e => update('satisfaction_comments_label', e.target.value)}
+                                  placeholder="Ej: Comentarios y sugerencias libres"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Descripción o Ayuda</label>
+                                <input
+                                  className="form-input text-xs"
+                                  value={form.satisfaction_comments_desc || 'Déjanos tus comentarios, aportes o aspectos a mejorar para el próximo encuentro.'}
+                                  onChange={e => update('satisfaction_comments_desc', e.target.value)}
+                                  placeholder="Ej: Déjanos tus comentarios o sugerencias..."
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2380,16 +2449,37 @@ export default function EventCreate() {
                   </div>
                 ))}
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
-                  <label className="text-sm font-bold text-gray-800 block">
-                    Comentarios o sugerencias <span className="text-xs font-normal text-gray-400">(Opcional)</span>
-                  </label>
-                  <textarea
-                    readOnly
-                    placeholder="Escribe aquí tus comentarios, aspectos a mejorar o sugerencias..."
-                    className="form-input min-h-[90px] text-xs bg-gray-50/50 cursor-not-allowed"
-                  />
-                </div>
+                {/* Checkbox opcional de futuras capacitaciones en Vista Previa */}
+                {form.satisfaction_show_interest_option !== false && (
+                  <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm space-y-2">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input type="checkbox" readOnly checked className="mt-1 accent-[var(--color-deep-green)] rounded w-4 h-4" />
+                      <div>
+                        <p className="text-sm font-bold text-gray-800">
+                          {form.satisfaction_interest_question_text || '¿Deseas ser informado/a sobre próximas capacitaciones en Inteligencia Artificial y Automatizaciones?'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">Te enviaremos novedades y convocatorias antes de abrir inscripciones generales.</p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {/* Campo Libre en Vista Previa */}
+                {form.satisfaction_show_comments_option !== false && (
+                  <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <label className="text-sm font-bold text-gray-800 block">
+                      {form.satisfaction_comments_label || 'Comentarios y sugerencias libres'} <span className="text-xs font-normal text-gray-400">(Opcional)</span>
+                    </label>
+                    <p className="text-xs text-gray-400">
+                      {form.satisfaction_comments_desc || 'Déjanos tus comentarios, aportes o aspectos a mejorar para el próximo encuentro.'}
+                    </p>
+                    <textarea
+                      readOnly
+                      placeholder="Escribe aquí tus comentarios..."
+                      className="form-input min-h-[90px] text-xs bg-gray-50/50 cursor-not-allowed"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="pt-2 text-center">

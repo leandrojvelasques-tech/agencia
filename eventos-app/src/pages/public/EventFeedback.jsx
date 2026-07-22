@@ -26,6 +26,7 @@ export default function EventFeedback() {
     score_delivery: 0,
     score_content: 0
   })
+  const [wantsFutureInfo, setWantsFutureInfo] = useState(true)
   const [comments, setComments] = useState('')
   const [hoveredScores, setHoveredScores] = useState({
     score_experience: 0,
@@ -40,7 +41,7 @@ export default function EventFeedback() {
       try {
         const { data, error } = await supabase
           .from('events')
-          .select('id, title, subtitle, status, satisfaction_questions')
+          .select('id, title, subtitle, status, satisfaction_questions, satisfaction_show_interest_option, satisfaction_interest_question_text, satisfaction_show_comments_option, satisfaction_comments_label, satisfaction_comments_desc')
           .eq('slug', slug)
           .single()
         
@@ -77,17 +78,19 @@ export default function EventFeedback() {
 
     setSubmitting(true)
     try {
+      const payload = {
+        event_id: event.id,
+        score_experience: scores.score_experience,
+        score_registration: scores.score_registration,
+        score_duration: scores.score_duration,
+        score_delivery: scores.score_delivery,
+        score_content: scores.score_content,
+        comments: comments.trim() ? (wantsFutureInfo ? `[Desea info capacitaciones: SÍ]\n${comments.trim()}` : `[Desea info capacitaciones: NO]\n${comments.trim()}`) : (wantsFutureInfo ? '[Desea info capacitaciones: SÍ]' : null)
+      }
+
       const { error } = await supabase
         .from('event_feedback')
-        .insert({
-          event_id: event.id,
-          score_experience: scores.score_experience,
-          score_registration: scores.score_registration,
-          score_duration: scores.score_duration,
-          score_delivery: scores.score_delivery,
-          score_content: scores.score_content,
-          comments: comments.trim() || null
-        })
+        .insert(payload)
       
       if (error) throw error
       setSubmitted(true)
@@ -212,21 +215,45 @@ export default function EventFeedback() {
             })}
           </div>
 
+          {/* Checkbox de Interés en Próximas Capacitaciones */}
+          {event?.satisfaction_show_interest_option !== false && (
+            <div className="pt-2 border-t border-gray-100">
+              <label className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={wantsFutureInfo}
+                  onChange={e => setWantsFutureInfo(e.target.checked)}
+                  className="mt-1 accent-[var(--color-deep-green)] rounded w-4 h-4"
+                />
+                <div>
+                  <p className="text-sm font-bold text-gray-800">
+                    {event?.satisfaction_interest_question_text || '¿Deseas ser informado/a sobre próximas capacitaciones en Inteligencia Artificial y Automatizaciones?'}
+                  </p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                    Te enviaremos las fechas e inscripciones prioritarias directamente a tu contacto.
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+
           {/* Comments Free Field */}
-          <div className="pt-2 border-t border-gray-100">
-            <label className="text-sm font-bold text-gray-800 mb-1.5 block">
-              Comentarios y sugerencias libres
-            </label>
-            <p className="text-[11px] text-gray-400 mb-3 leading-relaxed">
-              ¿Hay algo que te gustaría destacar o algún punto que consideres que deberíamos ajustar para la próxima?
-            </p>
-            <textarea
-              className="form-input w-full min-h-[100px] py-3 text-sm resize-y"
-              placeholder="Escribe tus comentarios aquí..."
-              value={comments}
-              onChange={e => setComments(e.target.value)}
-            />
-          </div>
+          {event?.satisfaction_show_comments_option !== false && (
+            <div className="pt-2 border-t border-gray-100">
+              <label className="text-sm font-bold text-gray-800 mb-1.5 block">
+                {event?.satisfaction_comments_label || 'Comentarios y sugerencias libres'}
+              </label>
+              <p className="text-[11px] text-gray-400 mb-3 leading-relaxed">
+                {event?.satisfaction_comments_desc || '¿Hay algo que te gustaría destacar o algún punto que consideres que deberíamos ajustar para la próxima?'}
+              </p>
+              <textarea
+                className="form-input w-full min-h-[100px] py-3 text-sm resize-y"
+                placeholder="Escribe tus comentarios aquí..."
+                value={comments}
+                onChange={e => setComments(e.target.value)}
+              />
+            </div>
+          )}
 
           {/* Actions */}
           <div className="pt-4">
