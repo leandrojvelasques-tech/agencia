@@ -2267,7 +2267,7 @@ export default function EventCreate() {
                         Campos Adicionales de la Encuesta
                       </label>
 
-                      {/* Checkbox de Interés en Próximas Capacitaciones */}
+                      {/* Casilla / Formulario Opt-in de Suscripción a la Base de Datos */}
                       <label className="flex items-start gap-3 p-4 rounded-[var(--radius-premium)] bg-white border border-gray-200 cursor-pointer">
                         <input
                           type="checkbox"
@@ -2276,17 +2276,22 @@ export default function EventCreate() {
                           className="mt-1 accent-[var(--color-deep-green)] rounded"
                         />
                         <div className="flex-1">
-                          <p className="text-xs font-bold text-gray-800">Pregunta de Interés sobre Próximas Capacitaciones (Sí/No)</p>
+                          <p className="text-xs font-bold text-gray-800">Formulario Opt-In de Suscripción a la Base de Datos de Cursos</p>
                           <p className="text-[11px] text-gray-500 mt-0.5">
-                            Permite a los asistentes marcar si desean ser informados sobre futuros eventos o capacitaciones de IA.
+                            Permite a los asistentes completar sus datos (Nombre, Email, Profesión/Título y Campo libre) para suscribirse formalmente a la base de datos de próximos cursos.
                           </p>
                           {form.satisfaction_show_interest_option !== false && (
-                            <input
-                              className="form-input text-xs mt-2"
-                              value={form.satisfaction_interest_question_text || '¿Deseas ser informado/a sobre próximas capacitaciones en Inteligencia Artificial y Automatizaciones?'}
-                              onChange={e => update('satisfaction_interest_question_text', e.target.value)}
-                              placeholder="Ej: ¿Deseas ser informado sobre próximas capacitaciones?"
-                            />
+                            <div className="mt-3 space-y-3">
+                              <div>
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Título de la invitación a suscribirse</label>
+                                <input
+                                  className="form-input text-xs"
+                                  value={form.satisfaction_interest_question_text || 'Deseo suscribirme para recibir notificaciones sobre nuevos cursos y capacitaciones'}
+                                  onChange={e => update('satisfaction_interest_question_text', e.target.value)}
+                                  placeholder="Ej: Deseo suscribirme para recibir notificaciones..."
+                                />
+                              </div>
+                            </div>
                           )}
                         </div>
                       </label>
@@ -2449,18 +2454,48 @@ export default function EventCreate() {
                   </div>
                 ))}
 
-                {/* Checkbox opcional de futuras capacitaciones en Vista Previa */}
+                {/* Formulario / Opt-in de Suscripción en Vista Previa */}
                 {form.satisfaction_show_interest_option !== false && (
-                  <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm space-y-2">
-                    <label className="flex items-start gap-3 cursor-pointer">
+                  <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-200/80 shadow-sm space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-emerald-700 text-lg">mark_email_read</span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900">Base de Datos de Próximos Cursos</h4>
+                    </div>
+
+                    <label className="flex items-start gap-3 cursor-pointer bg-white p-3 rounded-lg border border-emerald-100">
                       <input type="checkbox" readOnly checked className="mt-1 accent-[var(--color-deep-green)] rounded w-4 h-4" />
                       <div>
                         <p className="text-sm font-bold text-gray-800">
-                          {form.satisfaction_interest_question_text || '¿Deseas ser informado/a sobre próximas capacitaciones en Inteligencia Artificial y Automatizaciones?'}
+                          {form.satisfaction_interest_question_text || 'Deseo suscribirme para recibir notificaciones sobre nuevos cursos y capacitaciones'}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">Te enviaremos novedades y convocatorias antes de abrir inscripciones generales.</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">Completá tus datos para agregarte a la lista de difusión y novedades prioritarias.</p>
                       </div>
                     </label>
+
+                    <div className="grid sm:grid-cols-2 gap-3 pt-2 bg-white p-4 rounded-lg border border-emerald-100">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-600 block mb-1">Nombre y Apellido *</label>
+                        <input readOnly placeholder="Ej: Juan Pérez" className="form-input text-xs bg-gray-50/50 cursor-not-allowed" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-600 block mb-1">Correo Electrónico *</label>
+                        <input readOnly placeholder="ejemplo@email.com" className="form-input text-xs bg-gray-50/50 cursor-not-allowed" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-600 block mb-1">Título / Profesión</label>
+                        <select disabled className="form-input text-xs bg-gray-50/50 cursor-not-allowed">
+                          <option>Licenciado en Administración</option>
+                          <option>Contador Público</option>
+                          <option>Licenciado en Economía</option>
+                          <option>Estudiante Universitario</option>
+                          <option>Otro</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-600 block mb-1">Especificar profesión (si es Otro)</label>
+                        <input readOnly placeholder="Especificar..." className="form-input text-xs bg-gray-50/50 cursor-not-allowed" />
+                      </div>
+                    </div>
                   </div>
                 )}
 
