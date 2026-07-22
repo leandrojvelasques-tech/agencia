@@ -33,65 +33,72 @@ export default function EventMinuta() {
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true)
-      const eventData = await getEventById(id)
-      setEvent(eventData)
-      await fetchEventData(id)
-
-      // Fetch CRM presentations
       try {
-        const { data: presData } = await supabase
-          .from('crm_presentations')
-          .select('id, title, slides, event_id')
-          .order('created_at', { ascending: false })
+        setLoading(true)
+        const eventData = await getEventById(id)
+        setEvent(eventData)
+        await fetchEventData(id)
 
-        if (presData) {
-          setCrmPresentations(presData)
-          // Pre-select if a presentation is associated with this event
-          const match = presData.find(p => p.event_id === id)
-          if (match) {
-            setSelectedPresentationId(match.id)
+        // Fetch CRM presentations
+        try {
+          const { data: presData } = await supabase
+            .from('crm_presentations')
+            .select('id, title, slides, event_id')
+            .order('created_at', { ascending: false })
+
+          if (presData) {
+            setCrmPresentations(presData)
+            // Pre-select if a presentation is associated with this event
+            const match = presData.find(p => p.event_id === id)
+            if (match) {
+              setSelectedPresentationId(match.id)
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching CRM presentations:', err)
+        }
+
+        const draft = localStorage.getItem(`minuta_draft_${id}`)
+        if (draft) {
+          try {
+            const parsed = JSON.parse(draft)
+            if (parsed.summary) setSummary(parsed.summary)
+            if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
+            if (Array.isArray(parsed.observations)) setObservations(parsed.observations)
+            if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
+            if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
+            if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
+            if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
+            if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
+            if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
+            if (parsed.selectedPresentationId) setSelectedPresentationId(parsed.selectedPresentationId)
+            if (parsed.selectedSlideId) setSelectedSlideId(parsed.selectedSlideId)
+            if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
+          } catch (e) {
+            console.error("Error loading draft", e)
           }
         }
       } catch (err) {
-        console.error('Error fetching CRM presentations:', err)
+        console.error('Error loading minuta data:', err)
+      } finally {
+        setLoading(false)
       }
-
-      const draft = localStorage.getItem(`minuta_draft_${id}`)
-      if (draft) {
-        try {
-          const parsed = JSON.parse(draft)
-          if (parsed.summary) setSummary(parsed.summary)
-          if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
-          if (parsed.observations) setObservations(parsed.observations)
-          if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
-          if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
-          if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
-          if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
-          if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
-          if (parsed.includeSurvey !== undefined) setIncludeSurvey(parsed.includeSurvey)
-          if (parsed.selectedPresentationId) setSelectedPresentationId(parsed.selectedPresentationId)
-          if (parsed.selectedSlideId) setSelectedSlideId(parsed.selectedSlideId)
-          if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
-        } catch (e) {
-          console.error("Error loading draft", e)
-        }
-      }
-      setLoading(false)
     }
 
     const checkSentStatus = async () => {
-      const { data } = await supabase.from('event_reports').select('*').eq('event_id', id).maybeSingle()
-      if (data && data.sent) {
-        setIsSent(true)
-        setSentAt(data.sent_at)
-        // If we don't have a fresh draft, use the DB values
-        const draft = localStorage.getItem(`minuta_draft_${id}`)
-        if (!draft) {
-          if (data.summary) setSummary(data.summary)
-          if (data.photo_url) setPhotoUrl(data.photo_url)
-          // Note: observations and other fields should be added to the DB schema if needed
+      try {
+        const { data } = await supabase.from('event_reports').select('*').eq('event_id', id).maybeSingle()
+        if (data && data.sent) {
+          setIsSent(true)
+          setSentAt(data.sent_at)
+          const draft = localStorage.getItem(`minuta_draft_${id}`)
+          if (!draft) {
+            if (data.summary) setSummary(data.summary)
+            if (data.photo_url) setPhotoUrl(data.photo_url)
+          }
         }
+      } catch (err) {
+        console.error('Error checking sent status:', err)
       }
     }
 
@@ -99,16 +106,26 @@ export default function EventMinuta() {
     checkSentStatus()
   }, [id])
 
-  if (loading) return <div className="text-center py-20"><p className="animate-pulse">Cargando...</p></div>
-  if (!event) return <div className="text-center py-20"><p>Evento no encontrado</p></div>
+  if (loading) return <div className="text-center py-20"><p className="animate-pulse text-[var(--color-deep-green)] font-bold">Cargando minuta...</p></div>
+  if (!event) return <div className="text-center py-20"><p className="text-gray-600">Evento no encontrado</p></div>
 
-  const attendees = registrations
+  const attendees = (registrations || [])
     .filter(r => {
-      const att = attendance.find(a => a.registration_id === r.id)
+      const att = (attendance || []).find(a => a.registration_id === r.id)
       return att?.status === 'present' || att?.status === 'late'
     })
     .map(r => r.participants || r.participant)
     .filter(Boolean)
+
+  const formattedEventDate = (() => {
+    if (!event?.event_date) return ''
+    try {
+      const d = new Date(event.event_date.includes('T') ? event.event_date : event.event_date + 'T12:00:00')
+      return isNaN(d.getTime()) ? event.event_date : d.toLocaleDateString('es-AR', { dateStyle: 'long' })
+    } catch {
+      return event.event_date
+    }
+  })()
 
   const handleFileUpload = async (e, field) => {
     const file = e.target.files?.[0]
@@ -758,7 +775,7 @@ export default function EventMinuta() {
             <p className="text-sm text-gray-500 mb-6 font-medium">Resumen de: {event.title}</p>
             
             <div className="bg-gray-50 border border-gray-100 rounded-[10px] p-5 mb-8 text-sm text-gray-700">
-               <p className="mb-2"><strong>Fecha:</strong> {new Date(event.event_date + 'T12:00:00').toLocaleDateString('es-AR', { dateStyle: 'long' })}</p>
+               <p className="mb-2"><strong>Fecha:</strong> {formattedEventDate}</p>
                <p className="mb-2"><strong>Coordinador:</strong> {event.coordinator}</p>
                {attendees.length > 0 && (
                  <div>
@@ -781,11 +798,11 @@ export default function EventMinuta() {
               </div>
             </div>
 
-            {observations.filter(o => o.trim()).length > 0 && (
+            {Array.isArray(observations) && observations.filter(o => o && typeof o === 'string' && o.trim()).length > 0 && (
               <div className="mb-8">
                 <h4 className="font-bold text-[var(--color-deep-green)] mb-3 text-sm border-b border-[var(--color-deep-green)]/10 pb-2">Observaciones y Siguientes Pasos</h4>
                 <div className="space-y-4 bg-amber-50 p-5 rounded-[8px] border-l-4 border-amber-400">
-                  {observations.filter(o => o.trim()).map((obs, index) => (
+                  {observations.filter(o => o && typeof o === 'string' && o.trim()).map((obs, index) => (
                     <div key={index} className={index > 0 ? "pt-4 border-t border-amber-200/50" : ""}>
                       <p className="text-[11px] uppercase font-bold text-amber-800 tracking-wider mb-1">Observación {index + 1}</p>
                       <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700">{obs}</div>
@@ -813,7 +830,7 @@ export default function EventMinuta() {
                   />
                 )}
 
-                {attachedSlideInfo.ficha && (
+                {attachedSlideInfo.ficha && typeof attachedSlideInfo.ficha === 'object' && (
                   <div className="bg-white/80 p-4 rounded-lg border border-emerald-100 space-y-2 text-xs">
                     <h5 className="font-bold text-sm text-gray-800">{attachedSlideInfo.ficha.title || attachedSlideInfo.slideTitle}</h5>
                     {attachedSlideInfo.ficha.summary && (
