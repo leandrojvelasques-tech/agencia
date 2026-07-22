@@ -645,11 +645,12 @@ export default function EventCreate() {
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        let msg = err.error || err.message
-        if (!msg && err.details) {
-          msg = typeof err.details === 'string' ? err.details : JSON.stringify(err.details)
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || data.error) {
+        let msg = data.error || data.message
+        if (!msg && data.details) {
+          msg = typeof data.details === 'string' ? data.details : JSON.stringify(data.details)
         }
         if (!msg || msg === '{}') {
           msg = `El servidor respondió con código de error ${res.status}`
@@ -746,11 +747,12 @@ export default function EventCreate() {
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        let msg = err.error || err.message
-        if (!msg && err.details) {
-          msg = typeof err.details === 'string' ? err.details : JSON.stringify(err.details)
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || data.error) {
+        let msg = data.error || data.message
+        if (!msg && data.details) {
+          msg = typeof data.details === 'string' ? data.details : JSON.stringify(data.details)
         }
         if (!msg || msg === '{}') {
           msg = `El servidor respondió con código de error ${res.status}`
