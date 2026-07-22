@@ -586,7 +586,7 @@ export default function EventMinuta() {
             <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-[var(--color-deep-green)]/10 space-y-3">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)] block flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-base">slideshow</span>
-                Diapositiva Destacada del Evento (Ficha de Estudio)
+                Diapositiva Destacada del Evento <span className="text-[10px] font-normal text-gray-400 font-sans lowercase">(opcional - sólo si quieres resaltar 1 slide)</span>
               </label>
               
               <div className="grid md:grid-cols-2 gap-3">
@@ -720,7 +720,7 @@ export default function EventMinuta() {
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube la presentación completa en PDF para que los participantes la puedan descargar.</p>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-1 font-medium">Sube o pega el enlace de la presentación completa en PDF para que los participantes puedan descargar todas las diapositivas y fichas de estudio.</p>
               {presentationLink && (
                 <div className="flex items-center gap-2 mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
                   <span className="material-symbols-outlined text-red-600">picture_as_pdf</span>
