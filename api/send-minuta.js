@@ -348,14 +348,14 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, messageId: brevoResult.messageId || brevoResult.id });
     } else {
       console.error('Brevo API returned error:', brevoResult);
-      const detailMsg = brevoResult?.message || brevoResult?.error || JSON.stringify(brevoResult)
-      return res.status(brevoResponse.status).json({
+      const detailMsg = brevoResult?.message || brevoResult?.code || brevoResult?.error || (typeof brevoResult === 'object' ? JSON.stringify(brevoResult) : String(brevoResult))
+      return res.status(200).json({
         error: `Brevo (${brevoResponse.status}): ${detailMsg}`,
         details: brevoResult
       });
     }
   } catch (err) {
     console.error('Error in send-minuta serverless route:', err);
-    return res.status(500).json({ error: 'Error interno en la API al procesar el correo: ' + err.message });
+    return res.status(200).json({ error: 'Error interno en la API al procesar el correo: ' + (err.message || String(err)) });
   }
 };
