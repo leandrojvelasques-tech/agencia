@@ -647,12 +647,13 @@ export default function EventCreate() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Error al enviar correo de prueba')
+        const serverError = err.error || err.message || (typeof err.details === 'string' ? err.details : JSON.stringify(err.details || {}))
+        throw new Error(serverError || `Error ${res.status} del servidor`)
       }
 
       alert(`¡Correo de prueba de encuesta enviado exitosamente a ${surveyTestEmail}!`)
     } catch (err) {
-      alert('Error en el envío de prueba: ' + err.message)
+      alert(err.message.startsWith('Brevo') ? err.message : 'Error en el envío de prueba: ' + err.message)
     } finally {
       setTestingSurveyFromEditor(false)
     }
