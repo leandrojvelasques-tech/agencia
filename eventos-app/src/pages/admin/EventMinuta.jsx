@@ -910,3 +910,4 @@ export default function EventMinuta() {
     </div>
   )
 }
+}
