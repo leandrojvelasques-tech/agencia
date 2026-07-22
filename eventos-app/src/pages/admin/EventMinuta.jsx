@@ -603,9 +603,15 @@ export default function EventMinuta() {
                     className="form-input text-xs"
                     value={selectedPresentationId}
                     onChange={(e) => {
-                      setSelectedPresentationId(e.target.value)
+                      const presId = e.target.value
+                      setSelectedPresentationId(presId)
                       setSelectedSlideId('')
                       setAttachedSlideInfo(null)
+
+                      const pres = crmPresentations.find(p => p.id === presId)
+                      if (pres && pres.pdf_url) {
+                        setPresentationLink(pres.pdf_url)
+                      }
                     }}
                   >
                     <option value="">-- Seleccionar Presentación CRM --</option>
