@@ -323,7 +323,7 @@ module.exports = async (req, res) => {
     const emailPayload = {
       sender: parseSender(emailFrom),
       to: toField,
-      subject: `Minuta - ${eventTitle}`,
+      subject: req.body.subject || (surveyLink && (!summary || summary.includes('prueba') || summary.includes('encuesta')) ? `Encuesta de Satisfacción - ${eventTitle}` : `Minuta - ${eventTitle}`),
       htmlContent: emailHtml
     };
 
@@ -348,8 +348,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, messageId: brevoResult.messageId || brevoResult.id });
     } else {
       console.error('Brevo API returned error:', brevoResult);
+      const detailMsg = brevoResult?.message || brevoResult?.error || JSON.stringify(brevoResult)
       return res.status(brevoResponse.status).json({
-        error: `Brevo respondió con error ${brevoResponse.status}`,
+        error: `Brevo (${brevoResponse.status}): ${detailMsg}`,
         details: brevoResult
       });
     }
