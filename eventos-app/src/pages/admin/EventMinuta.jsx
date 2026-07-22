@@ -208,6 +208,8 @@ export default function EventMinuta() {
     } finally {
       setUploadingField(null)
     }
+  }
+
   const handleSaveDraft = () => {
     const draft = {
       summary,
@@ -961,6 +963,5 @@ export default function EventMinuta() {
         </div>
       </div>
     </div>
-  )
-}
+   )
 }
