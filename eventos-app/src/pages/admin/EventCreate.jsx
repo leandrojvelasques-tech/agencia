@@ -647,13 +647,19 @@ export default function EventCreate() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        const serverError = err.error || err.message || (typeof err.details === 'string' ? err.details : JSON.stringify(err.details || {}))
-        throw new Error(serverError || `Error ${res.status} del servidor`)
+        let msg = err.error || err.message
+        if (!msg && err.details) {
+          msg = typeof err.details === 'string' ? err.details : JSON.stringify(err.details)
+        }
+        if (!msg || msg === '{}') {
+          msg = `El servidor respondió con código de error ${res.status}`
+        }
+        throw new Error(msg)
       }
 
       alert(`¡Correo de prueba de encuesta enviado exitosamente a ${surveyTestEmail}!`)
     } catch (err) {
-      alert(err.message.startsWith('Brevo') ? err.message : 'Error en el envío de prueba: ' + err.message)
+      alert('Error en el envío de prueba: ' + (err.message || err))
     } finally {
       setTestingSurveyFromEditor(false)
     }
@@ -742,14 +748,20 @@ export default function EventCreate() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        const serverError = err.error || err.message || (typeof err.details === 'string' ? err.details : JSON.stringify(err.details || {}))
-        throw new Error(serverError || `Error ${res.status} del servidor`)
+        let msg = err.error || err.message
+        if (!msg && err.details) {
+          msg = typeof err.details === 'string' ? err.details : JSON.stringify(err.details)
+        }
+        if (!msg || msg === '{}') {
+          msg = `El servidor respondió con código de error ${res.status}`
+        }
+        throw new Error(msg)
       }
 
       alert(`¡Encuesta de satisfacción enviada exitosamente a ${targetEmails.length} destinatarios!`)
       setShowSatisfactionSendModal(false)
     } catch (err) {
-      alert(err.message.startsWith('Brevo') ? err.message : 'Error al enviar la encuesta: ' + err.message)
+      alert('Error al enviar la encuesta: ' + (err.message || err))
     } finally {
       setSendingSurveyFromEditor(false)
     }
