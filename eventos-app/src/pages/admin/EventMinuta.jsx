@@ -983,8 +983,18 @@ export default function EventMinuta() {
               </div>
             )}
 
+            {includeAttendanceLink && (
+              <div className="mt-8 p-4 bg-emerald-50/70 border border-emerald-200 rounded-[10px] text-center font-sans">
+                <p className="font-bold text-emerald-900 text-xs mb-1">📋 ¿Estuviste presente y no pudiste marcar asistencia?</p>
+                <p className="text-emerald-800 text-[11px] mb-2.5">Podés registrar tu presente directamente desde el siguiente enlace:</p>
+                <span className="inline-block px-3.5 py-1.5 bg-emerald-800 rounded-[6px] text-xs font-bold text-white shadow-sm">
+                  Marcar Mi Asistencia
+                </span>
+              </div>
+            )}
+
             {includeSurvey && (
-              <div className="mt-8 p-5 bg-amber-50/60 border border-amber-200 rounded-[10px] text-center font-sans">
+              <div className="mt-6 p-5 bg-amber-50/60 border border-amber-200 rounded-[10px] text-center font-sans">
                 <p className="font-bold text-amber-800 text-sm mb-1">⭐ ¡Tu opinión nos importa!</p>
                 <p className="text-amber-900/80 text-xs mb-3">Te invitamos a responder una breve encuesta de satisfacción sobre tu experiencia en el taller.</p>
                 <span className="inline-block px-4 py-2 bg-amber-500 rounded-[6px] text-xs font-bold text-white shadow-sm">
