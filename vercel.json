@@ -34,6 +34,10 @@
             "destination": "/_app/index.html"
         },
         {
+            "source": "/asistencia/:slug",
+            "destination": "/_app/index.html"
+        },
+        {
             "source": "/presentacion/:id",
             "destination": "/_app/index.html"
         },

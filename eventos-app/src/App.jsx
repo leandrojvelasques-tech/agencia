@@ -15,6 +15,7 @@ import EventSatisfaction from './pages/admin/EventSatisfaction'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
 import ClassesDashboard from './pages/admin/ClassesDashboard.jsx'
+import ProcessSurveysDashboard from './pages/admin/ProcessSurveysDashboard'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
@@ -40,6 +41,7 @@ import EventFeedback from './pages/public/EventFeedback'
 import CrmClientPortal from './pages/public/CrmClientPortal'
 import CrmProposalLanding from './pages/public/CrmProposalLanding'
 import CoworkerAttendance from './pages/public/CoworkerAttendance'
+import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -104,6 +106,9 @@ export default function App() {
           <Route path="presupuestos" element={<CrmProposalsDashboard />} />
           <Route path="presupuestos/nuevo" element={<CrmProposalCreate />} />
           <Route path="presupuestos/:id/editar" element={<CrmProposalCreate />} />
+
+          {/* Relevamiento de Procesos (IA & Optimización) */}
+          <Route path="procesos" element={<ProcessSurveysDashboard />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -111,6 +116,7 @@ export default function App() {
         <Route path="/evento/:slug/inscripcion" element={<EventRegister />} />
         <Route path="/evento/:slug/confirmacion" element={<EventConfirmation />} />
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
+        <Route path="/asistencia/:slug" element={<AttendanceCheck />} />
         <Route path="/evento/:slug/inscritos" element={<EventParticipantsPublic />} />
         <Route path="/encuesta/:slug" element={<EventFeedback />} />
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />
@@ -119,6 +125,9 @@ export default function App() {
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
         <Route path="/clase/:token/asistencia" element={<CoworkerAttendance />} />
+
+        {/* Relevamiento de Procesos Public Route */}
+        <Route path="/relevamiento-proceso" element={<ProcessSurveyPublic />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />

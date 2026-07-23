@@ -40,7 +40,7 @@ export default function EventFeedback() {
       try {
         const { data, error } = await supabase
           .from('events')
-          .select('id, title, subtitle, status, satisfaction_questions, satisfaction_show_comments_option, satisfaction_comments_label, satisfaction_comments_desc')
+          .select('id, title, subtitle, status, satisfaction_questions')
           .eq('slug', slug)
           .single()
         

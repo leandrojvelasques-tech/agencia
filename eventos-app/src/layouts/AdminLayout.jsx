@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/admin/clases', icon: 'fact_check', label: 'Clases y Asistencia' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
   { to: '/admin/presupuestos', icon: 'request_quote', label: 'Presupuestos' },
+  { to: '/admin/procesos', icon: 'account_tree', label: 'Relevamiento Procesos' },
   { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
   { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },
 ]

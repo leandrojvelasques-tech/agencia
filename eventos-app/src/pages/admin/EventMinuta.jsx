@@ -25,6 +25,10 @@ export default function EventMinuta() {
   const [uploadingField, setUploadingField] = useState(null)
   const [includeSurvey, setIncludeSurvey] = useState(true)
   const [includeAttendanceLink, setIncludeAttendanceLink] = useState(true)
+  
+  // Test send state
+  const [testEmail, setTestEmail] = useState('info@leandrovelasques.com.ar')
+  const [testingMinuta, setTestingMinuta] = useState(false)
 
   // Presentation & Slide selection state
   const [crmPresentations, setCrmPresentations] = useState([])
@@ -64,7 +68,7 @@ export default function EventMinuta() {
           try {
             const { data: presData } = await supabase
               .from('crm_presentations')
-              .select('id, title, slides, event_id')
+              .select('id, title, slides, event_id, pdf_url')
               .order('created_at', { ascending: false })
 
             if (presData && presData.length > 0) {
@@ -72,6 +76,8 @@ export default function EventMinuta() {
               const match = presData.find(p => p.event_id === targetId)
               if (match) {
                 setSelectedPresentationId(match.id)
+                const presLink = match.pdf_url || `${window.location.origin}/presentacion/${match.id}`
+                setPresentationLink(presLink)
                 if (match.slides && Array.isArray(match.slides) && match.slides.length > 0) {
                   const sl = match.slides[0]
                   setSelectedSlideId(sl.id || 'slide-0')
@@ -231,6 +237,92 @@ export default function EventMinuta() {
     setTimeout(() => setToast(''), 3000)
   }
 
+  const handleTestSend = async () => {
+    if (!summary) {
+      setToast('El resumen es obligatorio para hacer la prueba')
+      setTimeout(() => setToast(''), 3000)
+      return
+    }
+
+    if (!testEmail || !testEmail.includes('@')) {
+      setToast('Ingresá un correo de prueba válido.')
+      setTimeout(() => setToast(''), 3000)
+      return
+    }
+
+    setTestingMinuta(true)
+    
+    // Construct payload for test send
+    const localAttendance = Array.isArray(attendance) ? attendance : []
+    const localRegistrations = Array.isArray(registrations) ? registrations : []
+
+    const getParticipant = (r) => {
+      let p = r.participants || r.participant
+      if (Array.isArray(p)) return p[0]
+      return p
+    }
+
+    const presentRegs = localRegistrations.filter(r => {
+      const att = localAttendance.find(a => a.registration_id === r.id)
+      return att?.status === 'present' || att?.status === 'late'
+    })
+
+    const displayCoordinator = event?.coordinator === 'Leandro Velasques' 
+      ? 'Lic. Leandro Velasques' 
+      : event?.coordinator
+
+    const payload = {
+      eventId: id,
+      eventTitle: event?.title || 'Evento',
+      eventDate: event?.event_date,
+      coordinator: displayCoordinator,
+      summary: summary + '\n\n*(Este es un envío de prueba individual)*',
+      observations: observations.filter(o => o.trim()),
+      photoUrl,
+      presentationLink,
+      attachedSlideInfo,
+      extraFiles: extraFiles ? [extraFiles] : [],
+      attendees: includeAttendees ? presentRegs.map(r => {
+        const p = getParticipant(r)
+        return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
+      }).filter(Boolean) : [],
+      emails: [testEmail.trim()],
+      surveyLink: includeSurvey ? `${window.location.origin}/encuesta/${event.slug}` : null,
+      attendanceLink: includeAttendanceLink ? `${window.location.origin}/evento/${event.slug}/asistencia` : null
+    }
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+    try {
+      const res = await fetch('/api/send-minuta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || `El servidor respondió con error ${res.status}`)
+      }
+
+      setToast(`¡Minuta de prueba enviada exitosamente a ${testEmail}!`)
+      setTimeout(() => setToast(''), 5000)
+    } catch (err) {
+      clearTimeout(timeoutId)
+      const errorMsg = err.name === 'AbortError' 
+        ? 'Tiempo de espera agotado (15s).' 
+        : 'Error: ' + err.message
+      setToast(errorMsg)
+      setTimeout(() => setToast(''), 6000)
+    } finally {
+      setTestingMinuta(false)
+    }
+  }
+
   const handleSend = async () => {
     if (!summary) {
       setToast('El resumen es obligatorio')
@@ -314,7 +406,7 @@ export default function EventMinuta() {
       }).filter(Boolean) : [],
       emails: finalEmails,
       surveyLink: includeSurvey ? `${window.location.origin}/encuesta/${event.slug}` : null,
-      attendanceLink: includeAttendanceLink ? `${window.location.origin}/asistencia/${event.slug}` : null
+      attendanceLink: includeAttendanceLink ? `${window.location.origin}/evento/${event.slug}/asistencia` : null
     }
 
     console.log('DEBUG MINUTA PAYLOAD:', payload)
@@ -582,6 +674,34 @@ export default function EventMinuta() {
               />
               <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">Podés ingresar varios emails separados por coma (ej: personas que no se inscribieron pero quieren el resumen).</p>
             </div>
+
+            {/* Envío de Prueba */}
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-2 mt-4">
+              <p className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-base">mark_email_unread</span>
+                Envío de Prueba Individual (Minuta)
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  className="form-input text-xs flex-1 bg-white"
+                  placeholder="info@leandrovelasques.com.ar"
+                  value={testEmail}
+                  onChange={e => setTestEmail(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={handleTestSend}
+                  disabled={testingMinuta}
+                  className="btn-secondary !py-2 text-xs font-bold shrink-0"
+                >
+                  {testingMinuta ? 'Enviando prueba...' : 'Enviar Prueba'}
+                </button>
+              </div>
+              <p className="text-[9px] text-amber-800/70">
+                Se enviará una copia del diseño actual de la minuta únicamente al correo especificado.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -603,9 +723,29 @@ export default function EventMinuta() {
                     const presId = e.target.value
                     setSelectedPresentationId(presId)
 
+                    if (!presId) {
+                      setPresentationLink('')
+                      setAttachedSlideInfo(null)
+                      return
+                    }
+
                     const pres = crmPresentations.find(p => p.id === presId)
-                    if (pres && pres.pdf_url) {
-                      setPresentationLink(pres.pdf_url)
+                    if (pres) {
+                      const link = pres.pdf_url || `${window.location.origin}/presentacion/${pres.id}`
+                      setPresentationLink(link)
+                      if (pres.slides && Array.isArray(pres.slides) && pres.slides.length > 0) {
+                        const sl = pres.slides[0]
+                        setSelectedSlideId(sl.id || 'slide-0')
+                        setAttachedSlideInfo({
+                          presentationId: pres.id,
+                          presentationTitle: pres.title,
+                          slideId: sl.id || 'slide-0',
+                          slideTitle: sl.title || 'Diapositiva 1',
+                          mediaUrl: sl.mediaUrl || '',
+                          ficha: sl.ficha || null,
+                          notes: sl.notes || ''
+                        })
+                      }
                     }
                   }}
                 >
@@ -744,15 +884,7 @@ export default function EventMinuta() {
             
             <div className="bg-gray-50 border border-gray-100 rounded-[10px] p-5 mb-8 text-sm text-gray-700">
                <p className="mb-2"><strong>Fecha:</strong> {formattedEventDate}</p>
-               <p className="mb-2"><strong>Coordinador:</strong> {event.coordinator}</p>
-               {attendees.length > 0 && (
-                 <div>
-                   <p className="font-bold mb-1">Asistentes:</p>
-                   <p className="text-gray-600 leading-relaxed text-[13px]">
-                     {attendees.map(a => `${a.first_name} ${a.last_name}`).join(', ')}
-                   </p>
-                 </div>
-               )}
+               <p className="mb-0"><strong>Coordinador:</strong> {event.coordinator}</p>
             </div>
 
             {photoUrl && (
