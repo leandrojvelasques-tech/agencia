@@ -174,15 +174,17 @@ module.exports = async (req, res) => {
       slideHtml = `
         <div style="margin-bottom: 30px; border: 1px solid #a7f3d0; background-color: #f0fdf4; border-radius: 10px; padding: 20px; font-family: sans-serif;">
           <div style="margin-bottom: 12px;">
-            <span style="display: inline-block; font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Diapositiva Destacada / Ficha de Estudio</span>
+            <span style="display: inline-block; font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Diapositiva Destacada / Portada</span>
           </div>
           ${slideMediaUrl ? `
             <div style="text-align: center; margin-bottom: 15px;">
-              <img src="${slideMediaUrl}" alt="${attachedSlideInfo.slideTitle || 'Slide'}" style="max-width: 100%; height: auto; max-height: 320px; object-fit: contain; border-radius: 8px; border: 1px solid #d1fae5;" />
+              ${finalPresentationLink ? `<a href="${finalPresentationLink}" target="_blank" title="Haz clic para ver la presentación completa" style="text-decoration: none; display: inline-block;">` : ''}
+                <img src="${slideMediaUrl}" alt="${attachedSlideInfo.slideTitle || 'Slide'}" style="max-width: 100%; height: auto; max-height: 320px; object-fit: contain; border-radius: 8px; border: 1px solid #d1fae5;" />
+              ${finalPresentationLink ? `</a>` : ''}
             </div>
           ` : ''}
           ${attachedSlideInfo.ficha ? `
-            <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+            <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5; margin-bottom: 15px;">
               <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #065f46;">${attachedSlideInfo.ficha.title || attachedSlideInfo.slideTitle}</h4>
               ${attachedSlideInfo.ficha.summary ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #374151; line-height: 1.5;">${attachedSlideInfo.ficha.summary}</p>` : ''}
               ${attachedSlideInfo.ficha.closingIdea ? `<p style="margin: 8px 0 0 0; font-size: 12px; font-weight: 700; font-style: italic; color: #047857; border-top: 1px solid #ecfdf5; padding-top: 8px;">💡 Idea Clave: ${attachedSlideInfo.ficha.closingIdea}</p>` : ''}
@@ -190,8 +192,8 @@ module.exports = async (req, res) => {
           ` : ''}
           ${finalPresentationLink ? `
             <div style="margin-top: 15px; text-align: center;">
-              <a href="${finalPresentationLink}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #065f46; border-radius: 6px; font-size: 12px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
-                📊 Ver Presentación Completa (Diapositivas)
+              <a href="${finalPresentationLink}" target="_blank" style="display: inline-block; padding: 12px 22px; background-color: #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif; box-shadow: 0 2px 6px rgba(40, 90, 71, 0.2);">
+                📊 Ver Presentación Completa (Todas las Diapositivas)
               </a>
             </div>
           ` : ''}
@@ -235,8 +237,8 @@ module.exports = async (req, res) => {
       if (hasExtra) {
         materialsHtml += `
           <div style="margin-bottom: 12px;">
-            <a href="${finalExtraFiles[0]}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #ededed; border-radius: 6px; font-size: 13px; font-weight: bold; color: #333333; text-decoration: none; font-family: sans-serif;">
-              📂 Ver Archivos Adicionales
+            <a href="${finalExtraFiles[0]}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #1e3a8a; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
+              🎥 Ver / Descargar Grabación del Evento
             </a>
           </div>
         `;

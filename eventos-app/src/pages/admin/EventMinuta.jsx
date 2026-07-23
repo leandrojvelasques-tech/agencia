@@ -864,12 +864,12 @@ export default function EventMinuta() {
 
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-                Otros Archivos Adicionales (Archivos o Enlaces)
+                Grabación del Evento (Video / Enlace de Grabación)
               </label>
               <div className="flex gap-2">
                 <input
                   className="form-input flex-1"
-                  placeholder="Enlace a Drive/Dropbox o subí un archivo de soporte..."
+                  placeholder="Enlace de YouTube, Zoom, Drive, Vimeo o subí el archivo de video..."
                   value={extraFiles}
                   onChange={e => setExtraFiles(e.target.value)}
                 />
@@ -881,30 +881,31 @@ export default function EventMinuta() {
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-sm">upload_file</span>
-                      Subir Archivo
+                      <span className="material-symbols-outlined text-sm">videocam</span>
+                      Subir Grabación
                     </>
                   )}
                   <input
                     type="file"
+                    accept="video/*,.mp4,.mov,.webm,.mkv"
                     className="hidden"
                     onChange={e => handleFileUpload(e, 'extra')}
                     disabled={uploadingField !== null}
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Sube cualquier tipo de archivo o proporciona un enlace a carpeta compartida.</p>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Pegá el enlace de la grabación (YouTube, Zoom, Drive, Vimeo) o subí el archivo de video del evento.</p>
               {extraFiles && (
-                <div className="flex items-center gap-2 mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
-                  <span className="material-symbols-outlined text-blue-600">draft</span>
-                  <a href={extraFiles} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-deep-green)] hover:underline truncate max-w-md flex-1">
+                <div className="flex items-center gap-2 mt-2 bg-blue-50/70 border border-blue-200 rounded-lg p-2.5">
+                  <span className="material-symbols-outlined text-blue-600">videocam</span>
+                  <a href={extraFiles} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-900 hover:underline truncate max-w-md flex-1">
                     {extraFiles}
                   </a>
                   <button
                     type="button"
                     onClick={() => setExtraFiles('')}
                     className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center"
-                    title="Quitar archivo"
+                    title="Quitar grabación"
                   >
                     <span className="material-symbols-outlined text-base">close</span>
                   </button>
@@ -983,11 +984,25 @@ export default function EventMinuta() {
                 </div>
 
                 {attachedSlideInfo.mediaUrl && (
-                  <img
-                    src={attachedSlideInfo.mediaUrl}
-                    alt={attachedSlideInfo.slideTitle}
-                    className="w-full h-auto max-h-80 object-contain rounded-lg border border-gray-200 mb-4 bg-black/5"
-                  />
+                  presentationLink ? (
+                    <a href={presentationLink} target="_blank" rel="noreferrer" className="block group relative overflow-hidden rounded-lg border border-gray-200 mb-4 bg-black/5 cursor-pointer" title="Hacé clic para ver la presentación completa">
+                      <img
+                        src={attachedSlideInfo.mediaUrl}
+                        alt={attachedSlideInfo.slideTitle}
+                        className="w-full h-auto max-h-80 object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-bold text-sm">
+                        <span className="material-symbols-outlined text-xl">open_in_new</span>
+                        Ver Presentación Completa (Todas las Diapositivas)
+                      </div>
+                    </a>
+                  ) : (
+                    <img
+                      src={attachedSlideInfo.mediaUrl}
+                      alt={attachedSlideInfo.slideTitle}
+                      className="w-full h-auto max-h-80 object-contain rounded-lg border border-gray-200 mb-4 bg-black/5"
+                    />
+                  )
                 )}
 
                 {attachedSlideInfo.ficha && typeof attachedSlideInfo.ficha === 'object' && (
@@ -1005,11 +1020,11 @@ export default function EventMinuta() {
                 )}
 
                 {presentationLink && (
-                  <div className="mt-2 pt-3 border-t border-emerald-100/80 flex items-center justify-between">
-                    <span className="text-xs text-gray-500 font-medium">Presentación completa vinculada</span>
-                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-deep-green)] hover:underline">
+                  <div className="mt-3 pt-3 border-t border-emerald-100 flex items-center justify-between">
+                    <span className="text-xs text-emerald-900 font-bold">📄 Presentación completa vinculada</span>
+                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[var(--color-deep-green)] hover:bg-[#1f4738] rounded-lg text-xs font-bold text-white transition-colors shadow-sm">
                       <span className="material-symbols-outlined text-sm">open_in_new</span>
-                      Ver Presentación
+                      Ver / Descargar Presentación Completa
                     </a>
                   </div>
                 )}
@@ -1061,10 +1076,12 @@ export default function EventMinuta() {
                 )}
 
                 {extraFiles && (
-                  <a href={extraFiles} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
-                    <span className="material-symbols-outlined text-[18px]">folder_open</span>
-                    Ver Archivos Adicionales
-                  </a>
+                  <div className="mb-3">
+                    <a href={extraFiles} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-900 hover:bg-blue-950 rounded-[var(--radius-normal)] text-xs font-bold text-white transition-colors shadow-sm">
+                      <span className="material-symbols-outlined text-[18px]">videocam</span>
+                      🎥 Ver / Descargar Grabación del Evento
+                    </a>
+                  </div>
                 )}
               </div>
             )}
