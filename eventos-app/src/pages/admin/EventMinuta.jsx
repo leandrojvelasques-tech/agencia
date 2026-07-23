@@ -151,6 +151,43 @@ export default function EventMinuta() {
     loadData()
   }, [id])
 
+  // Sincronizar automáticamente el enlace de la presentación cuando cambie la selección o las presentaciones carguen
+  useEffect(() => {
+    if (selectedPresentationId && crmPresentations.length > 0) {
+      const pres = crmPresentations.find(p => String(p.id) === String(selectedPresentationId))
+      if (pres) {
+        const link = pres.pdf_url || `${window.location.origin}/presentacion/${pres.id}`
+        setPresentationLink(prev => prev || link)
+
+        if (!attachedSlideInfo) {
+          if (pres.slides && Array.isArray(pres.slides) && pres.slides.length > 0) {
+            const sl = pres.slides[0]
+            setSelectedSlideId(sl.id || 'slide-0')
+            setAttachedSlideInfo({
+              presentationId: pres.id,
+              presentationTitle: pres.title,
+              slideId: sl.id || 'slide-0',
+              slideTitle: sl.title || 'Diapositiva 1',
+              mediaUrl: sl.mediaUrl || '',
+              ficha: sl.ficha || null,
+              notes: sl.notes || ''
+            })
+          } else {
+            setAttachedSlideInfo({
+              presentationId: pres.id,
+              presentationTitle: pres.title,
+              slideId: 'slide-0',
+              slideTitle: 'Presentación Completa',
+              mediaUrl: '',
+              ficha: null,
+              notes: ''
+            })
+          }
+        }
+      }
+    }
+  }, [selectedPresentationId, crmPresentations])
+
   if (loading) return <div className="text-center py-20"><p className="animate-pulse text-[var(--color-deep-green)] font-bold">Cargando minuta...</p></div>
   if (!event) return <div className="text-center py-20"><p className="text-gray-600">Evento no encontrado</p></div>
 
@@ -735,7 +772,7 @@ export default function EventMinuta() {
                       return
                     }
 
-                    const pres = crmPresentations.find(p => p.id === presId)
+                    const pres = crmPresentations.find(p => String(p.id) === String(presId))
                     if (pres) {
                       const link = pres.pdf_url || `${window.location.origin}/presentacion/${pres.id}`
                       setPresentationLink(link)
@@ -750,6 +787,16 @@ export default function EventMinuta() {
                           mediaUrl: sl.mediaUrl || '',
                           ficha: sl.ficha || null,
                           notes: sl.notes || ''
+                        })
+                      } else {
+                        setAttachedSlideInfo({
+                          presentationId: pres.id,
+                          presentationTitle: pres.title,
+                          slideId: 'slide-0',
+                          slideTitle: 'Presentación Completa',
+                          mediaUrl: '',
+                          ficha: null,
+                          notes: ''
                         })
                       }
                     }
