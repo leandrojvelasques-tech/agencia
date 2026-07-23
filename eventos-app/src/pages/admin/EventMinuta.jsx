@@ -66,10 +66,16 @@ export default function EventMinuta() {
 
           // Fetch CRM presentations
           try {
-            const { data: presData } = await supabase
+            let { data: presData, error: presErr } = await supabase
               .from('crm_presentations')
-              .select('id, title, slides, event_id, pdf_url')
-              .order('created_at', { ascending: false })
+              .select('*')
+              .order('updated_at', { ascending: false })
+
+            if (presErr) {
+              console.warn('Fallback: Error al consultar crm_presentations con select(*), reintentando...', presErr)
+              const fallbackRes = await supabase.from('crm_presentations').select('id, title')
+              presData = fallbackRes.data
+            }
 
             if (presData && presData.length > 0) {
               setCrmPresentations(presData)
