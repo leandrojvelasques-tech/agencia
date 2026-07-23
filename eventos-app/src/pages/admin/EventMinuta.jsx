@@ -918,14 +918,21 @@ export default function EventMinuta() {
               </div>
             )}
 
-            {/* Slide / Ficha de Estudio preview */}
-            {attachedSlideInfo && (
+            {/* Slide / Presentación Destacada preview */}
+            {attachedSlideInfo ? (
               <div className="mb-8 border border-emerald-200 bg-gradient-to-br from-white to-emerald-50/40 rounded-xl p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-emerald-600 text-lg">slideshow</span>
-                  <h4 className="text-[13px] font-extrabold text-[var(--color-deep-green)] uppercase tracking-wider">
-                    Diapositiva Destacada del Evento
-                  </h4>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-emerald-600 text-lg">slideshow</span>
+                    <h4 className="text-[13px] font-extrabold text-[var(--color-deep-green)] uppercase tracking-wider">
+                      Diapositiva Destacada: {attachedSlideInfo.presentationTitle || 'Presentación'}
+                    </h4>
+                  </div>
+                  {attachedSlideInfo.slideTitle && (
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">
+                      {attachedSlideInfo.slideTitle}
+                    </span>
+                  )}
                 </div>
 
                 {attachedSlideInfo.mediaUrl && (
@@ -937,7 +944,7 @@ export default function EventMinuta() {
                 )}
 
                 {attachedSlideInfo.ficha && typeof attachedSlideInfo.ficha === 'object' && (
-                  <div className="bg-white/80 p-4 rounded-lg border border-emerald-100 space-y-2 text-xs">
+                  <div className="bg-white/80 p-4 rounded-lg border border-emerald-100 space-y-2 text-xs mb-3">
                     <h5 className="font-bold text-sm text-gray-800">{attachedSlideInfo.ficha.title || attachedSlideInfo.slideTitle}</h5>
                     {attachedSlideInfo.ficha.summary && (
                       <p className="text-gray-600 leading-relaxed">{attachedSlideInfo.ficha.summary}</p>
@@ -949,8 +956,40 @@ export default function EventMinuta() {
                     )}
                   </div>
                 )}
+
+                {presentationLink && (
+                  <div className="mt-2 pt-3 border-t border-emerald-100/80 flex items-center justify-between">
+                    <span className="text-xs text-gray-500 font-medium">Presentación completa vinculada</span>
+                    <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-deep-green)] hover:underline">
+                      <span className="material-symbols-outlined text-sm">open_in_new</span>
+                      Ver Presentación
+                    </a>
+                  </div>
+                )}
               </div>
-            )}
+            ) : presentationLink ? (
+              <div className="mb-8 border border-emerald-200 bg-gradient-to-br from-white to-emerald-50/40 rounded-xl p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[var(--color-deep-green)] text-white flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-xl">slideshow</span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-[var(--color-deep-green)] uppercase tracking-wider">
+                        Presentación Adjunta al Evento
+                      </h4>
+                      <p className="text-xs text-gray-600 font-medium mt-0.5">
+                        {crmPresentations.find(p => p.id === selectedPresentationId)?.title || 'Presentación / Diapositivas'}
+                      </p>
+                    </div>
+                  </div>
+                  <a href={presentationLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[var(--color-deep-green)] hover:bg-[#1f4738] rounded-lg text-xs font-bold text-white transition-colors shadow-sm shrink-0">
+                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                    Ver Diapositivas
+                  </a>
+                </div>
+              </div>
+            ) : null}
 
             {(photoUrl || presentationLink || extraFiles || attachedSlideInfo) && (
               <div className="mt-8 pt-6 border-t border-[var(--color-dark-gray)]/10">
