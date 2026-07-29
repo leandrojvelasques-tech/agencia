@@ -628,32 +628,21 @@ export default function EventReport({ isPublic = false }) {
         </div>
       </div>
 
-      {/* MINUTA & FOTO DE ARCHIVO DEL EVENTO */}
+      {/* FOTO DEL EVENTO */}
       <div className="card p-6 lg:p-8 mb-8 bg-white shadow-sm space-y-6">
         <h3 className="text-lg font-bold text-[var(--color-deep-green)] flex items-center gap-2 border-b border-gray-100 pb-3">
-          <span className="material-symbols-outlined">description</span>
-          Minuta y Foto de Archivo del Evento
+          <span className="material-symbols-outlined">photo_camera</span>
+          Foto del Evento
         </h3>
 
-        {event.description_extended && (
-          <div className="prose max-w-none text-xs text-slate-700 leading-relaxed space-y-2">
-            <h4 className="font-bold text-slate-900 text-sm">Resumen de la Minuta:</h4>
-            <p className="whitespace-pre-line">{event.description_extended}</p>
-          </div>
-        )}
-
-        {/* Foto de Archivo de la Minuta */}
         {minutaPhoto && (
-          <div className="pt-2">
-            <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3">Foto de Archivo Registrada</h4>
-            <div className="max-w-2xl">
-              <img
-                src={minutaPhoto}
-                alt="Foto de la minuta del evento"
-                className="w-full h-auto max-h-96 object-cover rounded-2xl border border-gray-200 shadow-sm"
-              />
-              <p className="text-[11px] text-slate-500 italic mt-2">Imagen de archivo cargada en la minuta del evento.</p>
-            </div>
+          <div className="max-w-2xl">
+            <img
+              src={minutaPhoto}
+              alt="Foto del evento"
+              className="w-full h-auto max-h-96 object-cover rounded-2xl border border-gray-200 shadow-sm"
+            />
+            <p className="text-[11px] text-slate-500 italic mt-2">Fotografía registrada del evento.</p>
           </div>
         )}
       </div>
