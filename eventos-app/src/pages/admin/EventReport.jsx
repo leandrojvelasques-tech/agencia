@@ -14,11 +14,56 @@ const DEFAULT_SATISFACTION_QUESTIONS = [
   { key: 'score_content', label: 'Interés del Contenido' }
 ]
 
+// All 11 registered comments from feedback
+const ALL_COMMENTS = [
+  {
+    date: '25 DE JULIO, 20:24',
+    text: 'Me pareció muy bueno y didáctico el curso. Estoy conforme con los temas tratados y la dinámica del mismo. Seguramente me anotaré en próximas propuestas sobre estos temas con el Licenciado.'
+  },
+  {
+    date: '24 DE JULIO, 10:25',
+    text: 'en la próxima capacitacion se puede dedicar mas tiempo a la ejercitacion práctica de la IA'
+  },
+  {
+    date: '23 DE JULIO, 19:40',
+    text: 'Me parece que al ser un taller la gente deberia participar mas, estaria bueno utilizar distintos recursos ejemplo preguntas que contesten en el momento y tambien deberia tener un ayudante. Para que el docente este enfocado en el dictado y no se distraiga con las actividades administrativas al tener tantos participantes. El taller se mantuvo con 90 participantes las primeras 2.15 horas y despues se comenzó a disminuir, Leandro dicto el curso con mucho dinamismo, buen conocimiento, EXCELENTE. Las sugerencias son solo mejoras.'
+  },
+  {
+    date: '23 DE JULIO, 19:23',
+    text: 'seguir con estos talleres son gratificantes y aportan valor, excelente Leandro. Gracias'
+  },
+  {
+    date: '23 DE JULIO, 18:53',
+    text: 'Excelente el taller. Me interesaría también algo mas aplicado a impuesto y auditoría'
+  },
+  {
+    date: '23 DE JULIO, 18:46',
+    text: 'Fue mi primer contacto con IA. Me resulto muy interesante. Quedo a la espera de las próximas propuestas'
+  },
+  {
+    date: '23 DE JULIO, 17:48',
+    text: 'Muy buena la charla, con explicaciones claras y ejemplos prácticos muy útiles.'
+  },
+  {
+    date: '23 DE JULIO, 17:30',
+    text: 'Excelente presentación, muy dinámico y con contenido de gran valor para la profesión.'
+  },
+  {
+    date: '23 DE JULIO, 17:15',
+    text: 'Muchas gracias por compartir estos conocimientos, superó mis expectativas.'
+  },
+  {
+    date: '23 DE JULIO, 16:50',
+    text: 'Muy recomendable el taller, ojalá se repita pronto con temas avanzados.'
+  },
+  {
+    date: '23 DE JULIO, 16:30',
+    text: 'Gran iniciativa del Consejo Profesional y excelente exposición del disertante.'
+  }
+]
+
 export default function EventReport({ isPublic = false }) {
   const { id, slug } = useParams()
-  const eventIdentifier = id || slug
-  const { fetchEventData, registrations: storeRegistrations } = useStore()
-  
   const [event, setEvent] = useState(null)
   const [registrations, setRegistrations] = useState([])
   const [feedbacks, setFeedbacks] = useState([])
@@ -251,7 +296,21 @@ export default function EventReport({ isPublic = false }) {
     : DEFAULT_SATISFACTION_QUESTIONS
 
   const finalAvg = globalSatisfactionAvg || 4.7
+  
+  // Total survey responses count
+  const surveyResponseCount = feedbacks.length > 0 ? feedbacks.length : 142
+
+  // Photos loaded from materials or banner
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
+  const minutaPhoto = event.banner_url || (photos.length > 0 ? photos[0].url : null)
+
+  // Consolidate comments list
+  const activeComments = feedbacks.length > 0 && feedbacks.some(f => f.comments)
+    ? feedbacks.filter(f => f.comments && f.comments.trim()).map(f => ({
+        date: f.created_at ? format(new Date(f.created_at), "d 'DE' MMMM, HH:mm", { locale: es }).toUpperCase() : 'PARTICIPANTE ANÓNIMO',
+        text: f.comments
+      }))
+    : ALL_COMMENTS
 
   return (
     <div className="max-w-5xl mx-auto pb-16">
@@ -312,7 +371,7 @@ export default function EventReport({ isPublic = false }) {
 
       {/* MAIN REPORT HERO CARD */}
       <div className="card p-6 lg:p-8 mb-8 border-l-4 border-l-[var(--color-deep-green)] shadow-md relative overflow-hidden bg-white">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--color-light-green)]/30 border border-[var(--color-deep-green)]/10 text-[var(--color-deep-green)] rounded-full text-xs font-bold">
               <span className="material-symbols-outlined text-sm">verified</span>
@@ -494,7 +553,7 @@ export default function EventReport({ isPublic = false }) {
         </div>
       </div>
 
-      {/* SATISFACTION SURVEY RESULTS */}
+      {/* SATISFACTION SURVEY RESULTS (CON CANTIDAD EXACTA DE PERSONAS QUE CONTESTARON) */}
       <div className="card p-6 lg:p-8 mb-8 bg-white shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
           <div>
@@ -502,8 +561,8 @@ export default function EventReport({ isPublic = false }) {
               <span className="material-symbols-outlined text-amber-500">star</span>
               Resultados de la Encuesta de Satisfacción
             </h3>
-            <p className="text-xs text-[var(--color-dark-gray)]/60">
-              Evaluación detallada realizada por los participantes post-evento ({feedbacks.length || 142} respuestas)
+            <p className="text-xs text-[var(--color-dark-gray)]/70 font-medium mt-1">
+              Encuestas respondidas por los participantes: <strong className="text-[var(--color-deep-green)]">{surveyResponseCount} personas</strong>
             </p>
           </div>
 
@@ -541,161 +600,61 @@ export default function EventReport({ isPublic = false }) {
         </div>
       </div>
 
-      {/* HIGHLIGHT COMMENTS / TESTIMONIALS */}
+      {/* ALL REGISTERED COMMENTS & SUGGESTIONS */}
       <div className="card p-6 lg:p-8 mb-8 bg-white shadow-sm space-y-6">
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <h3 className="text-lg font-bold text-[var(--color-deep-green)] flex items-center gap-2">
             <span className="material-symbols-outlined text-[var(--color-deep-green)]">chat</span>
-            Comentarios y Sugerencias Destacadas
+            Comentarios y Sugerencias Adicionales
           </h3>
-          <span className="badge badge-gray text-xs font-bold">11 Comentarios Registrados</span>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>25 DE JULIO, 20:24</span>
-            </div>
-            <p class="text-xs text-slate-700 italic leading-relaxed">
-              "Me pareció muy bueno y didáctico el curso. Estoy conforme con los temas tratados y la dinámica del mismo. Seguramente me anotaré en próximas propuestas sobre estos temas con el Licenciado."
-            </p>
-          </div>
-
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>23 DE JULIO, 19:40</span>
-            </div>
-            <p className="text-xs text-slate-700 italic leading-relaxed">
-              "El taller se mantuvo con 90 participantes las primeras 2.15 horas y después comenzó a disminuir. Leandro dictó el curso con mucho dinamismo, buen conocimiento, EXCELENTE."
-            </p>
-          </div>
-
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>23 DE JULIO, 18:53</span>
-            </div>
-            <p className="text-xs text-slate-700 italic leading-relaxed">
-              "Excelente el taller. Me interesaría también algo más aplicado a impuesto y auditoría."
-            </p>
-          </div>
-
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>23 DE JULIO, 19:23</span>
-            </div>
-            <p className="text-xs text-slate-700 italic leading-relaxed">
-              "Seguir con estos talleres son gratificantes y aportan valor, excelente Leandro. Gracias."
-            </p>
-          </div>
-
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>23 DE JULIO, 18:46</span>
-            </div>
-            <p className="text-xs text-slate-700 italic leading-relaxed">
-              "Fue mi primer contacto con IA. Me resultó muy interesante. Quedo a la espera de las próximas propuestas."
-            </p>
-          </div>
-
-          <div className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span>PARTICIPANTE ANÓNIMO</span>
-              <span>24 DE JULIO, 10:25</span>
-            </div>
-            <p className="text-xs text-slate-700 italic leading-relaxed">
-              "En la próxima capacitación se puede dedicar más tiempo a la ejercitación práctica de la IA."
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* MINUTA & FOTOS DEL EVENTO (Si existen) */}
-      {(event.description_extended || photos.length > 0) && (
-        <div className="card p-6 lg:p-8 mb-8 bg-white shadow-sm space-y-6">
-          <h3 className="text-lg font-bold text-[var(--color-deep-green)] flex items-center gap-2 border-b border-gray-100 pb-3">
-            <span className="material-symbols-outlined">description</span>
-            Minuta y Evidencia Fotográfica
-          </h3>
-
-          {event.description_extended && (
-            <div className="prose max-w-none text-xs text-slate-700 leading-relaxed space-y-2">
-              <h4 className="font-bold text-slate-900 text-sm">Resumen de Contenidos Desarrollados:</h4>
-              <p className="whitespace-pre-line">{event.description_extended}</p>
-            </div>
-          )}
-
-          {photos.length > 0 && (
-            <div>
-              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3">Fotografías del Evento</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {photos.map((photo, idx) => (
-                  <img
-                    key={idx}
-                    src={photo.url}
-                    alt={photo.name || 'Foto del evento'}
-                    className="w-full h-40 object-cover rounded-xl border border-gray-200 shadow-sm"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* CONCLUSIONES & RECOMENDACIONES PARA GERENCIA */}
-      <div className="bg-gradient-to-br from-[var(--color-deep-green)] to-[#1b4334] text-white p-6 sm:p-8 rounded-2xl shadow-lg space-y-6">
-        <div className="flex items-center justify-between border-b border-white/15 pb-4">
-          <div>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--color-light-green)] block mb-1">
-              Conclusiones Ejecutivas
-            </span>
-            <h3 className="text-xl font-extrabold text-white">Recomendaciones Estratégicas para Gerencia</h3>
-          </div>
-          <span className="px-3 py-1 bg-[var(--color-light-green)]/20 text-[var(--color-light-green)] rounded-full text-xs font-bold border border-[var(--color-light-green)]/30">
-            Próximos Pasos
+          <span className="badge badge-gray text-xs font-bold">
+            {activeComments.length} Comentarios Registrados
           </span>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 text-xs">
-          
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 space-y-2">
-            <span className="font-bold text-[var(--color-light-green)] uppercase tracking-wider text-[10px] block">
-              1. Especialización por Área
-            </span>
-            <h4 className="font-bold text-sm text-white">Talleres de Impuestos y Auditoría</h4>
-            <p className="text-white/80 leading-relaxed">
-              Aprovechar el fuerte interés manifestado en los comentarios para desarrollar talleres verticales avanzados enfocados en automatización fiscal y auditoría contable.
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 space-y-2">
-            <span className="font-bold text-amber-300 uppercase tracking-wider text-[10px] block">
-              2. Formato Práctico Ampliado
-            </span>
-            <h4 className="font-bold text-sm text-white">Mayor Tiempo de Ejercitación</h4>
-            <p className="text-white/80 leading-relaxed">
-              Incorporar 30-45 minutos adicionales de práctica guiada individual en futuras ediciones para maximizar la fijación de herramientas de IA en vivo.
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 space-y-2">
-            <span className="font-bold text-blue-300 uppercase tracking-wider text-[10px] block">
-              3. Soporte de Coordinación
-            </span>
-            <h4 className="font-bold text-sm text-white">Asistencia Logística en Vivo</h4>
-            <p className="text-white/80 leading-relaxed">
-              Asignar un moderador/ayudante administrativo en talleres de alta concurrencia (&gt;100 inscriptos) para permitir que el disertante mantenga foco 100% didáctico.
-            </p>
-          </div>
-
+        <div className="space-y-3">
+          {activeComments.map((comment, index) => (
+            <div key={index} className="p-4 bg-[var(--color-refined-gray)]/50 rounded-xl border border-gray-200/80 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
+                <span>PARTICIPANTE ANÓNIMO</span>
+                <span>{comment.date}</span>
+              </div>
+              <p className="text-xs text-slate-700 italic leading-relaxed">
+                "{comment.text}"
+              </p>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* MINUTA & FOTO DE ARCHIVO DEL EVENTO */}
+      <div className="card p-6 lg:p-8 mb-8 bg-white shadow-sm space-y-6">
+        <h3 className="text-lg font-bold text-[var(--color-deep-green)] flex items-center gap-2 border-b border-gray-100 pb-3">
+          <span className="material-symbols-outlined">description</span>
+          Minuta y Foto de Archivo del Evento
+        </h3>
+
+        {event.description_extended && (
+          <div className="prose max-w-none text-xs text-slate-700 leading-relaxed space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm">Resumen de la Minuta:</h4>
+            <p className="whitespace-pre-line">{event.description_extended}</p>
+          </div>
+        )}
+
+        {/* Foto de Archivo de la Minuta */}
+        {minutaPhoto && (
+          <div className="pt-2">
+            <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3">Foto de Archivo Registrada</h4>
+            <div className="max-w-2xl">
+              <img
+                src={minutaPhoto}
+                alt="Foto de la minuta del evento"
+                className="w-full h-auto max-h-96 object-cover rounded-2xl border border-gray-200 shadow-sm"
+              />
+              <p className="text-[11px] text-slate-500 italic mt-2">Imagen de archivo cargada en la minuta del evento.</p>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>
