@@ -300,10 +300,10 @@ export default function EventReport({ isPublic = false }) {
   // Total survey responses count
   const surveyResponseCount = feedbacks.length > 0 ? feedbacks.length : 142
 
-  // Photos loaded from materials, banner or default minuta photo
+  // Photos loaded from materials or default minuta photo from Supabase Storage
   const DEFAULT_MINUTA_PHOTO = 'https://oaapnglvbkvxyydjnmun.supabase.co/storage/v1/object/public/banners/minuta-photos/minuta-b62f152e-09a0-4213-a215-92452453ed35-1784830819344-goda0.jpg'
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
-  const minutaPhoto = (photos.length > 0 ? photos[0].url : null) || event.banner_url || DEFAULT_MINUTA_PHOTO
+  const minutaPhoto = (photos.length > 0 ? photos[0].url : null) || DEFAULT_MINUTA_PHOTO
 
   // Consolidate comments list
   const activeComments = feedbacks.length > 0 && feedbacks.some(f => f.comments)
