@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
@@ -64,11 +64,16 @@ const ALL_COMMENTS = [
 
 export default function EventReport({ isPublic = false }) {
   const { id, slug } = useParams()
+  const [searchParams] = useSearchParams()
+  const tokenFromUrl = searchParams.get('token')
+  const isAuthenticated = useStore(s => s.isAuthenticated)
+
   const [event, setEvent] = useState(null)
   const [registrations, setRegistrations] = useState([])
   const [feedbacks, setFeedbacks] = useState([])
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [inputToken, setInputToken] = useState('')
 
   // Satisfaction stats
   const [satisfactionAverages, setSatisfactionAverages] = useState({})
@@ -259,10 +264,12 @@ export default function EventReport({ isPublic = false }) {
     }
   }, [registrations])
 
+  // Copy private shareable link containing secret token
   const copyPublicLink = () => {
     if (!event) return
-    const publicUrl = `${window.location.origin}/evento/${event.slug}/reporte`
-    navigator.clipboard.writeText(publicUrl)
+    const secretToken = event.private_link_token || ''
+    const securePublicUrl = `${window.location.origin}/evento/${event.slug}/reporte?token=${secretToken}`
+    navigator.clipboard.writeText(securePublicUrl)
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2500)
   }
@@ -282,6 +289,64 @@ export default function EventReport({ isPublic = false }) {
         <span className="material-symbols-outlined text-5xl text-[var(--color-dark-gray)]/20 mb-4 block">error</span>
         <p className="text-lg font-semibold text-[var(--color-dark-gray)]/40">Evento no encontrado</p>
         <Link to="/admin/eventos" className="btn-primary mt-6 inline-flex">Volver al listado</Link>
+      </div>
+    )
+  }
+
+  // Security Verification check:
+  // Access is granted if:
+  // 1. User is authenticated in admin, OR
+  // 2. Route is accessed from internal admin (/admin/eventos/:id/reporte), OR
+  // 3. Token in URL matches event's private_link_token
+  const isTokenValid = Boolean(
+    tokenFromUrl && event.private_link_token && tokenFromUrl === event.private_link_token
+  )
+  const isAuthorized = isAuthenticated || !isPublic || isTokenValid
+
+  if (!isAuthorized) {
+    const handleManualTokenSubmit = (e) => {
+      e.preventDefault()
+      if (inputToken.trim() === event.private_link_token) {
+        window.location.search = `?token=${inputToken.trim()}`
+      } else {
+        alert('Clave de acceso incorrecta. Verificá el enlace provisto por el coordinador.')
+      }
+    }
+
+    return (
+      <div className="max-w-md mx-auto py-20 px-4">
+        <div className="card p-8 text-center space-y-6 bg-white border border-gray-200 shadow-lg">
+          <div className="w-16 h-16 bg-amber-50 border border-amber-200 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+            <span className="material-symbols-outlined text-3xl">lock</span>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-[var(--color-deep-green)]">Acceso Privado al Reporte</h2>
+            <p className="text-xs text-[var(--color-dark-gray)]/70 leading-relaxed">
+              Este informe ejecutivo es de acceso restringido para la Gerencia. Ingresá la clave de acceso o usá el enlace privado provisto.
+            </p>
+          </div>
+
+          <form onSubmit={handleManualTokenSubmit} className="space-y-3 pt-2">
+            <input
+              type="password"
+              placeholder="Ingresar Clave o Token de Acceso"
+              value={inputToken}
+              onChange={(e) => setInputToken(e.target.value)}
+              className="w-full text-xs rounded-xl border-gray-300 focus:border-[var(--color-deep-green)] focus:ring-[var(--color-deep-green)] p-3 text-center font-mono"
+            />
+            <button
+              type="submit"
+              className="w-full bg-[var(--color-deep-green)] text-white font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-opacity-95 transition-all shadow-md"
+            >
+              Verificar y Entrar
+            </button>
+          </form>
+
+          <p className="text-[11px] text-gray-400 border-t border-gray-100 pt-4">
+            Coordinación: Leandro Velasques — Agencia IA
+          </p>
+        </div>
       </div>
     )
   }
@@ -354,10 +419,10 @@ export default function EventReport({ isPublic = false }) {
           <button
             onClick={copyPublicLink}
             className="btn-ghost !text-[var(--color-deep-green)] hover:!bg-[var(--color-light-green)]/15 border border-[var(--color-deep-green)]/20"
-            title="Copiar enlace del reporte para enviar a la Gerencia"
+            title="Copiar enlace privado seguro para Gerencia"
           >
-            <span className="material-symbols-outlined text-lg">{copiedLink ? 'check' : 'link'}</span>
-            <span className="text-xs font-bold">{copiedLink ? '¡Enlace Copiado!' : 'Compartir Enlace'}</span>
+            <span className="material-symbols-outlined text-lg">{copiedLink ? 'check' : 'lock'}</span>
+            <span className="text-xs font-bold">{copiedLink ? '¡Enlace Privado Copiado!' : 'Copiar Enlace Seguro'}</span>
           </button>
 
           <button
@@ -438,7 +503,7 @@ export default function EventReport({ isPublic = false }) {
         <div className="space-y-1 text-xs text-amber-950">
           <h4 className="font-bold text-sm text-amber-900">Registro de Asistencia y Concurrencia</h4>
           <p className="leading-relaxed">
-            Se registraron <strong>{surveyStats.totalCount} inscriptos totales</strong>. Si bien la marca de asistencia individual por QR no estuvo habilitada al ingreso, el seguimiento cualitativo y las respuestas recibidas en la encuesta confirmaron una <strong>retención sostenida superior a 90 participantes activos</strong> durante las 2.5 horas de duración del taller.
+            Se registraron <strong>{surveyStats.totalCount} inscriptos totales</strong>. Si bien la marca de asistencia individual por QR no estuvo habilitada al ingreso, el seguimiento cualitativo y las respuestas recibidas en la encuesta confirmaron una <strong>retención sustained superior a 90 participantes activos</strong> durante las 2.5 horas de duración del taller.
           </p>
         </div>
       </div>
