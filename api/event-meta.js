@@ -94,7 +94,7 @@ module.exports = async (req, res) => {
       return res.status(200).send(html);
     }
 
-    // ─── Case B: Event registration/landing meta ───
+    // ─── Case B: Event registration/landing/report meta ───
     if (slug) {
       const apiUrl = `${supabaseUrl}/rest/v1/events?or=(slug.eq.${slug},private_link_token.eq.${slug})&select=*`;
       const response = await safeFetch(apiUrl, {
@@ -107,10 +107,17 @@ module.exports = async (req, res) => {
       const event = data && data.length > 0 ? data[0] : null;
 
       if (event) {
-        const title = `${event.title} | Leandro Velasques`;
-        const desc = event.description_short || 'Sumate a este evento de capacitación y networking.';
-        const img = event.banner_url || '';
-        const url = `https://www.leandrovelasques.com.ar/evento/${slug}`;
+        const isReportMode = req.query.isReport === 'true' || (req.url && req.url.includes('/reporte'));
+        const title = isReportMode 
+          ? `Reporte de Evento: ${event.title}`
+          : `${event.title} | Leandro Velasques`;
+        const desc = isReportMode 
+          ? `Informe de resultados, encuestas y métricas del evento ${event.title}.`
+          : (event.description_short || 'Sumate a este evento de capacitación y networking.');
+        const img = event.banner_url || 'https://www.leandrovelasques.com.ar/logo_triskel.png';
+        const url = isReportMode
+          ? `https://www.leandrovelasques.com.ar/evento/${slug}/reporte`
+          : `https://www.leandrovelasques.com.ar/evento/${slug}`;
 
         html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
 

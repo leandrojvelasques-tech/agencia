@@ -22,6 +22,10 @@
             "destination": "/api/event-meta?slug=:slug"
         },
         {
+            "source": "/evento/:slug/reporte",
+            "destination": "/api/event-meta?slug=:slug&isReport=true"
+        },
+        {
             "source": "/evento/:slug/:subpath*",
             "destination": "/_app/index.html"
         },
