@@ -47,6 +47,16 @@ export const useStore = create((set, get) => ({
       set({ user: session.user, isAuthenticated: true })
       return true
     }
+
+    // Auto-login in local development so you don't need to re-login on every reload or port change
+    if (import.meta.env.DEV) {
+      set({
+        user: { email: 'leandro@velasques.com.ar', user_metadata: { name: 'Leandro Velasques' }, name: 'Leandro Velasques' },
+        isAuthenticated: true
+      })
+      return true
+    }
+
     return false
   },
 
@@ -58,7 +68,13 @@ export const useStore = create((set, get) => ({
       .select('*')
       .order('event_date', { ascending: false })
     
-    if (!error) set({ events: data || [] })
+    if (!error) {
+      const formatted = (data || []).map(e => ({
+        ...e,
+        is_public: e.status === 'published' || e.status === 'in_progress',
+      }))
+      set({ events: formatted })
+    }
     set({ isLoading: false })
   },
 
@@ -73,6 +89,7 @@ export const useStore = create((set, get) => ({
       const formatted = data.map(d => ({
         ...d,
         id: d.event_id,
+        is_public: d.status === 'published' || d.status === 'in_progress',
       }))
       set({ events: formatted })
     }
@@ -112,8 +129,12 @@ export const useStore = create((set, get) => ({
       .single()
 
     if (!error) {
-      set(state => ({ events: [data, ...state.events] }))
-      return { success: true, data }
+      const formattedData = {
+        ...data,
+        is_public: data.status === 'published' || data.status === 'in_progress',
+      }
+      set(state => ({ events: [formattedData, ...state.events] }))
+      return { success: true, data: formattedData }
     }
     console.error("Supabase Error creating event:", error)
     return { success: false, error }
@@ -128,11 +149,15 @@ export const useStore = create((set, get) => ({
       .single()
 
     if (!error) {
+      const formattedUpdated = {
+        ...updated,
+        is_public: updated.status === 'published' || updated.status === 'in_progress',
+      }
       set(state => ({
-        events: state.events.map(e => e.id === id ? updated : e),
-        currentEvent: state.currentEvent?.id === id ? updated : state.currentEvent
+        events: state.events.map(e => e.id === id ? formattedUpdated : e),
+        currentEvent: state.currentEvent?.id === id ? formattedUpdated : state.currentEvent
       }))
-      return { success: true, data: updated }
+      return { success: true, data: formattedUpdated }
     }
     console.error("Supabase Error updating event:", error)
     return { success: false, error }

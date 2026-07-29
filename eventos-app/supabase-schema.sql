@@ -265,6 +265,13 @@ SELECT
     e.title,
     e.status,
     e.event_date,
+    e.type,
+    e.start_time,
+    e.organizer,
+    e.show_on_home,
+    e.max_capacity_presencial,
+    e.max_capacity_virtual,
+    e.offered_dates,
     COUNT(DISTINCT r.id) FILTER (WHERE r.status != 'cancelled') AS total_registered,
     COUNT(DISTINCT r.id) FILTER (WHERE r.status = 'confirmed') AS confirmed,
     COUNT(DISTINCT a.id) FILTER (WHERE a.status IN ('present', 'late')) AS present,
@@ -275,7 +282,7 @@ FROM events e
 LEFT JOIN registrations r ON r.event_id = e.id
 LEFT JOIN attendance a ON a.registration_id = r.id
 LEFT JOIN certificates c ON c.registration_id = r.id
-GROUP BY e.id, e.title, e.status, e.event_date;
+GROUP BY e.id, e.title, e.status, e.event_date, e.type, e.start_time, e.organizer, e.show_on_home, e.max_capacity_presencial, e.max_capacity_virtual, e.offered_dates;
 
 -- =====================================================
 -- 9. CRM CLIENTS

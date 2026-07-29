@@ -94,10 +94,10 @@ export default function ProcessSurveyPublic() {
           <div className="space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-2 mb-8">
               <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900">
-                Guía de Relevamiento de Procesos y Tareas
+                Formulario para descripción de tareas
               </h1>
               <p className="text-xs sm:text-sm text-slate-600">
-                Describe paso a paso el trabajo que realizas con tus expedientes o documentos. Te acompañamos con ejemplos sencillos para identificar dónde aplicar herramientas de IA.
+                Describe los insumos (inputs), la tarea manual y los resultados entregados para evaluar dónde aplicar herramientas de Inteligencia Artificial.
               </p>
             </div>
 

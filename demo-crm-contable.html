@@ -1,0 +1,2220 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Descargos Tributarios - Estudio Contable Daniel Montiel</title>
+  <meta name="description" content="Prototipo navegable para la gestión integral de Descargos Tributarios de un Estudio Contable." />
+  
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+            'accent-green': '#1E4334',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.15)',
+            'card-hover': '0 12px 24px -8px rgba(40, 90, 71, 0.22)',
+            'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-[#F4F6F5] text-dark-gray font-sans antialiased selection:bg-light-green selection:text-deep-green;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-deep-green;
+      }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #EAEAEA;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #A8D5C1;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #285A47;
+    }
+    .kanban-col {
+      min-width: 260px;
+      max-width: 290px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- Header Section Limpio -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- App Title & Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-deep-green text-white flex items-center justify-center font-bold text-xl shadow-premium">
+            DM
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold leading-tight text-deep-green">Estudio Contable Cr. Daniel Montiel</h1>
+            <p class="text-xs text-gray-500">Módulo de Descargos Tributarios • Trelew, Chubut</p>
+          </div>
+        </div>
+
+        <!-- Role Switcher & Botón de Acción Principal -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+          <!-- Role Switcher Segmented Button -->
+          <div class="bg-gray-100 p-1 rounded-xl flex items-center border border-gray-200 text-xs font-semibold">
+            <button id="btn-role-estudio" onclick="setRoleDescargos('estudio')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5 font-bold">
+              <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+              <span>Vista Estudio</span>
+            </button>
+            <button id="btn-role-cliente" onclick="setRoleDescargos('cliente')" class="px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5 font-semibold">
+              <span class="material-symbols-outlined text-sm">domain</span>
+              <span>Portal Cliente</span>
+            </button>
+          </div>
+
+          <button onclick="openModal('modal-digest-diario')" class="bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">mail</span>
+            <span class="hidden md:inline">Resumen Diario Mail</span>
+          </button>
+
+          <button onclick="openModal('modal-nueva-tarea')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition">
+            <span class="material-symbols-outlined text-base">check_box</span>
+            <span class="hidden sm:inline">Nueva Tarea</span>
+          </button>
+
+          <button id="btn-nuevo-descargo-header" onclick="openModal('modal-nuevo-descargo')" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-premium transition">
+            <span class="material-symbols-outlined text-base">add_circle</span>
+            <span>Nuevo Descargo</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs & Client Portal Trigger -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-gray-100 pt-2 pb-1 gap-2">
+        <nav class="flex space-x-2 text-xs overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <button id="tab-btn-bandeja" onclick="switchMainView('bandeja')" class="tab-btn active bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition relative">
+            <span class="material-symbols-outlined text-base">inbox</span>
+            <span>Bandeja de Entrada</span>
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping absolute -top-0.5 -right-0.5"></span>
+          </button>
+
+          <button id="tab-btn-kanban" onclick="switchMainView('kanban')" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">view_kanban</span>
+            <span>Tablero Kanban</span>
+          </button>
+
+          <button id="tab-btn-lista" onclick="switchMainView('lista')" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">format_list_bulleted</span>
+            <span>Lista de Expedientes</span>
+          </button>
+
+          <button id="tab-btn-calendario" onclick="switchMainView('calendario')" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">calendar_month</span>
+            <span>Agenda & Vencimientos</span>
+          </button>
+
+          <a href="demo-agenda-contable.html" class="tab-btn bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base text-emerald-700">calendar_month</span>
+            <span>Agenda Mensual & Notificaciones</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-deep-green text-white text-[9px] font-bold">NUEVO</span>
+          </a>
+
+          <button id="tab-btn-tareas" onclick="switchMainView('tareas')" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">task_alt</span>
+            <span>Tareas Pendientes</span>
+          </button>
+
+          <button id="tab-btn-cliente-demo" onclick="openSimulatedEmailModal()" class="tab-btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition border border-indigo-200 ml-auto">
+            <span class="material-symbols-outlined text-base">phonelink</span>
+            <span>Simular Experiencia del Cliente</span>
+          </button>
+        </nav>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- WRAPPER VISTA ESTUDIO -->
+  <div id="wrapper-view-estudio" class="space-y-0">
+    <!-- Filter Toolbar Simplificado -->
+    <section class="bg-white border-b border-gray-200 py-2.5 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          
+          <!-- Search bar -->
+          <div class="relative w-full sm:w-80">
+            <span class="material-symbols-outlined absolute left-3 top-2 text-gray-400 text-sm">search</span>
+            <input id="search-input" onkeyup="filterExpedientes()" type="text" placeholder="Buscar por cliente, CUIT o trámite..." class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green" />
+          </div>
+
+          <!-- Botones desplegados de Filtrado por Responsable -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-gray-500 font-medium text-[11px] mr-1 hidden md:inline">Filtrar por Responsable:</span>
+            
+            <button onclick="setResponsableFilter('todos')" id="resp-btn-todos" class="resp-filter-btn active bg-deep-green text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-deep-green">
+              Todos
+            </button>
+            
+            <button onclick="setResponsableFilter('Cr. Daniel Montiel')" id="resp-btn-daniel" class="resp-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-xl text-xs transition border border-gray-200">
+              Cr. Daniel Montiel
+            </button>
+
+            <button onclick="setResponsableFilter('Cr. María García')" id="resp-btn-maria" class="resp-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-xl text-xs transition border border-gray-200">
+              Cr. María García
+            </button>
+
+            <button onclick="setResponsableFilter('Cr. Juan Pérez')" id="resp-btn-juan" class="resp-filter-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-xl text-xs transition border border-gray-200">
+              Cr. Juan Pérez
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ====================================
+         VIEW 1: KANBAN BOARD (7 COLUMNAS EN GRIS UNIFICADO)
+         ==================================== -->
+    <div id="view-kanban" class="hidden space-y-4">
+      
+      <div class="flex items-center justify-between text-xs text-gray-500">
+        <span>Arrastrá o hacé clic en cualquier tarjeta para abrir la ficha completa del expediente.</span>
+        <span class="font-semibold text-deep-green">7 Estados Oficiales del Workflow</span>
+      </div>
+
+      <div class="flex gap-3 overflow-x-auto custom-scrollbar pb-6 items-start">
+        
+        <!-- COL 1: Notificación recibida -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+              <span>Notificación recibida</span>
+            </h3>
+          </div>
+          <div id="col-Notificación recibida" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Notificación recibida')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 2: Documentación solicitada al cliente -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+              <span>Doc. solicitada al cliente</span>
+            </h3>
+          </div>
+          <div id="col-Documentación solicitada al cliente" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Documentación solicitada al cliente')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 3: Esperando documentación -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span>Esperando documentación</span>
+            </h3>
+          </div>
+          <div id="col-Esperando documentación" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Esperando documentación')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 4: Documentación recibida -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+              <span>Documentación recibida</span>
+            </h3>
+          </div>
+          <div id="col-Documentación recibida" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Documentación recibida')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 5: En preparación -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              <span>En preparación</span>
+            </h3>
+          </div>
+          <div id="col-En preparación" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'En preparación')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 6: Presentado -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              <span>Presentado</span>
+            </h3>
+          </div>
+          <div id="col-Presentado" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Presentado')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- COL 7: Cerrado -->
+        <div class="kanban-col bg-gray-100/80 rounded-2xl p-3 border border-gray-200 flex flex-col shrink-0">
+          <div class="mb-3 border-b border-gray-200 pb-2">
+            <h3 class="font-bold text-xs text-gray-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              <span>Cerrado</span>
+            </h3>
+          </div>
+          <div id="col-Cerrado" class="space-y-3 min-h-[300px]" ondragover="allowDrop(event)" ondrop="drop(event, 'Cerrado')">
+            <!-- Cards rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================
+         VIEW 2: BANDEJA DE ENTRADA (NOVEDADES Y CONTESTACIONES DE CLIENTES)
+         ==================================== -->
+    <div id="view-bandeja" class="block space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          <div>
+            <h3 class="font-bold text-base text-deep-green flex items-center gap-2">
+              <span class="material-symbols-outlined text-purple-700">inbox</span>
+              <span>Bandeja de Entrada: Respuestas & Archivos de Clientes</span>
+            </h3>
+            <p class="text-xs text-gray-500">Documentación entrante cargada desde la Landing Page o enviada por Email/WhatsApp. Revisá los archivos y decidí si avanzar el expediente o solicitar correcciones.</p>
+          </div>
+          <span class="bg-purple-100 text-purple-900 font-bold px-3 py-1 rounded-full text-xs self-start sm:self-center">
+            3 Novedades Pendientes de Revisión
+          </span>
+        </div>
+
+        <!-- Lista de Novedades / Respuestas -->
+        <div id="novedades-lista" class="space-y-3">
+          <!-- Item Novedad 1 -->
+          <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/40 hover:bg-purple-50 transition space-y-3 text-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-100 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <span class="font-extrabold text-sm text-gray-900">PATAGONIA SERVICIOS S.R.L.</span>
+                <span class="bg-purple-200 text-purple-900 text-[10px] font-bold px-2 py-0.5 rounded">Respuesta por Landing Page</span>
+              </div>
+              <span class="text-gray-400 text-[11px] font-medium">Recibido: Hoy a las 15:40 hs</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700">
+              <div>
+                <p><strong>Trámite:</strong> Acción de Control Electrónico (ACE-4892/2026)</p>
+                <p><strong>Responsable:</strong> Cr. Daniel Montiel</p>
+                <p class="mt-1 text-purple-900 font-medium"><em>"Cr. Daniel, le adjuntamos los extractos bancarios de Enero a Junio que nos solicitó."</em></p>
+              </div>
+
+              <div class="bg-white p-3 rounded-lg border border-purple-200 space-y-1.5">
+                <span class="font-bold text-gray-800 text-[11px] block">Archivos Adjuntos Entrantes:</span>
+                <div class="flex items-center justify-between bg-gray-50 p-1.5 rounded border border-gray-200 text-[11px]">
+                  <span class="flex items-center gap-1 font-semibold text-gray-700">
+                    <span class="material-symbols-outlined text-sm text-red-600">picture_as_pdf</span>
+                    <span>Extractos_Bancarios_Patagonia_2026.pdf</span>
+                  </span>
+                  <button onclick="alert('Descargando y abriendo vista previa del PDF...')" class="text-deep-green font-bold hover:underline">Ver / Auditar</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-purple-100 flex flex-wrap items-center justify-end gap-2">
+              <button onclick="observarNovedad(1)" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">warning</span>
+                <span>Observar / Pedir Corrección</span>
+              </button>
+              <button onclick="aprobarYAvanzarNovedad(1, 'En preparación')" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-sm">
+                <span class="material-symbols-outlined text-sm">check_circle</span>
+                <span>Aprobar Documentación & Avanzar a 'En preparación'</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Item Novedad 2 -->
+          <div class="p-4 rounded-xl border border-gray-200 bg-white hover:border-purple-300 transition space-y-3 text-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <span class="font-extrabold text-sm text-gray-900">SUPERMERCADOS EL FARO S.R.L.</span>
+                <span class="bg-blue-100 text-blue-900 text-[10px] font-bold px-2 py-0.5 rounded">Respuesta por Email</span>
+              </div>
+              <span class="text-gray-400 text-[11px] font-medium">Recibido: Ayer a las 18:15 hs</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700">
+              <div>
+                <p><strong>Trámite:</strong> Verificación Cómputo Crédito Fiscal IVA</p>
+                <p><strong>Responsable:</strong> Cr. Juan Pérez</p>
+                <p class="mt-1 text-gray-800 italic">"Adjunto comprobantes de pago de las facturas de proveedores observadas."</p>
+              </div>
+
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-1.5">
+                <span class="font-bold text-gray-800 text-[11px] block">Archivos Adjuntos Entrantes:</span>
+                <div class="flex items-center justify-between bg-white p-1.5 rounded border border-gray-200 text-[11px]">
+                  <span class="flex items-center gap-1 font-semibold text-gray-700">
+                    <span class="material-symbols-outlined text-sm text-emerald-600">table_chart</span>
+                    <span>Libro_IVA_Compras_Faro.xlsx</span>
+                  </span>
+                  <button onclick="alert('Descargando archivo Excel...')" class="text-deep-green font-bold hover:underline">Ver / Auditar</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-end gap-2">
+              <button onclick="aprobarYAvanzarNovedad(4, 'En preparación')" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-sm">
+                <span class="material-symbols-outlined text-sm">check_circle</span>
+                <span>Aprobar Documentación & Avanzar Expediente</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================
+         VIEW 3: TAREAS PENDIENTES (RUTINA DIARIA DEL CONTADOR - FECHA PARA...)
+         ==================================== -->
+    <div id="view-tareas" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          <div>
+            <h3 class="font-bold text-base text-deep-green flex items-center gap-2">
+              <span class="material-symbols-outlined text-deep-green">task_alt</span>
+              <span>Tareas Pendientes & Rutina Diaria del Profesional</span>
+            </h3>
+            <p class="text-xs text-gray-500">Organizá cálculos, llamadas, redacciones y trámites internos con su <strong>'Fecha para realizar'</strong> vinculados a cada expediente.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openModal('modal-digest-diario')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">mail</span>
+              <span>Ver Resumen Diario por Email</span>
+            </button>
+            <button onclick="openModal('modal-nueva-tarea')" class="bg-deep-green hover:bg-accent-green text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1 shadow-sm">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>+ Nueva Tarea</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla de Tareas con "Fecha para..." -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold border-b border-gray-200 text-[11px]">
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4">Descripción de la Tarea</th>
+                <th class="py-3 px-4">Cliente / Expediente</th>
+                <th class="py-3 px-4 text-purple-900">Fecha para realizar</th>
+                <th class="py-3 px-4">Prioridad</th>
+                <th class="py-3 px-4">Responsable</th>
+                <th class="py-3 px-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tareas-tbody" class="divide-y divide-gray-100">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================
+         VIEW 4: LIST VIEW
+         ==================================== -->
+    <div id="view-lista" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+          <h3 class="font-bold text-sm text-deep-green">Listado Completo de Expedientes Tributarios</h3>
+          <span class="text-xs text-gray-500">Punto de color junto al nombre del cliente</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold border-b border-gray-200 text-[11px]">
+                <th class="py-3 px-4">Cliente / CUIT</th>
+                <th class="py-3 px-4">Trámite / Expediente</th>
+                <th class="py-3 px-4">Estado Workflow</th>
+                <th class="py-3 px-4">Vencimiento</th>
+                <th class="py-3 px-4">Prioridad</th>
+                <th class="py-3 px-4">Responsable</th>
+                <th class="py-3 px-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="lista-tbody" class="divide-y divide-gray-100">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================
+         VIEW 5: CALENDAR VIEW
+         ==================================== -->
+    <div id="view-calendario" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          <div>
+            <h3 class="font-bold text-base text-deep-green">Agenda Unificada de Vencimientos Legales & Tareas Diarias</h3>
+            <p class="text-xs text-gray-500">Cronograma ordenado por fecha con plazos de organismos y tareas internas del estudio</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="demo-agenda-contable.html" class="bg-deep-green hover:bg-accent-green text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition">
+              <span class="material-symbols-outlined text-base">calendar_view_month</span>
+              <span>Abrir Agenda Mensual Interactiva & Notificaciones</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-emerald-700 text-xl">event_available</span>
+            <div>
+              <p class="font-bold text-emerald-900">NUEVO: Módulo Agenda Cr. Daniel Montiel</p>
+              <p class="text-emerald-700 text-[11px]">Visualiza el mes completo (Grid 30 días), reuniones agendadas, fechas claves de clientes y alertas WhatsApp.</p>
+            </div>
+          </div>
+          <a href="demo-agenda-contable.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg shrink-0">
+            Ir a la Agenda
+          </a>
+        </div>
+
+        <div id="calendario-timeline" class="space-y-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+  </div> <!-- FIN WRAPPER VISTA ESTUDIO -->
+
+  <!-- WRAPPER VISTA PORTAL CLIENTE (DESCARGOS TRIBUTARIOS) -->
+  <div id="wrapper-view-cliente" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Card Superior de Estado para el Cliente -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+            Portal Contribuyente & Empleador
+          </span>
+          <span class="text-xs text-gray-500">• CUIT: 30-71234567-8</span>
+        </div>
+        <h2 class="text-2xl font-extrabold text-deep-green">Patagonia Servicios SRL</h2>
+        <p class="text-xs text-gray-500 mt-1">Seguimiento Transparente de Trámites y Requerimientos Tributarios</p>
+      </div>
+
+      <!-- Botón de Notificar Requerimiento Recibido -->
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <button onclick="openModal('modal-nuevo-descargo')" class="w-full md:w-auto bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
+          <span class="material-symbols-outlined text-lg">upload_file</span>
+          <span>Notificar Requerimiento / Multa Recibida</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Alerta Informativa del Estado General -->
+    <div class="p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-900 flex items-start gap-3 text-xs">
+      <span class="material-symbols-outlined text-amber-600 text-xl flex-shrink-0">warning</span>
+      <div>
+        <h4 class="font-bold text-amber-900 text-sm">Acción Requerida: 1 Documento Pendiente de Envío</h4>
+        <p class="mt-0.5">El Cr. Daniel Montiel requiere que adjunte la constancia de pago del VEP para el expediente <strong>#2026-9481 (AFIP/ARCA)</strong> antes del 29/07/2026.</p>
+      </div>
+    </div>
+
+    <!-- LISTA DE TRÁMITES TRIBUTARIOS DEL CLIENTE -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="text-base font-bold text-deep-green flex items-center gap-2">
+          <span class="material-symbols-outlined text-deep-green">gavel</span>
+          <span>Mis Trámites y Descargos Tributarios Activos (3)</span>
+        </h3>
+        <span class="text-xs text-gray-400">Actualizado en tiempo real por el Estudio Montiel</span>
+      </div>
+
+      <!-- Item 1: Requiere Documentación -->
+      <div class="border border-amber-200 bg-amber-50/20 rounded-xl p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">🟠 Documentación Solicitada al Cliente</span>
+              <span class="text-xs text-gray-400 font-mono">Exp. #2026-9481 • AFIP / ARCA</span>
+            </div>
+            <h4 class="font-bold text-gray-900 text-sm mt-1">Requerimiento por Inconsistencia en Declaración Jurada IVA (06/2026)</h4>
+            <p class="text-xs text-gray-600 mt-0.5">Responsable en el estudio: <strong>Cr. Daniel Montiel</strong> • Vencimiento legal: <strong>29/07/2026</strong></p>
+          </div>
+
+          <button onclick="openSimulatedEmailModal()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition">
+            <span class="material-symbols-outlined text-sm">cloud_upload</span>
+            <span>Subir Documento Adeudado</span>
+          </button>
+        </div>
+
+        <!-- Timeline Visual Simplificada -->
+        <div class="bg-white p-3 rounded-lg border border-gray-200 text-[11px] grid grid-cols-4 gap-2 text-center">
+          <div class="p-1.5 rounded bg-emerald-100 text-emerald-900 font-bold">1. Requerimiento Recibido ✅</div>
+          <div class="p-1.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300 animate-pulse">2. Adjuntar Prueba ⏳</div>
+          <div class="p-1.5 rounded bg-gray-100 text-gray-400">3. Presentación Estudio</div>
+          <div class="p-1.5 rounded bg-gray-100 text-gray-400">4. Resolución AFIP</div>
+        </div>
+      </div>
+
+      <!-- Item 2: En Elaboración -->
+      <div class="border border-gray-200 rounded-xl p-4 space-y-3 bg-white">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200">🟣 En Redacción Técnica por el Estudio</span>
+              <span class="text-xs text-gray-400 font-mono">Exp. #2026-9812 • ARBA</span>
+            </div>
+            <h4 class="font-bold text-gray-900 text-sm mt-1">Solicitud de Exención Impuesto a los Sellos — Contrato Comercial</h4>
+            <p class="text-xs text-gray-600 mt-0.5">Responsable en el estudio: <strong>Cr. María García</strong> • Vencimiento legal: <strong>05/08/2026</strong></p>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-[11px] grid grid-cols-4 gap-2 text-center">
+          <div class="p-1.5 rounded bg-emerald-100 text-emerald-900 font-bold">1. Notificación ✅</div>
+          <div class="p-1.5 rounded bg-purple-100 text-purple-900 font-bold border border-purple-300">2. En Redacción 📝</div>
+          <div class="p-1.5 rounded bg-gray-100 text-gray-400">3. Presentación ARBA</div>
+          <div class="p-1.5 rounded bg-gray-100 text-gray-400">4. Resolución</div>
+        </div>
+      </div>
+
+      <!-- Item 3: Presentado -->
+      <div class="border border-gray-200 rounded-xl p-4 space-y-3 bg-white">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-900 border border-teal-200">🟢 Presentado - En Espera de Resolución</span>
+              <span class="text-xs text-gray-400 font-mono">Exp. #2026-1049 • DGI Comodoro</span>
+            </div>
+            <h4 class="font-bold text-gray-900 text-sm mt-1">Descargo por Devolución Crédito Fiscal IVA Exportaciones (Período 2025)</h4>
+            <p class="text-xs text-gray-600 mt-0.5">Presentado el: <strong>18/07/2026</strong> • Estado: Presentación Aprobada sin observaciones.</p>
+          </div>
+
+          <button onclick="alert('Descargando copia del Acuse de Recibo en PDF...')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+            <span>Descargar Acuse Recibo PDF</span>
+          </button>
+        </div>
+
+        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-[11px] grid grid-cols-4 gap-2 text-center">
+          <div class="p-1.5 rounded bg-emerald-100 text-emerald-900 font-bold">1. Notificación ✅</div>
+          <div class="p-1.5 rounded bg-emerald-100 text-emerald-900 font-bold">2. Redacción ✅</div>
+          <div class="p-1.5 rounded bg-emerald-100 text-emerald-900 font-bold">3. Presentado ✅</div>
+          <div class="p-1.5 rounded bg-teal-100 text-teal-900 font-bold border border-teal-300">4. Evaluación Organismo ⏳</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ====================================================================
+       MODAL: RESUMEN DIARIO POR EMAIL (DIGEST AUTOMÁTICO MAÑANERO)
+       ==================================================================== -->
+  <div id="modal-digest-diario" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar border-4 border-slate-800 text-xs">
+      
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <div>
+          <span class="bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded text-[10px]">Envío Automático Diario • 08:00 hs</span>
+          <h3 class="font-bold text-base text-deep-green mt-1">Resumen Diario de Rutina para Cr. Daniel Montiel</h3>
+        </div>
+        <button onclick="closeModal('modal-digest-diario')" class="text-gray-400 hover:text-gray-600 font-bold">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Simulated Email Container -->
+      <div class="bg-slate-900 text-white p-4 rounded-xl space-y-1">
+        <p class="text-[10px] text-gray-400">De: sistema@estudio-danielmontiel.com</p>
+        <p class="font-bold text-light-green">Asunto: ☀️ Resumen Diario - 2 Expedientes por vencer y 3 tareas para hoy (24/07)</p>
+        <p class="text-[11px] text-gray-300">Para: dmontiel@estudio-danielmontiel.com</p>
+      </div>
+
+      <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4 text-gray-800">
+        <p class="font-bold text-sm text-gray-900">Hola Daniel, este es tu resumen operativo para el día de hoy:</p>
+
+        <!-- Bloque 1: Expedientes por vencer -->
+        <div class="bg-white p-3 rounded-lg border border-red-200 space-y-2">
+          <h4 class="font-bold text-red-700 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">warning</span>
+            <span>🚨 Expedientes en Plazo Crítico (Próximos 3 días)</span>
+          </h4>
+          <ul class="space-y-1.5 text-gray-700 pl-2">
+            <li class="flex items-center justify-between">
+              <span><strong>CONSTRUCTORA DEL ATLÁNTICO S.A.</strong> — Citación IIBB</span>
+              <span class="bg-red-100 text-red-800 font-bold px-1.5 py-0.5 rounded text-[10px]">VENCE HOY</span>
+            </li>
+            <li class="flex items-center justify-between">
+              <span><strong>PESQUERA Y MARISCOS DEL GOLFO S.A.</strong> — Multa Sumario</span>
+              <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded text-[10px]">Vence en 2 días</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Bloque 2: Tareas para Hoy -->
+        <div class="bg-white p-3 rounded-lg border border-purple-200 space-y-2">
+          <h4 class="font-bold text-purple-900 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">check_box</span>
+            <span>📋 Tareas Internas Programadas 'Para Hoy'</span>
+          </h4>
+          <ul class="space-y-1.5 text-gray-700 pl-2">
+            <li>• <strong>Verificar libre deuda DGR:</strong> Constructora del Atlántico S.A.</li>
+            <li>• <strong>Redactar escrito de descargo:</strong> Pesquera del Golfo S.A.</li>
+            <li>• <strong>Llamar al cliente:</strong> Patagonia Servicios S.R.L. por libro IVA.</li>
+          </ul>
+        </div>
+
+        <!-- Bloque 3: Novedades entrantes -->
+        <div class="bg-white p-3 rounded-lg border border-blue-200 space-y-1.5">
+          <h4 class="font-bold text-blue-900 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">inbox</span>
+            <span>📥 3 Novedades/Adjuntos cargados por clientes sin auditar</span>
+          </h4>
+          <p class="text-[11px] text-gray-600">Revisá la bandeja de entrada para validar la documentación enviada por Patagonia Servicios y Supermercados El Faro.</p>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="closeModal('modal-digest-diario')" class="bg-deep-green text-white font-bold px-4 py-2 rounded-xl">Entendido</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: ALTA DE NUEVA TAREA PENDIENTE
+       ==================================================================== -->
+  <div id="modal-nueva-tarea" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-modal space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="font-bold text-base text-deep-green">Agregar Nueva Tarea a la Rutina Diaria</h3>
+        <button onclick="closeModal('modal-nueva-tarea')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleCrearTarea(event)" class="space-y-3">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Título de la Tarea *</label>
+          <input id="tarea-titulo" type="text" placeholder="Ej: Verificar libre deuda en DGR o calcular ajuste IVA..." class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Vinculado a Cliente / Expediente</label>
+            <select id="tarea-expediente" class="w-full rounded-xl border-gray-300 text-xs">
+              <option value="General">Tarea General del Estudio</option>
+              <option value="PATAGONIA SERVICIOS S.R.L.">PATAGONIA SERVICIOS S.R.L.</option>
+              <option value="TRANSPORTE AUSTRAL S.A.">TRANSPORTE AUSTRAL S.A.</option>
+              <option value="CONSTRUCTORA DEL ATLÁNTICO S.A.">CONSTRUCTORA DEL ATLÁNTICO S.A.</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha para realizar *</label>
+            <input id="tarea-fecha-para" type="date" value="2026-07-25" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Prioridad</label>
+            <select id="tarea-prioridad" class="w-full rounded-xl border-gray-300 text-xs">
+              <option value="ALTA">ALTA</option>
+              <option value="MEDIA" selected>MEDIA</option>
+              <option value="BAJA">BAJA</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Responsable Asignado</label>
+            <select id="tarea-responsable" class="w-full rounded-xl border-gray-300 text-xs">
+              <option>Cr. Daniel Montiel</option>
+              <option>Cr. María García</option>
+              <option>Cr. Juan Pérez</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nueva-tarea')" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-deep-green text-white font-bold hover:bg-accent-green shadow-premium">Guardar Tarea</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 1: ALTA DE NUEVO DESCARGO TRIBUTARIO
+       ==================================================================== -->
+  <div id="modal-nuevo-descargo" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-modal max-h-[90vh] overflow-y-auto custom-scrollbar space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <h3 class="font-bold text-base text-deep-green">Alta de Nuevo Descargo Tributario</h3>
+          <p class="text-xs text-gray-500">Se creará el expediente en estado "Notificación recibida"</p>
+        </div>
+        <button onclick="closeModal('modal-nuevo-descargo')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleCrearDescargo(event)" class="space-y-4 text-xs">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Nombre del Cliente *</label>
+            <input id="new-cliente" type="text" placeholder="Ej: Transportes del Sur S.R.L." class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">CUIT *</label>
+            <input id="new-cuit" type="text" placeholder="30-71234567-8" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Sistema / Portal *</label>
+            <select id="new-portal" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green">
+              <option>SIACE (ARCA)</option>
+              <option>E-Ventanilla (AFIP)</option>
+              <option>Portal DGR Chubut</option>
+              <option>MuniDigital Comodoro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">N° Acción / Expediente</label>
+            <input id="new-expediente" type="text" placeholder="ACE-4892/2026" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Tipo de Requerimiento *</label>
+            <input id="new-tipo" type="text" placeholder="Ej: Acción de Control Electrónico, Multa Formal..." class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Nombre / Título del Descargo *</label>
+            <input id="new-nombre" type="text" placeholder="Ej: Memorial de impugnación de ajuste IVA" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha de Recepción</label>
+            <input id="new-fecha-recepcion" type="date" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Plazo Informado</label>
+            <input id="new-plazo" type="text" placeholder="Ej: 15 días hábiles" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Vencimiento Legal *</label>
+            <input id="new-vencimiento" type="date" value="2026-07-26" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Prioridad (Formato Neutro)</label>
+            <select id="new-prioridad" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green">
+              <option value="CRÍTICA">CRÍTICA</option>
+              <option value="ALTA" selected>ALTA</option>
+              <option value="MEDIA">MEDIA</option>
+              <option value="BAJA">BAJA</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Responsable Asignado *</label>
+            <select id="new-responsable" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green">
+              <option>Cr. Daniel Montiel</option>
+              <option>Cr. María García</option>
+              <option>Cr. Juan Pérez</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Adjuntar Notificación Original (PDF / Email)</label>
+          <div class="border-2 border-dashed border-gray-300 p-3 rounded-xl text-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+            <span class="material-symbols-outlined text-2xl text-gray-400">upload_file</span>
+            <p class="text-xs text-gray-600 font-semibold mt-1">Notificacion_ARCA_2026.pdf (Simulado)</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Observaciones Iniciales</label>
+          <textarea id="new-observaciones" rows="2" placeholder="Notas sobre el análisis inicial del requerimiento..." class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-descargo')" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-deep-green text-white font-bold hover:bg-accent-green shadow-premium">Guardar Expediente</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 2: FICHA COMPLETA DEL EXPEDIENTE
+       ==================================================================== -->
+  <div id="modal-ficha-expediente" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-modal max-h-[92vh] overflow-y-auto custom-scrollbar space-y-6">
+      
+      <!-- Header -->
+      <div class="flex items-start justify-between border-b border-gray-200 pb-4">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span id="ficha-estado-badge" class="bg-deep-green text-white text-xs font-bold px-2.5 py-0.5 rounded-full">-</span>
+            <span id="ficha-prioridad-badge" class="bg-gray-100 text-gray-700 border border-gray-300 text-xs font-medium px-2.5 py-0.5 rounded-full">-</span>
+            <span id="ficha-aprobado-badge" class="hidden bg-emerald-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">verified</span>
+              <span>Aprobado para Presentar</span>
+            </span>
+          </div>
+          <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <span id="ficha-cliente-dot" class="w-3 h-3 rounded-full shrink-0"></span>
+            <span id="ficha-cliente-nombre">-</span>
+          </h2>
+          <p id="ficha-tramite-nombre" class="text-xs text-gray-600 font-semibold mt-0.5">-</p>
+        </div>
+
+        <button onclick="closeModal('modal-ficha-expediente')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+
+      <!-- Quick Action Toolbar for Ficha -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-wrap items-center gap-2 text-xs">
+        <button onclick="openSolicitudDocumentalModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+          <span class="material-symbols-outlined text-sm">send</span>
+          <span>Solicitar Documentación al Cliente</span>
+        </button>
+
+        <button onclick="marcarAprobadoPresentar()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+          <span class="material-symbols-outlined text-sm">verified</span>
+          <span>Aprobar p/ Presentar</span>
+        </button>
+
+        <button onclick="cambiarEstadoConfirmado('Presentado')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+          <span class="material-symbols-outlined text-sm">assignment_turned_in</span>
+          <span>Registrar Presentación</span>
+        </button>
+
+        <button onclick="registrarProrrogaPrompt()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+          <span class="material-symbols-outlined text-sm">more_time</span>
+          <span>Registrar Prórroga</span>
+        </button>
+
+        <button onclick="cambiarEstadoConfirmado('Cerrado')" class="bg-gray-700 hover:bg-gray-800 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+          <span class="material-symbols-outlined text-sm">check_circle</span>
+          <span>Cerrar Expediente</span>
+        </button>
+      </div>
+
+      <!-- Ficha Grid Info -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs bg-gray-50 p-4 rounded-xl border border-gray-200">
+        <div>
+          <span class="text-gray-400 font-bold uppercase text-[10px]">Portal / Sistema</span>
+          <p id="ficha-portal" class="font-bold text-gray-900 mt-0.5">-</p>
+        </div>
+
+        <div>
+          <span class="text-gray-400 font-bold uppercase text-[10px]">Vencimiento Legal</span>
+          <p id="ficha-vencimiento" class="font-bold text-gray-900 text-sm mt-0.5">-</p>
+          <p id="ficha-dias-restantes" class="text-gray-600 font-semibold text-[11px]">-</p>
+        </div>
+
+        <div>
+          <span class="text-gray-400 font-bold uppercase text-[10px]">Responsable Asignado & CUIT</span>
+          <p id="ficha-responsable" class="font-bold text-deep-green mt-0.5">-</p>
+          <p id="ficha-cuit" class="text-gray-500 text-[11px]">-</p>
+        </div>
+      </div>
+
+      <!-- Sub-Tabs in Ficha -->
+      <div class="border-b border-gray-200">
+        <nav class="flex space-x-4 text-xs font-bold">
+          <button id="ftab-btn-resumen" onclick="switchFichaTab('resumen')" class="ftab-btn text-deep-green border-b-2 border-deep-green pb-2">Línea de Tiempo & Auditoría</button>
+          <button id="ftab-btn-notificacion" onclick="switchFichaTab('notificacion')" class="ftab-btn text-gray-500 hover:text-deep-green pb-2">Notificación Original</button>
+          <button id="ftab-btn-documentacion" onclick="switchFichaTab('documentacion')" class="ftab-btn text-gray-500 hover:text-deep-green pb-2">Solicitud & Documentos Cliente</button>
+        </nav>
+      </div>
+
+      <!-- Ficha Tab Content 1: Timeline -->
+      <div id="ftab-resumen" class="ftab-content space-y-4">
+        <h4 class="font-bold text-xs text-deep-green uppercase tracking-wider">Historial de Eventos & Cambios de Estado</h4>
+        <div id="ficha-timeline" class="space-y-3 text-xs border-l-2 border-deep-green pl-4">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Ficha Tab Content 2: Notificacion Original -->
+      <div id="ftab-notificacion" class="ftab-content hidden space-y-3 text-xs">
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
+          <h4 class="font-bold text-sm text-gray-900">Documento de Notificación Recibida</h4>
+          <div class="grid grid-cols-2 gap-2 text-gray-600">
+            <p><strong>Nombre:</strong> Notificacion_Requerimiento_2026.pdf</p>
+            <p><strong>Canal de recepción:</strong> SIACE / Domicilio Fiscal Electrónico</p>
+            <p><strong>Fecha de carga:</strong> 15/07/2026 - 10:14 hs</p>
+            <p><strong>Cargado por:</strong> Cr. Daniel Montiel</p>
+          </div>
+          <button onclick="alert('Abriendo documento PDF simulado de la notificación original...')" class="bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 mt-2">
+            <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+            <span>Ver PDF Notificación</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ficha Tab Content 3: Documentación Cliente -->
+      <div id="ftab-documentacion" class="ftab-content hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-sm text-gray-900">Elementos Solicitados al Cliente</h4>
+          <button onclick="openSolicitudDocumentalModal()" class="bg-purple-600 text-white font-semibold px-2.5 py-1 rounded text-[11px]">Nueva Solicitud</button>
+        </div>
+
+        <div id="ficha-doc-items-list" class="space-y-2">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 3: CREAR SOLICITUD DOCUMENTAL AL CLIENTE
+       ==================================================================== -->
+  <div id="modal-solicitud-documental" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-modal max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <h3 class="font-bold text-base text-purple-900">Crear Solicitud Documental al Cliente</h3>
+          <p class="text-xs text-gray-500">Actualiza el expediente a "Documentación solicitada al cliente"</p>
+        </div>
+        <button onclick="closeModal('modal-solicitud-documental')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleEnviarSolicitudDocumental(event)" class="space-y-4 text-xs">
+        
+        <!-- 1. PLANTILLA DE SOLICITUD UBICADA ARRIBA DEL TODO -->
+        <div class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-200 space-y-2">
+          <label class="block font-bold text-purple-900 text-xs">1. Seleccionar Plantilla Estándar de Notificación *</label>
+          <select id="sol-plantilla-select" onchange="aplicarPlantillaSolicitud()" class="w-full rounded-xl border-purple-300 text-xs focus:ring-purple-600 font-medium">
+            <option value="estandar">Notificación Oficial ARCA - Solicitud de Documentación Impuesto/Contable</option>
+            <option value="urgente">Requerimiento Urgente - Inspección / Fiscalización ARCA</option>
+            <option value="gastos">Revisión de Gastos y Facturación Proveedores</option>
+            <option value="custom">Personalizada / Carga Manual</option>
+          </select>
+        </div>
+
+        <!-- 2. ASUNTO Y MENSAJE CON LA REDACCIÓN EXACTA PEDIDA POR EL USUARIO -->
+        <div class="space-y-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Asunto del Requerimiento *</label>
+            <input id="sol-asunto" type="text" value="Notificación ARCA: Requerimiento de documentación impositiva y contable" class="w-full rounded-xl border-gray-300 text-xs focus:ring-purple-600" required />
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Explicación para el Cliente (Mensaje del Contador) *</label>
+            <textarea id="sol-explicacion" rows="4" class="w-full rounded-xl border-gray-300 text-xs focus:ring-purple-600 leading-relaxed font-medium" required>Estimado cliente, hemos recepcionado su email en la cual ARCA le solicita a usted la presentación de cierta documentación impositiva y contable para acreditar los importes detectados. Por favor, necesitamos que acceda a la siguiente página en la cual le detallaremos cuáles son los documentos que debe cargar antes del día 26/07/2026.</textarea>
+          </div>
+        </div>
+
+        <!-- 3. LISTADO DINÁMICO DE DOCUMENTOS A PEDIR CON DESPLEGABLE -->
+        <div class="space-y-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold text-gray-800">2. Documentos y Comprobantes Requeridos</label>
+            <span class="text-[10px] text-gray-500">Podés agregar o quitar ítems según la necesidad</span>
+          </div>
+
+          <div id="lista-docs-container" class="space-y-2">
+            <div class="flex items-center gap-2">
+              <select class="w-full rounded-lg border-gray-300 text-xs focus:ring-purple-600 font-medium">
+                <option value="Extractos Bancarios en PDF (Periodo Enero-Junio 2026)">Extractos Bancarios en PDF (Periodo Enero-Junio 2026)</option>
+                <option value="Libro IVA Compras y Ventas en Excel">Libro IVA Compras y Ventas en Excel</option>
+                <option value="Comprobantes de Pago de Retenciones IIBB">Comprobantes de Pago de Retenciones IIBB</option>
+                <option value="Facturas de Proveedores Observadas">Facturas de Proveedores Observadas</option>
+                <option value="Certificado MiPyME o Exención Válido">Certificado MiPyME o Exención Válido</option>
+                <option value="Balances y Estado de Resultados Firmados">Balances y Estado de Resultados Firmados</option>
+              </select>
+              <button type="button" onclick="eliminarRenglonDoc(this)" class="text-gray-400 hover:text-red-600 p-1">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <select class="w-full rounded-lg border-gray-300 text-xs focus:ring-purple-600 font-medium">
+                <option value="Libro IVA Compras y Ventas en Excel">Libro IVA Compras y Ventas en Excel</option>
+                <option value="Extractos Bancarios en PDF (Periodo Enero-Junio 2026)">Extractos Bancarios en PDF (Periodo Enero-Junio 2026)</option>
+                <option value="Comprobantes de Pago de Retenciones IIBB">Comprobantes de Pago de Retenciones IIBB</option>
+                <option value="Facturas de Proveedores Observadas">Facturas de Proveedores Observadas</option>
+                <option value="Certificado MiPyME o Exención Válido">Certificado MiPyME o Exención Válido</option>
+                <option value="Balances y Estado de Resultados Firmados">Balances y Estado de Resultados Firmados</option>
+              </select>
+              <button type="button" onclick="eliminarRenglonDoc(this)" class="text-gray-400 hover:text-red-600 p-1">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" onclick="agregarRenglonDoc()" class="text-xs text-purple-700 font-bold hover:underline flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-sm">add_circle</span>
+            <span>+ Agregar otro documento a solicitar</span>
+          </button>
+        </div>
+
+        <!-- 4. FECHA LÍMITE Y FIRMA DEL CONTADOR DANIEL MONTIEL -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Límite para el Cliente *</label>
+            <input id="sol-fecha-limite" type="date" value="2026-07-26" class="w-full rounded-xl border-gray-300 text-xs" required />
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Firma del Profesional</label>
+            <div class="bg-gray-100 p-2 rounded-xl text-[11px] text-gray-700 font-medium border border-gray-200">
+              <p class="font-bold text-deep-green">Cr. Daniel Montiel</p>
+              <p class="text-[10px] text-gray-500">Trelew, Chubut • Tel: (0280) 442-8900</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. BOTONES DE ACCIÓN -->
+        <div class="pt-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
+          <button type="button" onclick="closeModal('modal-solicitud-documental')" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200">
+            Cancelar
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="handleEnviarSolicitudDocumental(event, 'email')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1 shadow-sm transition">
+              <span class="material-symbols-outlined text-sm">mail</span>
+              <span>Enviar por Email</span>
+            </button>
+
+            <button type="submit" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shadow-md transition">
+              <span class="material-symbols-outlined text-sm">send</span>
+              <span>Generar Enlace & Notificar</span>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 4: SIMULACIÓN DE LA EXPERIENCIA DEL CLIENTE (REDACCIÓN EXACTA DE MAIL)
+       ==================================================================== -->
+  <div id="modal-simular-portal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar border-4 border-slate-800">
+      
+      <!-- Title & Step Tabs -->
+      <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+        <div>
+          <h3 class="font-extrabold text-sm text-deep-green">Experiencia del Cliente (Sin Usuario)</h3>
+          <p class="text-[10px] text-gray-500">Demostración del correo oficial y página de carga</p>
+        </div>
+        <button onclick="closeModal('modal-simular-portal')" class="text-gray-400 hover:text-gray-600 font-bold">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Step Navigation Selector -->
+      <div class="grid grid-cols-2 gap-1 bg-gray-100 p-1 rounded-xl text-[11px] font-bold text-center">
+        <button id="sim-step-btn-email" onclick="switchSimStep('email')" class="py-1.5 rounded-lg bg-white shadow-xs text-deep-green">
+          Paso 1: Email Recibido
+        </button>
+        <button id="sim-step-btn-landing" onclick="switchSimStep('landing')" class="py-1.5 rounded-lg text-gray-500 hover:text-gray-800">
+          Paso 2: Landing Page / Carga
+        </button>
+      </div>
+
+      <!-- PASO 1: VISTA PREVIA DEL EMAIL QUE RECIBE EL CLIENTE (REDACCIÓN PEDIDA) -->
+      <div id="sim-step-email" class="space-y-3">
+        <div class="bg-slate-900 text-white p-3.5 rounded-xl text-xs space-y-2 shadow-sm">
+          <div class="flex items-center justify-between text-[10px] text-gray-400 border-b border-slate-800 pb-1">
+            <span>De: dmontiel@estudio-danielmontiel.com</span>
+            <span class="bg-light-green/20 text-light-green px-1.5 py-0.5 rounded text-[9px] font-bold">Email Entrante</span>
+          </div>
+          <p class="font-bold text-light-green">Asunto: [Estudio Daniel Montiel] Requerimiento de documentación ARCA</p>
+          <p class="text-[11px] text-gray-300">Para: contacto@patagoniaservicios.com</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 text-xs space-y-3">
+          <p id="simular-portal-mensaje" class="text-gray-700 leading-relaxed font-medium">
+            Estimado cliente, hemos recepcionado su email en la cual ARCA le solicita a usted la presentación de cierta documentación impositiva y contable para acreditar los importes detectados. Por favor, necesitamos que acceda a la siguiente página en la cual le detallaremos cuáles son los documentos que debe cargar antes del día 26/07/2026.
+          </p>
+          
+          <div class="p-3.5 bg-purple-50 rounded-xl border border-purple-200 text-center space-y-2">
+            <p class="text-[11px] text-purple-900 font-bold">Acceso directo y seguro al portal de carga:</p>
+            <button onclick="switchSimStep('landing')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition w-full flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+              <span>👉 Cargar Documentación Solicitada</span>
+            </button>
+          </div>
+
+          <div class="pt-3 border-t border-gray-200 text-[11px] text-gray-600 space-y-0.5 bg-gray-50 p-2.5 rounded-xl">
+            <p class="font-bold text-deep-green">Cr. Daniel Montiel</p>
+            <p class="text-gray-700 font-medium">Estudio Contable & Asesoría Tributaria</p>
+            <p class="text-[10px] text-gray-500">📍 Av. Fontana 450, Trelew, Chubut</p>
+            <p class="text-[10px] text-gray-500">📞 Tel: (0280) 442-8900 | 📱 WhatsApp: (0280) 15-460-1234</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: LANDING PAGE DE CARGA -->
+      <div id="sim-step-landing" class="hidden space-y-4">
+        <div class="bg-[#F8FAF9] p-4 rounded-xl border border-gray-200 space-y-4 text-xs">
+          
+          <div class="text-center border-b border-gray-200 pb-3">
+            <span class="w-8 h-8 rounded-lg bg-deep-green text-white font-bold inline-flex items-center justify-center text-sm mb-1">DM</span>
+            <h4 class="font-bold text-sm text-deep-green">Estudio Contable Cr. Daniel Montiel</h4>
+            <p class="text-[10px] text-gray-500">Trelew, Chubut • Landing Page de Carga Directa</p>
+          </div>
+
+          <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1">
+            <span class="bg-amber-100 text-amber-800 font-bold text-[10px] px-2 py-0.5 rounded">Requerimiento Activo ARCA</span>
+            <h5 class="font-bold text-xs text-gray-900 mt-1">PATAGONIA SERVICIOS S.R.L.</h5>
+            <p class="text-gray-600 text-[11px]">Trámite: Acción de Control Electrónico (ACE 4892)</p>
+            <p class="text-red-600 font-bold text-[10px]">Vence para el cliente: 26/07/2026</p>
+          </div>
+
+          <!-- Checklist for Client -->
+          <div class="space-y-2">
+            <h5 class="font-bold text-xs text-gray-800">Adjuntar archivos requeridos:</h5>
+            
+            <div class="bg-white p-2.5 rounded-lg border border-gray-200 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-gray-900">1. Extractos Bancarios Enero-Junio</span>
+                <span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded">Cargado</span>
+              </div>
+              <p class="text-[10px] text-gray-400">Archivo: extractos_patagonia_2026.pdf</p>
+            </div>
+
+            <div class="bg-white p-2.5 rounded-lg border border-gray-200 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-gray-900">2. Libro IVA Compras en Excel</span>
+                <span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded">Pendiente</span>
+              </div>
+              <input type="file" class="text-[10px] w-full text-gray-500 mt-1" />
+            </div>
+          </div>
+
+          <!-- FIRMA COMPLETA DEL CONTADOR DANIEL MONTIEL -->
+          <div class="pt-3 border-t border-gray-200 text-[11px] text-gray-600 space-y-0.5 bg-gray-50 p-2.5 rounded-xl">
+            <p class="font-bold text-deep-green">Cr. Daniel Montiel</p>
+            <p class="text-gray-700 font-medium">Estudio Contable & Asesoría Tributaria</p>
+            <p class="text-[10px] text-gray-500">📍 Av. Fontana 450, Trelew, Chubut</p>
+            <p class="text-[10px] text-gray-500">📞 Tel: (0280) 442-8900 | 📱 WhatsApp: (0280) 15-460-1234</p>
+          </div>
+
+          <!-- Client Actions -->
+          <div class="space-y-2 pt-2 border-t border-gray-200">
+            <button onclick="clienteEnviarDocumentacion()" class="w-full bg-deep-green hover:bg-accent-green text-white font-bold py-2 rounded-xl text-xs shadow-md transition">
+              Enviar Documentación al Estudio
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       JAVASCRIPT LOGIC & STATE MANAGEMENT
+       ==================================================================== -->
+  <script>
+    // 10 SEED FICTIONAL EXPEDIENTES
+    let expedientes = [
+      {
+        id: 1,
+        cliente: "PATAGONIA SERVICIOS S.R.L.",
+        cuit: "30-71234567-8",
+        tramite: "Acción de Control Electrónico (ACE 4892)",
+        portal: "SIACE (ARCA)",
+        expedienteNo: "ACE-4892/2026",
+        estado: "Esperando documentación",
+        prioridad: "ALTA",
+        diasRestantesDias: 5, // AMARILLO
+        docPendiente: true,
+        diasRestantesMsg: "Vence en 5 días (29/07)",
+        vencimientoFecha: "2026-07-29",
+        responsable: "Cr. Daniel Montiel",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "15/07/2026 10:14 hs", usuario: "Cr. Daniel Montiel", desc: "Expediente creado en 'Notificación recibida'." },
+          { fecha: "16/07/2026 11:30 hs", usuario: "Cr. Daniel Montiel", desc: "Se envió solicitud de documentación al cliente." },
+          { fecha: "18/07/2026 09:00 hs", usuario: "Sistema", desc: "Cambio a 'Esperando documentación'." }
+        ],
+        docItems: [
+          { nombre: "Extractos Bancarios Enero-Junio", estado: "Cargado" },
+          { nombre: "Libro IVA Compras en Excel", estado: "Pendiente" }
+        ]
+      },
+      {
+        id: 2,
+        cliente: "TRANSPORTE AUSTRAL S.A.",
+        cuit: "30-65498732-1",
+        tramite: "Intimación ARCA e Inconsistencia IVA",
+        portal: "E-Ventanilla (AFIP)",
+        expedienteNo: "INT-8812/2026",
+        estado: "Notificación recibida",
+        prioridad: "URGENTE",
+        diasRestantesDias: -2, // ROJO (Vencido)
+        docPendiente: true,
+        diasRestantesMsg: "Venció hace 2 días",
+        vencimientoFecha: "2026-07-22",
+        responsable: "Cr. María García",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "20/07/2026 14:00 hs", usuario: "Cr. María García", desc: "Notificación original vinculada. En análisis inicial." }
+        ],
+        docItems: []
+      },
+      {
+        id: 3,
+        cliente: "DISTRIBUIDORA DEL SUR S.H.",
+        cuit: "33-88990011-9",
+        tramite: "Requerimiento Inspección Ingresos Brutos",
+        portal: "Portal DGR Chubut",
+        expedienteNo: "DPR-3341/2026",
+        estado: "Documentación solicitada al cliente",
+        prioridad: "MEDIA",
+        diasRestantesDias: 13, // VERDE (Trámite recién arrancó)
+        docPendiente: true,
+        diasRestantesMsg: "Vence en 13 días",
+        vencimientoFecha: "2026-08-06",
+        responsable: "Cr. Daniel Montiel",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "24/07/2026 09:30 hs", usuario: "Cr. Daniel Montiel", desc: "Solicitud enviada al cliente." }
+        ],
+        docItems: [
+          { nombre: "Comprobantes retenciones IIBB", estado: "Pendiente" }
+        ]
+      },
+      {
+        id: 4,
+        cliente: "SUPERMERCADOS EL FARO S.R.L.",
+        cuit: "30-55443322-7",
+        tramite: "Verificación Cómputo Crédito Fiscal IVA",
+        portal: "SIACE (ARCA)",
+        expedienteNo: "ACE-9912/2026",
+        estado: "Documentación recibida",
+        prioridad: "ALTA",
+        diasRestantesDias: 4, // AMARILLO
+        docPendiente: true,
+        diasRestantesMsg: "Vence en 4 días",
+        vencimientoFecha: "2026-07-28",
+        responsable: "Cr. Juan Pérez",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "22/07/2026 16:20 hs", usuario: "Cliente vía Portal", desc: "El cliente cargó los archivos solicitados." }
+        ],
+        docItems: [
+          { nombre: "Facturas de Compras Proveedores", estado: "Aprobado" },
+          { nombre: "Constancias de Pago Transferencias", estado: "Aprobado" }
+        ]
+      },
+      {
+        id: 5,
+        cliente: "PESQUERA Y MARISCOS DEL GOLFO S.A.",
+        cuit: "30-99887766-4",
+        tramite: "Memorial Descargo Multa Sumario Formal",
+        portal: "E-Ventanilla (AFIP)",
+        expedienteNo: "SUM-1029/2026",
+        estado: "En preparación",
+        prioridad: "URGENTE",
+        diasRestantesDias: 2, // VERDE (Aprobado p/ presentar)
+        docPendiente: false,
+        diasRestantesMsg: "Vence en 2 días",
+        vencimientoFecha: "2026-07-26",
+        responsable: "Cr. Daniel Montiel",
+        aprobadoPresentar: true,
+        timeline: [
+          { fecha: "24/07/2026 09:00 hs", usuario: "Cr. Daniel Montiel", desc: "Descargo redactado y APROBADO PARA PRESENTAR." }
+        ],
+        docItems: []
+      },
+      {
+        id: 6,
+        cliente: "METALÚRGICA SAN JORGE S.A.",
+        cuit: "30-44332211-0",
+        tramite: "Fiscalización Retenciones e Percepciones",
+        portal: "Portal DGR Chubut",
+        expedienteNo: "FIS-7712/2026",
+        estado: "Presentado",
+        prioridad: "ALTA",
+        diasRestantesDias: 999, // VERDE
+        docPendiente: false,
+        diasRestantesMsg: "Presentado el 20/07",
+        vencimientoFecha: "2026-07-20",
+        responsable: "Cr. María García",
+        aprobadoPresentar: true,
+        timeline: [
+          { fecha: "20/07/2026 15:45 hs", usuario: "Cr. María García", desc: "Presentación web efectuada." }
+        ],
+        docItems: []
+      },
+      {
+        id: 7,
+        cliente: "SANATORIO CENTRAL DE COMODORO S.A.",
+        cuit: "30-11223344-5",
+        tramite: "Requerimiento Tasa Comercial Municipal",
+        portal: "MuniDigital Comodoro",
+        expedienteNo: "MUN-5521/2026",
+        estado: "Cerrado",
+        prioridad: "BAJA",
+        diasRestantesDias: 999, // VERDE
+        docPendiente: false,
+        diasRestantesMsg: "Concluido",
+        vencimientoFecha: "2026-07-15",
+        responsable: "Cr. Juan Pérez",
+        aprobadoPresentar: true,
+        timeline: [
+          { fecha: "15/07/2026 12:00 hs", usuario: "Cr. Juan Pérez", desc: "Expediente cerrado." }
+        ],
+        docItems: []
+      },
+      {
+        id: 8,
+        cliente: "HOTEL Y GASTRONOMÍA PATAGONIA S.R.L.",
+        cuit: "30-66778899-2",
+        tramite: "Verificación Régimen Facturación Electrónica",
+        portal: "SIACE (ARCA)",
+        expedienteNo: "ACE-1102/2026",
+        estado: "Notificación recibida",
+        prioridad: "MEDIA",
+        diasRestantesDias: 6, // AMARILLO
+        docPendiente: true,
+        diasRestantesMsg: "Vence en 6 días",
+        vencimientoFecha: "2026-07-30",
+        responsable: "Cr. Daniel Montiel",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "24/07/2026 08:30 hs", usuario: "Cr. Daniel Montiel", desc: "Notificación ingresada al sistema." }
+        ],
+        docItems: []
+      },
+      {
+        id: 9,
+        cliente: "CONSTRUCTORA DEL ATLÁNTICO S.A.",
+        cuit: "30-22334455-6",
+        tramite: "Citación Diferencia Alícuota IIBB",
+        portal: "Portal DGR Chubut",
+        expedienteNo: "DPR-9921/2026",
+        estado: "En preparación",
+        prioridad: "CRÍTICA",
+        diasRestantesDias: 0, // ROJO
+        docPendiente: true,
+        diasRestantesMsg: "VENCE HOY",
+        vencimientoFecha: "2026-07-24",
+        responsable: "Cr. María García",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "21/07/2026 10:00 hs", usuario: "Cr. María García", desc: "En redacción final." }
+        ],
+        docItems: []
+      },
+      {
+        id: 10,
+        cliente: "ESTUDIO JURÍDICO & ASOCIADOS S.H.",
+        cuit: "33-44556677-1",
+        tramite: "Información Adicional Exención IVA",
+        portal: "E-Ventanilla (AFIP)",
+        expedienteNo: "EX-3392/2026",
+        estado: "Esperando documentación",
+        prioridad: "BAJA",
+        diasRestantesDias: 14, // VERDE
+        docPendiente: true,
+        diasRestantesMsg: "Vence en 14 días",
+        vencimientoFecha: "2026-08-07",
+        responsable: "Cr. Juan Pérez",
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: "19/07/2026 14:15 hs", usuario: "Cr. Juan Pérez", desc: "Solicitud enviada al cliente." }
+        ],
+        docItems: [
+          { nombre: "Certificado Matriculación Colegiada", estado: "Pendiente" }
+        ]
+      }
+    ];
+
+    // SEED TAREAS PENDIENTES CON "FECHA PARA REALIZAR"
+    let tareas = [
+      {
+        id: 1,
+        titulo: "Verificar libre deuda e informe de alícuotas DGR",
+        expediente: "CONSTRUCTORA DEL ATLÁNTICO S.A.",
+        fechaPara: "2026-07-24",
+        prioridad: "ALTA",
+        responsable: "Cr. María García",
+        completada: false
+      },
+      {
+        id: 2,
+        titulo: "Redactar escrito de descargo para multa sumario formal",
+        expediente: "PESQUERA Y MARISCOS DEL GOLFO S.A.",
+        fechaPara: "2026-07-25",
+        prioridad: "URGENTE",
+        responsable: "Cr. Daniel Montiel",
+        completada: false
+      },
+      {
+        id: 3,
+        titulo: "Llamar por teléfono al cliente para recordar envío de libro IVA Compras",
+        expediente: "PATAGONIA SERVICIOS S.R.L.",
+        fechaPara: "2026-07-26",
+        prioridad: "MEDIA",
+        responsable: "Cr. Daniel Montiel",
+        completada: true
+      },
+      {
+        id: 4,
+        titulo: "Controlar vencimientos de regímenes de información de la semana que viene",
+        expediente: "General",
+        fechaPara: "2026-07-28",
+        prioridad: "MEDIA",
+        responsable: "Cr. Juan Pérez",
+        completada: false
+      }
+    ];
+
+    let currentExpedienteId = null;
+
+    // RENDER ON LOAD
+    document.addEventListener("DOMContentLoaded", () => {
+      renderAllViews();
+    });
+
+    function renderAllViews() {
+      renderKanban();
+      renderLista();
+      renderCalendario();
+      renderTareas();
+    }
+
+    // RENDER TAREAS PENDIENTES
+    function renderTareas() {
+      const tbody = document.getElementById("tareas-tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      tareas.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <input type="checkbox" ${t.completada ? 'checked' : ''} onchange="toggleTarea(${t.id})" class="rounded text-deep-green focus:ring-deep-green" />
+          </td>
+          <td class="py-3 px-4">
+            <p class="font-bold text-gray-900 ${t.completada ? 'line-through text-gray-400' : ''}">${t.titulo}</p>
+          </td>
+          <td class="py-3 px-4 text-gray-600 font-semibold">${t.expediente}</td>
+          <td class="py-3 px-4 font-extrabold text-purple-900">${t.fechaPara || 'Sin Fecha'}</td>
+          <td class="py-3 px-4">
+            <span class="bg-gray-100 text-gray-700 border border-gray-300 font-medium px-2 py-0.5 rounded text-[10px]">${t.prioridad}</span>
+          </td>
+          <td class="py-3 px-4 text-deep-green font-semibold">${t.responsable}</td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="eliminarTarea(${t.id})" class="text-gray-400 hover:text-red-600 font-bold">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleTarea(id) {
+      const t = tareas.find(x => x.id === id);
+      if (t) {
+        t.completada = !t.completada;
+        renderTareas();
+        renderCalendario();
+      }
+    }
+
+    function eliminarTarea(id) {
+      tareas = tareas.filter(x => x.id !== id);
+      renderTareas();
+      renderCalendario();
+    }
+
+    function handleCrearTarea(ev) {
+      ev.preventDefault();
+      const nueva = {
+        id: tareas.length + 1,
+        titulo: document.getElementById("tarea-titulo").value,
+        expediente: document.getElementById("tarea-expediente").value,
+        fechaPara: document.getElementById("tarea-fecha-para").value,
+        prioridad: document.getElementById("tarea-prioridad").value,
+        responsable: document.getElementById("tarea-responsable").value,
+        completada: false
+      };
+      tareas.unshift(nueva);
+      closeModal("modal-nueva-tarea");
+      renderTareas();
+      renderCalendario();
+      alert("✅ Tarea programada con éxito para el " + nueva.fechaPara);
+    }
+
+    // ACCIONES DE BANDEJA DE ENTRADA / NOVEDADES
+    function aprobarYAvanzarNovedad(expId, nuevoEstado) {
+      const exp = expedientes.find(e => e.id === expId);
+      if (exp) {
+        exp.estado = nuevoEstado;
+        exp.docPendiente = false;
+        exp.timeline.unshift({
+          fecha: new Date().toLocaleString("es-AR"),
+          usuario: "Cr. Daniel Montiel",
+          desc: `Documentación entrante AUDITADA Y APROBADA. Expediente avanzado automáticamente a '${nuevoEstado}'.`
+        });
+        renderAllViews();
+        alert(`✅ Documentación validada. El expediente de "${exp.cliente}" avanzó al estado '${nuevoEstado}'.`);
+      }
+    }
+
+    function observarNovedad(expId) {
+      const motivo = prompt("Ingresá la observación para el cliente (ej: Falta sello o el PDF es ilegible):");
+      if (motivo) {
+        const exp = expedientes.find(e => e.id === expId);
+        if (exp) {
+          exp.timeline.unshift({
+            fecha: new Date().toLocaleString("es-AR"),
+            usuario: "Cr. Daniel Montiel",
+            desc: `Documentación observada: ${motivo}. Se notificó al cliente para corrección.`
+          });
+          renderAllViews();
+          alert("⚠️ Notificación de corrección enviada al cliente.");
+        }
+      }
+    }
+
+    // HELPER: PUNTO DE SEMÁFORO JUNTO AL CLIENTE
+    function getSemaforoInfo(exp) {
+      if (exp.estado === "Presentado" || exp.estado === "Cerrado" || exp.aprobadoPresentar || (!exp.docPendiente && exp.diasRestantesDias >= 0)) {
+        return { color: "verde", borderClass: "border-l-emerald-500", dotBg: "bg-emerald-500" };
+      }
+      if (exp.diasRestantesDias <= 3) {
+        return { color: "rojo", borderClass: "border-l-red-600", dotBg: "bg-red-600 animate-pulse" };
+      } 
+      if (exp.diasRestantesDias <= 7) {
+        return { color: "amarillo", borderClass: "border-l-amber-500", dotBg: "bg-amber-500" };
+      } 
+      return { color: "verde", borderClass: "border-l-emerald-500", dotBg: "bg-emerald-500" };
+    }
+
+    // RENDER KANBAN
+    function renderKanban() {
+      const states = [
+        "Notificación recibida",
+        "Documentación solicitada al cliente",
+        "Esperando documentación",
+        "Documentación recibida",
+        "En preparación",
+        "Presentado",
+        "Cerrado"
+      ];
+
+      states.forEach(st => {
+        const container = document.getElementById("col-" + st);
+        if (!container) return;
+        container.innerHTML = "";
+
+        const items = getFilteredExpedientes().filter(e => e.estado === st);
+
+        items.forEach(exp => {
+          const sem = getSemaforoInfo(exp);
+          const card = document.createElement("div");
+          card.draggable = true;
+          card.ondragstart = (ev) => drag(ev, exp.id);
+          card.onclick = () => openFichaModal(exp.id);
+          card.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-xs hover:shadow-card-hover cursor-pointer transition space-y-1.5 border-l-4 " + sem.borderClass;
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-semibold text-gray-500">${exp.diasRestantesMsg}</span>
+              <span class="font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">${exp.prioridad}</span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-xs text-gray-900 leading-tight flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full ${sem.dotBg} shrink-0 inline-block"></span>
+                <span>${exp.cliente}</span>
+              </h4>
+              <p class="text-[11px] text-gray-600 mt-1 font-medium line-clamp-1">${exp.tramite}</p>
+            </div>
+            <div class="pt-1.5 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
+              <span class="font-semibold text-deep-green">${exp.responsable}</span>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      });
+    }
+
+    // RENDER LIST
+    function renderLista() {
+      const tbody = document.getElementById("lista-tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      getFilteredExpedientes().forEach(exp => {
+        const sem = getSemaforoInfo(exp);
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50 transition cursor-pointer";
+        tr.onclick = () => openFichaModal(exp.id);
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <p class="font-bold text-gray-900 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full ${sem.dotBg} shrink-0 inline-block"></span>
+              <span>${exp.cliente}</span>
+            </p>
+            <p class="text-[10px] text-gray-400 pl-4">CUIT: ${exp.cuit}</p>
+          </td>
+          <td class="py-3 px-4">
+            <p class="font-semibold text-gray-800">${exp.tramite}</p>
+            <p class="text-[10px] text-gray-400">${exp.expedienteNo || 'Sin N°'}</p>
+          </td>
+          <td class="py-3 px-4">
+            <span class="bg-deep-green/10 text-deep-green font-bold px-2.5 py-0.5 rounded-full text-[10px]">${exp.estado}</span>
+          </td>
+          <td class="py-3 px-4 font-semibold text-gray-700">
+            ${exp.vencimientoFecha} <span class="text-gray-400 font-normal">(${exp.diasRestantesMsg})</span>
+          </td>
+          <td class="py-3 px-4">
+            <span class="bg-gray-100 text-gray-700 border border-gray-300 font-medium px-2 py-0.5 rounded text-[10px]">${exp.prioridad}</span>
+          </td>
+          <td class="py-3 px-4 text-deep-green font-semibold">${exp.responsable}</td>
+          <td class="py-3 px-4 text-right font-bold text-deep-green">Ver Ficha</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // RENDER CALENDAR UNIFICADO
+    function renderCalendario() {
+      const container = document.getElementById("calendario-timeline");
+      if (!container) return;
+      container.innerHTML = "";
+
+      let events = [];
+
+      getFilteredExpedientes().forEach(exp => {
+        const sem = getSemaforoInfo(exp);
+        events.push({
+          tipo: 'Vencimiento Legal',
+          fecha: exp.vencimientoFecha,
+          titulo: exp.cliente + " — " + exp.tramite,
+          sub: "Expediente " + (exp.expedienteNo || ''),
+          responsable: exp.responsable,
+          badgeColor: "bg-deep-green text-white",
+          borderClass: sem.borderClass,
+          dotBg: sem.dotBg,
+          id: exp.id,
+          isExpediente: true
+        });
+      });
+
+      tareas.filter(t => !t.completada).forEach(t => {
+        events.push({
+          tipo: 'Tarea Interna',
+          fecha: t.fechaPara || '2026-07-25',
+          titulo: t.titulo,
+          sub: "Vinculado a: " + t.expediente,
+          responsable: t.responsable,
+          badgeColor: "bg-purple-600 text-white",
+          borderClass: "border-l-purple-600",
+          dotBg: "bg-purple-600",
+          id: t.id,
+          isExpediente: false
+        });
+      });
+
+      events.sort((a,b) => a.fecha.localeCompare(b.fecha));
+
+      events.forEach(ev => {
+        const item = document.createElement("div");
+        item.className = "p-3.5 rounded-xl border border-gray-200 bg-white hover:border-deep-green transition flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs border-l-4 " + ev.borderClass;
+        if (ev.isExpediente) {
+          item.onclick = () => openFichaModal(ev.id);
+          item.classList.add("cursor-pointer");
+        }
+
+        item.innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl ${ev.isExpediente ? 'bg-deep-green' : 'bg-purple-700'} text-white flex flex-col items-center justify-center font-bold shrink-0">
+              <span class="text-[8px] uppercase">${ev.isExpediente ? 'VENCE' : 'TAREA'}</span>
+              <span class="text-sm leading-none">${ev.fecha.substring(8)}</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="${ev.badgeColor} font-bold px-2 py-0.5 rounded text-[9px] uppercase">${ev.tipo}</span>
+                <span class="text-gray-400 text-[10px] font-semibold">${ev.fecha}</span>
+              </div>
+              <h4 class="font-bold text-sm text-gray-900 mt-1 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full ${ev.dotBg} shrink-0 inline-block"></span>
+                <span>${ev.titulo}</span>
+              </h4>
+              <p class="text-gray-500 text-[11px] mt-0.5">${ev.sub} • Responsable: <strong class="text-deep-green">${ev.responsable}</strong></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 self-end md:self-center">
+            ${ev.isExpediente ? '<button class="bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg">Ver Ficha</button>' : '<span class="text-purple-900 font-bold bg-purple-50 px-2 py-1 rounded border border-purple-200">Tarea Pendiente</span>'}
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    let currentResponsableFilter = "todos";
+
+    // FILTER LOGIC
+    function setResponsableFilter(val) {
+      currentResponsableFilter = val;
+      
+      document.querySelectorAll(".resp-filter-btn").forEach(btn => {
+        btn.classList.remove("bg-deep-green", "text-white", "font-bold", "border-deep-green");
+        btn.classList.add("bg-gray-100", "text-gray-700", "font-semibold", "border-gray-200");
+      });
+
+      if (val === "todos") {
+        document.getElementById("resp-btn-todos").classList.add("bg-deep-green", "text-white", "font-bold", "border-deep-green");
+        document.getElementById("resp-btn-todos").classList.remove("bg-gray-100", "text-gray-700", "font-semibold", "border-gray-200");
+      } else if (val === "Cr. Daniel Montiel") {
+        document.getElementById("resp-btn-daniel").classList.add("bg-deep-green", "text-white", "font-bold", "border-deep-green");
+        document.getElementById("resp-btn-daniel").classList.remove("bg-gray-100", "text-gray-700", "font-semibold", "border-gray-200");
+      } else if (val === "Cr. María García") {
+        document.getElementById("resp-btn-maria").classList.add("bg-deep-green", "text-white", "font-bold", "border-deep-green");
+        document.getElementById("resp-btn-maria").classList.remove("bg-gray-100", "text-gray-700", "font-semibold", "border-gray-200");
+      } else if (val === "Cr. Juan Pérez") {
+        document.getElementById("resp-btn-juan").classList.add("bg-deep-green", "text-white", "font-bold", "border-deep-green");
+        document.getElementById("resp-btn-juan").classList.remove("bg-gray-100", "text-gray-700", "font-semibold", "border-gray-200");
+      }
+
+      renderAllViews();
+    }
+
+    function getFilteredExpedientes() {
+      const q = document.getElementById("search-input").value.toLowerCase();
+
+      return expedientes.filter(exp => {
+        const matchQ = exp.cliente.toLowerCase().includes(q) || exp.tramite.toLowerCase().includes(q) || exp.cuit.includes(q);
+        const matchResp = currentResponsableFilter === "todos" || exp.responsable === currentResponsableFilter;
+
+        return matchQ && matchResp;
+      });
+    }
+
+    function filterExpedientes() { renderAllViews(); }
+
+    function resetFilters() {
+      document.getElementById("search-input").value = "";
+      document.getElementById("filter-responsable").value = "todos";
+      document.getElementById("filter-prioridad").value = "todos";
+      document.getElementById("filter-semaforo").value = "todos";
+      renderAllViews();
+    }
+
+    // DRAG AND DROP
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev, id) { ev.dataTransfer.setData("text/plain", id); }
+    function drop(ev, nuevoEstado) {
+      ev.preventDefault();
+      const id = parseInt(ev.dataTransfer.getData("text/plain"));
+      cambiarEstadoExpediente(id, nuevoEstado);
+    }
+
+    function cambiarEstadoExpediente(id, nuevoEstado) {
+      const exp = expedientes.find(e => e.id === id);
+      if (!exp) return;
+
+      if (nuevoEstado === "Presentado" || nuevoEstado === "Cerrado" || exp.estado === "Presentado") {
+        if (!confirm(`¿Confirmás cambiar el expediente de "${exp.cliente}" al estado "${nuevoEstado}"?`)) {
+          return;
+        }
+      }
+
+      const estAnterior = exp.estado;
+      exp.estado = nuevoEstado;
+
+      exp.timeline.unshift({
+        fecha: new Date().toLocaleString("es-AR"),
+        usuario: "Cr. Daniel Montiel",
+        desc: `Cambio de estado: de '${estAnterior}' a '${nuevoEstado}'.`
+      });
+
+      renderAllViews();
+      if (currentExpedienteId === id) {
+        populateFicha(exp);
+      }
+    }
+
+    // OPEN FICHA MODAL
+    function openFichaModal(id) {
+      const exp = expedientes.find(e => e.id === id);
+      if (!exp) return;
+      currentExpedienteId = id;
+      populateFicha(exp);
+      openModal("modal-ficha-expediente");
+    }
+
+    function populateFicha(exp) {
+      const sem = getSemaforoInfo(exp);
+      document.getElementById("ficha-cliente-nombre").innerText = exp.cliente;
+      
+      const dot = document.getElementById("ficha-cliente-dot");
+      dot.className = "w-3 h-3 rounded-full shrink-0 " + sem.dotBg;
+
+      document.getElementById("ficha-tramite-nombre").innerText = exp.tramite + " (" + (exp.expedienteNo || 'Sin Expediente') + ")";
+      document.getElementById("ficha-estado-badge").innerText = exp.estado;
+      document.getElementById("ficha-prioridad-badge").innerText = "Prioridad " + exp.prioridad;
+      
+      const apBadge = document.getElementById("ficha-aprobado-badge");
+      if (exp.aprobadoPresentar) apBadge.classList.remove("hidden");
+      else apBadge.classList.add("hidden");
+
+      document.getElementById("ficha-portal").innerText = exp.portal;
+      document.getElementById("ficha-vencimiento").innerText = exp.vencimientoFecha;
+      document.getElementById("ficha-dias-restantes").innerText = exp.diasRestantesMsg;
+      document.getElementById("ficha-responsable").innerText = exp.responsable;
+      document.getElementById("ficha-cuit").innerText = "CUIT: " + exp.cuit;
+
+      // Render timeline
+      const tl = document.getElementById("ficha-timeline");
+      tl.innerHTML = "";
+      exp.timeline.forEach(t => {
+        const item = document.createElement("div");
+        item.className = "relative pl-3 space-y-0.5";
+        item.innerHTML = `
+          <div class="flex items-center gap-2 text-[10px] text-gray-400 font-semibold">
+            <span>${t.fecha}</span>
+            <span>•</span>
+            <span class="text-deep-green font-bold">${t.usuario}</span>
+          </div>
+          <p class="text-xs text-gray-800 font-medium">${t.desc}</p>
+        `;
+        tl.appendChild(item);
+      });
+
+      // Render doc items
+      const docList = document.getElementById("ficha-doc-items-list");
+      docList.innerHTML = "";
+      if (exp.docItems && exp.docItems.length > 0) {
+        exp.docItems.forEach(d => {
+          const di = document.createElement("div");
+          di.className = "p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between text-xs";
+          di.innerHTML = `
+            <span class="font-bold text-gray-800">${d.nombre}</span>
+            <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded">${d.estado}</span>
+          `;
+          docList.appendChild(di);
+        });
+      } else {
+        docList.innerHTML = `<p class="text-gray-400 italic">No hay solicitudes documentales activas para este cliente.</p>`;
+      }
+    }
+
+    // FICHA ACTIONS
+    function marcarAprobadoPresentar() {
+      if (!currentExpedienteId) return;
+      const exp = expedientes.find(e => e.id === currentExpedienteId);
+      if (exp) {
+        exp.aprobadoPresentar = true;
+        exp.docPendiente = false;
+        exp.timeline.unshift({
+          fecha: new Date().toLocaleString("es-AR"),
+          usuario: "Cr. Daniel Montiel",
+          desc: "Expediente marcado como APROBADO PARA PRESENTAR por el profesional."
+        });
+        alert("✅ Expediente marcado como Aprobado para Presentar.");
+        populateFicha(exp);
+        renderAllViews();
+      }
+    }
+
+    function cambiarEstadoConfirmado(nuevoEstado) {
+      if (!currentExpedienteId) return;
+      cambiarEstadoExpediente(currentExpedienteId, nuevoEstado);
+    }
+
+    function registrarProrrogaPrompt() {
+      if (!currentExpedienteId) return;
+      const razon = prompt("Ingresá el motivo y los días de prórroga concedidos por el organismo:");
+      if (razon) {
+        const exp = expedientes.find(e => e.id === currentExpedienteId);
+        exp.diasRestantesMsg = "Prórroga activa (" + razon + ")";
+        exp.diasRestantesDias = 15;
+        exp.timeline.unshift({
+          fecha: new Date().toLocaleString("es-AR"),
+          usuario: "Cr. Daniel Montiel",
+          desc: `Prórroga registrada: ${razon}.`
+        });
+        populateFicha(exp);
+        renderAllViews();
+      }
+    }
+
+    // CREATE DESCARGO
+    function handleCrearDescargo(ev) {
+      ev.preventDefault();
+      const newId = expedientes.length + 1;
+      const nuevo = {
+        id: newId,
+        cliente: document.getElementById("new-cliente").value,
+        cuit: document.getElementById("new-cuit").value,
+        tramite: document.getElementById("new-nombre").value,
+        portal: document.getElementById("new-portal").value,
+        expedienteNo: document.getElementById("new-expediente").value,
+        estado: "Notificación recibida",
+        prioridad: document.getElementById("new-prioridad").value,
+        diasRestantesDias: 15,
+        docPendiente: true,
+        diasRestantesMsg: "Vence el " + document.getElementById("new-vencimiento").value,
+        vencimientoFecha: document.getElementById("new-vencimiento").value,
+        responsable: document.getElementById("new-responsable").value,
+        aprobadoPresentar: false,
+        timeline: [
+          { fecha: new Date().toLocaleString("es-AR"), usuario: "Cr. Daniel Montiel", desc: "Expediente creado en 'Notificación recibida'. Documento vinculado." }
+        ],
+        docItems: []
+      };
+
+      expedientes.unshift(nuevo);
+      closeModal("modal-nuevo-descargo");
+      renderAllViews();
+      alert("✅ Expediente de Descargo Tributario registrado con éxito en 'Notificación recibida'.");
+    }
+
+    // SOLICITUD DOCUMENTAL DINÁMICA CON REDACCIÓN EXACTA PEDIDA
+    function aplicarPlantillaSolicitud() {
+      const tipo = document.getElementById("sol-plantilla-select").value;
+      const asunto = document.getElementById("sol-asunto");
+      const explicacion = document.getElementById("sol-explicacion");
+
+      if (tipo === "estandar") {
+        asunto.value = "Notificación ARCA: Requerimiento de documentación impositiva y contable";
+        explicacion.value = "Estimado cliente, hemos recepcionado su email en la cual ARCA le solicita a usted la presentación de cierta documentación impositiva y contable para acreditar los importes detectados. Por favor, necesitamos que acceda a la siguiente página en la cual le detallaremos cuáles son los documentos que debe cargar antes del día 26/07/2026.";
+      } else if (tipo === "urgente") {
+        asunto.value = "URGENTE ARCA: Requerimiento de inspección fiscal impositiva";
+        explicacion.value = "Estimado cliente: ARCA notificó un requerimiento urgente. Le solicitamos ingresar al enlace de carga inmediatamente para aportar la información contable solicitada.";
+      } else if (tipo === "gastos") {
+        asunto.value = "Revisión de Gastos y Facturas de Proveedores ARCA";
+        explicacion.value = "Estimado cliente: Necesitamos verificar los comprobantes de gastos observados por el organismo para responder al requerimiento impositivo.";
+      }
+    }
+
+    function agregarRenglonDoc() {
+      const container = document.getElementById("lista-docs-container");
+      const div = document.createElement("div");
+      div.className = "flex items-center gap-2";
+      div.innerHTML = `
+        <select class="w-full rounded-lg border-gray-300 text-xs focus:ring-purple-600 font-medium">
+          <option value="Facturas de Proveedores Observadas">Facturas de Proveedores Observadas</option>
+          <option value="Comprobantes de Pago de Retenciones IIBB">Comprobantes de Pago de Retenciones IIBB</option>
+          <option value="Extractos Bancarios en PDF (Periodo Enero-Junio 2026)">Extractos Bancarios en PDF (Periodo Enero-Junio 2026)</option>
+          <option value="Libro IVA Compras y Ventas en Excel">Libro IVA Compras y Ventas en Excel</option>
+          <option value="Certificado MiPyME o Exención Válido">Certificado MiPyME o Exención Válido</option>
+          <option value="Balances y Estado de Resultados Firmados">Balances y Estado de Resultados Firmados</option>
+        </select>
+        <button type="button" onclick="eliminarRenglonDoc(this)" class="text-gray-400 hover:text-red-600 p-1">
+          <span class="material-symbols-outlined text-base">delete</span>
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    function eliminarRenglonDoc(btn) {
+      btn.parentElement.remove();
+    }
+
+    function openSolicitudDocumentalModal() {
+      closeModal("modal-ficha-expediente");
+      openModal("modal-solicitud-documental");
+    }
+
+    function handleEnviarSolicitudDocumental(ev, via = 'portal') {
+      if (ev) ev.preventDefault();
+      if (currentExpedienteId) {
+        const exp = expedientes.find(e => e.id === currentExpedienteId);
+        if (exp) {
+          exp.estado = "Documentación solicitada al cliente";
+          exp.docPendiente = true;
+          exp.timeline.unshift({
+            fecha: new Date().toLocaleString("es-AR"),
+            usuario: "Cr. Daniel Montiel",
+            desc: `Se generó solicitud documental y se envió notificación (${via === 'email' ? 'Email' : 'Portal'}). Estado pasó a 'Documentación solicitada al cliente'.`
+          });
+        }
+      }
+      closeModal("modal-solicitud-documental");
+      renderAllViews();
+      
+      const msgInput = document.getElementById("sol-explicacion");
+      if (msgInput) {
+        document.getElementById("simular-portal-mensaje").innerText = msgInput.value;
+      }
+
+      openSimulatedEmailModal();
+    }
+
+    function openSimulatedEmailModal() {
+      switchSimStep('email');
+      openModal("modal-simular-portal");
+    }
+
+    function switchSimStep(step) {
+      const emailSection = document.getElementById("sim-step-email");
+      const landingSection = document.getElementById("sim-step-landing");
+      const btnEmail = document.getElementById("sim-step-btn-email");
+      const btnLanding = document.getElementById("sim-step-btn-landing");
+
+      if (step === 'email') {
+        emailSection.classList.remove("hidden");
+        landingSection.classList.add("hidden");
+
+        btnEmail.classList.add("bg-white", "shadow-xs", "text-deep-green");
+        btnEmail.classList.remove("text-gray-500");
+
+        btnLanding.classList.remove("bg-white", "shadow-xs", "text-deep-green");
+        btnLanding.classList.add("text-gray-500");
+      } else {
+        emailSection.classList.add("hidden");
+        landingSection.classList.remove("hidden");
+
+        btnLanding.classList.add("bg-white", "shadow-xs", "text-deep-green");
+        btnLanding.classList.remove("text-gray-500");
+
+        btnEmail.classList.remove("bg-white", "shadow-xs", "text-deep-green");
+        btnEmail.classList.add("text-gray-500");
+      }
+    }
+
+    function clienteEnviarDocumentacion() {
+      if (currentExpedienteId) {
+        const exp = expedientes.find(e => e.id === currentExpedienteId);
+        if (exp) {
+          exp.estado = "Documentación recibida";
+          exp.docPendiente = false;
+          exp.timeline.unshift({
+            fecha: new Date().toLocaleString("es-AR"),
+            usuario: "Cliente vía Portal",
+            desc: "El cliente envió la documentación solicitada. Estado actualizado a 'Documentación recibida' para revisión profesional."
+          });
+        }
+      }
+      closeModal("modal-simular-portal");
+      renderAllViews();
+      alert("📲 ¡El cliente ha enviado la documentación! Notificación generada y estado actualizado a 'Documentación recibida'.");
+    }
+
+    // CAMBIO DE ROL (VISTA ESTUDIO VS PORTAL CLIENTE)
+    function setRoleDescargos(role) {
+      const btnEstudio = document.getElementById('btn-role-estudio');
+      const btnCliente = document.getElementById('btn-role-cliente');
+      const wrapEstudio = document.getElementById('wrapper-view-estudio');
+      const wrapCliente = document.getElementById('wrapper-view-cliente');
+
+      if (role === 'estudio') {
+        btnEstudio.className = 'px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5 font-bold';
+        btnCliente.className = 'px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5 font-semibold';
+        wrapEstudio.classList.remove('hidden');
+        wrapCliente.classList.add('hidden');
+      } else {
+        btnCliente.className = 'px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5 font-bold';
+        btnEstudio.className = 'px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5 font-semibold';
+        wrapCliente.classList.remove('hidden');
+        wrapEstudio.classList.add('hidden');
+      }
+    }
+
+    // SWITCH MAIN VIEWS
+    function switchMainView(viewName) {
+      document.getElementById("view-kanban").classList.add("hidden");
+      document.getElementById("view-bandeja").classList.add("hidden");
+      document.getElementById("view-tareas").classList.add("hidden");
+      document.getElementById("view-lista").classList.add("hidden");
+      document.getElementById("view-calendario").classList.add("hidden");
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.remove("bg-deep-green", "text-white");
+        btn.classList.add("bg-gray-100", "text-gray-700");
+      });
+
+      document.getElementById("view-" + viewName).classList.remove("hidden");
+      document.getElementById("tab-btn-" + viewName).classList.add("bg-deep-green", "text-white");
+      document.getElementById("tab-btn-" + viewName).classList.remove("bg-gray-100", "text-gray-700");
+    }
+
+    // SWITCH FICHA SUBTABS
+    function switchFichaTab(tabName) {
+      document.querySelectorAll(".ftab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".ftab-btn").forEach(btn => {
+        btn.classList.remove("text-deep-green", "border-b-2", "border-deep-green");
+        btn.classList.add("text-gray-500");
+      });
+
+      document.getElementById("ftab-" + tabName).classList.remove("hidden");
+      document.getElementById("ftab-btn-" + tabName).classList.add("text-deep-green", "border-b-2", "border-deep-green");
+    }
+
+    // MODAL UTILS
+    function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
+    function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+  </script>
+
+</body>
+
+</html>

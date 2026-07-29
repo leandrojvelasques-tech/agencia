@@ -12,6 +12,7 @@ import EventParticipants from './pages/admin/EventParticipants'
 import EventAttendance from './pages/admin/EventAttendance'
 import EventMinuta from './pages/admin/EventMinuta'
 import EventSatisfaction from './pages/admin/EventSatisfaction'
+import EventReport from './pages/admin/EventReport'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
 import ClassesDashboard from './pages/admin/ClassesDashboard.jsx'
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
           <Route path="eventos/:id/satisfaccion" element={<EventSatisfaction />} />
+          <Route path="eventos/:id/reporte" element={<EventReport />} />
           <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
           <Route path="configuracion" element={<SettingsDashboard />} />
           <Route path="clases" element={<ClassesDashboard />} />
@@ -118,6 +120,7 @@ export default function App() {
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
         <Route path="/asistencia/:slug" element={<AttendanceCheck />} />
         <Route path="/evento/:slug/inscritos" element={<EventParticipantsPublic />} />
+        <Route path="/evento/:slug/reporte" element={<EventReport isPublic={true} />} />
         <Route path="/encuesta/:slug" element={<EventFeedback />} />
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />
 

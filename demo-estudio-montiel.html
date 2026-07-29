@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Demostración Sistema Gestión — Estudio Contable Cr. Daniel Montiel</title>
+  <meta name="description" content="Portal de demostración interactivo del Sistema de Gestión e Inteligencia para el Estudio Contable Cr. Daniel Montiel por Leandro Velasques." />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+            'accent-green': '#1E4334',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.15)',
+            'card-hover': '0 12px 24px -8px rgba(40, 90, 71, 0.22)',
+            'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-[#0F172A] text-gray-100 font-sans antialiased selection:bg-light-green selection:text-deep-green;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-white;
+      }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1E293B;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #285A47;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #A8D5C1;
+    }
+    .frame-desktop {
+      width: 100%;
+      height: 820px;
+      border: none;
+      border-radius: 1rem;
+    }
+    .frame-mobile {
+      width: 390px;
+      height: 780px;
+      border: 8px solid #334155;
+      border-radius: 2.5rem;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- HEADER DE PRESENTACIÓN LEANDRO VELASQUES -->
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        
+        <!-- Brand & Presentación -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-900/30">
+            LV
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                PROTOTIPO INTERACTIVO DE NAVEGACIÓN
+              </span>
+              <span class="text-slate-400 text-xs">• Leandro Velasques IA</span>
+            </div>
+            <h1 class="text-base sm:text-lg font-extrabold text-white leading-tight">Estudio Contable Cr. Daniel Montiel</h1>
+          </div>
+        </div>
+
+        <!-- Acciones & Dispositivo -->
+        <div class="flex items-center gap-2 sm:gap-3 justify-between md:justify-end">
+          
+          <!-- Mode Switcher (Desktop vs Mobile Preview) -->
+          <div class="bg-slate-800 p-1 rounded-xl flex items-center border border-slate-700 text-xs font-semibold">
+            <button id="btn-device-desktop" onclick="setDevice('desktop')" class="px-3 py-1.5 rounded-lg transition bg-emerald-600 text-white font-bold flex items-center gap-1.5 shadow">
+              <span class="material-symbols-outlined text-sm">desktop_windows</span>
+              <span class="hidden sm:inline">Vista Escritorio</span>
+            </button>
+            <button id="btn-device-mobile" onclick="setDevice('mobile')" class="px-3 py-1.5 rounded-lg transition text-slate-300 hover:text-white flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">smartphone</span>
+              <span class="hidden sm:inline">Vista Celular</span>
+            </button>
+          </div>
+
+          <!-- Botón Compartir por WhatsApp -->
+          <a href="https://wa.me/?text=Hola%20Cr.%20Daniel%20Montiel,%20te%20comparto%20el%20prototipo%20interactivo%20del%20Sistema%20de%20Gestión%20y%20Agenda:%20https://www.leandrovelasques.com.ar/demo-estudio-montiel.html" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-900/40 transition">
+            <span class="material-symbols-outlined text-base">share</span>
+            <span class="hidden sm:inline">Enviar a Cliente</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- SELECTOR PRINCIPAL DE MÓDULOS DEL ESTUDIO CONTABLE -->
+  <section class="bg-slate-900 py-3 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        
+        <nav class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0 w-full sm:w-auto">
+          
+          <button id="nav-btn-agenda" onclick="loadModule('demo-agenda-contable.html', 'agenda')" class="px-4 py-2 rounded-xl font-extrabold text-xs flex items-center gap-2 transition bg-emerald-600 text-white shadow-lg shadow-emerald-900/30">
+            <span class="material-symbols-outlined text-lg">calendar_month</span>
+            <span>1. Agenda Mensual & Notificaciones</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-emerald-900 text-emerald-200 text-[9px]">NUEVO</span>
+          </button>
+
+          <button id="nav-btn-descargos" onclick="loadModule('demo-crm-contable.html', 'descargos')" class="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            <span class="material-symbols-outlined text-lg">inbox</span>
+            <span>2. Bandeja de Descargos Tributarios</span>
+          </button>
+
+          <button id="nav-btn-sueldos" onclick="loadModule('demo-novedades-sueldos.html', 'sueldos')" class="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            <span class="material-symbols-outlined text-lg">payments</span>
+            <span>3. Gestión Novedades Sueldos</span>
+          </button>
+        </nav>
+
+        <a id="btn-open-direct" href="demo-agenda-contable.html" target="_blank" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 shrink-0 self-end sm:self-center">
+          <span>Abrir pestaña completa</span>
+          <span class="material-symbols-outlined text-sm">open_in_new</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ÁREA DE VISUALIZACIÓN INTERACTIVA -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Contenedor del Iframe -->
+    <div id="container-frame" class="bg-slate-900 p-2 sm:p-4 rounded-3xl border border-slate-800 shadow-2xl transition-all duration-300">
+      <iframe id="demo-iframe" src="demo-agenda-contable.html" class="frame-desktop shadow-inner bg-white"></iframe>
+    </div>
+
+    <!-- TARJETAS DE CARACTERÍSTICAS TÉCNICAS DESTACADAS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-800">
+      
+      <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+          <span class="material-symbols-outlined text-xl">calendar_month</span>
+        </div>
+        <h3 class="font-extrabold text-sm text-white">Agenda Mensual Unificada</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Compila en una grilla de 30 días los vencimientos de AFIP, DGR y Municipalidad, junto a reuniones de clientes, cierres de balance y recordatorios internos.
+        </p>
+      </div>
+
+      <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
+          <span class="material-symbols-outlined text-xl">mark_chat_read</span>
+        </div>
+        <h3 class="font-extrabold text-sm text-white">Alertas Automáticas WhatsApp & Mail</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Recordatorios automáticos para clientes con 48h y 24h de anticipación para confirmar asistencia a reuniones y envío de documentación.
+        </p>
+      </div>
+
+      <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
+          <span class="material-symbols-outlined text-xl">gavel</span>
+        </div>
+        <h3 class="font-extrabold text-sm text-white">Control de Descargos & Sueldos</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Seguimiento transparente de expedientes de requerimientos tributarios y recepción estructurada de novedades salariales por cada empresa.
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER PRESENTACIÓN -->
+  <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 space-y-2">
+      <p class="font-semibold text-slate-400">Desarrollado por Leandro Velasques — Consultor en Inteligencia Artificial & Automatización para Empresas</p>
+      <p>© 2026 Estudio Contable Cr. Daniel Montiel • Prototipo de Sistema de Gestión Integral</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT INTERACTIVO -->
+  <script>
+    let currentDevice = 'desktop';
+
+    function loadModule(url, key) {
+      const iframe = document.getElementById("demo-iframe");
+      iframe.src = url;
+      document.getElementById("btn-open-direct").href = url;
+
+      // Update Active Navigation Button Styles
+      document.querySelectorAll("nav button").forEach(btn => {
+        btn.className = "px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-slate-800 text-slate-300 hover:bg-slate-700";
+      });
+
+      const activeBtn = document.getElementById("nav-btn-" + key);
+      if (activeBtn) {
+        activeBtn.className = "px-4 py-2 rounded-xl font-extrabold text-xs flex items-center gap-2 transition bg-emerald-600 text-white shadow-lg shadow-emerald-900/30";
+      }
+    }
+
+    function setDevice(device) {
+      currentDevice = device;
+      const iframe = document.getElementById("demo-iframe");
+      const btnDesktop = document.getElementById("btn-device-desktop");
+      const btnMobile = document.getElementById("btn-device-mobile");
+
+      if (device === 'mobile') {
+        iframe.className = "frame-mobile shadow-2xl bg-white";
+        btnMobile.className = "px-3 py-1.5 rounded-lg transition bg-emerald-600 text-white font-bold flex items-center gap-1.5 shadow";
+        btnDesktop.className = "px-3 py-1.5 rounded-lg transition text-slate-300 hover:text-white flex items-center gap-1.5";
+      } else {
+        iframe.className = "frame-desktop shadow-inner bg-white";
+        btnDesktop.className = "px-3 py-1.5 rounded-lg transition bg-emerald-600 text-white font-bold flex items-center gap-1.5 shadow";
+        btnMobile.className = "px-3 py-1.5 rounded-lg transition text-slate-300 hover:text-white flex items-center gap-1.5";
+      }
+    }
+  </script>
+</body>
+
+</html>

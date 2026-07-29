@@ -508,10 +508,11 @@ serve(async (req) => {
       if (emailType === 'welcome' && isSameDayRegistration && event.send_reminder_same_day !== false && !body.testEmail) {
         console.log(`[SameDayTrigger] Inscripción el mismo día del evento. Enviando recordatorio del mismo día de forma inmediata.`);
         try {
+          const templateKey = reg.attendance_mode === 'virtual' ? 'reminder_same_day' : 'reminder_same_day_presencial';
           const { data: reminderTemplate, error: reminderErr } = await supabase
             .from('email_templates')
             .select('*')
-            .eq('id', 'reminder_same_day')
+            .eq('id', templateKey)
             .single();
 
           if (!reminderErr && reminderTemplate) {
@@ -538,7 +539,7 @@ serve(async (req) => {
             );
             console.log(`[SameDayTrigger] Recordatorio del mismo día enviado e insertado en logs exitosamente.`);
           } else {
-            console.error(`[SameDayTrigger] No se encontró la plantilla reminder_same_day o hubo error:`, reminderErr);
+            console.error(`[SameDayTrigger] No se encontró la plantilla ${templateKey} o hubo error:`, reminderErr);
           }
         } catch (err) {
           console.error(`[SameDayTrigger] Error enviando recordatorio del mismo día automático:`, err);

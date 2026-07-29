@@ -103,9 +103,35 @@ export default function EventsDashboard() {
   const [regSearch, setRegSearch] = useState('')
   const [selectedEventId, setSelectedEventId] = useState('all')
   const [selectedRegForModal, setSelectedRegForModal] = useState(null)
+  const [emailQuota, setEmailQuota] = useState(null)
+  const [loadingQuota, setLoadingQuota] = useState(false)
+
+  const fetchEmailQuota = async () => {
+    setLoadingQuota(true)
+    try {
+      const response = await fetch('/api/brevo-check')
+      if (response.ok) {
+        const data = await response.json()
+        const freePlan = data.account?.plan?.find(p => p.type === 'free')
+        if (freePlan) {
+          setEmailQuota({
+            credits: freePlan.credits,
+            creditsType: freePlan.creditsType,
+            totalLimit: 300,
+            usedToday: 300 - freePlan.credits
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching email quota:', err)
+    } finally {
+      setLoadingQuota(false)
+    }
+  }
 
   useEffect(() => {
     fetchEventsWithStats()
+    fetchEmailQuota()
   }, [])
 
   const loadAllActiveRegistrations = async () => {
@@ -182,6 +208,47 @@ export default function EventsDashboard() {
             <span className="material-symbols-outlined text-lg">add</span>
             Nuevo Evento
           </Link>
+        </div>
+      )}
+
+      {/* Widget de Cuota de Emails */}
+      {emailQuota && (activeTab === 'events' || activeTab === 'registrations') && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50/70 border border-emerald-200/60 rounded-[var(--radius-premium)] p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-700">
+              <span className="material-symbols-outlined">mail</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest">Cuota Diaria de Emails (Brevo)</p>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span className="text-xl font-extrabold text-emerald-950">{emailQuota.credits}</span>
+                <span className="text-xs text-emerald-700/60 font-semibold">disponibles hoy (de {emailQuota.totalLimit})</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 max-w-xs sm:mx-6">
+            <div className="flex justify-between text-[9px] font-bold text-emerald-800/70 uppercase tracking-widest mb-1">
+              <span>Usados: {emailQuota.usedToday}</span>
+              <span>Disponibles: {emailQuota.credits}</span>
+            </div>
+            <div className="w-full bg-emerald-950/15 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="bg-emerald-600 h-1.5 rounded-full transition-all duration-500" 
+                style={{ width: `${(emailQuota.credits / emailQuota.totalLimit) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            onClick={fetchEmailQuota} 
+            disabled={loadingQuota}
+            className="btn-secondary !py-1.5 !px-3 text-xs font-bold flex items-center gap-1.5 border-emerald-200/60 hover:bg-emerald-100/50 self-start sm:self-auto"
+          >
+            <span className={`material-symbols-outlined text-sm ${loadingQuota ? 'animate-spin' : ''}`}>sync</span>
+            {loadingQuota ? 'Actualizando...' : 'Actualizar'}
+          </button>
         </div>
       )}
 
@@ -305,7 +372,9 @@ export default function EventsDashboard() {
                             <span className={`status-dot status-dot-${statusCfg.color}`} />
                             {statusCfg.label}
                           </span>
-                          <span className="badge badge-gray">{TYPE_LABELS[event.type]}</span>
+                          {TYPE_LABELS[event.type] && (
+                            <span className="badge badge-gray">{TYPE_LABELS[event.type]}</span>
+                          )}
                           {event.is_public === false && (
                             <span className="badge border border-amber-200 bg-amber-50 text-amber-700">
                               <span className="material-symbols-outlined text-[10px]">visibility_off</span>
@@ -329,7 +398,7 @@ export default function EventsDashboard() {
                           </span>
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-base">schedule</span>
-                            {event.start_time} hs
+                            {event.start_time ? event.start_time.substring(0, 5) : '—'} hs
                           </span>
                           {event.organizer && (
                             <span className="flex items-center gap-1">

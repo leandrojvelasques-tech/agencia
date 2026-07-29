@@ -4,11 +4,22 @@ const https = require('https');
 function safeFetch(url, options = {}) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
+    
+    // Serialize body BEFORE setting headers so we can compute Content-Length
+    const bodyStr = options.body
+      ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body))
+      : null;
+
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Vercel Serverless)',
       'Content-Type': 'application/json',
       ...options.headers
     };
+
+    // CRITICAL: Set Content-Length to avoid chunked encoding issues with large payloads
+    if (bodyStr) {
+      headers['Content-Length'] = Buffer.byteLength(bodyStr, 'utf8');
+    }
 
     const reqOptions = {
       hostname: urlObj.hostname,
@@ -41,8 +52,8 @@ function safeFetch(url, options = {}) {
       reject(err);
     });
 
-    if (options.body) {
-      req.write(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
+    if (bodyStr) {
+      req.write(bodyStr);
     }
     req.end();
   });
@@ -322,45 +333,100 @@ module.exports = async (req, res) => {
       </html>
     `;
 
-    // Brevo email sending payload:
-    // To respect attendee privacy, send to the first email, and set the rest in bcc.
-    const toField = [{ email: emails[0] }];
-    const bccField = emails.slice(1).map(email => ({ email }));
+    // Brevo email sending: send in batches of max 49 BCC per API call
+    // to avoid timeouts and Brevo limits (max 99 recipients per message version)
+    const BATCH_SIZE = 49;
+    const senderObj = parseSender(emailFrom);
+    const subject = req.body.subject || (surveyLink && (!summary || summary.includes('prueba') || summary.includes('encuesta')) ? `Encuesta de Satisfacción - ${eventTitle}` : `Minuta - ${eventTitle}`);
 
-    const emailPayload = {
-      sender: parseSender(emailFrom),
-      to: toField,
-      subject: req.body.subject || (surveyLink && (!summary || summary.includes('prueba') || summary.includes('encuesta')) ? `Encuesta de Satisfacción - ${eventTitle}` : `Minuta - ${eventTitle}`),
-      htmlContent: emailHtml
-    };
-
-    if (bccField.length > 0) {
-      emailPayload.bcc = bccField;
+    // Build full recipient list
+    let allRecipients = [...emails];
+    
+    // Auto-include sender email so coordinator always gets a copy
+    if (senderObj.email && !allRecipients.some(e => e.toLowerCase() === senderObj.email.toLowerCase())) {
+      allRecipients.push(senderObj.email);
     }
 
-    console.log('Sending request to Brevo API...', { toCount: toField.length, bccCount: bccField.length });
+    console.log(`Total recipients: ${allRecipients.length}, will send in batches of ${BATCH_SIZE + 1}`);
 
-    const brevoResponse = await safeFetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': brevoApiKey,
-        'Content-Type': 'application/json'
-      },
-      body: emailPayload
-    });
+    // Split into batches: each batch = 1 TO + up to BATCH_SIZE BCC
+    const batches = [];
+    for (let i = 0; i < allRecipients.length; i += BATCH_SIZE + 1) {
+      const batchEmails = allRecipients.slice(i, i + BATCH_SIZE + 1);
+      batches.push(batchEmails);
+    }
 
-    const brevoResult = await brevoResponse.json();
+    console.log(`Sending ${batches.length} batch(es) to Brevo...`);
 
-    if (brevoResponse.status >= 200 && brevoResponse.status < 300) {
-      return res.status(200).json({ success: true, messageId: brevoResult.messageId || brevoResult.id });
-    } else {
-      console.error('Brevo API returned error:', brevoResult);
-      const detailMsg = brevoResult?.message || brevoResult?.code || brevoResult?.error || (typeof brevoResult === 'object' ? JSON.stringify(brevoResult) : String(brevoResult));
+    const results = [];
+    const errors = [];
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batchEmails = batches[batchIndex];
+      const toField = [{ email: batchEmails[0] }];
+      const bccField = batchEmails.slice(1).map(email => ({ email }));
+
+      const emailPayload = {
+        sender: senderObj,
+        to: toField,
+        subject: subject,
+        htmlContent: emailHtml
+      };
+
+      if (bccField.length > 0) {
+        emailPayload.bcc = bccField;
+      }
+
+      const payloadSize = JSON.stringify(emailPayload).length;
+      console.log(`Batch ${batchIndex + 1}/${batches.length}: TO=${batchEmails[0]}, BCC=${bccField.length}, payloadSize=${payloadSize} bytes`);
+
+      try {
+        const brevoResponse = await safeFetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: emailPayload
+        });
+
+        const brevoResult = await brevoResponse.json();
+
+        if (brevoResponse.status >= 200 && brevoResponse.status < 300) {
+          console.log(`Batch ${batchIndex + 1} SUCCESS: messageId=${brevoResult.messageId || brevoResult.id}`);
+          results.push({ batch: batchIndex + 1, success: true, messageId: brevoResult.messageId || brevoResult.id, count: batchEmails.length });
+        } else {
+          console.error(`Batch ${batchIndex + 1} FAILED (${brevoResponse.status}):`, brevoResult);
+          const detailMsg = brevoResult?.message || brevoResult?.code || JSON.stringify(brevoResult);
+          errors.push({ batch: batchIndex + 1, error: `Brevo (${brevoResponse.status}): ${detailMsg}`, count: batchEmails.length });
+        }
+      } catch (batchErr) {
+        console.error(`Batch ${batchIndex + 1} EXCEPTION:`, batchErr.message);
+        errors.push({ batch: batchIndex + 1, error: batchErr.message, count: batchEmails.length });
+      }
+    }
+
+    const totalSent = results.reduce((sum, r) => sum + r.count, 0);
+    const totalFailed = errors.reduce((sum, e) => sum + e.count, 0);
+
+    console.log(`Finished: ${totalSent} sent, ${totalFailed} failed across ${batches.length} batches`);
+
+    if (errors.length > 0 && results.length === 0) {
+      // All batches failed
       return res.status(200).json({
-        error: `Brevo (${brevoResponse.status}): ${detailMsg}`,
-        details: brevoResult
+        error: `Todos los lotes fallaron: ${errors.map(e => e.error).join('; ')}`,
+        details: { results, errors, totalSent, totalFailed }
       });
     }
+
+    return res.status(200).json({
+      success: true,
+      messageId: results[0]?.messageId,
+      totalSent,
+      totalFailed,
+      batches: results.length,
+      errors: errors.length > 0 ? errors : undefined
+    });
   } catch (err) {
     console.error('Error in send-minuta serverless route:', err);
     return res.status(200).json({ error: 'Error interno en la API al procesar el correo: ' + (err.message || String(err)) });

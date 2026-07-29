@@ -355,6 +355,7 @@ export default function EventDetail() {
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
     { to: `/admin/eventos/${id}/participantes?tab=satisfaction`, icon: 'thumb_up', label: 'Encuesta de Satisfacción', count: feedbackCount },
+    { to: `/admin/eventos/${id}/reporte`, icon: 'assessment', label: 'Reporte del Evento', count: null },
   ]
   const materials = event.event_materials?.filter(m => m.type !== 'image') || []
   const photos = event.event_materials?.filter(m => m.type === 'image') || []

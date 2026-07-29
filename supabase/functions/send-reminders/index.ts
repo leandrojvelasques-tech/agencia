@@ -427,8 +427,17 @@ serve(async (req) => {
             '{{link_cancelacion}}': `https://www.leandrovelasques.com.ar/cancelar.html?token=${reg.unique_token}`
           };
 
-          let resolvedSubject = template.subject;
-          let resolvedBody = template.body;
+          let activeTemplate = template;
+          if (type === 'reminder_24h') {
+            const templateKey = reg.attendance_mode === 'virtual' ? 'reminder_24h' : 'reminder_24h_presencial';
+            activeTemplate = templates[templateKey] || template;
+          } else if (type === 'reminder_same_day') {
+            const templateKey = reg.attendance_mode === 'virtual' ? 'reminder_same_day' : 'reminder_same_day_presencial';
+            activeTemplate = templates[templateKey] || template;
+          }
+
+          let resolvedSubject = activeTemplate.subject;
+          let resolvedBody = activeTemplate.body;
 
           for (const [key, value] of Object.entries(placeholders)) {
             resolvedSubject = resolvedSubject.replaceAll(key, value);

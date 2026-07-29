@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Agenda Cr. Daniel Montiel - Estudio Contable</title>
+  <meta name="description" content="Agenda Unificada y Centro de Notificaciones del Estudio Contable Cr. Daniel Montiel. Vencimientos, reuniones, fechas clave y recordatorios." />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+            'accent-green': '#1E4334',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.15)',
+            'card-hover': '0 12px 24px -8px rgba(40, 90, 71, 0.22)',
+            'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-[#F4F6F5] text-dark-gray font-sans antialiased selection:bg-light-green selection:text-deep-green;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-deep-green;
+      }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #EAEAEA;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #A8D5C1;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #285A47;
+    }
+    .calendar-cell {
+      min-height: 110px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- HEADER CORPORATIVO Y NAVEGACIÓN -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- App Title & Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-deep-green text-white flex items-center justify-center font-bold text-xl shadow-premium">
+            DM
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold leading-tight text-deep-green">Estudio Contable Cr. Daniel Montiel</h1>
+            <p class="text-xs text-gray-500">Módulo de Agenda Mensual Unificada & Notificaciones • Trelew, Chubut</p>
+          </div>
+        </div>
+
+        <!-- Acciones Principales Header -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+          
+          <!-- Botón Centro Notificaciones -->
+          <button onclick="openModal('modal-notificaciones')" class="relative bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-lg text-emerald-700">notifications_active</span>
+            <span class="hidden md:inline">Notificaciones</span>
+            <span id="notif-badge-count" class="w-5 h-5 rounded-full bg-red-500 text-white font-black text-[10px] flex items-center justify-center shadow">3</span>
+          </button>
+
+          <!-- Botón Simular Notificación -->
+          <button onclick="openModal('modal-simular-notificacion')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-lg text-indigo-600">chat</span>
+            <span class="hidden sm:inline">Simular Alerta Cliente</span>
+          </button>
+
+          <!-- Botón Agendar Nuevo Evento -->
+          <button onclick="openModal('modal-nuevo-evento')" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-premium transition">
+            <span class="material-symbols-outlined text-base">add_circle</span>
+            <span>Agendar Evento / Reunión</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-gray-100 pt-2 pb-1 gap-2">
+        <nav class="flex space-x-2 text-xs overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <a href="demo-crm-contable.html" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">inbox</span>
+            <span>Bandeja de Descargos</span>
+          </a>
+
+          <a href="demo-novedades-sueldos.html" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">payments</span>
+            <span>Novedades Sueldos</span>
+          </a>
+
+          <a href="demo-agenda-contable.html" class="tab-btn active bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-sm">
+            <span class="material-symbols-outlined text-base">calendar_month</span>
+            <span>Agenda Mensual & Notificaciones</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-light-green text-deep-green font-black text-[10px]">NUEVO</span>
+          </a>
+        </nav>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTROL TOOLBAR DE LA AGENDA -->
+  <section class="bg-white border-b border-gray-200 py-3 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+      
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Controles de Mes & Año -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+            <button onclick="cambiarMes(-1)" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-gray-700 transition">
+              <span class="material-symbols-outlined text-base">chevron_left</span>
+            </button>
+            <h2 id="periodo-titulo" class="text-sm sm:text-base font-extrabold text-deep-green px-3 min-w-[140px] text-center">Julio 2026</h2>
+            <button onclick="cambiarMes(1)" class="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center text-gray-700 transition">
+              <span class="material-symbols-outlined text-base">chevron_right</span>
+            </button>
+          </div>
+
+          <button onclick="irAHoy()" class="px-3 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm text-deep-green">today</span>
+            <span>Hoy (24 Jul)</span>
+          </button>
+        </div>
+
+        <!-- Switcher de Vistas (Grid vs Timeline vs Cliente) -->
+        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 lg:pb-0">
+          <div class="bg-gray-100 p-1 rounded-xl flex items-center border border-gray-200 text-xs font-semibold">
+            <button id="view-mode-grid" onclick="setMode('grid')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1 font-bold">
+              <span class="material-symbols-outlined text-base">calendar_view_month</span>
+              <span>Calendario Mensual (Grid)</span>
+            </button>
+            <button id="view-mode-timeline" onclick="setMode('timeline')" class="px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1 font-semibold">
+              <span class="material-symbols-outlined text-base">view_timeline</span>
+              <span>Cronograma (Timeline)</span>
+            </button>
+            <button id="view-mode-clientes" onclick="setMode('clientes')" class="px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1 font-semibold">
+              <span class="material-symbols-outlined text-base">domain</span>
+              <span>Resumen por Cliente</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Filtros por Categoría & Responsable -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1 text-xs border-t border-gray-100">
+        
+        <!-- Categorías -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-gray-400 font-medium text-[11px] mr-1">Filtrar Actividades:</span>
+          
+          <button onclick="setTipoFilter('todos')" id="cat-btn-todos" class="cat-btn active bg-deep-green text-white font-bold px-3 py-1 rounded-xl transition">
+            Todos (<span id="cnt-todos">0</span>)
+          </button>
+          
+          <button onclick="setTipoFilter('vencimiento')" id="cat-btn-vencimiento" class="cat-btn bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-semibold px-3 py-1 rounded-xl transition flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <span>Vencimientos Legales</span>
+          </button>
+
+          <button onclick="setTipoFilter('reunion')" id="cat-btn-reunion" class="cat-btn bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 font-semibold px-3 py-1 rounded-xl transition flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <span>Reuniones Agendadas</span>
+          </button>
+
+          <button onclick="setTipoFilter('fechaclave')" id="cat-btn-fechaclave" class="cat-btn bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-semibold px-3 py-1 rounded-xl transition flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+            <span>Fechas Clave Cliente</span>
+          </button>
+
+          <button onclick="setTipoFilter('recordatorio')" id="cat-btn-recordatorio" class="cat-btn bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100 font-semibold px-3 py-1 rounded-xl transition flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+            <span>Recordatorios Internos</span>
+          </button>
+        </div>
+
+        <!-- Responsables -->
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-gray-400 font-medium text-[11px]">Responsable:</span>
+          <select id="select-responsable" onchange="filterEvents()" class="bg-gray-50 border border-gray-300 rounded-xl px-3 py-1 text-xs font-semibold focus:ring-deep-green focus:border-deep-green">
+            <option value="todos">Todos los Contadores</option>
+            <option value="Cr. Daniel Montiel" selected>Cr. Daniel Montiel</option>
+            <option value="Cr. María García">Cr. María García</option>
+            <option value="Cr. Juan Pérez">Cr. Juan Pérez</option>
+          </select>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI STATS SUMMARY BAR -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Actividades del Mes</p>
+          <p id="kpi-total" class="text-2xl font-black text-deep-green mt-0.5">14</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <span class="material-symbols-outlined">event</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Reuniones Agendadas</p>
+          <p id="kpi-reuniones" class="text-2xl font-black text-blue-700 mt-0.5">4</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+          <span class="material-symbols-outlined">groups</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Vencimientos Legales</p>
+          <p id="kpi-vencimientos" class="text-2xl font-black text-emerald-700 mt-0.5">6</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <span class="material-symbols-outlined">gavel</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Notificaciones Enviadas</p>
+          <p id="kpi-notifs" class="text-2xl font-black text-indigo-700 mt-0.5">18</p>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+          <span class="material-symbols-outlined">mark_chat_read</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA 1: CALENDARIO MENSUAL (GRID 30 DÍAS) -->
+    <div id="wrapper-grid-view" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-4">
+      
+      <!-- Calendar Header Days of Week -->
+      <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-3">
+        <div class="text-red-600">Dom</div>
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mié</div>
+        <div>Jue</div>
+        <div>Vie</div>
+        <div class="text-indigo-600">Sáb</div>
+      </div>
+
+      <!-- Calendar Days Cells Grid -->
+      <div id="calendar-grid-cells" class="grid grid-cols-7 gap-1 sm:gap-2 text-xs">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+    </div>
+
+    <!-- VISTA 2: TIMELINE CRONOLÓGICO -->
+    <div id="wrapper-timeline-view" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+      <div class="border-b border-gray-100 pb-3 flex items-center justify-between">
+        <h3 class="font-bold text-base text-deep-green flex items-center gap-2">
+          <span class="material-symbols-outlined text-deep-green">schedule</span>
+          <span>Cronograma Consolidado de Actividades</span>
+        </h3>
+        <span class="text-xs text-gray-400">Ordenado por orden cronológico</span>
+      </div>
+
+      <div id="timeline-events-list" class="space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- VISTA 3: RESUMEN POR CLIENTE -->
+    <div id="wrapper-clientes-view" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+      <div class="border-b border-gray-100 pb-3">
+        <h3 class="font-bold text-base text-deep-green">Consolidado de Actividades por Cliente</h3>
+        <p class="text-xs text-gray-500">Visualización rápida de compromisos agendados para cada empresa asistida</p>
+      </div>
+
+      <div id="clientes-events-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- DETALLE DEL DÍA SELECCIONADO FOOTER CARD -->
+    <div id="card-dia-seleccionado" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-deep-green"></span>
+          <h3 id="dia-sel-titulo" class="font-bold text-base text-deep-green">Actividades para Hoy (Viernes 24 de Julio)</h3>
+        </div>
+        <span id="dia-sel-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">3 compromisos</span>
+      </div>
+
+      <div id="dia-sel-list" class="space-y-2">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: DETALLE DE EVENTO -->
+  <div id="modal-detalle-evento" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-modal space-y-5 border border-gray-100">
+      
+      <div class="flex items-start justify-between border-b border-gray-100 pb-3">
+        <div class="space-y-1">
+          <span id="evt-det-categoria" class="px-2.5 py-0.5 rounded font-bold text-[10px] uppercase bg-emerald-100 text-emerald-800">
+            Vencimiento Legal
+          </span>
+          <h3 id="evt-det-titulo" class="text-lg font-extrabold text-deep-green leading-snug">Vencimiento Citación DPR</h3>
+        </div>
+        <button onclick="closeModal('modal-detalle-evento')" class="text-gray-400 hover:text-gray-600 rounded-lg p-1">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-gray-50 rounded-xl space-y-2 border border-gray-200">
+          <div class="flex items-center justify-between text-gray-700">
+            <span class="font-bold text-gray-500">Cliente:</span>
+            <span id="evt-det-cliente" class="font-extrabold text-deep-green text-sm">Constructora del Atlántico S.A.</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-700">
+            <span class="font-bold text-gray-500">Fecha y Hora:</span>
+            <span id="evt-det-fecha" class="font-mono font-bold text-gray-900">24/07/2026 - 16:30 hs</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-700">
+            <span class="font-bold text-gray-500">Lugar / Modalidad:</span>
+            <span id="evt-det-lugar" class="font-bold text-indigo-700 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">videocam</span> Google Meet
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-gray-700">
+            <span class="font-bold text-gray-500">Contador Responsable:</span>
+            <span id="evt-det-responsable" class="font-bold text-deep-green">Cr. Daniel Montiel</span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-gray-700">Descripción / Notas Adicionales:</label>
+          <p id="evt-det-notas" class="p-3 bg-amber-50/50 rounded-xl border border-amber-200 text-gray-700 leading-relaxed">
+            Reunión presencial de trabajo para revisar la defensa tributaria formal antes de la presentación digital en la DGR.
+          </p>
+        </div>
+
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-700">mark_chat_read</span>
+            <div>
+              <p class="font-bold text-emerald-900 text-xs">Notificación enviada al cliente</p>
+              <p class="text-[10px] text-emerald-700">WhatsApp enviado el 23/07 a las 18:00 hs (Confirmado)</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-200 text-emerald-900">ENTREGADO</span>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <button onclick="dispararRecordatorioExpress()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition">
+          <span class="material-symbols-outlined text-sm">send</span>
+          <span>Re-enviar Recordatorio WhatsApp</span>
+        </button>
+
+        <button onclick="closeModal('modal-detalle-evento')" class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2.5 rounded-xl text-xs">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: NUEVO EVENTO / REUNIÓN -->
+  <div id="modal-nuevo-evento" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-modal space-y-4 border border-gray-100">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="text-base font-extrabold text-deep-green flex items-center gap-2">
+          <span class="material-symbols-outlined text-deep-green">edit_calendar</span>
+          <span>Agendar Actividad en la Agenda</span>
+        </h3>
+        <button onclick="closeModal('modal-nuevo-evento')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleCrearEvento(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Tipo de Actividad</label>
+          <select id="form-tipo" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green font-semibold">
+            <option value="reunion">🔵 Reunión Agendada con Cliente</option>
+            <option value="vencimiento">🟢 Vencimiento Legal / Impositivo</option>
+            <option value="fechaclave">🟠 Fecha Clave Cliente (Balance, CUIT)</option>
+            <option value="recordatorio">🟣 Recordatorio Interno / Tarea</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Título del Evento</label>
+          <input id="form-titulo" type="text" required placeholder="Ej: Firma de Estados Contables Anuales" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Cliente Asociado</label>
+            <select id="form-cliente" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green">
+              <option value="PATAGONIA SERVICIOS S.R.L.">PATAGONIA SERVICIOS S.R.L.</option>
+              <option value="CONSTRUCTORA DEL ATLÁNTICO S.A.">CONSTRUCTORA DEL ATLÁNTICO S.A.</option>
+              <option value="PESQUERA Y MARISCOS DEL GOLFO S.A.">PESQUERA Y MARISCOS DEL GOLFO S.A.</option>
+              <option value="METALÚRGICA SAN JORGE S.A.">METALÚRGICA SAN JORGE S.A.</option>
+              <option value="SANATORIO CENTRAL DE COMODORO S.A.">SANATORIO CENTRAL DE COMODORO S.A.</option>
+              <option value="General / Estudio">General / Sin cliente específico</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Responsable</label>
+            <select id="form-responsable" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green">
+              <option value="Cr. Daniel Montiel">Cr. Daniel Montiel</option>
+              <option value="Cr. María García">Cr. María García</option>
+              <option value="Cr. Juan Pérez">Cr. Juan Pérez</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha</label>
+            <input id="form-fecha" type="date" required value="2026-07-28" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Hora</label>
+            <input id="form-hora" type="time" value="10:00" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Lugar / Link reunión</label>
+          <input id="form-lugar" type="text" placeholder="Ej: Sala de reuniones Estudio Trelew o Link Google Meet" class="w-full rounded-xl border-gray-300 text-xs focus:ring-deep-green focus:border-deep-green" />
+        </div>
+
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input id="form-notificar" type="checkbox" checked class="rounded text-deep-green focus:ring-deep-green" />
+            <span class="font-bold text-emerald-900">Activar Recordatorio Automático por WhatsApp & Mail al cliente (24hs antes)</span>
+          </label>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-nuevo-evento')" class="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 font-bold">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-deep-green hover:bg-accent-green text-white font-bold shadow-premium">
+            Guardar en Agenda
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL 3: CENTRO DE NOTIFICACIONES -->
+  <div id="modal-notificaciones" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-modal space-y-4 border border-gray-100">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600 text-2xl">notifications_active</span>
+          <div>
+            <h3 class="text-base font-extrabold text-deep-green">Centro de Notificaciones & Alertas</h3>
+            <p class="text-[11px] text-gray-500">Histórico de recordatorios automáticos del Estudio</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-notificaciones')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+        
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-start gap-3">
+          <span class="material-symbols-outlined text-emerald-600 text-lg shrink-0 mt-0.5">chat</span>
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-emerald-900">WhatsApp Entregado • Patagonia Servicios</span>
+              <span class="text-[10px] text-emerald-700">Hoy 09:15 hs</span>
+            </div>
+            <p class="text-emerald-800 mt-1">Recordatorio de firma de balance enviado con éxito para la cita del 28/07.</p>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs flex items-start gap-3">
+          <span class="material-symbols-outlined text-amber-600 text-lg shrink-0 mt-0.5">warning</span>
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-amber-900">Alerta de Vencimiento • AFIP / ARCA</span>
+              <span class="text-[10px] text-amber-700">Ayer 18:00 hs</span>
+            </div>
+            <p class="text-amber-800 mt-1">Vence en 24hs la citación por alícuotas IIBB de Constructora del Atlántico S.A.</p>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs flex items-start gap-3">
+          <span class="material-symbols-outlined text-blue-600 text-lg shrink-0 mt-0.5">event_available</span>
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-blue-900">Reunión Virtual Confirmada</span>
+              <span class="text-[10px] text-blue-700">22/07 14:00 hs</span>
+            </div>
+            <p class="text-blue-800 mt-1">El cliente Sanatorio Central de Comodoro S.A. confirmó su asistencia para hoy a las 16:30 hs.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+        <button onclick="alert('✅ Notificaciones marcadas como leídas')" class="text-xs font-bold text-deep-green hover:underline">
+          Marcar todas como leídas
+        </button>
+        <button onclick="closeModal('modal-notificaciones')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl text-xs">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 4: SIMULADOR DE ALERTA WHATSAPP CLIENTE -->
+  <div id="modal-simular-notificacion" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-modal space-y-4 border border-gray-100">
+      
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">WA</span>
+          <div>
+            <h3 class="text-base font-extrabold text-gray-900">Simulador de Notificación al Cliente</h3>
+            <p class="text-[11px] text-gray-500">Vista exacta que recibe el contribuyente en su celular</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-simular-notificacion')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Pantalla Celular WhatsApp Mockup -->
+      <div class="bg-[#E5DDD5] rounded-2xl p-4 space-y-3 font-sans shadow-inner border border-gray-300">
+        <div class="bg-white p-3 rounded-2xl shadow-sm text-xs space-y-2 border-l-4 border-emerald-500 max-w-[90%]">
+          <div class="flex items-center justify-between border-b border-gray-100 pb-1">
+            <span class="font-bold text-emerald-800 text-[11px]">Estudio Contable Cr. Daniel Montiel</span>
+            <span class="text-[9px] text-gray-400">10:00 AM</span>
+          </div>
+          <p class="text-gray-800 leading-snug">
+            👋 Hola <strong>Patagonia Servicios S.R.L.</strong>, te recordamos que tienes una reunión agendada con el <strong>Cr. Daniel Montiel</strong>:
+          </p>
+          <div class="p-2 bg-emerald-50 rounded-xl text-[11px] space-y-1 text-emerald-900 font-medium">
+            <p>📌 <strong>Tema:</strong> Firma de Estados Contables Anuales</p>
+            <p>📅 <strong>Fecha:</strong> Martes 28 de Julio - 10:00 hs</p>
+            <p>📍 <strong>Lugar:</strong> Estudio Trelew (Belgrano 450)</p>
+          </div>
+          <p class="text-gray-500 text-[10px] italic">Responde este mensaje con 1 para confirmar o 2 para reagendar.</p>
+        </div>
+
+        <div class="bg-[#DCF8C6] p-2.5 rounded-2xl shadow-sm text-xs self-end ml-auto max-w-[75%] text-gray-900 font-semibold border border-emerald-200">
+          <p>1 - Confirmado, ahí estaré. Muchas gracias 👍</p>
+          <span class="text-[9px] text-emerald-700 block text-right mt-0.5">10:02 AM ✓✓</span>
+        </div>
+      </div>
+
+      <div class="pt-2 text-center">
+        <button onclick="alert('📲 Simulación enviada: El cliente recibe alertas automatizadas por WhatsApp y Email')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm transition">
+          Probar Envío de Prueba Instantáneo
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // DATASET DE ACTIVIDADES COMPILADAS DE LA AGENDA
+    let actividades = [
+      // NOVEDADES & LIQUIDACIÓN DE SUELDOS
+      {
+        id: 1,
+        tipo: 'recordatorio',
+        titulo: 'Solicitud de Novedades de Sueldos (Horas extras, inasistencias, novedades)',
+        cliente: 'PATAGONIA SERVICIOS S.R.L.',
+        fecha: '2026-07-01',
+        hora: '10:00',
+        lugar: 'Notificación WhatsApp / Portal Cliente',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Pedir al cliente el envío de novedades del personal antes del cierre mensual.',
+        completado: true
+      },
+      {
+        id: 2,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Plazo Pago de Sueldos Período Junio (4to Día Hábil)',
+        cliente: 'General / Todos los Empleadores',
+        fecha: '2026-07-04',
+        hora: '23:59',
+        lugar: 'Bancos / Transferencia CBU',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Fecha límite legal para la acreditación bancaria de haberes salariales.',
+        completado: true
+      },
+      {
+        id: 3,
+        tipo: 'recordatorio',
+        titulo: 'Carga y Validación de Planilla Novedades Salariales',
+        cliente: 'CONSTRUCTORA DEL ATLÁNTICO S.A.',
+        fecha: '2026-07-05',
+        hora: '14:30',
+        lugar: 'Módulo Sueldos / Sistema Contable',
+        responsable: 'Cr. María García',
+        notas: 'Procesar horas extras UOCRA y viáticos de personal de obra.',
+        completado: true
+      },
+      {
+        id: 4,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento F.931 Sueldos & Cargas Sociales (AFIP)',
+        cliente: 'General / Todos los Empleadores',
+        fecha: '2026-07-03',
+        hora: '23:59',
+        lugar: 'Portal AFIP / ARCA',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Presentación masiva de declaración jurada de cargas sociales del período anterior.',
+        completado: true
+      },
+      {
+        id: 5,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Presentación Libro de Sueldos Digital (LSD AFIP)',
+        cliente: 'METALÚRGICA SAN JORGE S.A.',
+        fecha: '2026-07-08',
+        hora: '18:00',
+        lugar: 'Portal Libro Sueldos Digital AFIP',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Validación e importación de conceptos remunerativos para F.931.',
+        completado: true
+      },
+      {
+        id: 6,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Depósito Aportes Sindicales (SEC, UOCRA, UTHGRA)',
+        cliente: 'General / Empleadores con Convenio',
+        fecha: '2026-07-11',
+        hora: '13:00',
+        lugar: 'Portales Sindicales',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Boletas de depósito de cuota sindical y seguro de vida colectivo.',
+        completado: true
+      },
+
+      // DESCARGOS & REQUERIMIENTOS TRIBUTARIOS
+      {
+        id: 7,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Plazo Respuesta Requerimiento Inspección AFIP',
+        cliente: 'METALÚRGICA SAN JORGE S.A.',
+        fecha: '2026-07-02',
+        hora: '12:00',
+        lugar: 'E-Ventanilla AFIP',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Respuesta a requerimiento de justificación de acreditaciones bancarias.',
+        completado: true
+      },
+      {
+        id: 8,
+        tipo: 'fechaclave',
+        titulo: 'Vencimiento Renovación Certificado MiPyME',
+        cliente: 'HOTEL Y GASTRONOMÍA PATAGONIA S.R.L.',
+        fecha: '2026-07-07',
+        hora: '18:00',
+        lugar: 'Portal PyME AFIP',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Vencimiento anual de la categorización para beneficios fiscales.',
+        completado: true
+      },
+      {
+        id: 9,
+        tipo: 'recordatorio',
+        titulo: 'Solicitud al Cliente de Libro IVA Compras & Facturas de Proveedores',
+        cliente: 'ESTUDIO JURÍDICO & ASOCIADOS S.H.',
+        fecha: '2026-07-09',
+        hora: '11:00',
+        lugar: 'Email / WhatsApp Cliente',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Requerir comprobantes físicos y digitales para elaborar el descargo por exención.',
+        completado: true
+      },
+      {
+        id: 10,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Tasa Comercio e Industria (Muni Trelew)',
+        cliente: 'PESQUERA Y MARISCOS DEL GOLFO S.A.',
+        fecha: '2026-07-10',
+        hora: '13:00',
+        lugar: 'MuniDigital Trelew',
+        responsable: 'Cr. María García',
+        notas: 'Presentación de DDJJ mensual de ingresos brutos municipales.',
+        completado: true
+      },
+      {
+        id: 11,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Escrito Descargo Tasa Comercial Municipal',
+        cliente: 'SANATORIO CENTRAL DE COMODORO S.A.',
+        fecha: '2026-07-13',
+        hora: '12:00',
+        lugar: 'MusaDigital / Mesa de Entradas Muni',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Presentación de descargo por exención impositiva prestadores de salud.',
+        completado: true
+      },
+      {
+        id: 12,
+        tipo: 'reunion',
+        titulo: 'Reunión Presencial — Revisión Previa de Balance Anual',
+        cliente: 'METALÚRGICA SAN JORGE S.A.',
+        fecha: '2026-07-14',
+        hora: '11:00',
+        lugar: 'Sala Principal — Estudio Trelew',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Revisión del estado de resultados y distribución de dividendos con directivos.',
+        completado: true
+      },
+      {
+        id: 13,
+        tipo: 'recordatorio',
+        titulo: 'Recordatorio — Solicitud de Extractos Bancarios & Conciliaciones',
+        cliente: 'CONSTRUCTORA DEL ATLÁNTICO S.A.',
+        fecha: '2026-07-16',
+        hora: '16:00',
+        lugar: 'Interno Estudio',
+        responsable: 'Cr. María García',
+        notas: 'Requerir al cliente las conciliaciones faltantes antes del cierre impositivo.',
+        completado: true
+      },
+      {
+        id: 14,
+        tipo: 'reunion',
+        titulo: 'Reunión Virtual — Revisión de Documentación para Descargo AFIP',
+        cliente: 'PESQUERA Y MARISCOS DEL GOLFO S.A.',
+        fecha: '2026-07-17',
+        hora: '15:00',
+        lugar: 'Google Meet',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Revisión de facturas y constancias de pago antes de redactar el escrito de descargo.',
+        completado: true
+      },
+      {
+        id: 15,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento DJ IVA e Impuesto a las Ganancias (AFIP)',
+        cliente: 'General / CUITs 0-1-2-3',
+        fecha: '2026-07-20',
+        hora: '23:59',
+        lugar: 'SIAP / Portal ARCA',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Vencimiento general impositivo mensual.',
+        completado: true
+      },
+
+      // ACTIVIDADES ACTUALES / VENCIMIENTOS PRÓXIMOS
+      {
+        id: 16,
+        tipo: 'recordatorio',
+        titulo: 'Verificar Emisión de VEP y Acreditación de Pago Multa Sumario',
+        cliente: 'HOTEL Y GASTRONOMÍA PATAGONIA S.R.L.',
+        fecha: '2026-07-21',
+        hora: '17:00',
+        lugar: 'Homebanking / AFIP',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Confirmar pago del VEP antes de la caducidad del beneficio de descuento.',
+        completado: true
+      },
+      {
+        id: 17,
+        tipo: 'reunion',
+        titulo: 'Videollamada Google Meet — Estrategia Moratoria DGR Chubut',
+        cliente: 'CONSTRUCTORA DEL ATLÁNTICO S.A.',
+        fecha: '2026-07-22',
+        hora: '15:30',
+        lugar: 'Google Meet (meet.google.com/abc-defg-hij)',
+        responsable: 'Cr. María García',
+        notas: 'Análisis del plan de facilidades de pago para regularizar retenciones.',
+        completado: true
+      },
+      {
+        id: 18,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Plazo Vista Expediente Inspección Retenciones DGR',
+        cliente: 'METALÚRGICA SAN JORGE S.A.',
+        fecha: '2026-07-23',
+        hora: '13:00',
+        lugar: 'Portal DGR Chubut',
+        responsable: 'Cr. María García',
+        notas: 'Cierre del período de vista y cómputo para alegatos defensivos.',
+        completado: true
+      },
+      {
+        id: 19,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Citación Diferencia Alícuota IIBB DPR',
+        cliente: 'CONSTRUCTORA DEL ATLÁNTICO S.A.',
+        fecha: '2026-07-24',
+        hora: '12:00',
+        lugar: 'Portal DGR Chubut',
+        responsable: 'Cr. María García',
+        notas: 'Plazo límite para presentar descargo administrativo formal.',
+        completado: false
+      },
+      {
+        id: 20,
+        tipo: 'reunion',
+        titulo: 'Reunión Presencial — Asesoramiento Fiscal & Planeamiento',
+        cliente: 'SANATORIO CENTRAL DE COMODORO S.A.',
+        fecha: '2026-07-24',
+        hora: '16:30',
+        lugar: 'Oficina Cr. Daniel Montiel (Belgrano 450)',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Revisión de exenciones de IVA en servicios prestacionales de salud.',
+        completado: false
+      },
+      {
+        id: 21,
+        tipo: 'recordatorio',
+        titulo: 'Confirmar Acreditación de VEPs de IIBB Chubut',
+        cliente: 'PATAGONIA SERVICIOS S.R.L.',
+        fecha: '2026-07-24',
+        hora: '18:00',
+        lugar: 'Interno Estudio',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Verificar comprobante enviado por el cliente por WhatsApp.',
+        completado: false
+      },
+      {
+        id: 22,
+        tipo: 'recordatorio',
+        titulo: 'Solicitar a Sanatorio Central Certificados Médicos y Licencias Sueldos',
+        cliente: 'SANATORIO CENTRAL DE COMODORO S.A.',
+        fecha: '2026-07-25',
+        hora: '11:30',
+        lugar: 'Portal Cliente / WhatsApp',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Ingresar carpetas médicas para el cálculo de reemplazos en recibos de sueldo.',
+        completado: false
+      },
+      {
+        id: 23,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Descargo Multa Sumario Formal AFIP',
+        cliente: 'PESQUERA Y MARISCOS DEL GOLFO S.A.',
+        fecha: '2026-07-26',
+        hora: '23:59',
+        lugar: 'E-Ventanilla AFIP',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Presentar memorial de descargo ya redactado y aprobado por la gerencia.',
+        completado: false
+      },
+      {
+        id: 24,
+        tipo: 'reunion',
+        titulo: 'Reunión Presencial — Paritarias CCT & Reajuste Escala Salarial',
+        cliente: 'HOTEL Y GASTRONOMÍA PATAGONIA S.R.L.',
+        fecha: '2026-07-27',
+        hora: '10:30',
+        lugar: 'Sala de Reuniones Estudio Trelew',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Reunión con directivos para proyectar costo laboral del nuevo acuerdo salarial UTHGRA.',
+        completado: false
+      },
+      {
+        id: 25,
+        tipo: 'recordatorio',
+        titulo: 'Requerir a Cliente Constancia Cierre de Cuenta Bancaria Exenta',
+        cliente: 'ESTUDIO JURÍDICO & ASOCIADOS S.H.',
+        fecha: '2026-07-27',
+        hora: '16:00',
+        lugar: 'WhatsApp / Email Cliente',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Solicitar certificado bancario firmado para completar el expediente de exención IVA.',
+        completado: false
+      },
+      {
+        id: 26,
+        tipo: 'reunion',
+        titulo: 'Reunión Presencial — Firma de Estados Contables Anuales',
+        cliente: 'PATAGONIA SERVICIOS S.R.L.',
+        fecha: '2026-07-28',
+        hora: '10:00',
+        lugar: 'Sala de Conferencias — Estudio Trelew',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Firma de libro de inventarios y balances por parte de socios gerentes.',
+        completado: false
+      },
+      {
+        id: 27,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Descargo Requerimiento Inconsistencias IVA (AFIP/ARCA)',
+        cliente: 'PATAGONIA SERVICIOS S.R.L.',
+        fecha: '2026-07-29',
+        hora: '23:59',
+        lugar: 'E-Ventanilla AFIP',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Adjuntar constancia de pago de VEP y rectificativa F.2002.',
+        completado: false
+      },
+      {
+        id: 28,
+        tipo: 'recordatorio',
+        titulo: 'Emisión de Borrador F.931 Sueldos Período Julio 2026 para Revisión',
+        cliente: 'General / Todos los Empleadores',
+        fecha: '2026-07-29',
+        hora: '17:00',
+        lugar: 'Módulo Sueldos / AFIP',
+        responsable: 'Cr. María García',
+        notas: 'Generar previas de 931 y comunicar montos de cargas sociales a los clientes.',
+        completado: false
+      },
+      {
+        id: 29,
+        tipo: 'fechaclave',
+        titulo: 'Vencimiento Recategorización Semestral Monotributo',
+        cliente: 'General / Monotributistas',
+        fecha: '2026-07-30',
+        hora: '23:59',
+        lugar: 'Portal Monotributo AFIP',
+        responsable: 'Cr. Juan Pérez',
+        notas: 'Control de parámetros de facturación de los últimos 12 meses.',
+        completado: false
+      },
+      {
+        id: 30,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Retenciones IIBB DGR Chubut',
+        cliente: 'HOTEL Y GASTRONOMÍA PATAGONIA S.R.L.',
+        fecha: '2026-07-30',
+        hora: '13:00',
+        lugar: 'DGR Chubut',
+        responsable: 'Cr. María García',
+        notas: 'Declaración jurada de agentes de retención.',
+        completado: false
+      },
+      {
+        id: 31,
+        tipo: 'recordatorio',
+        titulo: 'Control de Firmas de Recibos Digitales de Sueldos (Mes Junio)',
+        cliente: 'PESQUERA Y MARISCOS DEL GOLFO S.A.',
+        fecha: '2026-07-31',
+        hora: '18:00',
+        lugar: 'Portal Empleados / Sueldos',
+        responsable: 'Cr. Daniel Montiel',
+        notas: 'Verificar la conformidad digital de recibos por parte de marineros y empleados de planta.',
+        completado: false
+      },
+      {
+        id: 32,
+        tipo: 'vencimiento',
+        titulo: 'Vencimiento Impugnación de Deuda Determinación de Oficio DGR',
+        cliente: 'CONSTRUCTORA DEL ATLÁNTICO S.A.',
+        fecha: '2026-08-03',
+        hora: '12:00',
+        lugar: 'Mesa de Entradas DGR Chubut',
+        responsable: 'Cr. María García',
+        notas: 'Presentación formal de recurso de reconsideración tributario.',
+        completado: false
+      }
+    ];
+
+    let currentYear = 2026;
+    let currentMonth = 6; // 0-indexed: 6 = Julio
+    let filterTipo = 'todos';
+    let filterResponsable = 'Cr. Daniel Montiel';
+    let currentViewMode = 'grid';
+    let selectedDateStr = '2026-07-24';
+
+    const mesesNombres = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderAll();
+    });
+
+    function renderAll() {
+      updatePeriodoHeader();
+      updateKPIs();
+      renderCalendarGrid();
+      renderTimeline();
+      renderClientesView();
+      renderDiaSeleccionadoCard(selectedDateStr);
+    }
+
+    function updatePeriodoHeader() {
+      document.getElementById("periodo-titulo").textContent = `${mesesNombres[currentMonth]} ${currentYear}`;
+    }
+
+    function getFilteredActividades() {
+      return actividades.filter(act => {
+        const d = new Date(act.fecha + "T00:00:00");
+        const matchMonth = d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+        const matchTipo = filterTipo === 'todos' || act.tipo === filterTipo;
+        const matchResp = filterResponsable === 'todos' || act.responsable === filterResponsable;
+        return matchMonth && matchTipo && matchResp;
+      });
+    }
+
+    function updateKPIs() {
+      const filtered = getFilteredActividades();
+      document.getElementById("kpi-total").textContent = filtered.length;
+      document.getElementById("kpi-reuniones").textContent = filtered.filter(a => a.tipo === 'reunion').length;
+      document.getElementById("kpi-vencimientos").textContent = filtered.filter(a => a.tipo === 'vencimiento').length;
+      document.getElementById("cnt-todos").textContent = filtered.length;
+    }
+
+    // RENDER GRID DE CALENDARIO DE UN MES
+    function renderCalendarGrid() {
+      const grid = document.getElementById("calendar-grid-cells");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); // 0 = Dom
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      const filtered = getFilteredActividades();
+
+      // Días vacíos de relleno del mes anterior
+      for (let i = 0; i < firstDayOfMonth; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "calendar-cell bg-gray-50/50 rounded-xl border border-gray-100 opacity-40 p-2";
+        grid.appendChild(emptyCell);
+      }
+
+      // Días del mes
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayStr = String(day).padStart(2, '0');
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const dateFormatted = `${currentYear}-${monthStr}-${dayStr}`;
+
+        const isToday = dateFormatted === '2026-07-24';
+        const isSelected = dateFormatted === selectedDateStr;
+
+        const dayEvents = filtered.filter(a => a.fecha === dateFormatted);
+
+        const cell = document.createElement("div");
+        cell.className = `calendar-cell rounded-2xl border p-2 flex flex-col justify-between transition cursor-pointer hover:shadow-md ${
+          isSelected 
+            ? 'border-deep-green ring-2 ring-deep-green/30 bg-emerald-50/30' 
+            : isToday 
+              ? 'border-emerald-500 bg-emerald-50/20 font-bold' 
+              : 'border-gray-200 bg-white hover:border-gray-300'
+        }`;
+
+        cell.onclick = () => selectDate(dateFormatted);
+
+        // Header del día en la celda
+        let dayHeader = `
+          <div class="flex items-center justify-between">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+              isToday ? 'bg-deep-green text-white shadow-sm' : 'text-gray-700'
+            }">
+              ${day}
+            </span>
+            ${isToday ? '<span class="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">HOY</span>' : ''}
+          </div>
+        `;
+
+        // Badges de actividades en la celda
+        let badgesHtml = '<div class="space-y-1 mt-1 overflow-hidden max-h-[75px]">';
+        dayEvents.slice(0, 3).forEach(ev => {
+          let badgeBg = "bg-gray-100 text-gray-800 border-gray-200";
+          if (ev.tipo === 'vencimiento') badgeBg = "bg-emerald-100 text-emerald-900 border-emerald-200";
+          else if (ev.tipo === 'reunion') badgeBg = "bg-blue-100 text-blue-900 border-blue-200";
+          else if (ev.tipo === 'fechaclave') badgeBg = "bg-amber-100 text-amber-900 border-amber-200";
+          else if (ev.tipo === 'recordatorio') badgeBg = "bg-purple-100 text-purple-900 border-purple-200";
+
+          badgesHtml += `
+            <div onclick="event.stopPropagation(); openDetalleModal(${ev.id})" class="text-[10px] font-bold px-1.5 py-0.5 rounded-lg border ${badgeBg} truncate hover:opacity-80 transition" title="${ev.titulo}">
+              ${ev.hora !== '23:59' ? ev.hora + ' ' : ''}${ev.titulo}
+            </div>
+          `;
+        });
+
+        if (dayEvents.length > 3) {
+          badgesHtml += `<div class="text-[9px] font-extrabold text-gray-500 pl-1">+${dayEvents.length - 3} más</div>`;
+        }
+        badgesHtml += '</div>';
+
+        cell.innerHTML = dayHeader + badgesHtml;
+        grid.appendChild(cell);
+      }
+    }
+
+    function selectDate(dateStr) {
+      selectedDateStr = dateStr;
+      renderCalendarGrid();
+      renderDiaSeleccionadoCard(dateStr);
+    }
+
+    function renderDiaSeleccionadoCard(dateStr) {
+      const container = document.getElementById("dia-sel-list");
+      const title = document.getElementById("dia-sel-titulo");
+      const badge = document.getElementById("dia-sel-badge");
+      if (!container) return;
+
+      const filtered = getFilteredActividades().filter(a => a.fecha === dateStr);
+
+      const parts = dateStr.split("-");
+      title.textContent = `Actividades del ${parts[2]}/${parts[1]}/${parts[0]}`;
+      badge.textContent = `${filtered.length} compromisos`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <p class="text-xs text-gray-400 italic py-2">No hay compromisos o vencimientos registrados para este día.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+      filtered.forEach(ev => {
+        const item = document.createElement("div");
+        item.className = "p-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white hover:border-deep-green transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs cursor-pointer";
+        item.onclick = () => openDetalleModal(ev.id);
+
+        let icon = "event";
+        let colorClass = "text-emerald-700 bg-emerald-100";
+        if (ev.tipo === 'reunion') { icon = "groups"; colorClass = "text-blue-700 bg-blue-100"; }
+        else if (ev.tipo === 'fechaclave') { icon = "stars"; colorClass = "text-amber-700 bg-amber-100"; }
+        else if (ev.tipo === 'recordatorio') { icon = "notifications"; colorClass = "text-purple-700 bg-purple-100"; }
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl ${colorClass} flex items-center justify-center font-bold shrink-0">
+              <span class="material-symbols-outlined text-lg">${icon}</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-gray-900 text-sm">${ev.titulo}</span>
+                <span class="text-[10px] font-bold text-gray-400 font-mono">${ev.hora} hs</span>
+              </div>
+              <p class="text-gray-500 text-[11px] mt-0.5">Cliente: <strong class="text-deep-green">${ev.cliente}</strong> • Resp: ${ev.responsable}</p>
+            </div>
+          </div>
+          <button class="bg-white hover:bg-deep-green hover:text-white border border-gray-300 font-bold px-3 py-1.5 rounded-lg transition self-end sm:self-center">
+            Ver Detalle & Alerta
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // RENDER TIMELINE
+    function renderTimeline() {
+      const list = document.getElementById("timeline-events-list");
+      if (!list) return;
+      list.innerHTML = "";
+
+      const filtered = getFilteredActividades();
+      filtered.sort((a,b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+
+      filtered.forEach(ev => {
+        const card = document.createElement("div");
+        card.className = "p-4 rounded-xl border border-gray-200 bg-white hover:border-deep-green transition flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs cursor-pointer";
+        card.onclick = () => openDetalleModal(ev.id);
+
+        let badgeBg = "bg-emerald-100 text-emerald-900 border-emerald-300";
+        if (ev.tipo === 'reunion') badgeBg = "bg-blue-100 text-blue-900 border-blue-300";
+        else if (ev.tipo === 'fechaclave') badgeBg = "bg-amber-100 text-amber-900 border-amber-300";
+        else if (ev.tipo === 'recordatorio') badgeBg = "bg-purple-100 text-purple-900 border-purple-300";
+
+        card.innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl bg-deep-green text-white flex flex-col items-center justify-center font-bold shrink-0">
+              <span class="text-[9px] uppercase">${ev.fecha.substring(5,7)}</span>
+              <span class="text-base leading-none">${ev.fecha.substring(8)}</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${badgeBg}">${ev.tipo}</span>
+                <span class="text-gray-400 font-mono text-[10px]">${ev.hora} hs</span>
+              </div>
+              <h4 class="font-bold text-sm text-gray-900 mt-1">${ev.titulo}</h4>
+              <p class="text-gray-500 text-[11px] mt-0.5">Cliente: <strong class="text-deep-green">${ev.cliente}</strong> • Resp: ${ev.responsable}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 self-end md:self-center">
+            <button class="bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg shadow-xs">Ficha Evento</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // RENDER RESUMEN POR CLIENTE
+    function renderClientesView() {
+      const container = document.getElementById("clientes-events-list");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const filtered = getFilteredActividades();
+      const clientesMap = {};
+
+      filtered.forEach(ev => {
+        if (!clientesMap[ev.cliente]) clientesMap[ev.cliente] = [];
+        clientesMap[ev.cliente].push(ev);
+      });
+
+      Object.keys(clientesMap).forEach(cli => {
+        const evs = clientesMap[cli];
+        const card = document.createElement("div");
+        card.className = "p-4 rounded-xl border border-gray-200 bg-gray-50 space-y-3";
+
+        let evsHtml = "";
+        evs.forEach(e => {
+          evsHtml += `
+            <div onclick="openDetalleModal(${e.id})" class="p-2.5 bg-white rounded-lg border border-gray-200 hover:border-deep-green transition cursor-pointer text-xs space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-gray-900">${e.titulo}</span>
+                <span class="text-[10px] font-mono text-gray-400">${e.fecha}</span>
+              </div>
+              <p class="text-[11px] text-gray-500">Lugar/Link: ${e.lugar}</p>
+            </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+            <h4 class="font-extrabold text-sm text-deep-green">${cli}</h4>
+            <span class="px-2 py-0.5 bg-deep-green text-white text-[10px] font-bold rounded-full">${evs.length} actividades</span>
+          </div>
+          <div class="space-y-2">
+            ${evsHtml}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // CONTROLES Y FILTROS
+    function cambiarMes(delta) {
+      currentMonth += delta;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderAll();
+    }
+
+    function irAHoy() {
+      currentYear = 2026;
+      currentMonth = 6;
+      selectedDateStr = '2026-07-24';
+      renderAll();
+    }
+
+    function setMode(mode) {
+      currentViewMode = mode;
+      document.getElementById("view-mode-grid").className = mode === 'grid' ? "px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1 font-bold" : "px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1 font-semibold";
+      document.getElementById("view-mode-timeline").className = mode === 'timeline' ? "px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1 font-bold" : "px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1 font-semibold";
+      document.getElementById("view-mode-clientes").className = mode === 'clientes' ? "px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1 font-bold" : "px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1 font-semibold";
+
+      document.getElementById("wrapper-grid-view").classList.toggle("hidden", mode !== 'grid');
+      document.getElementById("wrapper-timeline-view").classList.toggle("hidden", mode !== 'timeline');
+      document.getElementById("wrapper-clientes-view").classList.toggle("hidden", mode !== 'clientes');
+    }
+
+    function setTipoFilter(tipo) {
+      filterTipo = tipo;
+      document.querySelectorAll(".cat-btn").forEach(btn => btn.classList.remove("active", "bg-deep-green", "text-white"));
+      const activeBtn = document.getElementById("cat-btn-" + tipo);
+      if (activeBtn) activeBtn.classList.add("active", "bg-deep-green", "text-white");
+      renderAll();
+    }
+
+    function filterEvents() {
+      filterResponsable = document.getElementById("select-responsable").value;
+      renderAll();
+    }
+
+    // MODALES ACCIONES
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("hidden");
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+    }
+
+    function openDetalleModal(id) {
+      const ev = actividades.find(a => a.id === id);
+      if (!ev) return;
+
+      document.getElementById("evt-det-titulo").textContent = ev.titulo;
+      document.getElementById("evt-det-cliente").textContent = ev.cliente;
+      document.getElementById("evt-det-fecha").textContent = `${ev.fecha} — ${ev.hora} hs`;
+      document.getElementById("evt-det-lugar").textContent = ev.lugar;
+      document.getElementById("evt-det-responsable").textContent = ev.responsable;
+      document.getElementById("evt-det-notas").textContent = ev.notas;
+
+      const catEl = document.getElementById("evt-det-categoria");
+      catEl.textContent = ev.tipo.toUpperCase();
+
+      openModal("modal-detalle-evento");
+    }
+
+    function handleCrearEvento(ev) {
+      ev.preventDefault();
+      const nuevo = {
+        id: actividades.length + 1,
+        tipo: document.getElementById("form-tipo").value,
+        titulo: document.getElementById("form-titulo").value,
+        cliente: document.getElementById("form-cliente").value,
+        fecha: document.getElementById("form-fecha").value,
+        hora: document.getElementById("form-hora").value,
+        lugar: document.getElementById("form-lugar").value || 'Estudio Trelew',
+        responsable: document.getElementById("form-responsable").value,
+        notas: 'Agendado manualmente desde el panel de Agenda.',
+        completado: false
+      };
+
+      actividades.push(nuevo);
+      closeModal("modal-nuevo-evento");
+      renderAll();
+      alert("✅ Evento agendado con éxito para el " + nuevo.fecha);
+    }
+
+    function dispararRecordatorioExpress() {
+      alert("📲 Recordatorio enviado con éxito al WhatsApp del cliente con la confirmación de la cita.");
+      closeModal("modal-detalle-evento");
+    }
+  </script>
+</body>
+
+</html>

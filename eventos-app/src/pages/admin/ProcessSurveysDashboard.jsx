@@ -279,8 +279,16 @@ export default function ProcessSurveysDashboard() {
             {/* Content Breakdown Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200/60">
-                <span className="text-[10px] font-bold text-emerald-800 uppercase">1. DOCUMENTO / ENTRADA</span>
-                <p className="text-xs font-semibold text-slate-800 mt-1">{selectedSurvey.trigger_start || 'No especificado'}</p>
+                <span className="text-[10px] font-bold text-emerald-800 uppercase">1. INPUTS / INSUMOS</span>
+                {selectedSurvey.inputs_list?.length > 0 ? (
+                  <ul className="text-xs text-slate-800 mt-1.5 space-y-1 list-disc pl-4">
+                    {selectedSurvey.inputs_list.map((inp, idx) => inp.description && (
+                      <li key={idx} className="font-medium">{inp.description}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs font-semibold text-slate-800 mt-1">{selectedSurvey.trigger_start || 'No especificado'}</p>
+                )}
                 <p className="text-[11px] text-slate-600 mt-2">Sistemas: {selectedSurvey.participating_documents || '-'}</p>
               </div>
 

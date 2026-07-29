@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Reporte Ejecutivo de Evento | Gerencia</title>
+  <meta content="Reporte ejecutivo de resultados, KPIs y retorno de inversión de eventos web." name="description" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+            'accent-green': '#10B981',
+            'accent-yellow': '#F59E0B',
+            'accent-red': '#EF4444',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.12)',
+            'card-hover': '0 20px 40px -15px rgba(40, 90, 71, 0.15)',
+          },
+          borderRadius: {
+            'premium': '12px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer base {
+      body { @apply bg-[#F8FAFC] text-dark-gray font-sans antialiased; }
+      h1, h2, h3, h4 { @apply font-heading text-deep-green; }
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(40, 90, 71, 0.1);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .logo-multiply { mix-blend-mode: multiply; }
+
+    /* Print Styles for Executive PDF Report */
+    @media print {
+      body { background-color: #ffffff !important; color: #000000 !important; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .shadow-premium, .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+      .glass-nav { position: static !important; background: transparent !important; border: none !important; }
+      canvas { max-height: 260px !important; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 glass-nav no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center gap-3">
+          <img alt="Logo Triskel" class="h-9 w-auto logo-multiply" src="./logo_triskel.png" />
+          <div>
+            <span class="font-heading font-extrabold text-deep-green tracking-tight text-lg block leading-none">LEANDRO VELASQUES</span>
+            <span class="text-xs font-semibold text-dark-gray/60 tracking-wider uppercase">Agencia IA & Automatización</span>
+          </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="flex items-center gap-3">
+          <button onclick="openEditModal()" class="inline-flex items-center gap-2 bg-white border border-deep-green/20 text-deep-green hover:bg-deep-green hover:text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm">
+            <span class="material-symbols-outlined text-lg">edit</span>
+            <span class="hidden sm:inline">Modificar Datos</span>
+          </button>
+          <button onclick="window.print()" class="inline-flex items-center gap-2 bg-deep-green text-white hover:bg-opacity-95 px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-premium">
+            <span class="material-symbols-outlined text-lg">print</span>
+            <span>Exportar PDF / Imprimir</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN EXECUTIVE DASHBOARD -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full space-y-8">
+
+    <!-- REPORT HEADER & STATUS -->
+    <div class="bg-white rounded-premium p-6 sm:p-8 border border-slate-200/80 shadow-premium relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-light-green/20 rounded-bl-full pointer-events-none"></div>
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold uppercase tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Estado: <span id="event-status-badge">🟢 Desempeño Excelente (Metas Superadas)</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-deep-green" id="event-title">
+            Reporte Ejecutivo: Charla "Automatización e IA para Procesos Digitales"
+          </h1>
+          <p class="text-slate-600 text-sm sm:text-base max-w-3xl">
+            Informe consolidado de impacto, adquisición de leads, nivel de satisfacción y recomendaciones estratégicas para la Gerencia.
+          </p>
+        </div>
+
+        <!-- Metadata Box -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 min-w-[240px]">
+          <div class="flex justify-between border-b border-slate-200 pb-1.5">
+            <span class="text-slate-500 font-semibold">Fecha del Evento:</span>
+            <span class="font-bold text-slate-800" id="event-date">24 de Julio, 2026</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200 pb-1.5">
+            <span class="text-slate-500 font-semibold">Dirigido a:</span>
+            <span class="font-bold text-slate-800">Gerencia General</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200 pb-1.5">
+            <span class="text-slate-500 font-semibold">Organizador:</span>
+            <span class="font-bold text-slate-800">Leandro Velasques IA</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-semibold">Ubicación / Canal:</span>
+            <span class="font-bold text-slate-800" id="event-location">Comodoro Conocimiento & Web</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Verdict Summary -->
+      <div class="mt-6 pt-6 border-t border-slate-100 grid md:grid-cols-3 gap-4">
+        <div class="bg-emerald-50/60 border border-emerald-100 p-4 rounded-xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-emerald-600 text-2xl mt-0.5">check_circle</span>
+          <div>
+            <h4 class="font-bold text-emerald-950 text-sm">Superación de Asistencia</h4>
+            <p class="text-emerald-900/80 text-xs mt-0.5">Se alcanzó una tasa de asistencia del <strong id="verdict-turnout">76.8%</strong>, superando el promedio de la industria (65%).</p>
+          </div>
+        </div>
+        <div class="bg-blue-50/60 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-blue-600 text-2xl mt-0.5">trending_up</span>
+          <div>
+            <h4 class="font-bold text-blue-950 text-sm">Alta Generación de Leads</h4>
+            <p class="text-blue-900/80 text-xs mt-0.5"><strong id="verdict-leads">48 empresas/estudios</strong> solicitaron diagnóstico directo de automatización post-evento.</p>
+          </div>
+        </div>
+        <div class="bg-amber-50/60 border border-amber-100 p-4 rounded-xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-amber-600 text-2xl mt-0.5">star</span>
+          <div>
+            <h4 class="font-bold text-amber-950 text-sm">Satisfacción Sobresaliente</h4>
+            <p class="text-amber-900/80 text-xs mt-0.5">Calificación promedio de <strong id="verdict-nps">9.4 / 10</strong> en la encuesta de evaluación de los asistentes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI SCORECARD GRID -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-deep-green flex items-center gap-2">
+        <span class="material-symbols-outlined text-deep-green">analytics</span>
+        Tablero de Indicadores Clave (KPI Scorecard)
+      </h2>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <!-- Card 1: Inscriptos -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Inscriptos Totales</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">group_add</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-800" id="kpi-inscriptos">284</span>
+            <span class="text-xs font-bold text-emerald-600 ml-1.5">↑ +42% vs meta</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            Meta inicial: <span font-semibold id="kpi-inscriptos-meta">200</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Asistentes Reales -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Asistentes Reales</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">groups</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-800" id="kpi-asistentes">218</span>
+            <span class="text-xs font-bold text-emerald-600 ml-1.5" id="kpi-turnout-pct">76.8%</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            Tasa Asistencia (Turnout)
+          </div>
+        </div>
+
+        <!-- Card 3: Leads Calificados -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Leads Calificados</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">person_search</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-deep-green" id="kpi-leads">48</span>
+            <span class="text-xs font-bold text-emerald-600 ml-1.5">22% conv.</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            Solicitudes de diagnóstico
+          </div>
+        </div>
+
+        <!-- Card 4: Costo por Lead -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Costo por Lead (CPL)</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">payments</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-800" id="kpi-cpl">$1.85</span>
+            <span class="text-xs font-bold text-emerald-600 ml-1.5">USD</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            Presupuesto: <span id="kpi-budget">$525 USD</span>
+          </div>
+        </div>
+
+        <!-- Card 5: NPS / Satisfacción -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Satisfacción NPS</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">sentiment_very_satisfied</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-amber-600" id="kpi-nps">9.4</span>
+            <span class="text-xs font-bold text-slate-500">/ 10</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            94% recomendación
+          </div>
+        </div>
+
+        <!-- Card 6: Pipeline Estimado -->
+        <div class="bg-white p-5 rounded-premium border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+            <span>Pipeline Estimado</span>
+            <span class="material-symbols-outlined text-slate-400 text-base">monetization_on</span>
+          </div>
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-extrabold text-emerald-700" id="kpi-pipeline">$14.5k</span>
+            <span class="text-xs font-bold text-emerald-600 ml-1.5">USD</span>
+          </div>
+          <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+            Valor de propuestas en curso
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VISUAL CHARTS SECTION -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-deep-green flex items-center gap-2">
+        <span class="material-symbols-outlined text-deep-green">pie_chart</span>
+        Análisis Gráfico de Rendimiento
+      </h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Chart 1: Asistencia y Registro -->
+        <div class="bg-white p-6 rounded-premium border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-base text-deep-green">Asistencia vs Inscripción Total</h3>
+              <p class="text-xs text-slate-500">Comparativa de inscriptos convertidos en asistentes reales</p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">76.8% Turnout</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartAsistencia"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Canales de Adquisición -->
+        <div class="bg-white p-6 rounded-premium border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-base text-deep-green">Origen de Inscriptos por Canal</h3>
+              <p class="text-xs text-slate-500">Distribución de tráfico según fuente de captación</p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full">4 Canales</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartCanales"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Embudo de Conversión (Funnel) -->
+        <div class="bg-white p-6 rounded-premium border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-base text-deep-green">Embudo de Conversión del Evento</h3>
+              <p class="text-xs text-slate-500">Paso a paso desde la visita web hasta el contacto comercial</p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200">3.3% Conv. Global</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartFunnel"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Evaluación de Satisfacción -->
+        <div class="bg-white p-6 rounded-premium border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-base text-deep-green">Evaluación de Calidad del Público</h3>
+              <p class="text-xs text-slate-500">Resultado de encuestas post-evento (Respuestas: 142)</p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-200">NPS 9.4/10</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartSatisfaccion"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- HIGHLIGHTS & TESTIMONIALS -->
+    <section class="bg-white p-6 sm:p-8 rounded-premium border border-slate-200 shadow-sm space-y-6">
+      <h2 class="text-xl font-bold text-deep-green flex items-center gap-2">
+        <span class="material-symbols-outlined text-deep-green">forum</span>
+        Feedback Qualitativo & Comentarios de Asistentes
+      </h2>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center gap-1 text-amber-500 text-sm">
+            ★★★★★
+          </div>
+          <p class="text-slate-700 text-xs italic">
+            "Excelente la demostración práctica con n8n e Inteligencia Artificial. Me abrió los ojos sobre cómo podemos ahorrar decenas de horas en el estudio contable."
+          </p>
+          <div class="text-[11px] font-bold text-slate-900 border-t border-slate-200/60 pt-2">
+            — Contadora S. Montiel <span class="text-slate-500 font-normal">(Estudio Contable)</span>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center gap-1 text-amber-500 text-sm">
+            ★★★★★
+          </div>
+          <p class="text-slate-700 text-xs italic">
+            "La claridad conceptual de Leandro para explicar automatizaciones complejas fue impecable. Ya solicitamos la reunión de diagnóstico para nuestra PyME."
+          </p>
+          <div class="text-[11px] font-bold text-slate-900 border-t border-slate-200/60 pt-2">
+            — Ing. M. Torres <span class="text-slate-500 font-normal">(Gerente de Operaciones)</span>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center gap-1 text-amber-500 text-sm">
+            ★★★★★
+          </div>
+          <p class="text-slate-700 text-xs italic">
+            "Gran organización y contenido 100% aplicable. La dinámica de casos reales fue lo mejor de la jornada."
+          </p>
+          <div class="text-[11px] font-bold text-slate-900 border-t border-slate-200/60 pt-2">
+            — Lic. D. Rincón <span class="text-slate-500 font-normal">(Consultora)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STRATEGIC RECOMMENDATIONS FOR MANAGEMENT -->
+    <section class="bg-gradient-to-br from-deep-green to-[#1e4435] text-white p-6 sm:p-8 rounded-premium shadow-premium space-y-6">
+      <div class="flex justify-between items-start flex-wrap gap-4 border-b border-white/10 pb-4">
+        <div>
+          <span class="text-xs uppercase tracking-widest text-light-green font-bold block mb-1">Plan de Acción Posterior</span>
+          <h2 class="text-2xl font-extrabold text-white">Recomendaciones Estratégicas para Gerencia</h2>
+        </div>
+        <span class="px-3 py-1 bg-light-green/20 text-light-green rounded-full text-xs font-bold border border-light-green/30">
+          3 Prioridades Ejecutivas
+        </span>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Priority 1 -->
+        <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-white/15 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Prioridad 1 🔴 URGENTE</span>
+            <span class="text-xs text-white/60">48-72 hrs</span>
+          </div>
+          <h3 class="font-bold text-base text-white">Abordaje Comercial de Leads Calificados</h3>
+          <p class="text-xs text-white/80 leading-relaxed">
+            Contactar de inmediato a las **48 empresas** que solicitaron el diagnóstico de automatización. Tasa de conversión estimada de cierre: 25-30%.
+          </p>
+          <div class="text-[11px] text-light-green font-semibold pt-2 border-t border-white/10">
+            Responsable: Equipo Comercial / Consultoría
+          </div>
+        </div>
+
+        <!-- Priority 2 -->
+        <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-white/15 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-light-green uppercase tracking-wider">Prioridad 2 🟡 IMPORTANTE</span>
+            <span class="text-xs text-white/60">Esta semana</span>
+          </div>
+          <h3 class="font-bold text-base text-white">Nurturing a Inscriptos Ausentes (66 personas)</h3>
+          <p class="text-xs text-white/80 leading-relaxed">
+            Enviar la grabación del evento y un resumen ejecutivo en PDF por email a los 66 registrados que no asistieron en vivo para recuperar interés.
+          </p>
+          <div class="text-[11px] text-light-green font-semibold pt-2 border-t border-white/10">
+            Responsable: Marketing Digital
+          </div>
+        </div>
+
+        <!-- Priority 3 -->
+        <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-white/15 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-300 uppercase tracking-wider">Prioridad 3 🟢 OPORTUNIDAD</span>
+            <span class="text-xs text-white/60">Próximo mes</span>
+          </div>
+          <h3 class="font-bold text-base text-white">Institucionalizar Ciclo de Webinars Mensuales</h3>
+          <p class="text-xs text-white/80 leading-relaxed">
+            Dado el bajo Costo por Lead ($1.85 USD) y alta satisfacción, se recomienda programar una nueva edición enfocada en estudios contables y PyMEs.
+          </p>
+          <div class="text-[11px] text-light-green font-semibold pt-2 border-t border-white/10">
+            Responsable: Gerencia de Eventos & Alianzas
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 no-print mt-12">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p>© 2026 Leandro Velasques — Reporte Generado para Gerencia General.</p>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:text-deep-green font-semibold">Volver al sitio web</a>
+        <span>•</span>
+        <button onclick="window.print()" class="hover:text-deep-green font-semibold">Imprimir Reporte</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE EDICIÓN DINÁMICA DE DATOS -->
+  <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+    <div class="bg-white rounded-premium max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-deep-green">tune</span>
+          <h3 class="text-lg font-bold text-deep-green">Modificar Métricas del Evento</h3>
+        </div>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="metricsForm" onsubmit="saveMetrics(event)" class="space-y-4 text-xs">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Título del Evento</label>
+            <input type="text" id="input-title" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="Reporte Ejecutivo: Charla &quot;Automatización e IA para Procesos Digitales&quot;">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Fecha del Evento</label>
+            <input type="text" id="input-date" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="24 de Julio, 2026">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Inscriptos Totales</label>
+            <input type="number" id="input-inscriptos" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="284">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Asistentes Reales</label>
+            <input type="number" id="input-asistentes" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="218">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Leads Calificados</label>
+            <input type="number" id="input-leads" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="48">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Presupuesto (USD)</label>
+            <input type="number" id="input-budget" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="525">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Calificación NPS (0-10)</label>
+            <input type="number" step="0.1" id="input-nps" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="9.4">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Pipeline USD</label>
+            <input type="number" id="input-pipeline" class="w-full rounded-lg border-slate-300 text-xs focus:ring-deep-green focus:border-deep-green" value="14500">
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-4 flex justify-end gap-3">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-deep-green text-white rounded-lg font-bold hover:bg-opacity-90">Actualizar Reporte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT & CHART.JS LOGIC -->
+  <script>
+    // Global Chart instances
+    let chartAsistencia, chartCanales, chartFunnel, chartSatisfaccion;
+
+    // Initial Data State
+    let eventData = {
+      title: 'Reporte Ejecutivo: Charla "Automatización e IA para Procesos Digitales"',
+      date: '24 de Julio, 2026',
+      inscriptos: 284,
+      inscriptosMeta: 200,
+      asistentes: 218,
+      leads: 48,
+      budget: 525,
+      nps: 9.4,
+      pipeline: 14500,
+      canales: {
+        redes: 112,
+        email: 78,
+        web: 54,
+        institucional: 40
+      },
+      satisfaccion: {
+        excelente: 108,
+        bueno: 28,
+        regular: 6
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+    });
+
+    function renderDashboard() {
+      // Calculate derived metrics
+      const turnoutPct = ((eventData.asistentes / eventData.inscriptos) * 100).toFixed(1);
+      const cpl = (eventData.budget / eventData.leads).toFixed(2);
+      const ausentes = eventData.inscriptos - eventData.asistentes;
+
+      // Update DOM values
+      document.getElementById('event-title').innerText = eventData.title;
+      document.getElementById('event-date').innerText = eventData.date;
+      document.getElementById('kpi-inscriptos').innerText = eventData.inscriptos;
+      document.getElementById('kpi-asistentes').innerText = eventData.asistentes;
+      document.getElementById('kpi-turnout-pct').innerText = `${turnoutPct}%`;
+      document.getElementById('kpi-leads').innerText = eventData.leads;
+      document.getElementById('kpi-cpl').innerText = `$${cpl}`;
+      document.getElementById('kpi-budget').innerText = `$${eventData.budget} USD`;
+      document.getElementById('kpi-nps').innerText = eventData.nps;
+      document.getElementById('kpi-pipeline').innerText = `$${(eventData.pipeline / 1000).toFixed(1)}k`;
+
+      document.getElementById('verdict-turnout').innerText = `${turnoutPct}%`;
+      document.getElementById('verdict-leads').innerText = `${eventData.leads} empresas/estudios`;
+      document.getElementById('verdict-nps').innerText = `${eventData.nps} / 10`;
+
+      // Render Charts
+      initCharts(turnoutPct, ausentes);
+    }
+
+    function initCharts(turnoutPct, ausentes) {
+      // Destroy previous instances if re-rendering
+      if (chartAsistencia) chartAsistencia.destroy();
+      if (chartCanales) chartCanales.destroy();
+      if (chartFunnel) chartFunnel.destroy();
+      if (chartSatisfaccion) chartSatisfaccion.destroy();
+
+      // Chart 1: Asistencia Doughnut
+      const ctx1 = document.getElementById('chartAsistencia').getContext('2d');
+      chartAsistencia = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['Asistentes Reales', 'Ausentes (Seguimiento Email)'],
+          datasets: [{
+            data: [eventData.asistentes, ausentes],
+            backgroundColor: ['#285A47', '#E2E8F0'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } }
+          },
+          cutout: '70%'
+        }
+      });
+
+      // Chart 2: Canales Bar Chart
+      const ctx2 = document.getElementById('chartCanales').getContext('2d');
+      chartCanales = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['Redes Sociales', 'Email Marketing', 'Web Directa', 'Alianza Institucional'],
+          datasets: [{
+            label: 'Inscriptos por Canal',
+            data: [eventData.canales.redes, eventData.canales.email, eventData.canales.web, eventData.canales.institucional],
+            backgroundColor: '#A8D5C1',
+            hoverBackgroundColor: '#285A47',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#F1F5F9' }, ticks: { font: { family: 'Inter', size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 } } }
+          }
+        }
+      });
+
+      // Chart 3: Embudo de Conversión
+      const ctx3 = document.getElementById('chartFunnel').getContext('2d');
+      chartFunnel = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: ['Visitas Landing', 'Inscriptos', 'Asistentes', 'Leads Calificados'],
+          datasets: [{
+            label: 'Personas',
+            data: [1450, eventData.inscriptos, eventData.asistentes, eventData.leads],
+            backgroundColor: ['#94A3B8', '#64748B', '#285A47', '#10B981'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#F1F5F9' } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Chart 4: Satisfacción Pie Chart
+      const ctx4 = document.getElementById('chartSatisfaccion').getContext('2d');
+      chartSatisfaccion = new Chart(ctx4, {
+        type: 'pie',
+        data: {
+          labels: ['Excelente (5/5)', 'Bueno (4/5)', 'Regular (3/5)'],
+          datasets: [{
+            data: [eventData.satisfaccion.excelente, eventData.satisfaccion.bueno, eventData.satisfaccion.regular],
+            backgroundColor: ['#285A47', '#F59E0B', '#CBD5E1'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // Modal Control Functions
+    function openEditModal() {
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function saveMetrics(e) {
+      e.preventDefault();
+      eventData.title = document.getElementById('input-title').value;
+      eventData.date = document.getElementById('input-date').value;
+      eventData.inscriptos = parseInt(document.getElementById('input-inscriptos').value) || 0;
+      eventData.asistentes = parseInt(document.getElementById('input-asistentes').value) || 0;
+      eventData.leads = parseInt(document.getElementById('input-leads').value) || 0;
+      eventData.budget = parseFloat(document.getElementById('input-budget').value) || 1;
+      eventData.nps = parseFloat(document.getElementById('input-nps').value) || 10;
+      eventData.pipeline = parseFloat(document.getElementById('input-pipeline').value) || 0;
+
+      renderDashboard();
+      closeEditModal();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Novedades de Sueldos - Estudio Contable Daniel Montiel</title>
+  <meta name="description" content="Prototipo navegable para la gestión integral de Novedades de Sueldos de un Estudio Contable." />
+
+  <!-- Fonts Google -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'deep-green': '#285A47',
+            'light-green': '#A8D5C1',
+            'refined-gray': '#EDEDED',
+            'dark-gray': '#4F4C4D',
+            'accent-green': '#1E4334',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 10px 30px -10px rgba(40, 90, 71, 0.15)',
+            'card-hover': '0 12px 24px -8px rgba(40, 90, 71, 0.22)',
+            'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-[#F4F6F5] text-dark-gray font-sans antialiased selection:bg-light-green selection:text-deep-green;
+      }
+      h1, h2, h3, h4 {
+        @apply font-heading text-deep-green;
+      }
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #EAEAEA;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #A8D5C1;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #285A47;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- TOP BAR & ROLE SWITCHER -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-2 sm:py-0 gap-3">
+        
+        <!-- App Title & Brand -->
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-deep-green text-white flex items-center justify-center font-bold text-xl shadow-premium">
+              DM
+            </div>
+            <div>
+              <h1 class="text-base sm:text-lg font-bold leading-tight text-deep-green">Estudio Contable Cr. Daniel Montiel</h1>
+              <p class="text-xs text-gray-500">Módulo de Novedades de Sueldos • Período <span class="font-bold text-deep-green" id="header-periodo">Julio 2026</span></p>
+            </div>
+          </div>
+
+          <!-- Mobile Role Indicator -->
+          <div class="sm:hidden">
+            <span id="role-badge-mobile" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              Vista Estudio
+            </span>
+          </div>
+        </div>
+
+        <!-- Role Selector & Global Actions -->
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+          <!-- Role Switcher Segmented Button -->
+          <div class="bg-gray-100 p-1 rounded-xl flex items-center border border-gray-200 text-xs font-semibold">
+            <button id="btn-role-estudio" onclick="setRole('estudio')" class="px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+              <span>Vista Estudio</span>
+            </button>
+            <button id="btn-role-cliente" onclick="setRole('cliente')" class="px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">domain</span>
+              <span>Portal Cliente</span>
+            </button>
+          </div>
+
+          <!-- Simular Email al Cliente -->
+          <button id="btn-simular-email-cliente" onclick="openModal('modal-simular-email-cliente')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">phonelink</span>
+            <span class="hidden md:inline">Simular Email al Cliente</span>
+          </button>
+
+          <!-- Configuración de Plantillas Email -->
+          <button id="btn-config-plantillas" onclick="openModal('modal-plantillas-email')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">mark_email_read</span>
+            <span class="hidden md:inline">Plantillas de Email</span>
+          </button>
+
+          <!-- Action: Abrir Período Mensual (Visible solo en Estudio) -->
+          <button id="btn-abrir-periodo" onclick="openModal('modal-abrir-periodo')" class="bg-deep-green hover:bg-accent-green text-white font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
+            <span class="material-symbols-outlined text-base">calendar_add_on</span>
+            <span class="hidden md:inline">Abrir Período</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-gray-100 pt-2 pb-1 gap-2">
+        <nav class="flex space-x-2 text-xs overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <a href="demo-crm-contable.html" class="tab-btn bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">inbox</span>
+            <span>Bandeja de Descargos</span>
+          </a>
+
+          <a href="demo-novedades-sueldos.html" class="tab-btn active bg-deep-green text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-sm">
+            <span class="material-symbols-outlined text-base">payments</span>
+            <span>Novedades Sueldos</span>
+          </a>
+
+          <a href="demo-agenda-contable.html" class="tab-btn bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base text-emerald-700">calendar_month</span>
+            <span>Agenda Mensual & Notificaciones</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-deep-green text-white font-black text-[10px]">NUEVO</span>
+          </a>
+        </nav>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: ESTUDIO CONTABLE (TABLERO GENERAL) -->
+    <!-- ========================================== -->
+    <div id="view-estudio" class="space-y-6">
+
+      <!-- Banner Informativo & Resumen Período -->
+      <div class="bg-gradient-to-r from-deep-green to-accent-green rounded-2xl p-5 text-white shadow-premium flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-light-green/20 text-light-green text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Ciclo Activo</span>
+            <span class="text-xs text-white/80">• Fecha límite objetivo: 28/07/2026</span>
+          </div>
+          <h2 class="text-xl font-bold text-white">Novedades de Haberes — Julio 2026</h2>
+          <p class="text-sm text-white/80 mt-0.5">Control de respuestas, recepción de datos y consolidación para Onvio.</p>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap">
+          <button onclick="openModal('modal-carga-manual')" class="bg-light-green text-deep-green hover:bg-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
+            <span class="material-symbols-outlined text-base">add_box</span>
+            <span>Carga Manual (WhatsApp/Email)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SIMPLIFICACIÓN: TARJETAS KPI DE ESTADO DE RESPUESTAS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Tarjeta 1: Total Clientes -->
+        <div onclick="filterByStatus('all')" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm cursor-pointer hover:border-deep-green transition flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total de Clientes</span>
+            <p class="text-3xl font-extrabold text-deep-green mt-1" id="kpi-total">20</p>
+            <span class="text-xs text-gray-500 font-bold">300 Empleados en nómina mensual</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gray-100 text-deep-green flex items-center justify-center font-bold text-xl">
+            <span class="material-symbols-outlined text-2xl">groups</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Respondieron / Confirmados -->
+        <div onclick="filterByStatus('respondieron')" class="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/30 shadow-sm cursor-pointer hover:border-emerald-400 transition flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Respondieron / Confirmaron</span>
+            <p class="text-3xl font-extrabold text-emerald-600 mt-1" id="kpi-respondieron">4</p>
+            <span class="text-xs text-emerald-700 font-medium">Con novedades o sin novedades</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3: PENDIENTES DE RESPONDER + BOTÓN REENVIAR MAIL -->
+        <div onclick="filterByStatus('pendientes')" class="bg-white p-5 rounded-2xl border border-amber-300 bg-amber-50/50 shadow-sm flex flex-col justify-between space-y-3 cursor-pointer hover:border-amber-400 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-amber-900 uppercase tracking-wider">Pendientes de Responder</span>
+              <p class="text-3xl font-extrabold text-amber-600 mt-0.5" id="kpi-pendientes">6</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-xl">hourglass_empty</span>
+            </div>
+          </div>
+
+          <!-- BOTÓN REENVIAR MAIL A PENDIENTES -->
+          <button onclick="event.stopPropagation(); reenviarRecordatorioAPendientes()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95">
+            <span class="material-symbols-outlined text-base">outgoing_mail</span>
+            <span>Reenviar Recordatorio por Email</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- TABLERO PRINCIPAL DE CLIENTES (COLUMNAS SIMPLIFICADAS) -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <!-- Header Filtros y Búsqueda -->
+        <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <span class="material-symbols-outlined text-gray-400">filter_list</span>
+            <div class="flex items-center gap-1">
+              <button onclick="filterByStatus('all')" id="filter-btn-all" class="px-3 py-1 rounded-lg text-xs font-bold bg-deep-green text-white transition">Todas (20 empresas)</button>
+              <button onclick="filterByStatus('pendientes')" id="filter-btn-pendientes" class="px-3 py-1 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition">Pendientes de Respuesta (6)</button>
+              <button onclick="filterByStatus('respondieron')" id="filter-btn-respondieron" class="px-3 py-1 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition">Respondieron (14)</button>
+            </div>
+          </div>
+
+          <div class="relative w-full sm:w-64">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+            <input type="text" id="search-client" onkeyup="renderClientTable()" placeholder="Buscar por cliente o CUIT..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border-gray-300 focus:border-deep-green focus:ring-deep-green" />
+          </div>
+        </div>
+
+        <!-- Tabla de Clientes (COLUMNAS SIMPLIFICADAS) -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-gray-100/70 text-gray-600 uppercase font-semibold text-[11px] tracking-wider border-b border-gray-200">
+                <th class="py-3 px-4">Cliente / Empleador</th>
+                <th class="py-3 px-4">Resp. Estudio</th>
+                <th class="py-3 px-4 text-center">Empleados</th>
+                <th class="py-3 px-4 text-center">Estado de Respuesta</th>
+                <th class="py-3 px-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="table-clients-body" class="divide-y divide-gray-100 text-gray-700">
+              <!-- Renderizado dinámico vía JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: PORTAL DEL CLIENTE (AUTOGESTIÓN) -->
+    <!-- ========================================== -->
+    <div id="view-cliente" class="space-y-6 hidden">
+      
+      <!-- Card Superior de Estado para el Cliente -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+              Portal Empleador
+            </span>
+            <span class="text-xs text-gray-500">• CUIT: 30-71234567-8</span>
+          </div>
+          <h2 class="text-2xl font-extrabold text-deep-green" id="cliente-portal-name">Patagonia Servicios SRL</h2>
+          <p class="text-xs text-gray-500 mt-1">Período Activo: <strong class="text-gray-800">Julio 2026</strong> • Fecha Límite de Recepción: <strong class="text-amber-700">28/07/2026 (Faltan 4 días)</strong></p>
+        </div>
+
+        <!-- Botón Explícito DESTACADO: Confirmo Sin Novedades -->
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <button onclick="confirmarSinNovedadesModal()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition transform active:scale-95">
+            <span class="material-symbols-outlined text-lg">verified</span>
+            <span>Confirmo que este mes NO tengo novedades</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumen de Estado del Cliente -->
+      <div id="cliente-status-alert" class="p-4 rounded-xl border bg-amber-50 border-amber-200 text-amber-900 flex items-start gap-3 text-xs">
+        <span class="material-symbols-outlined text-amber-600 text-xl flex-shrink-0">info</span>
+        <div>
+          <h4 class="font-bold text-amber-900 text-sm">Estado actual: Pendiente de Confirmación</h4>
+          <p class="mt-0.5">Por favor revise su nómina de empleados a continuación. Si no hubo ausencias, horas extra ni cambios en el mes, presione el botón verde <strong>"Confirmo que este mes NO tengo novedades"</strong>. Si las hubo, agréguelas empleado por empleado.</p>
+        </div>
+      </div>
+
+      <!-- Grilla de Empleados y Carga por Empleado -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          <div>
+            <h3 class="text-base font-bold text-deep-green">Nómina de Empleados Habilitados (6)</h3>
+            <p class="text-xs text-gray-500">Seleccione un empleado para informarle novedades específicas del período.</p>
+          </div>
+          <div class="relative w-full sm:w-64">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+            <input type="text" id="search-employee-client" onkeyup="renderClienteEmployeeList()" placeholder="Buscar empleado o CUIL..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border-gray-300 focus:border-deep-green" />
+          </div>
+        </div>
+
+        <!-- Lista de Empleados -->
+        <div id="cliente-employee-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Renderizado dinámico vía JavaScript -->
+        </div>
+      </div>
+
+      <!-- Resumen de Novedades Cargadas por el Cliente -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+          <h3 class="text-base font-bold text-deep-green flex items-center gap-2">
+            <span class="material-symbols-outlined text-deep-green">assignment_turned_in</span>
+            <span>Novedades Registradas para Julio 2026</span>
+          </h3>
+          <button onclick="enviarPeriodoAlEstudio()" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-sm">send</span>
+            <span>Enviar Todo al Estudio</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-gray-50 text-gray-500 uppercase font-semibold text-[10px] tracking-wider border-b border-gray-200">
+                <th class="py-2.5 px-3">Empleado</th>
+                <th class="py-2.5 px-3">Tipo de Novedad</th>
+                <th class="py-2.5 px-3">Detalle / Cantidad</th>
+                <th class="py-2.5 px-3">Origen</th>
+                <th class="py-2.5 px-3 text-center">Comprobante</th>
+                <th class="py-2.5 px-3 text-center">Estado Revisión</th>
+                <th class="py-2.5 px-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cliente-novedades-body" class="divide-y divide-gray-100">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALES E INTERACCIONES -->
+  <!-- ========================================== -->
+
+  <!-- MODAL: GESTIÓN DE PLANTILLAS DE EMAIL Y NOTIFICACIONES AUTOMÁTICAS -->
+  <div id="modal-plantillas-email" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-modal overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-deep-green text-xl">mark_email_read</span>
+          <h3 class="text-base font-bold text-deep-green">Configuración de Plantillas y Notificaciones Automáticas</h3>
+        </div>
+        <button onclick="closeModal('modal-plantillas-email')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar text-xs">
+        <p class="text-gray-600">El sistema dispara automáticamente estas comunicaciones en las distintas etapas del proceso mensual:</p>
+
+        <!-- Selector de Plantilla -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button onclick="selectTemplate('apertura')" id="tpl-btn-apertura" class="p-3 border rounded-xl font-bold text-left transition bg-deep-green text-white border-deep-green">
+            1. Apertura de Período
+          </button>
+          <button onclick="selectTemplate('recordatorio')" id="tpl-btn-recordatorio" class="p-3 border rounded-xl font-bold text-left transition bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200">
+            2. Recordatorio Pendientes
+          </button>
+          <button onclick="selectTemplate('confirmado')" id="tpl-btn-confirmado" class="p-3 border rounded-xl font-bold text-left transition bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200">
+            3. Confirmación Recepción
+          </button>
+        </div>
+
+        <!-- Editor de Plantilla Seleccionada -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Asunto del Mail</label>
+            <input type="text" id="tpl-subject" value="[Estudio Montiel] Apertura Novedades de Sueldos — {{PERIODO}}" class="w-full border-gray-300 rounded-xl text-xs font-semibold" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Cuerpo del Correo (Variables disponibles: {{CLIENTE}}, {{PERIODO}}, {{FECHA_LIMITE}}, {{LINK_PORTAL}})</label>
+            <textarea id="tpl-body" rows="6" class="w-full border-gray-300 rounded-xl text-xs font-mono">Estimados {{CLIENTE}},
+
+Le informamos que se encuentra abierto el período de liquidación de sueldos correspondiente a {{PERIODO}}.
+
+Le solicitamos ingresar al Portal del Empleador antes del {{FECHA_LIMITE}} para:
+1. Confirmar expresamente si NO tuvieron novedades en el mes.
+2. O bien informar las ausencias, licencias, horas extra o novedades de sus empleados.
+
+Acceso al portal: {{LINK_PORTAL}}
+
+Atentamente,
+Estudio Contable Cr. Daniel Montiel</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+        <span class="text-[11px] text-gray-500">Notificaciones enviadas vía servidor de correo del estudio.</span>
+        <div class="flex items-center gap-2">
+          <button onclick="closeModal('modal-plantillas-email')" class="px-3 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+          <button onclick="guardarPlantilla()" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs">
+            Guardar Plantilla
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1: FICHA DETALLADA DEL CICLO MENSUAL (ESTUDIO) -->
+  <div id="modal-ciclo-detalle" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-modal overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-deep-green text-white flex items-center justify-center font-bold text-sm">
+            <span class="material-symbols-outlined">analytics</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-deep-green" id="modal-ciclo-title">Patagonia Servicios SRL — Julio 2026</h3>
+            <p class="text-xs text-gray-500" id="modal-ciclo-cuit">CUIT: 30-71234567-8 • Resp: Cr. Daniel Montiel</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-ciclo-detalle')" class="text-gray-400 hover:text-gray-600 rounded-lg p-1">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar text-xs">
+
+        <!-- Pestañas Internas Modal -->
+        <div class="border-b border-gray-200 flex gap-4">
+          <button onclick="setModalTab('novedades')" id="mod-tab-btn-novedades" class="pb-2 border-b-2 border-deep-green font-bold text-deep-green">Novedades Registradas (<span id="mod-count-nov">2</span>)</button>
+          <button onclick="setModalTab('empleados')" id="mod-tab-btn-empleados" class="pb-2 text-gray-500 hover:text-gray-700">Nómina Empleados (<span id="mod-count-emp">6</span>)</button>
+          <button onclick="setModalTab('consolidacion')" id="mod-tab-btn-consolidacion" class="pb-2 text-gray-500 hover:text-gray-700 font-bold text-purple-700 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">table_view</span>
+            <span>Consolidación Onvio</span>
+          </button>
+        </div>
+
+        <!-- Contenido Tab 1: Novedades -->
+        <div id="mod-tab-content-novedades" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Listado de novedades enviadas o cargadas manualmente.</span>
+            <button onclick="openModal('modal-carga-manual')" class="bg-deep-green text-white font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">add</span> Cargar Novedad Manual
+            </button>
+          </div>
+          <div id="mod-novedades-list" class="space-y-2">
+            <!-- Dynamic list -->
+          </div>
+        </div>
+
+        <!-- Contenido Tab 2: Empleados -->
+        <div id="mod-tab-content-empleados" class="space-y-3 hidden">
+          <div id="mod-empleados-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Dynamic list -->
+          </div>
+        </div>
+
+        <!-- Contenido Tab 3: Consolidación Onvio -->
+        <div id="mod-tab-content-consolidacion" class="space-y-4 hidden">
+          <div class="bg-purple-50 border border-purple-200 p-3.5 rounded-xl text-purple-900 flex items-start gap-2.5">
+            <span class="material-symbols-outlined text-purple-600 text-lg">info</span>
+            <div>
+              <h5 class="font-bold text-xs">Formato Oficial de Importación Onvio</h5>
+              <p class="text-[11px]">Campos requeridos: <strong>Legajo | Concepto | Cantidad | Centro de Costo</strong>.</p>
+            </div>
+          </div>
+
+          <div class="border rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-purple-100/60 text-purple-900 font-bold">
+                <tr>
+                  <th class="py-2.5 px-3">Legajo</th>
+                  <th class="py-2.5 px-3">Empleado</th>
+                  <th class="py-2.5 px-3">Concepto Onvio</th>
+                  <th class="py-2.5 px-3 text-right">Cantidad / Valor</th>
+                  <th class="py-2.5 px-3">Centro de Costo</th>
+                  <th class="py-2.5 px-3 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="mod-consolidacion-table" class="divide-y divide-gray-100">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- BOTÓN CLAVE: ENVIAR A ONVIO -->
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="simularDescargarExcel()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition">
+              <span class="material-symbols-outlined text-sm">download</span> Descargar CSV/Excel Onvio
+            </button>
+
+            <button onclick="ejecutarEnviarAOnvio()" id="btn-enviar-onvio-modal" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg transition">
+              <span class="material-symbols-outlined text-base">cloud_upload</span>
+              <span>Registrar y Enviar a Onvio</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-2">
+        <button onclick="closeModal('modal-ciclo-detalle')" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-800">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: CARGA NOVEDAD CLIENTE / ESTUDIO -->
+  <div id="modal-agregar-novedad" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-modal space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="text-base font-bold text-deep-green" id="modal-nov-title">Informar Novedad de Empleado</h3>
+        <button onclick="closeModal('modal-agregar-novedad')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form id="form-novedad" onsubmit="handleGuardarNovedad(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="nov-employee-id" />
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Empleado Seleccionado</label>
+          <input type="text" id="nov-employee-name" readonly class="w-full bg-gray-100 border-gray-300 rounded-xl font-bold text-gray-700 text-xs" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Tipo de Novedad</label>
+          <select id="nov-tipo" required class="w-full border-gray-300 rounded-xl text-xs focus:ring-deep-green focus:border-deep-green">
+            <option value="Ausencia">Ausencia / Inasistencia</option>
+            <option value="Horas Extra">Horas Extra (50% / 100%)</option>
+            <option value="Vacaciones">Licencia por Vacaciones</option>
+            <option value="Enfermedad">Enfermedad / Accidente</option>
+            <option value="Pérdida de Presentismo">Pérdida de Presentismo</option>
+            <option value="Kilómetros">Kilómetros / Viáticos</option>
+            <option value="Adicional">Adicional Extraordinario</option>
+            <option value="Embargo">Embargo Judicial</option>
+            <option value="Baja">Baja / Liquidación Final</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Desde</label>
+            <input type="date" id="nov-fecha-desde" required class="w-full border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Hasta</label>
+            <input type="date" id="nov-fecha-hasta" required class="w-full border-gray-300 rounded-xl text-xs" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Cantidad / Horas / Días / Importe</label>
+          <input type="text" id="nov-cantidad" placeholder="Ej: 12 hs, 3 días, $15.000" required class="w-full border-gray-300 rounded-xl text-xs" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Observaciones / Aclaración</label>
+          <textarea id="nov-observacion" rows="2" placeholder="Detalle adicional sobre la novedad..." class="w-full border-gray-300 rounded-xl text-xs"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Adjuntar Comprobante (Certificado, Planilla, Telegrama)</label>
+          <input type="file" id="nov-archivo" class="w-full text-xs text-gray-500 border border-gray-300 rounded-xl p-1.5" />
+          <span class="text-[10px] text-gray-400">PDF, JPG o PNG hasta 5MB.</span>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-agregar-novedad')" class="px-3 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+          <button type="submit" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm">
+            Guardar Novedad
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CARGA MANUAL DESDE EL ESTUDIO (WHATSAPP/LLAMADA/EMAIL) -->
+  <div id="modal-carga-manual" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-modal space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-green-600">chat</span>
+          <h3 class="text-base font-bold text-deep-green">Carga Manual Interna (WhatsApp / Email / Llamada)</h3>
+        </div>
+        <button onclick="closeModal('modal-carga-manual')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form id="form-carga-manual" onsubmit="handleCargaManualSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Seleccionar Cliente</label>
+          <select id="manual-cliente-id" onchange="updateManualEmployeeOptions()" required class="w-full border-gray-300 rounded-xl text-xs">
+            <option value="">-- Seleccionar Cliente --</option>
+            <option value="1">Patagonia Servicios SRL</option>
+            <option value="2">Los Álamos Construcciones</option>
+            <option value="3">Escuela del Valle</option>
+            <option value="4">Cooperativa Horizonte</option>
+            <option value="5">Transporte Austral SA</option>
+            <option value="6">Comercial Bahía SAS</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Seleccionar Empleado</label>
+          <select id="manual-empleado-id" required class="w-full border-gray-300 rounded-xl text-xs">
+            <option value="">-- Seleccionar primero un cliente --</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Canal de Origen</label>
+            <select id="manual-origen" required class="w-full border-gray-300 rounded-xl text-xs">
+              <option value="WhatsApp Studio">WhatsApp del Estudio</option>
+              <option value="WhatsApp Personal">WhatsApp Personal Contador</option>
+              <option value="Email">Correo Electrónico</option>
+              <option value="Llamada">Llamada Telefónica</option>
+              <option value="Nota Papel">Anotación / Papel</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Tipo de Novedad</label>
+            <select id="manual-tipo" required class="w-full border-gray-300 rounded-xl text-xs">
+              <option value="Ausencia">Ausencia / Inasistencia</option>
+              <option value="Horas Extra">Horas Extra</option>
+              <option value="Vacaciones">Vacaciones</option>
+              <option value="Enfermedad">Enfermedad / Accidente</option>
+              <option value="Pérdida de Presentismo">Pérdida de Presentismo</option>
+              <option value="Adicional">Adicional Especial</option>
+              <option value="Baja">Baja de Empleado</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Cantidad / Horas / Detalle</label>
+          <input type="text" id="manual-cantidad" placeholder="Ej: 8 hs extra, Certificado de 48hs" required class="w-full border-gray-300 rounded-xl text-xs" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Transcripción o Comentario de Respaldo</label>
+          <textarea id="manual-observacion" rows="2" placeholder="Ej: 'El cliente me mandó audio por WhatsApp indicando que...' " class="w-full border-gray-300 rounded-xl text-xs"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-carga-manual')" class="px-3 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+          <button type="submit" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm">
+            Registrar Novedad Manual
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: SOLICITUD DE CORRECCIÓN (EMAIL AL CLIENTE) -->
+  <div id="modal-solicitar-correccion" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-modal space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600">mail</span>
+          <h3 class="text-base font-bold text-deep-green">Solicitar Documentación / Corrección</h3>
+        </div>
+        <button onclick="closeModal('modal-solicitar-correccion')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-gray-600">Se enviará la siguiente notificación simulada al cliente para solicitar el respaldo adeudado:</p>
+        
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Para (Email Cliente)</label>
+          <input type="text" id="corr-email" readonly value="contacto@patagoniaservicios.com" class="w-full bg-gray-100 border-gray-300 rounded-xl text-xs" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Asunto</label>
+          <input type="text" id="corr-asunto" value="[Estudio Montiel] Documentación pendiente - Liquidación Julio 2026" class="w-full border-gray-300 rounded-xl text-xs" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Mensaje</label>
+          <textarea id="corr-mensaje" rows="4" class="w-full border-gray-300 rounded-xl text-xs font-mono">Estimados, 
+
+Revisando las novedades de haberes de Julio 2026, detectamos que la novedad cargada para la empleada ROSSI ANA LAURA (Ausencia por Enfermedad) no posee adjunto el certificado médico obligatorio.
+
+Por favor ingresar al portal y adjuntar el archivo correspondiente para poder consolidar el archivo de Onvio.
+
+Atentamente,
+Estudio Contable Cr. Daniel Montiel</textarea>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button onclick="closeModal('modal-solicitar-correccion')" class="px-3 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+          <button onclick="enviarSolicitudCorreccion()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">send</span>
+            <span>Enviar Notificación</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: ABRIR PERÍODO MENSUAL -->
+  <div id="modal-abrir-periodo" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-modal space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="text-base font-bold text-deep-green">Abrir Nuevo Período Mensual</h3>
+        <button onclick="closeModal('modal-abrir-periodo')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Período A Habilitar</label>
+          <select id="select-nuevo-periodo" class="w-full border-gray-300 rounded-xl text-xs">
+            <option value="Agosto 2026">Agosto 2026</option>
+            <option value="Septiembre 2026">Septiembre 2026</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Fecha Límite de Recepción (Objetivo)</label>
+          <input type="date" value="2026-08-28" class="w-full border-gray-300 rounded-xl text-xs" />
+        </div>
+
+        <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 text-blue-900 flex items-start gap-2">
+          <span class="material-symbols-outlined text-blue-600 text-base">info</span>
+          <p class="text-[11px]">Al abrir el período, se enviará una notificación por correo electrónico simulada a los 6 clientes activos del estudio para que ingresen a informar o confirmar sus novedades.</p>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button onclick="closeModal('modal-abrir-periodo')" class="px-3 py-2 text-gray-600 hover:text-gray-800">Cancelar</button>
+          <button onclick="confirmarAbrirPeriodo()" class="bg-deep-green hover:bg-accent-green text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm">
+            Habilitar Período y Notificar
+          </button>
+        </div>
+      </div>
+    </div>
+  <!-- MODAL SIMULACIÓN DE EMAIL RECIBIDO POR EL CLIENTE -->
+  <div id="modal-simular-email-cliente" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-modal space-y-4 border-2 border-indigo-200">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-600 text-xl">mark_email_unread</span>
+          <div>
+            <h3 class="text-base font-bold text-deep-green">Simulación de Notificación por Email</h3>
+            <p class="text-xs text-gray-500">Vista de la bandeja de entrada del cliente (Patagonia Servicios SRL)</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-simular-email-cliente')" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Simulated Email Body UI -->
+      <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden text-xs">
+        
+        <!-- Header del Email -->
+        <div class="bg-slate-900 text-white p-4 space-y-1">
+          <div class="flex items-center justify-between text-[11px] text-gray-400">
+            <span>De: <strong>sistema@estudio-danielmontiel.com</strong></span>
+            <span>Fecha: 24 de Julio de 2026, 08:00 hs</span>
+          </div>
+          <p class="font-bold text-light-green text-sm">Asunto: ☀️ [Estudio Montiel] Recordatorio: Novedades de Haberes — Julio 2026</p>
+          <p class="text-[11px] text-gray-300">Para: <strong>contacto@patagoniaservicios.com</strong> (Patagonia Servicios SRL)</p>
+        </div>
+
+        <!-- Contenido del Correo -->
+        <div class="p-6 space-y-4 bg-white text-gray-800">
+          <p class="font-bold text-sm">Estimado cliente (Patagonia Servicios SRL),</p>
+          
+          <p class="leading-relaxed text-gray-700">
+            Le recordamos que se encuentra abierto el período de recepción de novedades de sueldos correspondiente a <strong>Julio 2026</strong>. La fecha límite para recibir la información es el <strong>28/07/2026</strong>.
+          </p>
+
+          <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-amber-900 space-y-1">
+            <p class="font-bold text-xs">¿Qué debe hacer desde su portal?</p>
+            <ul class="list-disc pl-4 space-y-1 text-[11px]">
+              <li><strong>Si NO hubo novedades:</strong> Ingrese y presione el botón verde <em>"Confirmo que este mes NO tengo novedades"</em>.</li>
+              <li><strong>Si hubo ausencias, licencias u horas extra:</strong> Selecciónelas empleado por empleado y adjunte los certificados correspondientes.</li>
+            </ul>
+          </div>
+
+          <!-- BOTÓN INTERACTIVO DENTRO DEL EMAIL MOCK -->
+          <div class="pt-2 flex justify-center">
+            <button onclick="irAlPortalDesdeEmail()" class="bg-deep-green hover:bg-accent-green text-white font-extrabold px-6 py-3 rounded-xl text-xs flex items-center gap-2 shadow-lg transition transform active:scale-95">
+              <span>👉 Acceder al Portal del Empleador</span>
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+            </button>
+          </div>
+
+          <div class="border-t border-gray-100 pt-3 text-[11px] text-gray-400 text-center">
+            Estudio Contable Cr. Daniel Montiel • Trelew, Chubut
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex items-center justify-end">
+        <button onclick="closeModal('modal-simular-email-cliente')" class="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-800">
+          Cerrar Simulación
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT DE LÓGICA Y ESTADO -->
+  <!-- ========================================== -->
+  <script>
+    // ESTADO GENERAL DE LA APLICACIÓN
+    const state = {
+      role: 'estudio', // 'estudio' | 'cliente'
+      periodo: 'Julio 2026',
+      activeFilter: 'all', // 'all' | 'pendientes' | 'respondieron'
+      selectedClientId: 1, // Patagonia Servicios SRL por defecto
+      modalActiveTab: 'novedades', // 'novedades' | 'empleados' | 'consolidacion'
+
+      // BASE DE DATOS FICTICIA DE 20 EMPRESAS (300 EMPLEADOS TOTALES)
+      clients: [
+        {
+          id: 1,
+          name: 'Patagonia Servicios SRL',
+          cuit: '30-71234567-8',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'contacto@patagoniaservicios.com',
+          status: 'novedades_informadas',
+          hasResponded: true,
+          employeesCount: 15,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [
+            { id: 101, legajo: '101', name: 'Pérez, Juan Carlos', cuil: '20-28492019-3', ccosto: 'Depósito' },
+            { id: 102, legajo: '102', name: 'Gómez, María Florencia', cuil: '27-31948201-4', ccosto: 'Administración' },
+            { id: 103, legajo: '103', name: 'Benítez, Roberto Carlos', cuil: '20-25819302-8', ccosto: 'Ventas' },
+            { id: 104, legajo: '104', name: 'Rossi, Ana Laura', cuil: '27-34910293-1', ccosto: 'Administración' },
+            { id: 105, legajo: '105', name: 'Fernández, Lucas Ezequiel', cuil: '20-36918273-5', ccosto: 'Depósito' },
+            { id: 106, legajo: '106', name: 'Martínez, Sofía Belén', cuil: '27-39102834-2', ccosto: 'Ventas' }
+          ],
+          novedades: [
+            { id: 501, employeeId: 103, employeeName: 'Benítez, Roberto Carlos', legajo: '103', tipo: 'Horas Extra', cantidad: '12 hs (50%)', conceptoOnvio: 'HORAS EXTRA 50%', ccosto: 'Ventas', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'planilla_horas_julio.pdf', observacion: 'Horas acumuladas por cierre de inventario' },
+            { id: 502, employeeId: 104, employeeName: 'Rossi, Ana Laura', legajo: '104', tipo: 'Ausencia', cantidad: '1 día', conceptoOnvio: 'DIAS NO TRABAJADOS', ccosto: 'Administración', origen: 'Portal Cliente', estadoRevision: 'observada', comprobante: null, observacion: 'Falta certificado médico de la guardia' }
+          ]
+        },
+        {
+          id: 2,
+          name: 'Los Álamos Construcciones',
+          cuit: '30-68192834-9',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'rrhh@losalamosconst.com.ar',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 25,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 201, legajo: '201', name: 'Sosa, Mario Alberto', cuil: '20-22910293-4', ccosto: 'Obra' }],
+          novedades: []
+        },
+        {
+          id: 3,
+          name: 'Escuela del Valle',
+          cuit: '30-54910293-2',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'administracion@escueladelvalle.edu.ar',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 18,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '22/07/2026 10:14 hs',
+          employees: [{ id: 301, legajo: '301', name: 'Alvarez, Nora Beatriz', cuil: '27-24918273-9', ccosto: 'Docente' }],
+          novedades: []
+        },
+        {
+          id: 4,
+          name: 'Cooperativa Horizonte',
+          cuit: '30-70918273-1',
+          respEstudio: 'Gonzalo Silva',
+          email: 'sueldos@coophorizonte.com.ar',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 30,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 401, legajo: '401', name: 'Ríos, Claudia Patricia', cuil: '27-31029384-1', ccosto: 'Atención' }],
+          novedades: []
+        },
+        {
+          id: 5,
+          name: 'Transporte Austral SA',
+          cuit: '30-71928374-5',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'logistica@transporteaustral.com',
+          status: 'preparado_onvio',
+          hasResponded: true,
+          employeesCount: 35,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 501, legajo: '501', name: 'Morales, Héctor Hugo', cuil: '20-21928374-2', ccosto: 'Choferes' }],
+          novedades: [{ id: 504, employeeId: 501, employeeName: 'Morales, Héctor Hugo', legajo: '501', tipo: 'Kilómetros', cantidad: '1.450 km', conceptoOnvio: 'VIATICOS KM RECORRIDOS', ccosto: 'Choferes', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'hoja_ruta.pdf', observacion: 'Viaje Comodoro' }]
+        },
+        {
+          id: 6,
+          name: 'Comercial Bahía SAS',
+          cuit: '30-71829304-6',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'gerencia@comercialbahia.com',
+          status: 'enviado_onvio',
+          hasResponded: true,
+          employeesCount: 12,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: '20/07/2026 16:30 hs',
+          employees: [{ id: 601, legajo: '601', name: 'Vargas, Romina Soledad', cuil: '27-36918273-0', ccosto: 'Ventas' }],
+          novedades: [{ id: 505, employeeId: 601, employeeName: 'Vargas, Romina Soledad', legajo: '601', tipo: 'Adicional', cantidad: '$25.000', conceptoOnvio: 'BONO CUMPLIMIENTO', ccosto: 'Ventas', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'bono.pdf', observacion: 'Metas cumplidas' }]
+        },
+        {
+          id: 7,
+          name: 'Distribuidora del Sur SRL',
+          cuit: '30-70819283-4',
+          respEstudio: 'Gonzalo Silva',
+          email: 'rrhh@delsursrl.com.ar',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 20,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '23/07/2026 09:12 hs',
+          employees: [{ id: 701, legajo: '701', name: 'Giménez, Marcelo', cuil: '20-27918273-4', ccosto: 'Logística' }],
+          novedades: []
+        },
+        {
+          id: 8,
+          name: 'Metalúrgica Trelew SA',
+          cuit: '30-65918273-2',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'administracion@metalurgicatrelew.com',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 15,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 801, legajo: '801', name: 'Acuña, Jorge Osvaldo', cuil: '20-24910293-8', ccosto: 'Planta' }],
+          novedades: []
+        },
+        {
+          id: 9,
+          name: 'Pesquera Golfo Nuevo SA',
+          cuit: '30-71029384-9',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'sueldos@pesqueragolfo.com',
+          status: 'novedades_informadas',
+          hasResponded: true,
+          employeesCount: 25,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 901, legajo: '901', name: 'Quiroga, Martín', cuil: '20-31029384-2', ccosto: 'Procesamiento' }],
+          novedades: [{ id: 506, employeeId: 901, employeeName: 'Quiroga, Martín', legajo: '901', tipo: 'Horas Extra', cantidad: '20 hs', conceptoOnvio: 'HORAS EXTRA 100%', ccosto: 'Procesamiento', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'planilla.pdf', observacion: 'Marea alta' }]
+        },
+        {
+          id: 10,
+          name: 'Sanatorio San José',
+          cuit: '30-58910293-1',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'personal@sanatoriosanjose.com',
+          status: 'preparado_onvio',
+          hasResponded: true,
+          employeesCount: 30,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 1001, legajo: '1001', name: 'Sánchez, Elena María', cuil: '27-28918273-1', ccosto: 'Enfermería' }],
+          novedades: [{ id: 507, employeeId: 1001, employeeName: 'Sánchez, Elena María', legajo: '1001', tipo: 'Enfermedad', cantidad: '72 hs', conceptoOnvio: 'LICENCIA MEDICA', ccosto: 'Enfermería', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'certificado.jpg', observacion: 'Gripe A' }]
+        },
+        {
+          id: 11,
+          name: 'Farmacias Chubut SAS',
+          cuit: '30-71938201-5',
+          respEstudio: 'Gonzalo Silva',
+          email: 'administracion@farmaciaschubut.com.ar',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 10,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '24/07/2026 08:45 hs',
+          employees: [{ id: 1101, legajo: '1101', name: 'Díaz, Andrés Felipe', cuil: '20-33918273-4', ccosto: 'Farmacia' }],
+          novedades: []
+        },
+        {
+          id: 12,
+          name: 'Hotel & Resort Cordillera',
+          cuit: '30-69102938-7',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'rrhh@hotelcordillera.com.ar',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 12,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 1201, legajo: '1201', name: 'Romero, Sabrina', cuil: '27-35918273-9', ccosto: 'Recepción' }],
+          novedades: []
+        },
+        {
+          id: 13,
+          name: 'Supermercados El Faro',
+          cuit: '30-71827364-3',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'sueldos@superelfaro.com',
+          status: 'enviado_onvio',
+          hasResponded: true,
+          employeesCount: 15,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: '21/07/2026 14:20 hs',
+          employees: [{ id: 1301, legajo: '1301', name: 'Mendoza, Raúl', cuil: '20-26918273-5', ccosto: 'Cajas' }],
+          novedades: [{ id: 508, employeeId: 1301, employeeName: 'Mendoza, Raúl', legajo: '1301', tipo: 'Ausencia', cantidad: '2 días', conceptoOnvio: 'DIAS NO TRABAJADOS', ccosto: 'Cajas', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'aviso.pdf', observacion: 'Falta injustificada' }]
+        },
+        {
+          id: 14,
+          name: 'Logística Patagónica SRL',
+          cuit: '30-70928374-1',
+          respEstudio: 'Gonzalo Silva',
+          email: 'operaciones@logisticapatagonica.com',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 8,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '21/07/2026 11:30 hs',
+          employees: [{ id: 1401, legajo: '1401', name: 'Navarro, Javier', cuil: '20-29918273-0', ccosto: 'Depósito' }],
+          novedades: []
+        },
+        {
+          id: 15,
+          name: 'Agropecuaria Tehuelche SA',
+          cuit: '30-67819203-8',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'administracion@agrotehuelche.com',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 7,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 1501, legajo: '1501', name: 'Herrera, José Luis', cuil: '20-23918273-6', ccosto: 'Campo' }],
+          novedades: []
+        },
+        {
+          id: 16,
+          name: 'Imprenta y Gráfica del Chubut',
+          cuit: '30-71029182-4',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'contacto@imprentachubut.com.ar',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 5,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '23/07/2026 17:00 hs',
+          employees: [{ id: 1601, legajo: '1601', name: 'Peralta, Tomás', cuil: '20-34918273-1', ccosto: 'Taller' }],
+          novedades: []
+        },
+        {
+          id: 17,
+          name: 'Seguridad Industrial SAS',
+          cuit: '30-71928301-6',
+          respEstudio: 'Gonzalo Silva',
+          email: 'gerencia@seguridadpatagonia.com',
+          status: 'preparado_onvio',
+          hasResponded: true,
+          employeesCount: 6,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 1701, legajo: '1701', name: 'Flores, Cristian', cuil: '20-30918273-9', ccosto: 'Vigilancia' }],
+          novedades: [{ id: 509, employeeId: 1701, employeeName: 'Flores, Cristian', legajo: '1701', tipo: 'Horas Extra', cantidad: '16 hs', conceptoOnvio: 'HORAS EXTRA 50%', ccosto: 'Vigilancia', origen: 'Portal Cliente', estadoRevision: 'aprobada', comprobante: 'planilla.pdf', observacion: 'Guardia fin de semana' }]
+        },
+        {
+          id: 18,
+          name: 'Estación de Servicio El Teniente',
+          cuit: '30-64910293-2',
+          respEstudio: 'Lic. Patricia Ramos',
+          email: 'sueldos@elteniente.com.ar',
+          status: 'esperando_confirmacion',
+          hasResponded: false,
+          employeesCount: 4,
+          confirmedSinNovedades: false,
+          fechaConfirmacion: null,
+          employees: [{ id: 1801, legajo: '1801', name: 'Silva, Matías', cuil: '20-32918273-3', ccosto: 'Playa' }],
+          novedades: []
+        },
+        {
+          id: 19,
+          name: 'Panificadora La Argentina',
+          cuit: '30-70829102-5',
+          respEstudio: 'Cr. Daniel Montiel',
+          email: 'administracion@laargentinapan.com',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 5,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '24/07/2026 09:30 hs',
+          employees: [{ id: 1901, legajo: '1901', name: 'Godoy, Walter', cuil: '20-28918273-7', ccosto: 'Producción' }],
+          novedades: []
+        },
+        {
+          id: 20,
+          name: 'Aserradero Pampa SRL',
+          cuit: '30-69182736-9',
+          respEstudio: 'Gonzalo Silva',
+          email: 'pampa@aserraderopampa.com.ar',
+          status: 'sin_novedades',
+          hasResponded: true,
+          employeesCount: 3,
+          confirmedSinNovedades: true,
+          fechaConfirmacion: '22/07/2026 15:45 hs',
+          employees: [{ id: 2001, legajo: '2001', name: 'Vera, Gabriel', cuil: '20-25918273-2', ccosto: 'Corte' }],
+          novedades: []
+        }
+      ]
+    };
+
+    // INICIALIZACIÓN
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+
+    function renderAll() {
+      updateKPIs();
+      renderClientTable();
+      renderClientePortalView();
+    }
+
+    // CAMBIO DE ROL (ESTUDIO vs CLIENTE)
+    function setRole(role) {
+      state.role = role;
+
+      const btnEstudio = document.getElementById('btn-role-estudio');
+      const btnCliente = document.getElementById('btn-role-cliente');
+      const viewEstudio = document.getElementById('view-estudio');
+      const viewCliente = document.getElementById('view-cliente');
+      const btnAbrirPeriodo = document.getElementById('btn-abrir-periodo');
+      const badgeMobile = document.getElementById('role-badge-mobile');
+
+      if (role === 'estudio') {
+        btnEstudio.className = 'px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5 font-bold';
+        btnCliente.className = 'px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5 font-semibold';
+        viewEstudio.classList.remove('hidden');
+        viewCliente.classList.add('hidden');
+        btnAbrirPeriodo.classList.remove('hidden');
+        if (badgeMobile) badgeMobile.innerText = 'Vista Estudio';
+        showToast('Cambiado a Vista Estudio Contable', 'info');
+      } else {
+        btnCliente.className = 'px-3 py-1.5 rounded-lg transition-all bg-white text-deep-green shadow-sm flex items-center gap-1.5 font-bold';
+        btnEstudio.className = 'px-3 py-1.5 rounded-lg transition-all text-gray-600 hover:text-deep-green flex items-center gap-1.5 font-semibold';
+        viewCliente.classList.remove('hidden');
+        viewEstudio.classList.add('hidden');
+        btnAbrirPeriodo.classList.add('hidden');
+        if (badgeMobile) badgeMobile.innerText = 'Portal Cliente';
+        showToast('Cambiado a Portal Empleador (Patagonia Servicios SRL)', 'info');
+      }
+    }
+
+    function irAlPortalDesdeEmail() {
+      closeModal('modal-simular-email-cliente');
+      setRole('cliente');
+      showToast('Ingresando al Portal del Empleador desde el correo enviado...', 'success');
+    }
+
+    // ACTUALIZAR MÉTRICAS KPI SIMPLIFICADAS
+    function updateKPIs() {
+      const total = state.clients.length;
+      const respondieron = state.clients.filter(c => c.hasResponded).length;
+      const pendientes = total - respondieron;
+
+      document.getElementById('kpi-total').innerText = total;
+      document.getElementById('kpi-respondieron').innerText = respondieron;
+      document.getElementById('kpi-pendientes').innerText = pendientes;
+    }
+
+    // REENVIAR MAIL A PENDIENTES
+    function reenviarRecordatorioAPendientes() {
+      const pendientes = state.clients.filter(c => !c.hasResponded);
+      if (pendientes.length === 0) {
+        showToast('Todos los clientes ya respondieron para este período.', 'success');
+        return;
+      }
+
+      const nombres = pendientes.map(c => c.name).join(', ');
+      showToast(`Reenviando mail de recordatorio automático a: ${nombres}`, 'warning');
+    }
+
+    // FILTRAR TABLA POR ESTADO DE RESPUESTA
+    function filterByStatus(status) {
+      state.activeFilter = status;
+      
+      const filterBtns = ['all', 'pendientes', 'respondieron'];
+      filterBtns.forEach(b => {
+        const btn = document.getElementById(`filter-btn-${b}`);
+        if (btn) {
+          if (b === status) {
+            btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-deep-green text-white transition';
+          } else {
+            btn.className = 'px-3 py-1 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition';
+          }
+        }
+      });
+
+      renderClientTable();
+    }
+
+    // RENDERIZAR TABLA DE CLIENTES (COLUMNAS SIMPLIFICADAS)
+    function renderClientTable() {
+      const tbody = document.getElementById('table-clients-body');
+      const searchTerm = document.getElementById('search-client')?.value.toLowerCase() || '';
+
+      let list = state.clients.filter(c => {
+        let matchesFilter = true;
+        if (state.activeFilter === 'pendientes') matchesFilter = !c.hasResponded;
+        if (state.activeFilter === 'respondieron') matchesFilter = c.hasResponded;
+
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm) || c.cuit.includes(searchTerm);
+        return matchesFilter && matchesSearch;
+      });
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-gray-400 text-xs">
+              No se encontraron clientes con el filtro seleccionado.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(client => {
+        const statusBadge = getSimplifiedStatusBadge(client);
+
+        return `
+          <tr class="hover:bg-gray-50/80 transition border-b border-gray-100">
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-gray-900 text-sm">${client.name}</div>
+              <div class="text-[11px] text-gray-400">CUIT: ${client.cuit}</div>
+            </td>
+            <td class="py-3.5 px-4 font-medium text-gray-600">${client.respEstudio}</td>
+            <td class="py-3.5 px-4 text-center font-bold text-gray-700 text-sm">${client.employeesCount}</td>
+            <td class="py-3.5 px-4 text-center">${statusBadge}</td>
+            <td class="py-3.5 px-4 text-right space-x-1">
+              ${!client.hasResponded ? `
+                <button onclick="enviarMailIndividual('${client.name}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1 rounded-lg text-xs font-bold transition mr-1">
+                  Reenviar Mail
+                </button>
+              ` : ''}
+              <button onclick="openCicloModal(${client.id})" class="bg-gray-100 hover:bg-deep-green hover:text-white text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold transition">
+                Ver Ciclo
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // BADGES DE ESTADO SIMPLIFICADOS
+    function getSimplifiedStatusBadge(client) {
+      if (!client.hasResponded) {
+        return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">⚠️ Pendiente de Respuesta</span>`;
+      }
+      if (client.confirmedSinNovedades) {
+        return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Confirmado Sin Novedades</span>`;
+      }
+      if (client.status === 'enviado_onvio') {
+        return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-300">💜 Enviado a Onvio</span>`;
+      }
+      return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">📩 Novedades Enviadas</span>`;
+    }
+
+    function enviarMailIndividual(clienteNombre) {
+      showToast(`Recordatorio enviado individualmente a ${clienteNombre}`, 'warning');
+    }
+
+    // RENDERIZAR PORTAL DEL CLIENTE
+    function renderClientePortalView() {
+      const client = state.clients.find(c => c.id === 1); // Patagonia Servicios SRL
+      if (!client) return;
+
+      document.getElementById('cliente-portal-name').innerText = client.name;
+
+      const alertBox = document.getElementById('cliente-status-alert');
+      if (client.confirmedSinNovedades) {
+        alertBox.className = 'p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900 flex items-start gap-3 text-xs';
+        alertBox.innerHTML = `
+          <span class="material-symbols-outlined text-emerald-600 text-xl flex-shrink-0">check_circle</span>
+          <div>
+            <h4 class="font-bold text-emerald-900 text-sm">¡Período Confirmado Sin Novedades!</h4>
+            <p class="mt-0.5">Usted declaró expresamente que no hubo cambios en la nómina para Julio 2026 el <strong>${client.fechaConfirmacion || '24/07/2026'}</strong>. El estudio contable procederá con la liquidación habitual.</p>
+          </div>
+        `;
+      } else if (client.status === 'enviado_onvio') {
+        alertBox.className = 'p-4 rounded-xl border bg-teal-50 border-teal-200 text-teal-900 flex items-start gap-3 text-xs';
+        alertBox.innerHTML = `
+          <span class="material-symbols-outlined text-teal-600 text-xl flex-shrink-0">task_alt</span>
+          <div>
+            <h4 class="font-bold text-teal-900 text-sm">Liquidación Procesada en Onvio</h4>
+            <p class="mt-0.5">Las novedades enviadas fueron validadas y cargadas exitosamente por el estudio contable.</p>
+          </div>
+        `;
+      }
+
+      renderClienteEmployeeList();
+      renderClienteNovedadesList();
+    }
+
+    function renderClienteEmployeeList() {
+      const container = document.getElementById('cliente-employee-list');
+      const client = state.clients.find(c => c.id === 1);
+      const search = document.getElementById('search-employee-client')?.value.toLowerCase() || '';
+
+      const employees = client.employees.filter(e => e.name.toLowerCase().includes(search) || e.cuil.includes(search));
+
+      container.innerHTML = employees.map(emp => `
+        <div class="border border-gray-200 rounded-xl p-3.5 hover:border-deep-green transition bg-white space-y-2 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Legajo #${emp.legajo}</span>
+              <span class="text-[11px] text-gray-400">${emp.ccosto}</span>
+            </div>
+            <h4 class="font-bold text-gray-800 text-sm mt-1">${emp.name}</h4>
+            <p class="text-[11px] text-gray-400">CUIL: ${emp.cuil}</p>
+          </div>
+
+          <button onclick="openModalAgregarNovedad(${emp.id}, '${emp.name}')" class="w-full mt-2 bg-gray-50 hover:bg-deep-green hover:text-white text-deep-green border border-deep-green/30 font-bold py-1.5 rounded-lg text-xs flex items-center justify-center gap-1 transition">
+            <span class="material-symbols-outlined text-sm">add_circle</span>
+            <span>Informar Novedad</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderClienteNovedadesList() {
+      const tbody = document.getElementById('cliente-novedades-body');
+      const client = state.clients.find(c => c.id === 1);
+
+      if (!client.novedades || client.novedades.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-6 text-center text-gray-400 text-xs">
+              No ha registrado novedades particulares aún para este período.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = client.novedades.map(nov => `
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-2.5 px-3 font-bold text-gray-800">${nov.employeeName} <span class="text-[10px] text-gray-400">(${nov.legajo})</span></td>
+          <td class="py-2.5 px-3 font-medium text-deep-green">${nov.tipo}</td>
+          <td class="py-2.5 px-3 text-gray-700">${nov.cantidad}</td>
+          <td class="py-2.5 px-3 text-gray-500">${nov.origen}</td>
+          <td class="py-2.5 px-3 text-center">
+            ${nov.comprobante ? `<span class="text-emerald-600 font-bold flex items-center justify-center gap-0.5"><span class="material-symbols-outlined text-sm">attach_file</span> Adjunto</span>` : `<span class="text-amber-600 font-bold">Sin adjunto</span>`}
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            ${nov.estadoRevision === 'aprobada' ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Aprobada</span>` : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Observada</span>`}
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            <button onclick="eliminarNovedad(${client.id}, ${nov.id})" class="text-red-500 hover:text-red-700">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ACCIÓN: CONFIRMAR SIN NOVEDADES
+    function confirmarSinNovedadesModal() {
+      if (confirm("¿Confirma expresamente que este mes NO tiene ausencias, horas extra ni novedades de haberes para su nómina de empleados?")) {
+        const client = state.clients.find(c => c.id === 1);
+        client.status = 'sin_novedades';
+        client.hasResponded = true;
+        client.confirmedSinNovedades = true;
+        client.fechaConfirmacion = new Date().toLocaleString('es-AR');
+        
+        renderAll();
+        showToast('¡Confirmación enviada al estudio contable!', 'success');
+      }
+    }
+
+    // PLANTILLAS DE EMAIL
+    function selectTemplate(type) {
+      const btnAp = document.getElementById('tpl-btn-apertura');
+      const btnRec = document.getElementById('tpl-btn-recordatorio');
+      const btnConf = document.getElementById('tpl-btn-confirmado');
+      const subject = document.getElementById('tpl-subject');
+      const body = document.getElementById('tpl-body');
+
+      btnAp.className = type === 'apertura' ? 'p-3 border rounded-xl font-bold text-left transition bg-deep-green text-white border-deep-green' : 'p-3 border rounded-xl font-bold text-left transition bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200';
+      btnRec.className = type === 'recordatorio' ? 'p-3 border rounded-xl font-bold text-left transition bg-deep-green text-white border-deep-green' : 'p-3 border rounded-xl font-bold text-left transition bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200';
+      btnConf.className = type === 'confirmado' ? 'p-3 border rounded-xl font-bold text-left transition bg-deep-green text-white border-deep-green' : 'p-3 border rounded-xl font-bold text-left transition bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200';
+
+      if (type === 'apertura') {
+        subject.value = '[Estudio Montiel] Apertura Novedades de Sueldos — {{PERIODO}}';
+        body.value = `Estimados {{CLIENTE}},\n\nLe informamos que se encuentra abierto el período de liquidación de sueldos correspondiente a {{PERIODO}}.\n\nLe solicitamos ingresar al Portal del Empleador antes del {{FECHA_LIMITE}} para:\n1. Confirmar expresamente si NO tuvieron novedades en el mes.\n2. O bien informar las ausencias, licencias, horas extra o novedades de sus empleados.\n\nAcceso al portal: {{LINK_PORTAL}}\n\nAtentamente,\nEstudio Contable Cr. Daniel Montiel`;
+      } else if (type === 'recordatorio') {
+        subject.value = '[RECORDATORIO] Confirmación de Novedades de Haberes — {{PERIODO}}';
+        body.value = `Estimados {{CLIENTE}},\n\nLe recordamos que está próximo a vencer el plazo para informar la nómina de haberes de {{PERIODO}}.\n\nPor favor confirme a la brevedad si cuenta con novedades o si el período cierra sin cambios.\n\nAcceso rápido: {{LINK_PORTAL}}\n\nEstudio Contable Cr. Daniel Montiel`;
+      } else if (type === 'confirmado') {
+        subject.value = '[Confirmación Recibida] Novedades de Sueldos {{PERIODO}}';
+        body.value = `Estimados {{CLIENTE}},\n\nHemos recibido correctamente su declaración de novedades para {{PERIODO}}.\n\nEl equipo del estudio ha iniciado la revisión para la posterior consolidación e importación en Onvio.\n\nMuchas gracias,\nEstudio Contable Cr. Daniel Montiel`;
+      }
+    }
+
+    function guardarPlantilla() {
+      closeModal('modal-plantillas-email');
+      showToast('Plantilla de email guardada exitosamente.', 'success');
+    }
+
+    // MODAL CICLO DETALLE (ESTUDIO)
+    function openCicloModal(clientId) {
+      state.selectedClientId = clientId;
+      const client = state.clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      document.getElementById('modal-ciclo-title').innerText = `${client.name} — ${state.periodo}`;
+      document.getElementById('modal-ciclo-cuit').innerText = `CUIT: ${client.cuit} • Resp: ${client.respEstudio}`;
+      document.getElementById('mod-count-nov').innerText = client.novedades.length;
+      document.getElementById('mod-count-emp').innerText = client.employees.length;
+
+      setModalTab('novedades');
+      openModal('modal-ciclo-detalle');
+    }
+
+    function setModalTab(tab) {
+      state.modalActiveTab = tab;
+      
+      const btnNov = document.getElementById('mod-tab-btn-novedades');
+      const btnEmp = document.getElementById('mod-tab-btn-empleados');
+      const btnCon = document.getElementById('mod-tab-btn-consolidacion');
+
+      const cntNov = document.getElementById('mod-tab-content-novedades');
+      const cntEmp = document.getElementById('mod-tab-content-empleados');
+      const cntCon = document.getElementById('mod-tab-content-consolidacion');
+
+      btnNov.className = tab === 'novedades' ? 'pb-2 border-b-2 border-deep-green font-bold text-deep-green' : 'pb-2 text-gray-500 hover:text-gray-700';
+      btnEmp.className = tab === 'empleados' ? 'pb-2 border-b-2 border-deep-green font-bold text-deep-green' : 'pb-2 text-gray-500 hover:text-gray-700';
+      btnCon.className = tab === 'consolidacion' ? 'pb-2 border-b-2 border-purple-700 font-bold text-purple-700' : 'pb-2 text-gray-500 hover:text-gray-700 font-bold text-purple-700';
+
+      cntNov.classList.toggle('hidden', tab !== 'novedades');
+      cntEmp.classList.toggle('hidden', tab !== 'empleados');
+      cntCon.classList.toggle('hidden', tab !== 'consolidacion');
+
+      const client = state.clients.find(c => c.id === state.selectedClientId);
+
+      if (tab === 'novedades') renderModalNovedadesList(client);
+      if (tab === 'empleados') renderModalEmpleadosList(client);
+      if (tab === 'consolidacion') renderModalConsolidacionTable(client);
+    }
+
+    function renderModalNovedadesList(client) {
+      const container = document.getElementById('mod-novedades-list');
+      if (!client.novedades || client.novedades.length === 0) {
+        container.innerHTML = `<p class="py-6 text-center text-gray-400">No hay novedades registradas en este período.</p>`;
+        return;
+      }
+
+      container.innerHTML = client.novedades.map(nov => `
+        <div class="border border-gray-200 rounded-xl p-3 bg-gray-50/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-gray-900 text-sm">${nov.employeeName}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">${nov.tipo}</span>
+              <span class="text-[11px] text-gray-500">vía ${nov.origen}</span>
+            </div>
+            <p class="text-gray-600 mt-1">Cantidad: <strong>${nov.cantidad}</strong> • Concepto Onvio: <strong class="text-purple-700">${nov.conceptoOnvio || nov.tipo}</strong></p>
+            ${nov.observacion ? `<p class="text-[11px] text-gray-500 italic mt-0.5">"${nov.observacion}"</p>` : ''}
+          </div>
+
+          <div class="flex items-center gap-2">
+            ${nov.estadoRevision === 'aprobada' 
+              ? `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800">Aprobada</span>` 
+              : `<button onclick="openModalSolicitarCorreccion()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2.5 py-1 rounded-lg text-xs">Observada (Pedir Doc)</button>`
+            }
+            <button onclick="aprobarNovedad(${client.id}, ${nov.id})" class="bg-deep-green text-white font-bold px-3 py-1 rounded-lg text-xs">
+              Aprobar
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderModalEmpleadosList(client) {
+      const container = document.getElementById('mod-empleados-list');
+      container.innerHTML = client.employees.map(emp => `
+        <div class="border p-3 rounded-xl bg-white flex items-center justify-between">
+          <div>
+            <div class="font-bold text-gray-800">${emp.name}</div>
+            <div class="text-gray-400 text-[11px]">Legajo #${emp.legajo} • CUIL: ${emp.cuil}</div>
+          </div>
+          <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">${emp.ccosto}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderModalConsolidacionTable(client) {
+      const tbody = document.getElementById('mod-consolidacion-table');
+      const btnEnviarOnvio = document.getElementById('btn-enviar-onvio-modal');
+
+      if (client.status === 'enviado_onvio') {
+        btnEnviarOnvio.className = 'bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-not-allowed opacity-80';
+        btnEnviarOnvio.innerHTML = `<span class="material-symbols-outlined text-base">check_circle</span> <span>Ya Cargado en Onvio</span>`;
+      } else {
+        btnEnviarOnvio.className = 'bg-purple-700 hover:bg-purple-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg transition';
+        btnEnviarOnvio.innerHTML = `<span class="material-symbols-outlined text-base">cloud_upload</span> <span>Registrar y Enviar a Onvio</span>`;
+      }
+
+      if (!client.novedades || client.novedades.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-6 text-center text-gray-400 text-xs">
+              No hay novedades para consolidar. Si el cliente no tuvo novedades, se enviará el informe sin novedades a Onvio.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = client.novedades.map(nov => `
+        <tr class="border-b border-gray-100 hover:bg-purple-50/40 font-mono text-[11px]">
+          <td class="py-2 px-3 font-bold text-purple-900">${nov.legajo}</td>
+          <td class="py-2 px-3 font-sans font-medium text-gray-800">${nov.employeeName}</td>
+          <td class="py-2 px-3 font-bold text-purple-700">${nov.conceptoOnvio || nov.tipo.toUpperCase()}</td>
+          <td class="py-2 px-3 text-right font-bold">${nov.cantidad}</td>
+          <td class="py-2 px-3 font-sans text-gray-600">${nov.ccosto}</td>
+          <td class="py-2 px-3 text-center font-sans">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${nov.estadoRevision === 'aprobada' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+              ${nov.estadoRevision}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ACCIÓN: BOTÓN "ENVIAR A ONVIO"
+    function ejecutarEnviarAOnvio() {
+      const client = state.clients.find(c => c.id === state.selectedClientId);
+      if (!client) return;
+
+      client.status = 'enviado_onvio';
+      client.hasResponded = true;
+      renderAll();
+      renderModalConsolidacionTable(client);
+
+      showToast(`¡Novedades de ${client.name} enviadas exitosamente a Onvio!`, 'success');
+    }
+
+    function simularDescargarExcel() {
+      showToast('Descargando archivo compatible con el importador de Onvio (CSV)...', 'info');
+    }
+
+    // FORMS & CARGAS
+    function openModalAgregarNovedad(empId, empName) {
+      document.getElementById('nov-employee-id').value = empId;
+      document.getElementById('nov-employee-name').value = empName;
+      openModal('modal-agregar-novedad');
+    }
+
+    function handleGuardarNovedad(e) {
+      e.preventDefault();
+      const client = state.clients.find(c => c.id === 1);
+      const empName = document.getElementById('nov-employee-name').value;
+      const empId = parseInt(document.getElementById('nov-employee-id').value);
+      const tipo = document.getElementById('nov-tipo').value;
+      const cantidad = document.getElementById('nov-cantidad').value;
+      const obs = document.getElementById('nov-observacion').value;
+
+      const emp = client.employees.find(e => e.id === empId);
+
+      client.novedades.push({
+        id: Date.now(),
+        employeeId: empId,
+        employeeName: empName,
+        legajo: emp ? emp.legajo : '100',
+        tipo: tipo,
+        cantidad: cantidad,
+        conceptoOnvio: tipo.toUpperCase(),
+        ccosto: emp ? emp.ccosto : 'General',
+        origen: 'Portal Cliente',
+        estadoRevision: 'aprobada',
+        comprobante: 'comprobante_adjunto.pdf',
+        observacion: obs
+      });
+
+      client.hasResponded = true;
+      client.status = 'novedades_informadas';
+      closeModal('modal-agregar-novedad');
+      renderAll();
+      showToast('Novedad agregada correctamente.', 'success');
+    }
+
+    function updateManualEmployeeOptions() {
+      const clientId = parseInt(document.getElementById('manual-cliente-id').value);
+      const selectEmp = document.getElementById('manual-empleado-id');
+
+      if (!clientId) {
+        selectEmp.innerHTML = `<option value="">-- Seleccionar primero un cliente --</option>`;
+        return;
+      }
+
+      const client = state.clients.find(c => c.id === clientId);
+      selectEmp.innerHTML = client.employees.map(e => `
+        <option value="${e.id}">${e.name} (Legajo #${e.legajo})</option>
+      `).join('');
+    }
+
+    function handleCargaManualSubmit(e) {
+      e.preventDefault();
+      const clientId = parseInt(document.getElementById('manual-cliente-id').value);
+      const empId = parseInt(document.getElementById('manual-empleado-id').value);
+      const origen = document.getElementById('manual-origen').value;
+      const tipo = document.getElementById('manual-tipo').value;
+      const cantidad = document.getElementById('manual-cantidad').value;
+      const obs = document.getElementById('manual-observacion').value;
+
+      const client = state.clients.find(c => c.id === clientId);
+      const emp = client.employees.find(e => e.id === empId);
+
+      client.novedades.push({
+        id: Date.now(),
+        employeeId: empId,
+        employeeName: emp ? emp.name : 'Empleado',
+        legajo: emp ? emp.legajo : '100',
+        tipo: tipo,
+        cantidad: cantidad,
+        conceptoOnvio: tipo.toUpperCase(),
+        ccosto: emp ? emp.ccosto : 'General',
+        origen: origen,
+        estadoRevision: 'aprobada',
+        comprobante: 'audio_whatsapp.mp3',
+        observacion: obs
+      });
+
+      client.hasResponded = true;
+      closeModal('modal-carga-manual');
+      renderAll();
+      showToast(`Novedad manual registrada por ${origen}`, 'success');
+    }
+
+    function openModalSolicitarCorreccion() {
+      openModal('modal-solicitar-correccion');
+    }
+
+    function enviarSolicitudCorreccion() {
+      closeModal('modal-solicitar-correccion');
+      showToast('Email simulado enviado al cliente solicitando la documentación adeudada.', 'warning');
+    }
+
+    function confirmarAbrirPeriodo() {
+      const nuevoPer = document.getElementById('select-nuevo-periodo').value;
+      state.periodo = nuevoPer;
+      document.getElementById('header-periodo').innerText = nuevoPer;
+      closeModal('modal-abrir-periodo');
+      showToast(`Período ${nuevoPer} abierto y notificaciones enviadas a todos los clientes.`, 'success');
+    }
+
+    function aprobarNovedad(clientId, novId) {
+      const client = state.clients.find(c => c.id === clientId);
+      const nov = client.novedades.find(n => n.id === novId);
+      if (nov) {
+        nov.estadoRevision = 'aprobada';
+        renderModalNovedadesList(client);
+        showToast('Novedad marcada como Aprobada', 'success');
+      }
+    }
+
+    function eliminarNovedad(clientId, novId) {
+      const client = state.clients.find(c => c.id === clientId);
+      client.novedades = client.novedades.filter(n => n.id !== novId);
+      renderAll();
+      showToast('Novedad eliminada.', 'info');
+    }
+
+    // UTILS MODALES
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // UTILS TOAST
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let colors = 'bg-slate-900 text-white';
+      if (type === 'success') colors = 'bg-emerald-600 text-white';
+      if (type === 'warning') colors = 'bg-amber-600 text-white';
+
+      toast.className = `${colors} px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 transform transition duration-300 pointer-events-auto`;
+      toast.innerHTML = `<span class="material-symbols-outlined text-base">info</span> <span>${msg}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

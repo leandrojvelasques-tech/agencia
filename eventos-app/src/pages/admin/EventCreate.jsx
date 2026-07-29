@@ -119,9 +119,27 @@ export default function EventCreate() {
   const [surveyTestEmail, setSurveyTestEmail] = useState('info@leandrovelasques.com.ar')
   const [sendingSurveyFromEditor, setSendingSurveyFromEditor] = useState(false)
   const [testingSurveyFromEditor, setTestingSurveyFromEditor] = useState(false)
+  const [emailTemplates, setEmailTemplates] = useState([])
+  const [previewReminderId, setPreviewReminderId] = useState(null)
 
   useEffect(() => {
     fetchAgendaTemplates()
+  }, [])
+
+  useEffect(() => {
+    async function loadEmailTemplates() {
+      try {
+        const { data, error } = await supabase
+          .from('email_templates')
+          .select('*')
+        if (!error && data) {
+          setEmailTemplates(data)
+        }
+      } catch (err) {
+        console.error('Error fetching email templates:', err)
+      }
+    }
+    loadEmailTemplates()
   }, [])
 
   useEffect(() => {
@@ -148,6 +166,192 @@ export default function EventCreate() {
       loadPresentations()
     }
   }, [id])
+
+  const getEmailPreviewContent = (templateId) => {
+    const template = emailTemplates.find(t => t.id === templateId)
+    if (!template) return { subject: '', body: '<p style="text-align:center;color:#666;padding:20px;">Cargando plantilla o no encontrada...</p>' }
+
+    const agendaHtml = (() => {
+      const agenda = form.agenda
+      if (!Array.isArray(agenda) || agenda.length === 0) return 'No hay agenda definida para este evento.';
+      
+      let html = '<div style="font-family: sans-serif; border-left: 3px solid #0b5e3a; padding-left: 15px; margin: 15px 0;">';
+      
+      if (agenda[0] && ('blocks' in agenda[0] || 'title' in agenda[0])) {
+        // New format (nested classes/blocks)
+        agenda.forEach((c) => {
+          html += `<div style="margin-bottom: 20px;">`;
+          html += `<h4 style="margin: 0 0 5px 0; color: #0b5e3a; font-size: 16px;">${c.title || 'Clase / Sesión'}`;
+          if (c.start_time || c.end_time) {
+            html += ` <span style="font-size: 12px; color: #666; font-weight: normal;">(${c.start_time || '—'}${c.end_time ? ` - ${c.end_time}` : ''} hs)</span>`;
+          }
+          html += `</h4>`;
+          
+          if (Array.isArray(c.blocks) && c.blocks.length > 0) {
+            html += `<div style="margin-left: 15px; border-left: 1px solid #ddd; padding-left: 10px;">`;
+            c.blocks.forEach((b) => {
+              html += `<div style="margin-bottom: 10px;">`;
+              if (b.title) {
+                html += `<p style="margin: 0; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #0b5e3a;">${b.title}</p>`;
+              }
+              if (b.description) {
+                html += `<p style="margin: 2px 0 0 0; font-size: 13px; color: #444; line-height: 1.4;">${b.description}</p>`;
+              }
+              html += `</div>`;
+            });
+            html += `</div>`;
+          }
+          
+          if (c.break_duration && c.break_duration > 0) {
+            html += `<p style="margin: 5px 0 0 15px; font-size: 12px; color: #0b5e3a; font-style: italic;">☕ Break / Receso (${c.break_duration} min)</p>`;
+          }
+          html += `</div>`;
+        });
+      } else {
+        // Old format fallback
+        agenda.forEach((item) => {
+          if (item.topic || item.block) {
+            html += `<div style="margin-bottom: 12px;">`;
+            let timeHeader = '';
+            if (item.time) {
+              timeHeader = `<strong style="color: #0b5e3a;">${item.time} hs</strong>: `;
+            }
+            html += `<p style="margin: 0; font-size: 13px; color: #333;">${timeHeader}`;
+            if (item.block) {
+              html += `<span style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #888;">[${item.block}]</span> `;
+            }
+            html += `${item.topic || ''}</p>`;
+            html += `</div>`;
+          }
+        });
+      }
+      
+      html += '</div>';
+      return html;
+    })()
+
+    const accessSectionHtml = (() => {
+      const mode = form.registration_mode || 'both';
+      if (mode === 'virtual' || mode === 'both') {
+        const liveLink = form.live_link || '';
+        const zoomDetails = form.zoom_details || '';
+        let html = '';
+        if (liveLink) {
+          let buttonHtml = '';
+          if (liveLink.includes('zoom.us')) {
+            buttonHtml = `
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
+                <tr>
+                  <td align="center" bgcolor="#285A47" style="border-radius:8px;">
+                    <a href="${liveLink}" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Zoom_video_communications_logo.svg/120px-Zoom_video_communications_logo.svg.png" width="18" height="18" style="display:inline-block; vertical-align:middle; margin-right:8px; border:0;" alt="Zoom" />
+                      <span style="vertical-align:middle;">Ingresar a Zoom / Unirse al Encuentro</span>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            `;
+          } else {
+            buttonHtml = `
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate; margin: 0 auto;">
+                <tr>
+                  <td align="center" bgcolor="#285A47" style="border-radius:8px;">
+                    <a href="${liveLink}" target="_blank" style="display:inline-block; padding:15px 25px; color:#FFFFFF; font-size:15px; line-height:1; font-weight:700; text-decoration:none; border-radius:8px;">
+                      <span style="vertical-align:middle;">Acceder al Encuentro Virtual</span>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            `;
+          }
+          html += `
+            <div style="margin-top: 20px; text-align: center;">
+              ${buttonHtml}
+              <p style="margin:12px 0 0 0; color:#8A9490; font-size:12px; line-height:1.6;">
+                Vínculo directo: <a href="${liveLink}" target="_blank" style="color:#285A47; font-weight:bold; text-decoration:none;">${liveLink}</a>
+              </p>
+            </div>
+          `;
+        }
+        if (zoomDetails) {
+          html += `
+            <div style="margin-top: 20px; text-align: left; background-color: #F4F8F6; border: 1px solid #D1E4DA; border-radius: 12px; padding: 20px; font-family: Arial, sans-serif;">
+              <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">🔑 Datos de Acceso a la Reunión:</strong>
+              <div style="color: #1E2824; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #E2EDE8;">${zoomDetails}</div>
+            </div>
+          `;
+        }
+        if (!liveLink && !zoomDetails) {
+          html += `
+            <p style="margin:0; color:#4F4C4D; font-size:14px; line-height:1.6; text-align:center;">
+              El enlace de acceso virtual estará disponible próximamente.
+            </p>
+          `;
+        }
+        return html;
+      } else {
+        const loc = form.location || 'Sede del Consejo Profesional de Ciencias Económicas';
+        return `
+          <div style="text-align: left; background-color: #F7FAF8; border: 1px solid #D9E8E0; border-radius: 10px; padding: 18px; font-family: Arial, sans-serif;">
+            <strong style="color: #285A47; font-size: 14px; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">📍 Lugar del Encuentro (Presencial):</strong>
+            <p style="margin: 0; color: #303A36; font-size: 15px; font-weight: bold;">${loc}</p>
+            <p style="margin: 6px 0 0 0; color: #747D79; font-size: 13px; line-height: 1.45;">Te esperamos directamente en la dirección indicada. ¡Por favor planifica tu llegada con tiempo!</p>
+          </div>
+        `;
+      }
+    })()
+
+    const durationStr = form.duration_minutes
+      ? `${Math.floor(form.duration_minutes / 60)} horas${form.duration_minutes % 60 ? ` y ${form.duration_minutes % 60} minutos` : ''}`
+      : '2 horas'
+
+    let tipoEventoStr = 'Taller';
+    if (form.type === 'charla') {
+      tipoEventoStr = 'Charla';
+    }
+    if (form.title?.toLowerCase().includes('inteligencia artificial') || form.title?.toLowerCase().includes('ia ')) {
+      tipoEventoStr = 'Taller de Inteligencia Artificial';
+    } else if (form.title?.toLowerCase().includes('tango')) {
+      tipoEventoStr = 'Clase de Tango';
+    }
+
+    const placeholders = {
+      '{{nombre}}': 'Juan',
+      '{{apellido}}': 'Pérez',
+      '{{evento}}': form.title || 'Título del Evento (Ejemplo)',
+      '{{fecha}}': form.event_date || '21 de julio de 2026',
+      '{{horario}}': form.start_time || '18:00',
+      '{{modalidad}}': form.registration_mode === 'virtual' ? 'Virtual (Online)' : form.registration_mode === 'presencial' ? 'Presencial' : 'Presencial y Virtual',
+      '{{tipo_evento}}': tipoEventoStr,
+      '{{duracion}}': durationStr,
+      '{{coordinador}}': form.coordinator || 'Leandro Velasques',
+      '{{agenda}}': agendaHtml,
+      '{{link_inscripcion}}': '#',
+      '{{link_evento}}': '#',
+      '{{link_reunion}}': form.live_link || '#',
+      '{{link_acceso}}': form.live_link || '#',
+      '{{seccion_acceso}}': accessSectionHtml,
+      '{{link_encuesta}}': '#',
+      '{{link_cancelacion}}': '#'
+    }
+
+    let resolvedSubject = template.subject || ''
+    let resolvedBody = template.body || ''
+
+    for (const [key, value] of Object.entries(placeholders)) {
+      resolvedSubject = resolvedSubject.replaceAll(key, value)
+      resolvedBody = resolvedBody.replaceAll(key, value)
+    }
+
+    const emailHtml = resolvedBody.trim().startsWith('<') || resolvedBody.includes('<div') || resolvedBody.includes('<table') || resolvedBody.includes('<html')
+      ? resolvedBody
+      : resolvedBody.replace(/\n/g, '<br>')
+
+    return {
+      subject: resolvedSubject,
+      body: emailHtml
+    }
+  }
 
   const handleLinkPresentation = async (presId) => {
     if (!presId) return
@@ -1882,66 +2086,128 @@ export default function EventCreate() {
                 </p>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={form.send_reminder_48h !== false}
-                    onChange={e => update('send_reminder_48h', e.target.checked)}
-                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">Recordatorio 48hs Antes</p>
-                    <p className="text-[9px] text-gray-500">Envía un email 2 días antes del evento</p>
-                  </div>
-                </label>
+                {/* 48hs Antes */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50/50 select-none">
+                  <label className="flex items-center gap-3 cursor-pointer flex-1">
+                    <input
+                      type="checkbox"
+                      checked={form.send_reminder_48h !== false}
+                      onChange={e => update('send_reminder_48h', e.target.checked)}
+                      className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Recordatorio 48hs Antes</p>
+                      <p className="text-[9px] text-gray-500">Envía un email 2 días antes del evento</p>
+                    </div>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPreviewReminderId('reminder_48h');
+                    }}
+                    className="text-[10px] text-[var(--color-deep-green)] hover:underline flex items-center gap-0.5 ml-2 p-1.5 rounded hover:bg-[var(--color-deep-green)]/5 transition-colors cursor-pointer animate-pulse-subtle"
+                    title="Ver vista previa de este correo"
+                  >
+                    <span className="material-symbols-outlined text-base">visibility</span>
+                    Vista Previa
+                  </button>
+                </div>
 
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={form.send_reminder_24h !== false}
-                    onChange={e => update('send_reminder_24h', e.target.checked)}
-                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">Recordatorio 24hs Antes</p>
-                    <p className="text-[9px] text-gray-500">Envía un email el día anterior al evento</p>
-                  </div>
-                </label>
+                {/* 24hs Antes */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50/50 select-none">
+                  <label className="flex items-center gap-3 cursor-pointer flex-1">
+                    <input
+                      type="checkbox"
+                      checked={form.send_reminder_24h !== false}
+                      onChange={e => update('send_reminder_24h', e.target.checked)}
+                      className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Recordatorio 24hs Antes</p>
+                      <p className="text-[9px] text-gray-500">Envía un email el día anterior al evento</p>
+                    </div>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPreviewReminderId('reminder_24h');
+                    }}
+                    className="text-[10px] text-[var(--color-deep-green)] hover:underline flex items-center gap-0.5 ml-2 p-1.5 rounded hover:bg-[var(--color-deep-green)]/5 transition-colors cursor-pointer animate-pulse-subtle"
+                    title="Ver vista previa de este correo"
+                  >
+                    <span className="material-symbols-outlined text-base">visibility</span>
+                    Vista Previa
+                  </button>
+                </div>
 
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={form.send_reminder_same_day !== false}
-                    onChange={e => update('send_reminder_same_day', e.target.checked)}
-                    className="accent-[var(--color-deep-green)] rounded w-4 h-4"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">Recordatorio Mismo Día</p>
-                    <p className="text-[9px] text-gray-500">Envía un email a primera hora del mismo día</p>
-                  </div>
-                </label>
+                {/* Mismo Día */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50/50 select-none">
+                  <label className="flex items-center gap-3 cursor-pointer flex-1">
+                    <input
+                      type="checkbox"
+                      checked={form.send_reminder_same_day !== false}
+                      onChange={e => update('send_reminder_same_day', e.target.checked)}
+                      className="accent-[var(--color-deep-green)] rounded w-4 h-4"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Recordatorio Mismo Día</p>
+                      <p className="text-[9px] text-gray-500">Envía un email a primera hora del mismo día</p>
+                    </div>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPreviewReminderId('reminder_same_day');
+                    }}
+                    className="text-[10px] text-[var(--color-deep-green)] hover:underline flex items-center gap-0.5 ml-2 p-1.5 rounded hover:bg-[var(--color-deep-green)]/5 transition-colors cursor-pointer animate-pulse-subtle"
+                    title="Ver vista previa de este correo"
+                  >
+                    <span className="material-symbols-outlined text-base">visibility</span>
+                    Vista Previa
+                  </button>
+                </div>
 
-                <label className={`flex items-center gap-3 p-3 rounded-lg border w-full select-none cursor-pointer ${
+                {/* Día Siguiente */}
+                <div className={`flex items-center justify-between p-3 rounded-lg border select-none ${
                   form.has_satisfaction_survey
                     ? 'border-gray-100 bg-gray-50/50'
                     : 'border-dashed border-gray-200 bg-gray-100/30 opacity-60'
                 }`}>
-                  <input
-                    type="checkbox"
-                    disabled={!form.has_satisfaction_survey}
-                    checked={form.has_satisfaction_survey && form.send_reminder_next_day === true}
-                    onChange={e => update('send_reminder_next_day', e.target.checked)}
-                    className="accent-[var(--color-deep-green)] rounded w-4 h-4 disabled:opacity-40"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">Recordatorio Día Siguiente</p>
-                    <p className="text-[9px] text-gray-500">
-                      {form.has_satisfaction_survey 
-                        ? 'Envía la encuesta de satisfacción 24hs después' 
-                        : 'Requiere activar la encuesta de satisfacción pos-evento'}
-                    </p>
-                  </div>
-                </label>
+                  <label className={`flex items-center gap-3 flex-1 ${form.has_satisfaction_survey ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                    <input
+                      type="checkbox"
+                      disabled={!form.has_satisfaction_survey}
+                      checked={form.has_satisfaction_survey && form.send_reminder_next_day === true}
+                      onChange={e => update('send_reminder_next_day', e.target.checked)}
+                      className="accent-[var(--color-deep-green)] rounded w-4 h-4 disabled:opacity-40"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-gray-800">Recordatorio Día Siguiente</p>
+                      <p className="text-[9px] text-gray-500">
+                        {form.has_satisfaction_survey 
+                          ? 'Envía la encuesta de satisfacción 24hs después' 
+                          : 'Requiere activar la encuesta de satisfacción pos-evento'}
+                      </p>
+                    </div>
+                  </label>
+                  {form.has_satisfaction_survey && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPreviewReminderId('reminder_next_day');
+                      }}
+                      className="text-[10px] text-[var(--color-deep-green)] hover:underline flex items-center gap-0.5 ml-2 p-1.5 rounded hover:bg-[var(--color-deep-green)]/5 transition-colors cursor-pointer animate-pulse-subtle"
+                      title="Ver vista previa de este correo"
+                    >
+                      <span className="material-symbols-outlined text-base">visibility</span>
+                      Vista Previa
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -2742,6 +3008,86 @@ export default function EventCreate() {
                   {sendingSurveyFromEditor ? 'Enviando...' : 'Enviar Encuesta'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Vista Previa del Recordatorio por Email */}
+      {previewReminderId && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-[var(--color-refined-gray)] w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="bg-[var(--color-deep-green)] text-white px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-400 font-bold">mail</span>
+                <span className="font-bold text-sm">
+                  Vista Previa de Correo: {
+                    previewReminderId === 'reminder_48h' ? 'Recordatorio 48hs Antes' :
+                    previewReminderId === 'reminder_24h' ? 'Recordatorio 24hs Antes' :
+                    previewReminderId === 'reminder_same_day' ? 'Recordatorio Mismo Día' :
+                    previewReminderId === 'reminder_next_day' ? 'Recordatorio Día Siguiente' : 'Recordatorio'
+                  }
+                </span>
+              </div>
+              <button
+                onClick={() => setPreviewReminderId(null)}
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                title="Cerrar vista previa"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body / Email Client UI */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-100">
+              {/* Mail Header Widget */}
+              <div className="bg-white rounded-xl border border-gray-200/80 p-4 shadow-sm space-y-2">
+                <div className="flex items-start text-xs border-b border-gray-100 pb-2">
+                  <span className="font-bold text-gray-500 w-16">De:</span>
+                  <span className="text-gray-800 font-medium">Notificaciones Leandro Velasques &lt;info@leandrovelasques.com.ar&gt;</span>
+                </div>
+                <div className="flex items-start text-xs border-b border-gray-100 pb-2">
+                  <span className="font-bold text-gray-500 w-16">Para:</span>
+                  <span className="text-gray-800">Juan Pérez &lt;juan.perez@ejemplo.com&gt;</span>
+                </div>
+                <div className="flex items-start text-xs">
+                  <span className="font-bold text-gray-500 w-16">Asunto:</span>
+                  <span className="text-gray-900 font-bold">{getEmailPreviewContent(previewReminderId).subject}</span>
+                </div>
+              </div>
+
+              {/* Mail Content Render Box */}
+              <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden min-h-[300px]">
+                {/* Header graphic simulation */}
+                <div className="bg-[var(--color-deep-green)] px-6 py-4 flex items-center justify-between">
+                  <span className="text-white font-black tracking-wider text-sm">Leandro Velasques</span>
+                  <span className="text-white/60 text-[10px] uppercase font-bold tracking-widest">Notificación Oficial</span>
+                </div>
+                
+                {/* The body */}
+                <div 
+                  className="p-6 md:p-8 text-sm text-gray-700 leading-relaxed font-sans email-preview-body"
+                  dangerouslySetInnerHTML={{ __html: getEmailPreviewContent(previewReminderId).body }}
+                />
+
+                {/* Footer simulation */}
+                <div className="bg-gray-50 border-t border-gray-100 p-6 text-center text-xs text-gray-400 space-y-2">
+                  <p>Este es un correo automático para confirmar tus detalles de asistencia.</p>
+                  <p>© {new Date().getFullYear()} Leandro Velasques. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-white px-6 py-4 border-t border-gray-100 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setPreviewReminderId(null)}
+                className="btn-secondary"
+              >
+                Cerrar Vista Previa
+              </button>
             </div>
           </div>
         </div>

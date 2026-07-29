@@ -15,7 +15,7 @@ export default function EventMinuta() {
   const [photoUrl, setPhotoUrl] = useState('')
   const [observations, setObservations] = useState([''])
   const [includeAttendees, setIncludeAttendees] = useState(true)
-  const [includeAbsentees, setIncludeAbsentees] = useState(false)
+  const [includeAbsentees, setIncludeAbsentees] = useState(true)
   const [externalEmails, setExternalEmails] = useState('')
   const [presentationLink, setPresentationLink] = useState('')
   const [extraFiles, setExtraFiles] = useState('')
@@ -462,7 +462,7 @@ export default function EventMinuta() {
     }
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000) // 60s timeout for batched sending
 
     try {
       const apiUrl = '/api/send-minuta'
