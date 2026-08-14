@@ -23,12 +23,23 @@ const sanitizeAgenda = (agenda) => {
   }))
 }
 
+const cloneAgendaWithNewIds = (agenda) => {
+  if (!Array.isArray(agenda)) return []
+  return agenda.map(session => ({
+    ...session,
+    blocks: Array.isArray(session.blocks)
+      ? session.blocks.map(block => ({ ...block, id: generateUUID() }))
+      : []
+  }))
+}
+
 export default function AgendaTemplatesDashboard() {
   const { agendaTemplates, fetchAgendaTemplates, createAgendaTemplate, updateAgendaTemplate, deleteAgendaTemplate, isLoading } = useStore()
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [isDuplicating, setIsDuplicating] = useState(false)
 
   // Form State
   const [form, setForm] = useState({
@@ -223,6 +234,38 @@ export default function AgendaTemplatesDashboard() {
       setSelectedTemplate(null)
     } else {
       alert('Error al eliminar la plantilla.')
+    }
+  }
+
+  const handleDuplicate = async () => {
+    if (!selectedTemplate) return
+    setIsDuplicating(true)
+    setSaveError('')
+
+    try {
+      const copiedAgenda = cloneAgendaWithNewIds(selectedTemplate.agenda)
+      const result = await createAgendaTemplate({
+        name: `Copia de ${selectedTemplate.name}`,
+        description: selectedTemplate.description || '',
+        agenda: copiedAgenda
+      })
+
+      if (result.success) {
+        setSelectedTemplate(result.data)
+        setForm({
+          name: result.data.name,
+          description: result.data.description || '',
+          agenda: sanitizeAgenda(result.data.agenda || copiedAgenda)
+        })
+        setIsEditing(true)
+      } else {
+        setSaveError(result.error?.message || 'No se pudo duplicar la plantilla.')
+      }
+    } catch (err) {
+      console.error('Error duplicating agenda template:', err)
+      setSaveError('No se pudo duplicar la plantilla.')
+    } finally {
+      setIsDuplicating(false)
     }
   }
 
@@ -618,6 +661,15 @@ export default function AgendaTemplatesDashboard() {
                   >
                     <span className="material-symbols-outlined text-sm">edit</span>
                     Editar
+                  </button>
+                  <button
+                    onClick={handleDuplicate}
+                    disabled={isDuplicating}
+                    className="px-4 py-2 border border-[var(--color-deep-green)]/20 bg-[var(--color-deep-green)]/5 hover:bg-[var(--color-deep-green)]/10 disabled:opacity-50 text-sm font-semibold rounded-[var(--radius-premium)] text-[var(--color-deep-green)] transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Crear una copia independiente para editar"
+                  >
+                    <span className={`material-symbols-outlined text-sm ${isDuplicating ? 'animate-spin' : ''}`}>{isDuplicating ? 'sync' : 'content_copy'}</span>
+                    {isDuplicating ? 'Duplicando...' : 'Duplicar'}
                   </button>
                   <button
                     onClick={handleDelete}
