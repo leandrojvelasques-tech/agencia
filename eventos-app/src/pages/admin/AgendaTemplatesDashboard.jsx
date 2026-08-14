@@ -612,8 +612,8 @@ export default function AgendaTemplatesDashboard() {
                                   value={block.description || ''}
                                   onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}
                                   placeholder="Detalle o descripción opcional..."
-                                  rows={1}
-                                  className="w-full p-2 text-xs border border-indigo-100 rounded focus:outline-none focus:border-indigo-500 bg-white"
+                                  rows={4}
+                                  className="w-full min-h-[108px] p-2 text-xs border border-indigo-100 rounded focus:outline-none focus:border-indigo-500 bg-white resize-y leading-relaxed"
                                 />
                               </div>
                             )}
@@ -631,8 +631,8 @@ export default function AgendaTemplatesDashboard() {
                                   value={block.description}
                                   onChange={(e) => updateBlockField(classIdx, blockIdx, 'description', e.target.value)}
                                   placeholder="Descripción de lo que se dictará en este bloque..."
-                                  rows={2}
-                                  className="w-full p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50"
+                                  rows={7}
+                                  className="w-full min-h-[180px] p-2 text-xs rounded border border-gray-100 focus:outline-none focus:border-[var(--color-deep-green)] bg-gray-50/50 resize-y leading-relaxed"
                                 />
                               </div>
                             )}
