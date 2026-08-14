@@ -177,6 +177,8 @@ CREATE TABLE IF NOT EXISTS event_reports (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     summary TEXT NOT NULL,
+    program TEXT,
+    include_program BOOLEAN NOT NULL DEFAULT TRUE,
     photo_url TEXT,
     recipients TEXT NOT NULL DEFAULT 'attendees' CHECK (recipients IN ('attendees', 'all')),
     sent BOOLEAN NOT NULL DEFAULT FALSE,
@@ -304,6 +306,11 @@ CREATE TRIGGER update_crm_clients_updated_at
     BEFORE UPDATE ON crm_clients
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Optional client association for in-company events and branded minutes.
+ALTER TABLE events
+    ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES crm_clients(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_events_client ON events(client_id);
 
 -- MIGRATION: 
 -- ALTER TABLE crm_clients ADD COLUMN IF NOT EXISTS company TEXT;

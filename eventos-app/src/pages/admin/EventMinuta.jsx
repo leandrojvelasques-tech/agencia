@@ -3,15 +3,33 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
 
+const programFromAgenda = (agenda) => {
+  if (!Array.isArray(agenda)) return ''
+
+  return agenda.flatMap((item) => {
+    const heading = [item?.title, !Array.isArray(item?.blocks) ? item?.description : ''].filter(Boolean)
+    const blocks = Array.isArray(item?.blocks)
+      ? item.blocks
+        .map((block) => [block?.title, block?.subtitle, block?.description].filter(Boolean).join(' — '))
+        .filter(Boolean)
+        .map((block) => `• ${block}`)
+      : []
+    return [...heading, ...blocks]
+  }).join('\n')
+}
+
 export default function EventMinuta() {
   const { id } = useParams()
   const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual, updateEvent } = useStore()
   const [event, setEvent] = useState(null)
+  const [client, setClient] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isSent, setIsSent] = useState(false)
   const [sentAt, setSentAt] = useState(null)
 
   const [summary, setSummary] = useState('')
+  const [program, setProgram] = useState('')
+  const [includeProgram, setIncludeProgram] = useState(true)
   const [photoUrl, setPhotoUrl] = useState('')
   const [observations, setObservations] = useState([''])
   const [includeAttendees, setIncludeAttendees] = useState(true)
@@ -55,6 +73,19 @@ export default function EventMinuta() {
         if (eventData) {
           const targetId = eventData.id || id
           await fetchEventData(targetId)
+          const suggestedProgram = programFromAgenda(eventData.agenda)
+
+          if (eventData.client_id) {
+            const { data: clientData, error: clientError } = await supabase
+              .from('crm_clients')
+              .select('id, name, company, logo_url')
+              .eq('id', eventData.client_id)
+              .maybeSingle()
+            if (clientError) console.error('Error loading event client:', clientError)
+            else setClient(clientData)
+          } else {
+            setClient(null)
+          }
 
           // Auto populate presentation link if materials exist
           if (eventData.event_materials && Array.isArray(eventData.event_materials)) {
@@ -109,6 +140,9 @@ export default function EventMinuta() {
             try {
               const parsed = JSON.parse(draft)
               if (parsed.summary) setSummary(parsed.summary)
+              if (parsed.program !== undefined) setProgram(parsed.program)
+              else setProgram(suggestedProgram)
+              if (parsed.includeProgram !== undefined) setIncludeProgram(parsed.includeProgram)
               if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
               if (Array.isArray(parsed.observations)) setObservations(parsed.observations)
               if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
@@ -122,7 +156,10 @@ export default function EventMinuta() {
               if (parsed.attachedSlideInfo) setAttachedSlideInfo(parsed.attachedSlideInfo)
             } catch (e) {
               console.error("Error loading draft", e)
+              setProgram(suggestedProgram)
             }
+          } else {
+            setProgram(suggestedProgram)
           }
 
           // Check sent status
@@ -135,6 +172,8 @@ export default function EventMinuta() {
               if (!draft) {
                 if (reportData.summary) setSummary(reportData.summary)
                 if (reportData.photo_url) setPhotoUrl(reportData.photo_url)
+                if (reportData.program) setProgram(reportData.program)
+                if (reportData.include_program !== undefined) setIncludeProgram(reportData.include_program)
               }
             }
           } catch (err) {
@@ -263,6 +302,8 @@ export default function EventMinuta() {
   const handleSaveDraft = () => {
     const draft = {
       summary,
+      program,
+      includeProgram,
       photoUrl,
       observations,
       presentationLink,
@@ -320,6 +361,8 @@ export default function EventMinuta() {
       eventDate: event?.event_date,
       coordinator: displayCoordinator,
       summary: summary + '\n\n*(Este es un envío de prueba individual)*',
+      program: includeProgram ? program : '',
+      client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
       photoUrl,
       presentationLink,
@@ -434,6 +477,8 @@ export default function EventMinuta() {
       eventDate: event?.event_date,
       coordinator: displayCoordinator,
       summary,
+      program: includeProgram ? program : '',
+      client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
       photoUrl,
       presentationLink,
@@ -488,6 +533,8 @@ export default function EventMinuta() {
       const { error: dbError } = await supabase.from('event_reports').upsert({
         event_id: id,
         summary: summary,
+        program,
+        include_program: includeProgram,
         photo_url: photoUrl,
         sent: true,
         sent_at: new Date().toISOString()
@@ -587,6 +634,31 @@ export default function EventMinuta() {
             value={summary}
             onChange={e => setSummary(e.target.value)}
           />
+        </div>
+
+        <div className="pt-4 border-t border-[var(--color-deep-green)]/10">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                Programa tratado
+              </label>
+              <p className="text-[11px] text-[var(--color-dark-gray)]/50 mt-1">
+                Se precarga desde la agenda del evento. Podés corregirlo para reflejar los temas y propuestas que efectivamente se vieron.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 shrink-0 cursor-pointer text-xs font-semibold text-[var(--color-deep-green)]">
+              <input type="checkbox" checked={includeProgram} onChange={e => setIncludeProgram(e.target.checked)} className="accent-[var(--color-deep-green)] w-4 h-4 rounded" />
+              Incluir
+            </label>
+          </div>
+          <textarea
+            className="form-input min-h-[150px]"
+            placeholder={'Ej. Introducción a la IA aplicada\n• Casos de uso administrativos\n• Propuestas y próximos pasos'}
+            value={program}
+            onChange={e => setProgram(e.target.value)}
+            disabled={!includeProgram}
+          />
+          {!includeProgram && <p className="text-[10px] text-[var(--color-dark-gray)]/45 mt-2">El programa se conservará en el borrador, pero no se enviará en esta minuta.</p>}
         </div>
 
         <div className="pt-4 border-t border-[var(--color-deep-green)]/10 space-y-4">
@@ -933,6 +1005,19 @@ export default function EventMinuta() {
              <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--color-dark-gray)]/40">Minuta - {event.title}</p>
           </div>
           <div className="p-6 md:p-10 max-w-2xl mx-auto font-sans text-gray-800">
+            {client && (
+              <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[var(--color-deep-green)]/10">
+                {client.logo_url ? (
+                  <img src={client.logo_url} alt={`Logo de ${client.company || client.name}`} className="w-12 h-12 object-contain rounded bg-white border border-gray-100 p-1" />
+                ) : (
+                  <span className="w-12 h-12 rounded bg-[var(--color-deep-green)]/8 text-[var(--color-deep-green)] flex items-center justify-center material-symbols-outlined">business</span>
+                )}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Evento realizado para</p>
+                  <p className="text-sm font-extrabold text-[var(--color-deep-green)]">{client.company || client.name}</p>
+                </div>
+              </div>
+            )}
             <h2 className="text-2xl font-extrabold text-[var(--color-deep-green)] mb-1">¡Gracias por participar!</h2>
             <p className="text-sm text-gray-500 mb-6 font-medium">Resumen de: {event.title}</p>
             
@@ -951,6 +1036,15 @@ export default function EventMinuta() {
                 {summary || <span className="italic text-gray-400">El resumen del evento aparecerá aquí...</span>}
               </div>
             </div>
+
+            {includeProgram && program.trim() && (
+              <div className="mb-8">
+                <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-3 border-b-2 border-gray-100 pb-2">Programa tratado</h4>
+                <div className="whitespace-pre-wrap text-[14px] leading-relaxed text-gray-700 bg-[var(--color-refined-gray)]/65 border border-[var(--color-deep-green)]/10 rounded-[10px] px-4 py-3">
+                  {program}
+                </div>
+              </div>
+            )}
 
             {Array.isArray(observations) && observations.filter(o => o && typeof o === 'string' && o.trim()).length > 0 && (
               <div className="mb-8">

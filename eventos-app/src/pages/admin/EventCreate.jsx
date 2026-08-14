@@ -52,7 +52,7 @@ const normalizeAgenda = (agenda) => {
 export default function EventCreate() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getEventById, createEvent, updateEvent, agendaTemplates, fetchAgendaTemplates, createAgendaTemplate } = useStore()
+  const { getEventById, createEvent, updateEvent, agendaTemplates, fetchAgendaTemplates, createAgendaTemplate, crmClients, fetchCrmClients } = useStore()
   const [existingEvent, setExistingEvent] = useState(null)
   const [showSaveTemplateForm, setShowSaveTemplateForm] = useState(false)
   const [loading, setLoading] = useState(id ? true : false)
@@ -68,6 +68,7 @@ export default function EventCreate() {
     requirements: '',
     coordinator: 'Leandro Velasques',
     organizer: '',
+    client_id: '',
     location: '',
     event_date: '',
     offered_dates: [],
@@ -124,6 +125,10 @@ export default function EventCreate() {
 
   useEffect(() => {
     fetchAgendaTemplates()
+  }, [])
+
+  useEffect(() => {
+    fetchCrmClients()
   }, [])
 
   useEffect(() => {
@@ -487,6 +492,7 @@ export default function EventCreate() {
               : DEFAULT_SATISFACTION_QUESTIONS,
             registrations_open: data.registrations_open || false,
             allow_multiple_registrations: data.allow_multiple_registrations || false,
+            client_id: data.client_id || '',
           })
         }
         setLoading(false)
@@ -1140,6 +1146,17 @@ export default function EventCreate() {
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Organizador / Institución</label>
                 <input className="form-input" placeholder="Ej: UTN Trelew" value={form.organizer} onChange={e => update('organizer', e.target.value)} />
               </div>
+            </div>
+
+            <div className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/55 border border-[var(--color-deep-green)]/10">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Cliente del evento <span className="normal-case text-[var(--color-dark-gray)]/40">(opcional)</span></label>
+              <select className="form-input" value={form.client_id || ''} onChange={e => update('client_id', e.target.value)}>
+                <option value="">Sin cliente asociado — usar identidad de Leandro</option>
+                {crmClients.map(client => (
+                  <option key={client.id} value={client.id}>{client.company || client.name}</option>
+                ))}
+              </select>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-2">Al generar la minuta, se incorporará el logo y el nombre de este cliente como membrete del comprobante.</p>
             </div>
 
             {/* Banner Upload */}

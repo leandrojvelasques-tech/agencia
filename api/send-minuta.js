@@ -67,6 +67,15 @@ function parseSender(emailFrom) {
   return { name: "Leandro Velasques", email: emailFrom.trim() };
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -90,6 +99,8 @@ module.exports = async (req, res) => {
     eventDate,
     coordinator,
     summary,
+    program,
+    client,
     observations = [],
     photoUrl,
     presentationLink,
@@ -149,6 +160,20 @@ module.exports = async (req, res) => {
       : (extraFiles ? [ensureAbsoluteUrl(extraFiles)] : []);
     const finalAttendanceLink = ensureAbsoluteUrl(attendanceLink);
     const finalSurveyLink = ensureAbsoluteUrl(surveyLink);
+    const clientName = client?.name ? escapeHtml(client.name) : '';
+    const clientLogoUrl = client?.logoUrl ? escapeHtml(ensureAbsoluteUrl(client.logoUrl)) : '';
+    const clientHeaderHtml = clientName ? `
+      <div style="background-color: #ffffff; padding: 14px 24px; text-align: center; border-bottom: 1px solid #e1ede8; font-family: sans-serif;">
+        ${clientLogoUrl ? `<img src="${clientLogoUrl}" alt="Logo de ${clientName}" style="display: block; max-width: 150px; max-height: 52px; width: auto; height: auto; margin: 0 auto 7px; object-fit: contain;" />` : ''}
+        <p style="margin: 0; font-size: 11px; font-weight: 700; color: #4F4C4D; text-transform: uppercase; letter-spacing: 0.8px;">Evento realizado para ${clientName}</p>
+      </div>
+    ` : '';
+    const programHtml = program && String(program).trim() ? `
+      <div style="margin-bottom: 30px;">
+        <h3 style="color: #285A47; font-size: 16px; border-bottom: 2px solid #f3f7f5; padding-bottom: 8px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: sans-serif;">Programa tratado</h3>
+        <div style="font-size: 14px; line-height: 1.6; color: #444444; background-color: #f3f7f5; border: 1px solid #e1ede8; border-radius: 8px; padding: 15px; white-space: pre-wrap; font-family: sans-serif;">${escapeHtml(program)}</div>
+      </div>
+    ` : '';
 
     // Construct photo HTML section
     let photoHtml = '';
@@ -271,6 +296,8 @@ module.exports = async (req, res) => {
       </head>
       <body style="font-family: sans-serif; color: #333333; background-color: #f9f9f9; padding: 20px; margin: 0;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #eeeeee; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+          <!-- Client letterhead -->
+          ${clientHeaderHtml}
           <!-- Header Banner -->
           <div style="background-color: #285A47; padding: 35px 30px; text-align: center; color: #ffffff; font-family: sans-serif;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 800; tracking-tight: -0.5px;">¡Gracias por participar!</h1>
@@ -293,6 +320,9 @@ module.exports = async (req, res) => {
               <h3 style="color: #285A47; font-size: 16px; border-bottom: 2px solid #f3f7f5; padding-bottom: 8px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; font-family: sans-serif;">Resumen del Evento</h3>
               <div style="font-size: 15px; line-height: 1.6; color: #444444; border-left: 3px solid #285A47; padding-left: 15px; white-space: pre-wrap; font-family: sans-serif;">${summary}</div>
             </div>
+
+            <!-- Program Section -->
+            ${programHtml}
 
             <!-- Observations Section -->
             ${observationsHtml}
