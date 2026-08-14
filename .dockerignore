@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+node_modules
+eventos-app/node_modules
+eventos-app/.env
+eventos-app/.env.*
+!eventos-app/.env.example
+scratch
+out.txt
