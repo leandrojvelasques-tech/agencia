@@ -10,6 +10,16 @@ const generateUUID = () => {
   return 'uuid-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36)
 }
 
+const cloneWithNewIds = (value) => {
+  if (Array.isArray(value)) return value.map(cloneWithNewIds)
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, key === 'id' ? generateUUID() : cloneWithNewIds(item)])
+    )
+  }
+  return value
+}
+
 export default function CrmPresentationsDashboard() {
   const navigate = useNavigate()
   const [presentations, setPresentations] = useState([])
@@ -17,6 +27,7 @@ export default function CrmPresentationsDashboard() {
   const [toast, setToast] = useState(null)
   const [exportingId, setExportingId] = useState(null)
   const [exportProgress, setExportProgress] = useState('')
+  const [duplicatingId, setDuplicatingId] = useState(null)
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -72,6 +83,29 @@ export default function CrmPresentationsDashboard() {
     } finally {
       setExportingId(null)
       setExportProgress('')
+    }
+  }
+
+  const handleDuplicate = async (presentation) => {
+    setDuplicatingId(presentation.id)
+    try {
+      const { data, error } = await supabase
+        .from('crm_presentations')
+        .insert({
+          title: `Copia de ${presentation.title}`,
+          description: presentation.description || '',
+          slides: cloneWithNewIds(Array.isArray(presentation.slides) ? presentation.slides : []),
+          event_id: null
+        })
+        .select()
+        .single()
+      if (error) throw error
+      navigate(`/admin/crm/presentaciones/${data.id}/editar`)
+    } catch (err) {
+      console.error('Error duplicating presentation:', err)
+      showToast('No se pudo duplicar la presentación.', 'error')
+    } finally {
+      setDuplicatingId(null)
     }
   }
 
@@ -233,6 +267,17 @@ export default function CrmPresentationsDashboard() {
                     <span className="material-symbols-outlined text-base">edit</span>
                     Editar
                   </Link>
+                  <button
+                    onClick={() => handleDuplicate(presentation)}
+                    disabled={duplicatingId !== null}
+                    className="px-4 py-2 border border-[var(--color-deep-green)]/20 bg-[var(--color-deep-green)]/5 hover:bg-[var(--color-deep-green)]/10 disabled:opacity-50 text-xs font-bold text-[var(--color-deep-green)] rounded-premium-btn flex items-center gap-1.5 transition-colors"
+                    title="Crear una copia independiente para editar"
+                  >
+                    <span className={`material-symbols-outlined text-base leading-none ${duplicatingId === presentation.id ? 'animate-spin' : ''}`}>
+                      {duplicatingId === presentation.id ? 'sync' : 'content_copy'}
+                    </span>
+                    {duplicatingId === presentation.id ? 'Duplicando...' : 'Duplicar'}
+                  </button>
                   <button
                     onClick={() => handleExportPdf(presentation)}
                     disabled={exportingId !== null}
