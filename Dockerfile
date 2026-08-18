@@ -1,7 +1,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY eventos-app/package.json eventos-app/package-lock.json ./eventos-app/
-RUN cd eventos-app && npm ci
+RUN cd eventos-app && npm install --no-audit --no-fund
 COPY . .
 RUN cd eventos-app && npm run build
 

@@ -120,6 +120,8 @@ function buildProposalEmailHtml({ clientName, title, subtitle, totalAmount, shar
   </div>
 </body>
 </html>`
+}
+
 function parseSender(emailFrom) {
   const match = emailFrom.match(/^(.*?)\s*<(.*?)>$/);
   if (match) {
