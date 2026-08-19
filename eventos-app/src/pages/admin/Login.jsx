@@ -64,7 +64,7 @@ export default function AdminLogin() {
               <input
                 type="email"
                 className="form-input"
-                placeholder="admin@leandrovelasques.com.ar"
+                placeholder="Ingresá tu email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -102,15 +102,6 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          {/* Demo credentials hint */}
-          <div className="mt-6 p-4 bg-[var(--color-light-green)]/15 rounded-[var(--radius-premium)] text-center">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-deep-green)]/60 mb-1">
-              Credenciales de prueba
-            </p>
-            <p className="text-xs text-[var(--color-dark-gray)]/70 font-medium">
-              admin@leandrovelasques.com.ar / admin123
-            </p>
-          </div>
         </div>
 
         <p className="text-center text-xs text-[var(--color-dark-gray)]/40 mt-6 font-medium">
