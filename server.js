@@ -39,6 +39,26 @@ function sendFile(res, filePath) {
   });
 }
 
+function sendAppIndex(res) {
+  const filePath = path.join(appDir, 'index.html');
+  fs.readFile(filePath, 'utf8', (error, html) => {
+    if (error) {
+      res.statusCode = error.code === 'ENOENT' ? 404 : 500;
+      res.end(error.code === 'ENOENT' ? 'Not found' : 'Internal Server Error');
+      return;
+    }
+
+    const config = JSON.stringify({
+      supabaseUrl: process.env.VITE_SUPABASE_URL || '',
+      supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY || '',
+    }).replace(/</g, '\\u003c');
+    const runtimeScript = `<script>globalThis.__APP_CONFIG__=${config}</script>`;
+    const renderedHtml = html.replace('</head>', `${runtimeScript}</head>`);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.end(renderedHtml);
+  });
+}
+
 function addResponseHelpers(res) {
   res.status = (statusCode) => { res.statusCode = statusCode; return res; };
   res.json = (payload) => {
@@ -94,7 +114,7 @@ const server = http.createServer(async (req, res) => {
     const crmMatch = pathname.match(/^\/crm\/cliente\/([^/]+)(?:\/.*)?$/);
     if (crmMatch) return runApiHandler(req, res, apiHandlers['event-meta'], { ...query, token: crmMatch[1] });
 
-    if (isSpaRoute(pathname)) return sendFile(res, path.join(appDir, 'index.html'));
+    if (isSpaRoute(pathname)) return sendAppIndex(res);
 
     const requestedPath = pathname === '/' ? '/index.html' : pathname;
     const staticPath = path.resolve(rootDir, `.${requestedPath}`);
