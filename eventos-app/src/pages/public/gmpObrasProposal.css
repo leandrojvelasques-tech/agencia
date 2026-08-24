@@ -41,3 +41,32 @@
   .gmp-landing .section-head>div{min-width:0}
 }
 
+/* Tarjetas de equipo: cada identidad conserva su propio lenguaje visual. */
+.gmp-landing .person-card{min-height:500px;grid-template-rows:120px 1fr}
+.gmp-landing .person-brand{height:120px;padding:24px 36px}
+.gmp-landing .person-links{display:grid;gap:8px;min-width:0}
+.gmp-landing .person-links a{max-width:none;font-size:12px;line-height:1.25}
+.gmp-landing .person-body{grid-template-columns:160px minmax(0,1fr);gap:32px;padding:36px}
+.gmp-landing .person-photo{width:160px;height:230px;border-radius:12px}
+.gmp-landing .person-card h3{font-size:clamp(32px,2.1vw,38px)}
+.gmp-landing .person-card p{font-size:15px;line-height:1.62}
+.gmp-landing .leandro-card .person-brand img{width:78px;height:78px;border-radius:0;object-fit:cover}
+.gmp-landing .hola-card .person-brand img{width:160px;height:78px}
+
+@media(max-width:620px){
+  .gmp-landing .person-card{min-height:0;grid-template-rows:96px 1fr}
+  .gmp-landing .person-brand{height:96px;padding:16px 18px}
+  .gmp-landing .person-links{gap:5px}
+  .gmp-landing .person-links a{font-size:9px}
+  .gmp-landing .person-body{grid-template-columns:110px minmax(0,1fr);gap:18px;padding:24px 18px}
+  .gmp-landing .person-photo{width:110px;height:148px}
+  .gmp-landing .person-card h3{font-size:30px}
+  .gmp-landing .person-card p{font-size:13px}
+  .gmp-landing .leandro-card .person-brand img{width:62px;height:62px}
+  .gmp-landing .hola-card .person-brand img{width:112px;height:58px}
+}
+
+@media(max-width:390px){
+  .gmp-landing .person-body{grid-template-columns:1fr}
+  .gmp-landing .person-photo{width:118px;height:154px}
+}
