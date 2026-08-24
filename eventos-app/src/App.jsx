@@ -41,6 +41,7 @@ import EventFeedback from './pages/public/EventFeedback'
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
 import CrmProposalLanding from './pages/public/CrmProposalLanding'
+import GmpObrasProposal from './pages/public/GmpObrasProposal'
 import CoworkerAttendance from './pages/public/CoworkerAttendance'
 import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
 
@@ -126,6 +127,7 @@ export default function App() {
 
         {/* CRM Client Shared Route */}
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
+        <Route path="/presupuesto/2026-09-gmp-obras-v01" element={<GmpObrasProposal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
         <Route path="/clase/:token/asistencia" element={<CoworkerAttendance />} />
 
