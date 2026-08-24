@@ -95,6 +95,10 @@ function isSpaRoute(pathname) {
     .some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+const staticProposalRoutes = {
+  '/presupuesto/2026-09-julieta-bustos-luna-v01': path.join(rootDir, 'propuestas', '2026-09-julieta-bustos-luna-v01', 'index.html'),
+};
+
 const server = http.createServer(async (req, res) => {
   try {
     const requestUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -114,6 +118,7 @@ const server = http.createServer(async (req, res) => {
     const crmMatch = pathname.match(/^\/crm\/cliente\/([^/]+)(?:\/.*)?$/);
     if (crmMatch) return runApiHandler(req, res, apiHandlers['event-meta'], { ...query, token: crmMatch[1] });
 
+    if (staticProposalRoutes[pathname]) return sendFile(res, staticProposalRoutes[pathname]);
     if (isSpaRoute(pathname)) return sendAppIndex(res);
 
     const requestedPath = pathname === '/' ? '/index.html' : pathname;
