@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
   { to: '/admin/presupuestos', icon: 'request_quote', label: 'Presupuestos' },
   { to: '/admin/procesos', icon: 'account_tree', label: 'Relevamiento Procesos' },
-  { to: '/admin/solicitudes', icon: 'assignment', label: 'Solicitudes de cambio' },
   { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
   { to: '/admin/reportes-clientes', icon: 'insights', label: 'Reportes de clientes' },
   { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },

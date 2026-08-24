@@ -45,8 +45,6 @@ import CrmProposalLanding from './pages/public/CrmProposalLanding'
 import GmpObrasProposal from './pages/public/GmpObrasProposal'
 import CoworkerAttendance from './pages/public/CoworkerAttendance'
 import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
-import ChangeRequestsDashboard from './pages/admin/ChangeRequestsDashboard'
-import ChangeRequestsPortal from './pages/public/ChangeRequestsPortal'
 import CrmReportLanding from './pages/public/CrmReportLanding'
 
 function ProtectedRoute({ children }) {
@@ -117,7 +115,6 @@ export default function App() {
 
           {/* Relevamiento de Procesos (IA & Optimización) */}
           <Route path="procesos" element={<ProcessSurveysDashboard />} />
-          <Route path="solicitudes" element={<ChangeRequestsDashboard />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -133,7 +130,6 @@ export default function App() {
 
         {/* CRM Client Shared Route */}
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
-        <Route path="/crm/cliente/:token/solicitudes" element={<ChangeRequestsPortal />} />
         <Route path="/crm/reporte/:reportId" element={<CrmReportLanding />} />
         <Route path="/presupuesto/2026-09-gmp-obras-v01" element={<GmpObrasProposal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
