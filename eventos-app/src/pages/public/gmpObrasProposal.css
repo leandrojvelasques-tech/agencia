@@ -28,4 +28,16 @@
 
 @media(prefers-reduced-motion:reduce){.gmp-landing{scroll-behavior:auto}.gmp-landing *, .gmp-landing *:before, .gmp-landing *:after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
+/* Jerarquía común de títulos: contraste alto y escala consistente en toda la propuesta. */
+.gmp-landing .eyebrow{color:var(--blue-deep)}
+.gmp-landing h2{color:var(--blue-deep);font-size:clamp(42px,4.2vw,64px);line-height:1.03}
+.gmp-landing .hero h1{color:#fff}
+.gmp-landing .funnel h2{color:#fff}
+.gmp-landing .hero .eyebrow,.gmp-landing .funnel .eyebrow{color:#d7e5f3}
+
+@media(max-width:620px){
+  .gmp-landing h2{font-size:clamp(42px,10vw,56px);line-height:1.02}
+  .gmp-landing .hero h1{font-size:clamp(44px,12vw,60px);line-height:.99}
+  .gmp-landing .section-head>div{min-width:0}
+}
 
