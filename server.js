@@ -117,14 +117,26 @@ const server = http.createServer(async (req, res) => {
     if (isSpaRoute(pathname)) return sendAppIndex(res);
 
     const requestedPath = pathname === '/' ? '/index.html' : pathname;
-    const staticPath = path.resolve(rootDir, `.${requestedPath}`);
-    if (!isInside(rootDir, staticPath) && staticPath !== path.join(rootDir, 'index.html')) {
+    const rootStaticPath = path.resolve(rootDir, `.${requestedPath}`);
+    const appStaticPath = path.resolve(appDir, `.${requestedPath}`);
+    const staticPath = requestedPath.startsWith('/_app/') || requestedPath === '/_app'
+      ? rootStaticPath
+      : appStaticPath;
+    if (!isInside(rootDir, rootStaticPath) || !isInside(appDir, appStaticPath)) {
       res.statusCode = 403;
       return res.end('Forbidden');
     }
     return fs.stat(staticPath, (error, stats) => {
       if (!error && stats.isDirectory()) return sendFile(res, path.join(staticPath, 'index.html'));
       if (!error && stats.isFile()) return sendFile(res, staticPath);
+      if (staticPath !== rootStaticPath) {
+        return fs.stat(rootStaticPath, (rootError, rootStats) => {
+          if (!rootError && rootStats.isDirectory()) return sendFile(res, path.join(rootStaticPath, 'index.html'));
+          if (!rootError && rootStats.isFile()) return sendFile(res, rootStaticPath);
+          res.statusCode = 404;
+          return res.end('Not found');
+        });
+      }
       res.statusCode = 404;
       return res.end('Not found');
     });
