@@ -54,6 +54,10 @@
             "destination": "/api/event-meta?token=:token"
         },
         {
+            "source": "/crm/reporte/:reportId",
+            "destination": "/_app/index.html"
+        },
+        {
             "source": "/_app/:path*",
             "destination": "/_app/:path*"
         }

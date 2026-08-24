@@ -1,0 +1,163 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Montserrat:wght@400;500&display=swap');
+#cayo-julio-report{--cc-yellow:#f4c400;--cc-cream:#fff8d8;--cc-paper:#fffef8;--cc-ink:#17140f;--cc-green:#3f6b2f;--cc-orange:#e47d24;--cc-red:#b9432f;--cc-line:rgba(23,20,15,.16);font-family:'Montserrat',sans-serif;color:var(--cc-ink);background:var(--cc-paper);overflow:hidden;border-radius:20px;box-shadow:0 28px 70px rgba(23,20,15,.14)}
+#cayo-julio-report *{box-sizing:border-box}
+#cayo-julio-report .cc-cover{position:relative;min-height:430px;padding:36px 42px 40px;background:var(--cc-yellow);overflow:hidden;display:grid;grid-template-columns:1.25fr .75fr;align-items:end;gap:28px}
+#cayo-julio-report .cc-cover:before,#cayo-julio-report .cc-cover:after{content:'';position:absolute;border-radius:50%;border:2px solid rgba(23,20,15,.12)}
+#cayo-julio-report .cc-cover:before{width:430px;height:430px;right:-135px;top:-210px}
+#cayo-julio-report .cc-cover:after{width:260px;height:260px;right:-40px;top:-110px}
+#cayo-julio-report .cc-brand{position:absolute;top:28px;left:36px;display:flex;align-items:center;gap:14px}
+#cayo-julio-report .cc-logo{width:78px;height:78px;border-radius:50%;object-fit:cover;background:var(--cc-cream);border:3px solid var(--cc-ink);box-shadow:6px 6px 0 var(--cc-ink)}
+#cayo-julio-report .cc-brand-copy{font-size:12px;letter-spacing:.11em;text-transform:uppercase;font-weight:500}
+#cayo-julio-report .cc-title{position:relative;z-index:1;max-width:640px;margin-top:70px}
+#cayo-julio-report .cc-kicker{display:inline-block;background:var(--cc-ink);color:var(--cc-yellow);padding:7px 11px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+#cayo-julio-report h1,#cayo-julio-report h2,#cayo-julio-report h3{font-family:'Bree Serif',serif;font-weight:400;margin:0}
+#cayo-julio-report h1{font-size:clamp(48px,8vw,82px);line-height:.92;letter-spacing:-.035em;margin-top:16px}
+#cayo-julio-report .cc-title p{max-width:520px;margin:16px 0 0;font-size:15px;line-height:1.55}
+#cayo-julio-report .cc-cover-score{position:relative;z-index:1;justify-self:end;width:220px;height:220px;border-radius:50%;background:var(--cc-ink);color:var(--cc-cream);display:grid;place-items:center;text-align:center;box-shadow:12px 12px 0 rgba(255,255,255,.72)}
+#cayo-julio-report .cc-score-big{display:block;font-family:'Bree Serif',serif;font-size:72px;line-height:.85;color:var(--cc-yellow)}
+#cayo-julio-report .cc-score-label{display:block;margin-top:10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+#cayo-julio-report .cc-body{padding:0 42px 42px}
+#cayo-julio-report .cc-strip{margin:0 -42px;background:var(--cc-ink);color:var(--cc-cream);display:grid;grid-template-columns:repeat(3,1fr)}
+#cayo-julio-report .cc-strip-item{padding:22px 28px;border-right:1px solid rgba(255,255,255,.18)}
+#cayo-julio-report .cc-strip-item:last-child{border-right:0}
+#cayo-julio-report .cc-strip-value{font-family:'Bree Serif',serif;font-size:34px;color:var(--cc-yellow)}
+#cayo-julio-report .cc-strip-label{display:block;margin-top:3px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.74)}
+#cayo-julio-report .cc-section{padding-top:40px}
+#cayo-julio-report .cc-section-head{display:flex;justify-content:space-between;align-items:end;gap:24px;padding-bottom:14px;border-bottom:2px solid var(--cc-ink)}
+#cayo-julio-report .cc-section h2{font-size:31px;line-height:1}
+#cayo-julio-report .cc-section-number{font-family:'Bree Serif',serif;font-size:28px;color:var(--cc-orange)}
+#cayo-julio-report .cc-caption{margin:9px 0 0;color:rgba(23,20,15,.68);font-size:12px;line-height:1.55}
+#cayo-julio-report .cc-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:24px}
+#cayo-julio-report .cc-chart h3{font-size:21px;margin-bottom:6px}
+#cayo-julio-report .cc-bars{height:210px;display:flex;gap:13px;align-items:end;border-bottom:1px solid var(--cc-ink);padding:18px 5px 0}
+#cayo-julio-report .cc-bar-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}
+#cayo-julio-report .cc-bar{width:100%;max-width:42px;background:var(--cc-green);position:relative;min-height:2px}
+#cayo-julio-report .cc-bar.partial{background:repeating-linear-gradient(135deg,var(--cc-orange) 0 8px,#f6b362 8px 16px)}
+#cayo-julio-report .cc-bar.current{background:var(--cc-yellow);outline:2px solid var(--cc-ink);outline-offset:-2px}
+#cayo-julio-report .cc-bar-value{font-size:11px;font-weight:500}
+#cayo-julio-report .cc-month{font-size:11px;margin-top:5px}
+#cayo-julio-report .cc-rating-plot{position:relative;height:210px;margin-top:18px;border-left:1px solid var(--cc-ink);border-bottom:1px solid var(--cc-ink)}
+#cayo-julio-report .cc-gridline{position:absolute;left:0;right:0;border-top:1px dashed rgba(23,20,15,.13)}
+#cayo-julio-report .cc-gridline span{position:absolute;left:-24px;top:-8px;font-size:10px}
+#cayo-julio-report .cc-rating-line{position:absolute;inset:0 4% 0 8%;display:flex;justify-content:space-between}
+#cayo-julio-report .cc-point-col{position:relative;flex:1}
+#cayo-julio-report .cc-point{position:absolute;left:50%;transform:translate(-50%,50%);width:12px;height:12px;border-radius:50%;background:var(--cc-green);border:2px solid var(--cc-paper);box-shadow:0 0 0 2px var(--cc-green)}
+#cayo-julio-report .cc-point.partial{background:var(--cc-orange);box-shadow:0 0 0 2px var(--cc-orange)}
+#cayo-julio-report .cc-point.current{background:var(--cc-yellow);box-shadow:0 0 0 2px var(--cc-ink)}
+#cayo-julio-report .cc-point-label{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;font-weight:500;white-space:nowrap}
+#cayo-julio-report .cc-point-month{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px}
+#cayo-julio-report .cc-reference{position:absolute;left:0;right:-22px;top:21.5%;border-top:2px dashed var(--cc-orange)}
+#cayo-julio-report .cc-reference span{position:absolute;left:8px;top:-18px;background:var(--cc-paper);padding-right:6px;font-size:10px;color:#945115}
+#cayo-julio-report .cc-insight{margin-top:34px;background:var(--cc-cream);border-left:8px solid var(--cc-yellow);padding:20px 22px;display:grid;grid-template-columns:140px 1fr;gap:24px}
+#cayo-julio-report .cc-insight strong{font-family:'Bree Serif',serif;font-size:22px;font-weight:400}
+#cayo-julio-report .cc-insight p{margin:0;line-height:1.65}
+#cayo-julio-report .cc-distribution{display:grid;grid-template-columns:170px 1fr;gap:28px;margin-top:26px;align-items:center}
+#cayo-julio-report .cc-donut{width:164px;height:164px;border-radius:50%;background:conic-gradient(var(--cc-green) 0 85.7%,var(--cc-red) 85.7% 100%);display:grid;place-items:center;position:relative}
+#cayo-julio-report .cc-donut:after{content:'';width:102px;height:102px;background:var(--cc-paper);border-radius:50%;position:absolute}
+#cayo-julio-report .cc-donut-copy{position:relative;z-index:1;text-align:center;font-family:'Bree Serif',serif;font-size:28px;line-height:1}
+#cayo-julio-report .cc-donut-copy span{display:block;font-family:'Montserrat',sans-serif;font-size:10px;margin-top:6px;text-transform:uppercase;letter-spacing:.06em}
+#cayo-julio-report .cc-stars-row{display:grid;grid-template-columns:86px 1fr 30px;align-items:center;gap:10px;margin:10px 0}
+#cayo-julio-report .cc-track{height:11px;background:rgba(23,20,15,.09)}
+#cayo-julio-report .cc-fill{height:100%;background:var(--cc-green)}
+#cayo-julio-report .cc-fill.low{background:var(--cc-red)}
+#cayo-julio-report .cc-review-list{margin-top:22px}
+#cayo-julio-report .cc-review{display:grid;grid-template-columns:105px 1fr 92px;gap:18px;padding:18px 0;border-bottom:1px solid var(--cc-line)}
+#cayo-julio-report .cc-review-date{font-size:11px;color:rgba(23,20,15,.62);text-transform:uppercase;letter-spacing:.05em}
+#cayo-julio-report .cc-review-name{font-weight:500;margin-bottom:7px}
+#cayo-julio-report .cc-review-text{margin:0;font-size:13px;line-height:1.58;color:rgba(23,20,15,.78)}
+#cayo-julio-report .cc-review-stars{text-align:right;color:#a45b11;font-weight:500;letter-spacing:.08em;white-space:nowrap}
+#cayo-julio-report .cc-review.critical{background:linear-gradient(90deg,rgba(185,67,47,.08),transparent);margin:0 -14px;padding-left:14px;padding-right:14px}
+#cayo-julio-report .cc-footer{margin:34px -42px -42px;background:var(--cc-yellow);padding:18px 42px;display:flex;justify-content:space-between;gap:20px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:760px){#cayo-julio-report{border-radius:14px}#cayo-julio-report .cc-cover{grid-template-columns:1fr;padding:30px 22px 28px;min-height:460px}#cayo-julio-report .cc-brand{left:22px;top:22px}#cayo-julio-report .cc-logo{width:64px;height:64px}#cayo-julio-report .cc-title{margin-top:95px}#cayo-julio-report .cc-cover-score{justify-self:start;width:160px;height:160px}#cayo-julio-report .cc-score-big{font-size:54px}#cayo-julio-report .cc-body{padding:0 22px 30px}#cayo-julio-report .cc-strip{margin:0 -22px;grid-template-columns:1fr}#cayo-julio-report .cc-strip-item{border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}#cayo-julio-report .cc-chart-grid{grid-template-columns:1fr;gap:44px}#cayo-julio-report .cc-insight{grid-template-columns:1fr;gap:8px}#cayo-julio-report .cc-distribution{grid-template-columns:1fr}#cayo-julio-report .cc-review{grid-template-columns:1fr;gap:6px}#cayo-julio-report .cc-review-stars{text-align:left}#cayo-julio-report .cc-footer{margin:30px -22px -30px;padding:17px 22px;display:block}#cayo-julio-report .cc-footer span{display:block;margin:5px 0}}
+</style>
+<article id="cayo-julio-report" aria-label="Modelo de reporte mensual de reseñas de Cayo Coco, julio 2026">
+  <header class="cc-cover">
+    <div class="cc-brand">
+      <img class="cc-logo" src="data:image/jpeg;base64,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" alt="Logo de Cayo Coco">
+      <div class="cc-brand-copy">Cayo Coco del centro<br>Comodoro Rivadavia</div>
+    </div>
+    <div class="cc-title">
+      <span class="cc-kicker">Experiencia del cliente</span>
+      <h1>Julio<br>en números</h1>
+      <p>Reporte mensual de opiniones en Google. Evolución, calidad de las calificaciones y registro completo del mes.</p>
+    </div>
+    <div class="cc-cover-score" aria-label="Promedio de julio: 4,29 sobre 5">
+      <div><span class="cc-score-big">4,29</span><span class="cc-score-label">promedio de julio<br>sobre 5</span></div>
+    </div>
+  </header>
+  <div class="cc-body">
+    <div class="cc-strip" aria-label="Resumen de julio">
+      <div class="cc-strip-item"><span class="cc-strip-value">14</span><span class="cc-strip-label">opiniones registradas</span></div>
+      <div class="cc-strip-item"><span class="cc-strip-value">85,7%</span><span class="cc-strip-label">calificaciones positivas</span></div>
+      <div class="cc-strip-item"><span class="cc-strip-value">+0,15</span><span class="cc-strip-label">sobre el promedio histórico</span></div>
+    </div>
+    <section class="cc-section">
+      <div class="cc-section-head"><div><h2>La evolución del año</h2><p class="cc-caption">Cantidad y promedio se leen por separado. Mayo y junio conservan cobertura parcial de Gmail.</p></div><span class="cc-section-number">01</span></div>
+      <div class="cc-chart-grid">
+        <div class="cc-chart">
+          <h3>Cantidad de opiniones</h3>
+          <div class="cc-bars" role="img" aria-label="Enero 16, febrero 14, marzo 14, abril 8, mayo 11 parcial, junio 7 parcial, julio 14 opiniones">
+            <div class="cc-bar-col"><span class="cc-bar-value">16</span><div class="cc-bar" style="height:100%"></div><span class="cc-month">Ene</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">14</span><div class="cc-bar" style="height:87.5%"></div><span class="cc-month">Feb</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">14</span><div class="cc-bar" style="height:87.5%"></div><span class="cc-month">Mar</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">8</span><div class="cc-bar" style="height:50%"></div><span class="cc-month">Abr</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">11</span><div class="cc-bar partial" style="height:68.75%"></div><span class="cc-month">May*</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">7</span><div class="cc-bar partial" style="height:43.75%"></div><span class="cc-month">Jun*</span></div>
+            <div class="cc-bar-col"><span class="cc-bar-value">14</span><div class="cc-bar current" style="height:87.5%"></div><span class="cc-month">Jul</span></div>
+          </div>
+        </div>
+        <div class="cc-chart">
+          <h3>Promedio de calificación</h3>
+          <div class="cc-rating-plot" role="img" aria-label="Promedio mensual en escala de 1 a 5. Enero 4,88; febrero 4; marzo 4,07; abril 4,13; mayo 4,5 parcial; junio 4,43 parcial; julio 4,29. Promedio histórico 4,14.">
+            <div class="cc-gridline" style="top:0"><span>5</span></div><div class="cc-gridline" style="top:25%"><span>4</span></div><div class="cc-gridline" style="top:50%"><span>3</span></div><div class="cc-gridline" style="top:75%"><span>2</span></div><div class="cc-gridline" style="top:100%"><span>1</span></div>
+            <div class="cc-reference"><span>Histórico 4,14</span></div>
+            <div class="cc-rating-line">
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(97% + 12px)">4,88</span><i class="cc-point" style="bottom:97%"></i><span class="cc-point-month">Ene</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(75% + 12px)">4,00</span><i class="cc-point" style="bottom:75%"></i><span class="cc-point-month">Feb</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(77% + 12px)">4,07</span><i class="cc-point" style="bottom:77%"></i><span class="cc-point-month">Mar</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(78% + 12px)">4,13</span><i class="cc-point" style="bottom:78%"></i><span class="cc-point-month">Abr</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(88% + 12px)">4,50</span><i class="cc-point partial" style="bottom:88%"></i><span class="cc-point-month">May*</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(86% + 12px)">4,43</span><i class="cc-point partial" style="bottom:86%"></i><span class="cc-point-month">Jun*</span></div>
+              <div class="cc-point-col"><span class="cc-point-label" style="bottom:calc(82% + 12px)">4,29</span><i class="cc-point current" style="bottom:82%"></i><span class="cc-point-month">Jul</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cc-insight"><strong>Lectura del mes</strong><p>Julio recupera el volumen de febrero y marzo y se mantiene por encima del promedio histórico general de 4,14. La valoración baja frente a mayo y junio, aunque esos dos meses tienen cobertura parcial. Las dos experiencias negativas concentran reclamos sobre demora, temperatura y calidad de la comida.</p></div>
+    </section>
+    <section class="cc-section">
+      <div class="cc-section-head"><div><h2>Calidad de las respuestas</h2><p class="cc-caption">Positivas: 4 y 5 estrellas. Negativas: 1 y 2 estrellas.</p></div><span class="cc-section-number">02</span></div>
+      <div class="cc-distribution">
+        <div class="cc-donut"><div class="cc-donut-copy">85,7%<span>positivas</span></div></div>
+        <div>
+          <div class="cc-stars-row"><span>5 estrellas</span><div class="cc-track"><div class="cc-fill" style="width:64.3%"></div></div><strong>9</strong></div>
+          <div class="cc-stars-row"><span>4 estrellas</span><div class="cc-track"><div class="cc-fill" style="width:21.4%"></div></div><strong>3</strong></div>
+          <div class="cc-stars-row"><span>3 estrellas</span><div class="cc-track"><div class="cc-fill" style="width:0"></div></div><strong>0</strong></div>
+          <div class="cc-stars-row"><span>2 estrellas</span><div class="cc-track"><div class="cc-fill low" style="width:7.1%"></div></div><strong>1</strong></div>
+          <div class="cc-stars-row"><span>1 estrella</span><div class="cc-track"><div class="cc-fill low" style="width:7.1%"></div></div><strong>1</strong></div>
+        </div>
+      </div>
+    </section>
+    <section class="cc-section">
+      <div class="cc-section-head"><div><h2>Opiniones recibidas</h2><p class="cc-caption">Comentarios presentados en español para facilitar la lectura. Cuando no hay texto, se indica expresamente.</p></div><span class="cc-section-number">03</span></div>
+      <div class="cc-review-list">
+        <div class="cc-review"><div class="cc-review-date">01 jul</div><div><div class="cc-review-name">Ceferino Huenchueque</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★☆ 4</div></div>
+        <div class="cc-review"><div class="cc-review-date">03 jul</div><div><div class="cc-review-name">Rme Consultores</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">03 jul</div><div><div class="cc-review-name">Gilvania Freitas</div><p class="cc-review-text">“Como siempre, la comida estuvo muy rica.”</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">04 jul</div><div><div class="cc-review-name">Santy Silva</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">06 jul</div><div><div class="cc-review-name">Gustavo Valderrama</div><p class="cc-review-text">“Un lugar maravilloso. Es la segunda vez que lo visito y la calidad de la comida es increíble.”</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">08 jul</div><div><div class="cc-review-name">claudia marifil</div><p class="cc-review-text">“¡Excelente atención!”</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">17 jul</div><div><div class="cc-review-name">Siro Sluto</div><p class="cc-review-text">“Un lugar amplio, lindo y cómodo. La comida es deliciosa y la pizza, excelente.”</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review critical"><div class="cc-review-date">19 jul</div><div><div class="cc-review-name">Leonel Fuentes</div><p class="cc-review-text">“1. La comida tardó mucho en llegar. 2. La comida estaba fría. 3. El mozo...”</p></div><div class="cc-review-stars">★☆☆☆☆ 1</div></div>
+        <div class="cc-review critical"><div class="cc-review-date">20 jul</div><div><div class="cc-review-name">Cecilia Moreno</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★☆☆☆ 2</div></div>
+        <div class="cc-review"><div class="cc-review-date">23 jul</div><div><div class="cc-review-name">Marilina Gabriela Ester Pereyra</div><p class="cc-review-text">“Excelente atención y un ambiente cálido. La comida tiene muy buen sabor.”</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">23 jul</div><div><div class="cc-review-name">Alejandro Baldibies</div><p class="cc-review-text">“Excelente, muy buen servicio y atención.”</p></div><div class="cc-review-stars">★★★★☆ 4</div></div>
+        <div class="cc-review"><div class="cc-review-date">27 jul</div><div><div class="cc-review-name">Santiago Sanabria</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">27 jul</div><div><div class="cc-review-name">Carlos Sanabria</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★★ 5</div></div>
+        <div class="cc-review"><div class="cc-review-date">30 jul</div><div><div class="cc-review-name">Oscar Igor</div><p class="cc-review-text">Sin comentario escrito.</p></div><div class="cc-review-stars">★★★★☆ 4</div></div>
+      </div>
+    </section>
+    <footer class="cc-footer"><span>Reporte mensual · Julio 2026</span><span>Cayo Coco · Av. Rivadavia 102</span></footer>
+  </div>
+</article>
