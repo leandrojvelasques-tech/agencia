@@ -1,6 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
+const { findAccess } = require('./private/reportAccess');
 
 const port = Number(process.env.PORT || 3000);
 const rootDir = __dirname;
@@ -13,6 +14,8 @@ const apiHandlers = {
   'send-email': require('./api/send-email'),
   'send-minuta': require('./api/send-minuta'),
   'send-proposal': require('./api/send-proposal'),
+  'report-access-link': require('./api/report-access-link'),
+  'admin-reports': require('./api/admin-reports'),
 };
 
 const contentTypes = {
@@ -37,6 +40,20 @@ function sendFile(res, filePath) {
     res.setHeader('Content-Type', contentTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream');
     res.end(content);
   });
+}
+
+function setPrivateHeaders(res) {
+  res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+}
+
+function sendPrivatePortal(res, access, token) {
+  const links = access.reports.map(report => `<li><a href="/informes/${encodeURIComponent(token)}/${report.id}">${report.label}</a></li>`).join('');
+  setPrivateHeaders(res);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.end(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · ${access.client}</title><style>body{margin:0;background:#f5f3ef;color:#222;font-family:Arial,sans-serif}.box{max-width:620px;margin:12vh auto;padding:34px;background:#fff;border-radius:18px;box-shadow:0 8px 30px #00000012}p{color:#666;line-height:1.5}a{display:block;padding:16px 18px;margin-top:12px;border-radius:10px;background:#285a47;color:#fff;text-decoration:none;font-weight:700}ul{margin:0;padding:0;list-style:none}</style></head><body><main class="box"><p>LEANDRO VELASQUES · INFORMES</p><h1>${access.client}</h1><p>Seleccioná el período que querés consultar.</p><ul>${links}</ul></main></body></html>`);
 }
 
 function sendAppIndex(res) {
@@ -108,6 +125,26 @@ const server = http.createServer(async (req, res) => {
 
     if (apiMatch && apiHandlers[apiMatch[1]]) return runApiHandler(req, res, apiHandlers[apiMatch[1]], query);
 
+    const privateReportMatch = pathname.match(/^\/informes\/([^/]+)(?:\/([^/]+))?\/?$/);
+    if (privateReportMatch) {
+      const [, token, reportId] = privateReportMatch;
+      const access = findAccess(token);
+      if (!access) {
+        setPrivateHeaders(res);
+        res.statusCode = 404;
+        return res.end('Enlace no válido.');
+      }
+      if (!reportId) return sendPrivatePortal(res, access, token);
+      const report = access.reports.find(item => item.id === reportId);
+      if (!report) {
+        setPrivateHeaders(res);
+        res.statusCode = 404;
+        return res.end('Reporte no encontrado.');
+      }
+      setPrivateHeaders(res);
+      return sendFile(res, path.join(rootDir, 'private-reports', report.file));
+    }
+
     const eventMatch = pathname.match(/^\/evento\/([^/]+)(?:\/(inscripcion|reporte))?\/?$/);
     if (eventMatch && (!eventMatch[2] || eventMatch[2] === 'inscripcion' || eventMatch[2] === 'reporte')) {
       return runApiHandler(req, res, apiHandlers['event-meta'], {
@@ -118,6 +155,10 @@ const server = http.createServer(async (req, res) => {
     const crmMatch = pathname.match(/^\/crm\/cliente\/([^/]+)(?:\/.*)?$/);
     if (crmMatch) return runApiHandler(req, res, apiHandlers['event-meta'], { ...query, token: crmMatch[1] });
 
+    if (pathname.startsWith('/private/') || pathname.startsWith('/private-reports/')) {
+      res.statusCode = 404;
+      return res.end('Not found');
+    }
     if (staticProposalRoutes[pathname]) return sendFile(res, staticProposalRoutes[pathname]);
     if (isSpaRoute(pathname)) return sendAppIndex(res);
 

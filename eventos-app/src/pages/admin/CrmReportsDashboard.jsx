@@ -1,6 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { CRM_REPORTS, REPORT_CLIENTS, REPORT_PERIODS } from '../../lib/crmReports'
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 
 function answerLabel(report) {
   if (report.answered == null) return 'Pendiente de verificación'
@@ -11,20 +10,63 @@ export default function CrmReportsDashboard() {
   const [clientFilter, setClientFilter] = useState('Todos los clientes')
   const [periodFilter, setPeriodFilter] = useState('Todos los períodos')
   const [toast, setToast] = useState('')
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredReports = useMemo(() => CRM_REPORTS.filter(report => (
+  useEffect(() => {
+    async function loadReports() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session?.access_token) throw new Error('Tu sesión expiró. Ingresá nuevamente al administrador.')
+        const response = await fetch('/api/admin-reports', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        const payload = await response.json()
+        if (!response.ok) throw new Error(payload.error || 'No se pudieron cargar los reportes.')
+        setReports(payload.reports || [])
+      } catch (error) {
+        setToast(error.message || 'No se pudieron cargar los reportes.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadReports()
+  }, [])
+
+  const reportClients = useMemo(() => [...new Set(reports.map(report => report.client))], [reports])
+  const reportPeriods = useMemo(() => [...new Set(reports.map(report => report.period))], [reports])
+
+  const filteredReports = useMemo(() => reports.filter(report => (
     (clientFilter === 'Todos los clientes' || report.client === clientFilter) &&
     (periodFilter === 'Todos los períodos' || report.period === periodFilter)
-  )), [clientFilter, periodFilter])
+  )), [clientFilter, periodFilter, reports])
+
+  const getPrivateLink = async report => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) throw new Error('Tu sesión expiró. Ingresá nuevamente al administrador.')
+    const response = await fetch('/api/report-access-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ reportId: report.id }),
+    })
+    const payload = await response.json()
+    if (!response.ok || !payload.link) throw new Error(payload.error || 'No se pudo generar el enlace privado.')
+    return payload.link
+  }
 
   const copyLink = async report => {
-    const url = `${window.location.origin}/crm/reporte/${report.id}`
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(await getPrivateLink(report))
       setToast(`Enlace de ${report.client} copiado.`)
       window.setTimeout(() => setToast(''), 3000)
-    } catch {
-      setToast('No se pudo copiar el enlace. Podés abrirlo y copiarlo desde el navegador.')
+    } catch (error) {
+      setToast(error.message || 'No se pudo copiar el enlace privado.')
+    }
+  }
+
+  const openPrivateReport = async report => {
+    try {
+      window.open(await getPrivateLink(report), '_blank', 'noopener,noreferrer')
+    } catch (error) {
+      setToast(error.message || 'No se pudo abrir el enlace privado.')
     }
   }
 
@@ -56,20 +98,22 @@ export default function CrmReportsDashboard() {
             <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/55 mb-2">Cliente</span>
             <select className="w-full rounded-xl border border-[var(--color-deep-green)]/10 px-4 py-3 text-sm font-semibold bg-white" value={clientFilter} onChange={e => setClientFilter(e.target.value)}>
               <option>Todos los clientes</option>
-              {REPORT_CLIENTS.map(client => <option key={client}>{client}</option>)}
+              {reportClients.map(client => <option key={client}>{client}</option>)}
             </select>
           </label>
           <label className="flex-1">
             <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/55 mb-2">Período</span>
             <select className="w-full rounded-xl border border-[var(--color-deep-green)]/10 px-4 py-3 text-sm font-semibold bg-white" value={periodFilter} onChange={e => setPeriodFilter(e.target.value)}>
               <option>Todos los períodos</option>
-              {REPORT_PERIODS.map(period => <option key={period}>{period}</option>)}
+              {reportPeriods.map(period => <option key={period}>{period}</option>)}
             </select>
           </label>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+      {loading ? (
+        <div className="py-16 text-center text-sm font-semibold text-[var(--color-dark-gray)]/55">Cargando reportes privados…</div>
+      ) : <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {filteredReports.map(report => (
           <article key={report.id} className="bg-white rounded-2xl border border-[var(--color-deep-green)]/8 shadow-sm overflow-hidden">
             <div className="h-2" style={{ backgroundColor: report.accent }} />
@@ -104,9 +148,9 @@ export default function CrmReportsDashboard() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link to={`/crm/reporte/${report.id}`} target="_blank" rel="noreferrer" className="btn-primary inline-flex items-center gap-2">
+                <button type="button" onClick={() => openPrivateReport(report)} className="btn-primary inline-flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg">visibility</span> Ver reporte
-                </Link>
+                </button>
                 <button type="button" onClick={() => copyLink(report)} className="px-4 py-2.5 rounded-xl border border-[var(--color-deep-green)]/15 text-[var(--color-deep-green)] text-sm font-bold hover:bg-[var(--color-deep-green)]/5 transition-colors inline-flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg">content_copy</span> Copiar enlace
                 </button>
@@ -114,9 +158,9 @@ export default function CrmReportsDashboard() {
             </div>
           </article>
         ))}
-      </div>
+      </div>}
 
-      {filteredReports.length === 0 && (
+      {!loading && filteredReports.length === 0 && (
         <div className="bg-white rounded-2xl p-12 text-center border border-[var(--color-deep-green)]/8">
           <span className="material-symbols-outlined text-5xl text-[var(--color-dark-gray)]/20">search_off</span>
           <p className="font-bold mt-3">No hay reportes para esos filtros.</p>

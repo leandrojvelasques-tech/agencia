@@ -1,6 +1,11 @@
 {
     "buildCommand": "cd eventos-app && npm install && npm run build",
     "outputDirectory": ".",
+    "functions": {
+        "api/private-report.js": {
+            "includeFiles": "private-reports/**"
+        }
+    },
     "redirects": [
         {
             "source": "/index_en.html",
@@ -54,8 +59,12 @@
             "destination": "/api/event-meta?token=:token"
         },
         {
-            "source": "/crm/reporte/:reportId",
-            "destination": "/_app/index.html"
+            "source": "/informes/:token/:reportId",
+            "destination": "/api/private-report?token=:token&reportId=:reportId"
+        },
+        {
+            "source": "/informes/:token",
+            "destination": "/api/private-report?token=:token"
         },
         {
             "source": "/_app/:path*",
