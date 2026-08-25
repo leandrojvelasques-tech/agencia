@@ -436,7 +436,7 @@ export default function CrmPresentationEditor() {
 
     try {
       const fileList = Array.from(files)
-      const manifestFile = fileList.find(file => file.name.toLowerCase() === 'manifest.json' || file.name.toLowerCase().endsWith('.slides.json'))
+      const manifestFile = fileList.find(file => /(^|\.)manifest\.json$/i.test(file.name) || file.name.toLowerCase().endsWith('.slides.json'))
 
       if (manifestFile) {
         await handlePreparedPackageImport(fileList, manifestFile)
