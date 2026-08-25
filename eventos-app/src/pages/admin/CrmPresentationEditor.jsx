@@ -30,6 +30,7 @@ export default function CrmPresentationEditor() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [publishing, setPublishing] = useState(false)
   const [eventId, setEventId] = useState('')
   const [events, setEvents] = useState([])
   const [exportingPdf, setExportingPdf] = useState(false)
@@ -190,7 +191,7 @@ export default function CrmPresentationEditor() {
     e.dataTransfer.effectAllowed = "move"
   }
 
-  const handleDragOver = (e, index) => {
+  const handleDragOver = (e) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = "move"
   }
@@ -333,6 +334,99 @@ export default function CrmPresentationEditor() {
     }
   }
   
+  const uploadSlideFile = async (file) => {
+    const ext = file.name.split('.').pop()
+    const fileName = `slide-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
+
+    const { error: upErr } = await supabase.storage
+      .from('banners')
+      .upload(fileName, file, { upsert: true, contentType: file.type })
+
+    if (upErr) throw upErr
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('banners')
+      .getPublicUrl(fileName)
+
+    return publicUrl
+  }
+
+  const normaliseManifest = (manifest) => {
+    if (!manifest || typeof manifest !== 'object' || !Array.isArray(manifest.slides)) {
+      throw new Error('El manifest debe contener una lista "slides".')
+    }
+
+    return manifest.slides.map((item, index) => {
+      if (!item || typeof item !== 'object') throw new Error(`La diapositiva ${index + 1} no es válida.`)
+      const ficha = item.ficha || {}
+      return {
+        id: generateUUID(),
+        layout: item.layout || 'image',
+        title: item.title || `Diapositiva ${index + 1}`,
+        subtitle: item.subtitle || '',
+        pill: item.pill || '',
+        bullets: item.bullets || '',
+        quote: item.quote || '',
+        quoteAuthor: item.quoteAuthor || '',
+        cards: Array.isArray(item.cards) ? item.cards : [],
+        notes: item.notes || item.accompanyingText || '',
+        showFooterLogo: item.showFooterLogo === true,
+        bloque: item.bloque || '',
+        tema: item.tema || '',
+        blockId: item.blockId || '',
+        agendaTemplateId: item.agendaTemplateId || '',
+        guide: Array.isArray(item.guide) ? item.guide.map((guideItem) => ({
+          id: generateUUID(),
+          type: guideItem.type || 'general',
+          title: guideItem.title || '',
+          details: guideItem.details || '',
+          url: guideItem.url || ''
+        })) : [],
+        ficha: {
+          title: ficha.title || item.title || `Diapositiva ${index + 1}`,
+          subtitle: ficha.subtitle || '',
+          summary: ficha.summary || '',
+          keyIdeas: Array.isArray(ficha.keyIdeas) ? ficha.keyIdeas.map((idea) => ({
+            title: idea?.title || '',
+            description: idea?.description || ''
+          })) : [],
+          closingIdea: ficha.closingIdea || '',
+          glossary: Array.isArray(ficha.glossary) ? ficha.glossary.map((term) => ({
+            term: term?.term || '',
+            definition: term?.definition || ''
+          })) : []
+        },
+        mediaUrl: item.mediaUrl || '',
+        sourceFile: item.file || item.image || ''
+      }
+    })
+  }
+
+  const handlePreparedPackageImport = async (files, manifestFile) => {
+    const manifest = JSON.parse(await manifestFile.text())
+    const preparedSlides = normaliseManifest(manifest)
+    const imageFiles = new Map(Array.from(files).filter(file => file.type.startsWith('image/')).map(file => [file.name, file]))
+    const importedSlides = []
+
+    for (const slide of preparedSlides) {
+      let mediaUrl = slide.mediaUrl
+      if (slide.sourceFile) {
+        const imageFile = imageFiles.get(slide.sourceFile)
+        if (!imageFile) throw new Error(`No se encontró la imagen "${slide.sourceFile}" indicada en el manifest.`)
+        mediaUrl = await uploadSlideFile(imageFile)
+      }
+      if (!mediaUrl) throw new Error(`La diapositiva "${slide.title}" no tiene imagen ni URL.`)
+      importedSlides.push({ ...slide, mediaUrl, sourceFile: undefined })
+    }
+
+    setSlides(prev => [...prev, ...importedSlides])
+    if (importedSlides.length > 0) setSelectedSlideId(importedSlides[importedSlides.length - 1].id)
+    if (manifest.title && !title.trim()) setTitle(manifest.title)
+    if (manifest.description && !description.trim()) setDescription(manifest.description)
+    if (manifest.eventId) setEventId(manifest.eventId)
+    showToast(`Se importaron ${importedSlides.length} diapositivas con su contenido.`)
+  }
+
   const handleMultiSlidesImport = async (e) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -342,6 +436,13 @@ export default function CrmPresentationEditor() {
 
     try {
       const fileList = Array.from(files)
+      const manifestFile = fileList.find(file => file.name.toLowerCase() === 'manifest.json' || file.name.toLowerCase().endsWith('.slides.json'))
+
+      if (manifestFile) {
+        await handlePreparedPackageImport(fileList, manifestFile)
+        return
+      }
+
       // Sort files alphabetically to ensure they are added in order (slide 1, slide 2, etc.)
       fileList.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))
 
@@ -394,7 +495,7 @@ export default function CrmPresentationEditor() {
   const handleSave = async () => {
     if (!title.trim()) {
       showToast('Por favor, ingresá un título para la presentación.', 'error')
-      return
+      return false
     }
     setSaving(true)
     try {
@@ -426,11 +527,35 @@ export default function CrmPresentationEditor() {
         showToast('Presentación creada correctamente.')
         navigate(`/admin/crm/presentaciones/${data.id}/editar`)
       }
+      return true
     } catch (err) {
       console.error('Error saving:', err)
       showToast('Error al guardar la presentación.', 'error')
+      return false
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!isEdit) {
+      showToast('Guardá la presentación una vez antes de publicarla.', 'error')
+      return
+    }
+
+    setPublishing(true)
+    try {
+      const saved = await handleSave()
+      if (!saved) return
+      const publicUrl = `${window.location.origin}/presentacion/${id}`
+      await navigator.clipboard?.writeText(publicUrl)
+      window.open(publicUrl, '_blank', 'noopener,noreferrer')
+      showToast('Presentación guardada y abierta en su página pública. El enlace quedó copiado.')
+    } catch (err) {
+      console.error('Error publishing presentation:', err)
+      showToast('No se pudo publicar la presentación.', 'error')
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -594,6 +719,15 @@ export default function CrmPresentationEditor() {
                 <span className="material-symbols-outlined text-base">co_present</span>
                 Modo Presentador
               </a>
+              <button
+                onClick={handlePublish}
+                disabled={publishing || saving}
+                className="px-4 py-2 border border-[var(--color-deep-green)] bg-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/90 disabled:opacity-50 text-xs font-bold text-white rounded-premium-btn flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                title="Guardar y abrir la versión pública de esta presentación"
+              >
+                <span className="material-symbols-outlined text-base">public</span>
+                {publishing ? 'Publicando...' : 'Subir al sitio'}
+              </button>
             </>
           )}
           <button
@@ -692,16 +826,19 @@ export default function CrmPresentationEditor() {
                 disabled={uploading}
               >
                 <span className="material-symbols-outlined text-base">file_upload</span>
-                {uploading ? 'Subiendo...' : 'Importar Diapositivas (JPG/PNG)'}
+                {uploading ? 'Subiendo...' : 'Importar paquete o imágenes'}
               </button>
               <input
                 type="file"
                 ref={slidesImportInputRef}
                 onChange={handleMultiSlidesImport}
                 multiple
-                accept="image/*"
+                accept="image/*,.json"
                 className="hidden"
               />
+              <p className="text-[9px] text-gray-400 leading-relaxed">
+                Para cargar todo junto, seleccioná las imágenes y un <strong>manifest.json</strong> con notas, guía, ficha e ideas fuerza.
+              </p>
             </div>
           </div>
 

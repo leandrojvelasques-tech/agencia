@@ -1,0 +1,39 @@
+{
+  "title": "Nombre del curso",
+  "description": "Descripción breve de la presentación.",
+  "eventId": "",
+  "slides": [
+    {
+      "file": "01-portada.png",
+      "title": "Título de la diapositiva",
+      "bloque": "Bloque 01",
+      "tema": "Tema de la clase",
+      "notes": "Texto de acompañamiento para el expositor.",
+      "guide": [
+        {
+          "type": "general",
+          "title": "Presentar la idea central",
+          "details": "Explicar el ejemplo y abrir la conversación con el grupo."
+        }
+      ],
+      "ficha": {
+        "title": "Título de la ficha",
+        "subtitle": "Descripción breve",
+        "summary": "Resumen del contenido.",
+        "keyIdeas": [
+          {
+            "title": "Idea fuerza",
+            "description": "Desarrollo breve de la idea fuerza."
+          }
+        ],
+        "closingIdea": "Frase o conclusión de cierre.",
+        "glossary": [
+          {
+            "term": "Concepto",
+            "definition": "Definición breve."
+          }
+        ]
+      }
+    }
+  ]
+}
