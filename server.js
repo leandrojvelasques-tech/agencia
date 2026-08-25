@@ -152,6 +152,9 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    const changeRequestMatch = pathname.match(/^\/crm\/cliente\/([^/]+)\/solicitudes\/?$/);
+    if (changeRequestMatch) return sendAppIndex(res);
+
     const crmMatch = pathname.match(/^\/crm\/cliente\/([^/]+)(?:\/.*)?$/);
     if (crmMatch) return runApiHandler(req, res, apiHandlers['event-meta'], { ...query, token: crmMatch[1] });
 
