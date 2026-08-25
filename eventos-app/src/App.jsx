@@ -57,6 +57,10 @@ function ProtectedRoute({ children }) {
 export default function App() {
   const { checkSession } = useStore()
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const configuredBase = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const browserBase = window.location.pathname.startsWith(`${configuredBase}/`)
+    ? configuredBase
+    : ''
 
   useEffect(() => {
     checkSession().finally(() => setCheckingAuth(false))
@@ -75,7 +79,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+    <BrowserRouter basename={browserBase}>
       <Routes>
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />

@@ -55,6 +55,10 @@
             "destination": "/_app/index.html"
         },
         {
+            "source": "/crm/cliente/:token/solicitudes",
+            "destination": "/_app/index.html"
+        },
+        {
             "source": "/crm/cliente/:token/:slug*",
             "destination": "/api/event-meta?token=:token"
         },
