@@ -41,10 +41,12 @@ import EventFeedback from './pages/public/EventFeedback'
 
 // CRM Public Shared Portal
 import CrmClientPortal from './pages/public/CrmClientPortal'
+import ChangeRequestsPortal from './pages/public/ChangeRequestsPortal'
 import CrmProposalLanding from './pages/public/CrmProposalLanding'
 import GmpObrasProposal from './pages/public/GmpObrasProposal'
 import CoworkerAttendance from './pages/public/CoworkerAttendance'
 import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
+import ChangeRequestsDashboard from './pages/admin/ChangeRequestsDashboard'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -73,7 +75,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <Routes>
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -106,6 +108,7 @@ export default function App() {
           <Route path="clientes/nuevo" element={<CrmClientCreate />} />
           <Route path="clientes/:id/editar" element={<CrmClientCreate />} />
           <Route path="reportes-clientes" element={<CrmReportsDashboard />} />
+          <Route path="pedidos-cambios" element={<ChangeRequestsDashboard />} />
 
           {/* Presupuestos (Back Office) */}
           <Route path="presupuestos" element={<CrmProposalsDashboard />} />
@@ -128,6 +131,7 @@ export default function App() {
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />
 
         {/* CRM Client Shared Route */}
+        <Route path="/crm/cliente/:token/solicitudes" element={<ChangeRequestsPortal />} />
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
         <Route path="/presupuesto/2026-09-gmp-obras-v01" element={<GmpObrasProposal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
