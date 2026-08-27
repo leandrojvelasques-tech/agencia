@@ -359,7 +359,7 @@ export default function EventRegister() {
       }
     }
 
-    if (!isCompanyRegistration && event.has_survey && event.survey_questions) {
+    if (event.has_survey && event.survey_questions) {
       for (const q of event.survey_questions) {
         if (q.required && !survey[q.label]) {
           setError(`La pregunta "${q.label}" es obligatoria`)
@@ -373,7 +373,7 @@ export default function EventRegister() {
     const isChubutMat = cat === 'matriculado_chubut';
     const isOtroMat = cat === 'matriculado_otro';
     const surveyResponses = isCompanyRegistration
-      ? { puesto_actual: survey.puesto_actual.trim() }
+      ? { puesto_actual: survey.puesto_actual.trim(), ...survey }
       : {
           profesion: survey.profesion,
           profesion_carrera: survey.profesion_carrera || null,
@@ -1079,11 +1079,11 @@ export default function EventRegister() {
           </div>}
 
           {/* Encuesta de Preguntas Personalizadas Adicionales */}
-          {!isCompanyRegistration && event.has_survey && event.survey_questions && event.survey_questions.length > 0 && (
+          {event.has_survey && event.survey_questions && event.survey_questions.length > 0 && (
             <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5 space-y-4">
               <h3 className="text-sm font-bold text-[var(--color-deep-green)] flex items-center gap-1.5 mb-3">
                 <span className="material-symbols-outlined text-lg">fact_check</span>
-                Información Adicional (Opcional)
+                Conocé tu experiencia previa
               </h3>
 
               {event.survey_questions.map((q, idx) => {
