@@ -117,7 +117,9 @@ export const useStore = create((set, get) => ({
   },
 
   createEvent: async (eventData) => {
-    const slug = eventData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    const slug = eventData.title
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     const { data, error } = await supabase
       .from('events')
       .insert([{

@@ -119,7 +119,6 @@ module.exports = async (req, res) => {
         const desc = isReportMode 
           ? `Informe de resultados, encuestas y métricas del evento ${event.title}.`
           : (event.description_short || 'Sumate a este evento de capacitación y networking.');
-        const img = event.banner_url || 'https://www.leandrovelasques.com.ar/logo_triskel.png';
         const url = isReportMode
           ? `https://www.leandrovelasques.com.ar/evento/${slug}/reporte`
           : `https://www.leandrovelasques.com.ar/evento/${slug}`;
@@ -131,13 +130,11 @@ module.exports = async (req, res) => {
   <meta name="description" content="${desc.replace(/"/g, '&quot;')}">
   <meta property="og:title" content="${title.replace(/"/g, '&quot;')}">
   <meta property="og:description" content="${desc.replace(/"/g, '&quot;')}">
-  ${img ? `<meta property="og:image" content="${encodeURI(img)}">` : ''}
   <meta property="og:url" content="${url}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}">
   <meta name="twitter:description" content="${desc.replace(/"/g, '&quot;')}">
-  ${img ? `<meta name="twitter:image" content="${encodeURI(img)}">` : ''}
         `;
 
         html = html.replace('<head>', `<head>\n${metaTags}`);
