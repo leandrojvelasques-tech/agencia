@@ -46,26 +46,24 @@ export default function ChatGptWorkBrochure() {
         <a href="#inicio" aria-label="Inicio del brochure">
           <img src="/logo_triskel.png" alt="Símbolo de Leandro Velasques" />
         </a>
-        <span>Lic. Administración · IA</span>
+        <span>Leandro Velasques · IA aplicada</span>
       </header>
 
       <section className="work-brochure__hero" id="inicio">
         <div className="work-brochure__hero-copy">
-          <p className="work-brochure__eyebrow">PROGRAMA DEL TALLER</p>
-          <h1>ChatGPT Work: un recorrido práctico para equipos.</h1>
-          <p className="work-brochure__lead">Una propuesta para organizar el trabajo con agentes de IA, ampliar sus capacidades y aplicarlos a tareas concretas con supervisión humana.</p>
+          <p className="work-brochure__eyebrow">CHATGPT WORK · PROGRAMA DEL TALLER</p>
+          <h1><span>De 0</span> a agentes.</h1>
+          <p className="work-brochure__lead">De conversar con la IA a poner un agente a trabajar con vos: una propuesta para organizar el entorno, ampliar sus capacidades y aplicarlo a tareas concretas.</p>
           <div className="work-brochure__facts" aria-label="Datos principales del taller">
             <div><strong>2 h 45 min</strong><span>duración total</span></div>
             <div><strong>2 bloques</strong><span>de trabajo guiado</span></div>
             <div><strong>15 min</strong><span>de break</span></div>
           </div>
         </div>
-        <div className="work-brochure__hero-art" aria-hidden="true">
-          <div className="work-brochure__orbit work-brochure__orbit--one" />
-          <div className="work-brochure__orbit work-brochure__orbit--two" />
-          <img src="/logo_triskel.png" alt="" />
-          <span>diagnóstico · implementación · acompañamiento</span>
-        </div>
+        <figure className="work-brochure__hero-art">
+          <img src={slides[0][1]} alt="Imagen oficial del workshop ChatGPT Work: de 0 a 100" />
+          <figcaption>Imagen oficial del workshop</figcaption>
+        </figure>
       </section>
 
       <section className="work-brochure__section work-brochure__intro">
@@ -105,10 +103,10 @@ export default function ChatGptWorkBrochure() {
       <section className="work-brochure__slides" id="diapositivas">
         <div className="work-brochure__slides-heading"><p className="work-brochure__eyebrow">MUESTRA VISUAL</p><h2>Diapositivas que acompañan el recorrido.</h2><p>La siguiente selección muestra el material de trabajo previsto para la jornada.</p></div>
         <div className="work-brochure__slide-list">
-          {slides.map(([title, image], index) => (
+          {slides.slice(1).map(([title, image], index) => (
             <figure className="work-brochure__slide" key={image}>
-              <figcaption><span>{String(index + 1).padStart(2, '0')}</span><strong>{title}</strong></figcaption>
-              <img src={image} alt={`Diapositiva ${index + 1}: ${title}`} loading={index < 2 ? 'eager' : 'lazy'} />
+              <figcaption><span>{String(index + 2).padStart(2, '0')}</span><strong>{title}</strong></figcaption>
+              <img src={image} alt={`Diapositiva ${index + 2}: ${title}`} loading="lazy" />
             </figure>
           ))}
         </div>
@@ -116,7 +114,7 @@ export default function ChatGptWorkBrochure() {
 
       <footer className="work-brochure__footer">
         <img src="/logo_triskel.png" alt="Símbolo de Leandro Velasques" />
-        <div><strong>Lic. Leandro Velasques</strong><span>Consultor y director de proyectos de IA aplicada a negocios.</span></div>
+        <div><strong>Lic. Adm. Leandro Velasques</strong><span>MP Tomo III – Folio 58</span></div>
         <a href="https://www.leandrovelasques.com.ar">www.leandrovelasques.com.ar</a>
       </footer>
     </main>
