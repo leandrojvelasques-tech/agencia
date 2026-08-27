@@ -35,7 +35,9 @@ const normalizeAgenda = (agenda) => {
         id: b.id || generateUUID(),
         title: b.title || '',
         subtitle: b.subtitle || '',
-        description: b.description || ''
+        description: b.description || '',
+        type: b.type || 'block',
+        duration: b.duration || 0
       })) : [{ id: generateUUID(), title: 'Bloque 1', subtitle: '', description: '' }]
     }))
   }
@@ -80,6 +82,8 @@ export default function EventCreate() {
     max_capacity_virtual: '',
     banner_url: '',
     official_banner_url: '',
+    client_logo_url: '',
+    registration_variant: 'council',
     video_url: '',
     is_public: true,
     show_on_home: false,

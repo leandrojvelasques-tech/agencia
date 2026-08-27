@@ -135,6 +135,7 @@ export default function EventRegister() {
 
   const hasPresencial = event && event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0' && event.max_capacity_presencial !== 0.0
   const hasVirtual = event && event.max_capacity_virtual !== 0 && event.max_capacity_virtual !== '0' && event.max_capacity_virtual !== 0.0
+  const isCompanyRegistration = event?.registration_variant === 'company'
 
   const isDatePresencialFull = (date) => {
     if (!hasPresencial) return true;
@@ -273,7 +274,7 @@ export default function EventRegister() {
     e.preventDefault()
     setError('')
 
-    if (!form.first_name || !form.last_name || !form.email || !form.phone || !form.attendance_mode) {
+    if (!form.first_name || !form.last_name || !form.email || (!isCompanyRegistration && (!form.phone || !form.attendance_mode))) {
       setError('Todos los campos marcados con (*) son obligatorios')
       return
     }
@@ -285,14 +286,19 @@ export default function EventRegister() {
       }
     }
 
-    if (!survey.profesion) {
+    if (isCompanyRegistration && !survey.puesto_actual?.trim()) {
+      setError('El campo Puesto actual / tareas que realizás es obligatorio')
+      return
+    }
+
+    if (!isCompanyRegistration && !survey.profesion) {
       setError('El campo Profesión / Ocupación Actual es obligatorio')
       return
     }
 
     const cat = getPricingCategory(survey.profesion, survey);
 
-    if (cat === 'matriculado_chubut') {
+    if (!isCompanyRegistration && cat === 'matriculado_chubut') {
       if (!survey.delegacion) {
         setError('Debes seleccionar tu delegación de Chubut')
         return
@@ -301,7 +307,7 @@ export default function EventRegister() {
         setError('Debes ingresar tu número de matrícula')
         return
       }
-    } else if (cat === 'matriculado_otro') {
+    } else if (!isCompanyRegistration && cat === 'matriculado_otro') {
       if (!survey.consejo) {
         setError('Debes seleccionar tu Consejo Profesional')
         return
@@ -310,7 +316,7 @@ export default function EventRegister() {
         setError('Debes ingresar tu número de matrícula')
         return
       }
-    } else if (survey.profesion === 'Profesional de Ciencias Económicas') {
+    } else if (!isCompanyRegistration && survey.profesion === 'Profesional de Ciencias Económicas') {
       if (!survey.profesion_carrera) {
         setError('Debes seleccionar tu carrera')
         return
@@ -330,7 +336,7 @@ export default function EventRegister() {
           return
         }
       }
-    } else if (survey.profesion === 'Estudiante Universitario') {
+    } else if (!isCompanyRegistration && survey.profesion === 'Estudiante Universitario') {
       if (!survey.profesion_estudiante_carrera) {
         setError('Debes ingresar tu carrera')
         return
@@ -339,21 +345,21 @@ export default function EventRegister() {
         setError('Debes ingresar tu universidad')
         return
       }
-    } else if (survey.profesion === 'Otro') {
+    } else if (!isCompanyRegistration && survey.profesion === 'Otro') {
       if (!survey.profesion_otro) {
         setError('Debes especificar tu profesión')
         return
       }
     }
 
-    if (requiresPayment(survey.profesion)) {
+    if (!isCompanyRegistration && requiresPayment(survey.profesion)) {
       if (!paymentReceiptUrl) {
         setError('Debes adjuntar el comprobante de transferencia bancaria')
         return
       }
     }
 
-    if (event.has_survey && event.survey_questions) {
+    if (!isCompanyRegistration && event.has_survey && event.survey_questions) {
       for (const q of event.survey_questions) {
         if (q.required && !survey[q.label]) {
           setError(`La pregunta "${q.label}" es obligatoria`)
@@ -366,22 +372,25 @@ export default function EventRegister() {
     
     const isChubutMat = cat === 'matriculado_chubut';
     const isOtroMat = cat === 'matriculado_otro';
-    const surveyResponses = {
-      profesion: survey.profesion,
-      profesion_carrera: survey.profesion_carrera || null,
-      esta_matriculado: (isChubutMat || isOtroMat) ? 'Sí' : (survey.esta_matriculado || null),
-      matriculado: (isChubutMat || isOtroMat) ? 'Sí' : (survey.esta_matriculado || null),
-      consejo: isChubutMat ? 'Chubut' : (isOtroMat ? (survey.consejo || null) : (survey.esta_matriculado === 'Sí' ? (survey.consejo || 'Chubut') : null)),
-      delegacion: isChubutMat ? (survey.delegacion || 'Delegación Comodoro Rivadavia') : ((survey.esta_matriculado === 'Sí' && (survey.consejo || 'Chubut') === 'Chubut') ? (survey.delegacion || 'Delegación Comodoro Rivadavia') : null),
-      matricula: (isChubutMat || isOtroMat) ? (survey.matricula || null) : (survey.esta_matriculado === 'Sí' ? (survey.matricula || null) : null),
-      profesion_estudiante_carrera: survey.profesion_estudiante_carrera || null,
-      profesion_estudiante_univ: survey.profesion_estudiante_univ || null,
-      profesion_otro: survey.profesion_otro || null,
-      ...survey // Merges any custom fields from dynamic survey
-    }
+    const surveyResponses = isCompanyRegistration
+      ? { puesto_actual: survey.puesto_actual.trim() }
+      : {
+          profesion: survey.profesion,
+          profesion_carrera: survey.profesion_carrera || null,
+          esta_matriculado: (isChubutMat || isOtroMat) ? 'Sí' : (survey.esta_matriculado || null),
+          matriculado: (isChubutMat || isOtroMat) ? 'Sí' : (survey.esta_matriculado || null),
+          consejo: isChubutMat ? 'Chubut' : (isOtroMat ? (survey.consejo || null) : (survey.esta_matriculado === 'Sí' ? (survey.consejo || 'Chubut') : null)),
+          delegacion: isChubutMat ? (survey.delegacion || 'Delegación Comodoro Rivadavia') : ((survey.esta_matriculado === 'Sí' && (survey.consejo || 'Chubut') === 'Chubut') ? (survey.delegacion || 'Delegación Comodoro Rivadavia') : null),
+          matricula: (isChubutMat || isOtroMat) ? (survey.matricula || null) : (survey.esta_matriculado === 'Sí' ? (survey.matricula || null) : null),
+          profesion_estudiante_carrera: survey.profesion_estudiante_carrera || null,
+          profesion_estudiante_univ: survey.profesion_estudiante_univ || null,
+          profesion_otro: survey.profesion_otro || null,
+          ...survey
+        }
 
     const result = await selfRegister(slug, {
       ...form,
+      attendance_mode: isCompanyRegistration ? 'virtual' : form.attendance_mode,
       survey_responses: surveyResponses,
       payment_receipt_url: paymentReceiptUrl || null,
       secondParticipant: hasCompanion ? secondParticipant : null
@@ -408,6 +417,7 @@ export default function EventRegister() {
       <main className="max-w-lg mx-auto px-6 py-8 lg:py-12 animate-fade-in">
         <div className="text-center mb-8">
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight mb-2">Inscripción</h1>
+          {event.client_logo_url && <img src={event.client_logo_url} alt={event.organizer || 'Organización'} className="mx-auto mb-4 h-14 w-auto object-contain" />}
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title}</p>
         </div>
 
@@ -431,22 +441,22 @@ export default function EventRegister() {
             <input type="email" className="form-input" placeholder="tu@email.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
           </div>
 
-          <div>
+          {!isCompanyRegistration && <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
               Teléfono *
             </label>
             <input type="tel" className="form-input" placeholder="+54 9 ..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} required />
-          </div>
+          </div>}
 
-          <div>
+          {!isCompanyRegistration && <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
               Ciudad de residencia <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span>
             </label>
             <input className="form-input" placeholder="Ej: Comodoro Rivadavia" value={form.telegram || ''} onChange={e => setForm(p => ({ ...p, telegram: e.target.value }))} />
-          </div>
+          </div>}
 
           {/* Partner / Companion registration fields */}
-          {event && event.allow_multiple_registrations && (
+          {!isCompanyRegistration && event && event.allow_multiple_registrations && (
             <div className="space-y-4 pt-4 border-t border-[var(--color-deep-green)]/10">
               <label className="flex items-center gap-2.5 text-sm font-semibold text-[var(--color-dark-gray)] cursor-pointer select-none">
                 <input
@@ -551,7 +561,7 @@ export default function EventRegister() {
           )}
 
           {/* Attendance Mode Selector */}
-          {(hasPresencial || hasVirtual) && (
+          {!isCompanyRegistration && (hasPresencial || hasVirtual) && (
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Modalidad de Asistencia *</label>
               
@@ -609,8 +619,22 @@ export default function EventRegister() {
             </div>
           )}
 
-          {/* Sección de Profesión Obligatoria */}
-          <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5 space-y-4">
+          {/* Identificación profesional o puesto para eventos internos */}
+          {isCompanyRegistration ? (
+            <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5 space-y-2">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
+                PUESTO ACTUAL / TAREAS QUE REALIZÁS *
+              </label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Ej.: administración, producción, ventas"
+                value={survey.puesto_actual || ''}
+                onChange={e => setSurvey(s => ({ ...s, puesto_actual: e.target.value }))}
+                required
+              />
+            </div>
+          ) : <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5 space-y-4">
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
                 PROFESION / OCUPACION ACTUAL *
@@ -1052,10 +1076,10 @@ export default function EventRegister() {
               </div>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Encuesta de Preguntas Personalizadas Adicionales */}
-          {event.has_survey && event.survey_questions && event.survey_questions.length > 0 && (
+          {!isCompanyRegistration && event.has_survey && event.survey_questions && event.survey_questions.length > 0 && (
             <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5 space-y-4">
               <h3 className="text-sm font-bold text-[var(--color-deep-green)] flex items-center gap-1.5 mb-3">
                 <span className="material-symbols-outlined text-lg">fact_check</span>

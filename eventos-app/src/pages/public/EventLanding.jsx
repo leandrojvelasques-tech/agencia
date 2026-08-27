@@ -175,7 +175,10 @@ export default function EventLanding() {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight mb-2">{event.title}</h1>
+        <div className="flex flex-wrap items-center gap-4 mb-2">
+          <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">{event.title}</h1>
+          {event.client_logo_url && <img src={event.client_logo_url} alt={event.organizer || 'Organización'} className="h-12 w-auto max-w-[180px] object-contain" />}
+        </div>
         {event.subtitle && <p className="text-lg text-[var(--color-dark-gray)]/60 font-medium mb-6">{event.subtitle}</p>}
 
         {/* Key Info */}
