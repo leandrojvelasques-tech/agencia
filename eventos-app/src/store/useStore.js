@@ -71,7 +71,7 @@ export const useStore = create((set, get) => ({
     if (!error) {
       const formatted = (data || []).map(e => ({
         ...e,
-        is_public: e.status === 'published' || e.status === 'in_progress',
+        is_public: e.is_public !== false,
       }))
       set({ events: formatted })
     }
@@ -89,7 +89,7 @@ export const useStore = create((set, get) => ({
       const formatted = data.map(d => ({
         ...d,
         id: d.event_id,
-        is_public: d.status === 'published' || d.status === 'in_progress',
+        is_public: d.is_public !== false,
       }))
       set({ events: formatted })
     }
@@ -111,7 +111,7 @@ export const useStore = create((set, get) => ({
     const { data, error } = await supabase
       .from('events')
       .select('*, event_materials(*)')
-      .or(`slug.eq.${slug},private_link_token.eq.${slug}`)
+      .or(`and(slug.eq.${slug},is_public.eq.true),private_link_token.eq.${slug}`)
       .single()
     return data
   },
@@ -131,7 +131,7 @@ export const useStore = create((set, get) => ({
     if (!error) {
       const formattedData = {
         ...data,
-        is_public: data.status === 'published' || data.status === 'in_progress',
+        is_public: data.is_public !== false,
       }
       set(state => ({ events: [formattedData, ...state.events] }))
       return { success: true, data: formattedData }
@@ -151,7 +151,7 @@ export const useStore = create((set, get) => ({
     if (!error) {
       const formattedUpdated = {
         ...updated,
-        is_public: updated.status === 'published' || updated.status === 'in_progress',
+        is_public: updated.is_public !== false,
       }
       set(state => ({
         events: state.events.map(e => e.id === id ? formattedUpdated : e),

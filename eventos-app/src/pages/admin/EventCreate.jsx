@@ -469,7 +469,7 @@ export default function EventCreate() {
             max_capacity_presencial: (data.max_capacity_presencial !== null && data.max_capacity_presencial !== undefined) ? data.max_capacity_presencial : '',
             max_capacity_virtual: (data.max_capacity_virtual !== null && data.max_capacity_virtual !== undefined) ? data.max_capacity_virtual : '',
             location: data.location || '',
-            is_public: data.status === 'published' || data.status === 'in_progress',
+            is_public: data.is_public !== false,
             show_on_home: data.show_on_home || false,
             live_link: data.live_link || '',
             zoom_details: data.zoom_details || '',
@@ -644,7 +644,6 @@ export default function EventCreate() {
       created_at: __, 
       updated_at: ___,
       event_stats: ____, 
-      is_public,
       max_capacity,
       ...eventData 
     } = form
@@ -654,7 +653,7 @@ export default function EventCreate() {
     const data = { 
       ...eventData, 
       event_date: firstDate,
-      status: is_public ? 'published' : 'draft',
+      status: existingEvent?.status || form.status || 'draft',
       max_capacity_presencial: (eventData.max_capacity_presencial || eventData.max_capacity_presencial === 0 || eventData.max_capacity_presencial === '0') ? Number(eventData.max_capacity_presencial) : null,
       max_capacity_virtual: (eventData.max_capacity_virtual || eventData.max_capacity_virtual === 0 || eventData.max_capacity_virtual === '0') ? Number(eventData.max_capacity_virtual) : null
     }
@@ -715,7 +714,7 @@ export default function EventCreate() {
               max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
               max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
               location: updated.location || '',
-              is_public: updated.status === 'published' || updated.status === 'in_progress',
+              is_public: updated.is_public !== false,
               show_on_home: updated.show_on_home || false,
               live_link: updated.live_link || '',
               zoom_details: updated.zoom_details || '',
@@ -764,7 +763,6 @@ export default function EventCreate() {
       created_at: __, 
       updated_at: ___,
       event_stats: ____, 
-      is_public,
       max_capacity,
       ...eventData 
     } = form
@@ -774,18 +772,18 @@ export default function EventCreate() {
     const data = { 
       ...eventData, 
       event_date: firstDate,
-      status: is_public ? 'published' : 'draft',
+      status: existingEvent?.status || form.status || 'draft',
       max_capacity_presencial: (eventData.max_capacity_presencial || eventData.max_capacity_presencial === 0 || eventData.max_capacity_presencial === '0') ? Number(eventData.max_capacity_presencial) : null,
       max_capacity_virtual: (eventData.max_capacity_virtual || eventData.max_capacity_virtual === 0 || eventData.max_capacity_virtual === '0') ? Number(eventData.max_capacity_virtual) : null
     }
 
     let targetEventId = id
     try {
-      let savedSlug = form.slug
+      let savedSlug = form.is_public === false ? form.private_link_token : form.slug
       if (existingEvent) {
         await updateEvent(existingEvent.id, data)
         targetEventId = existingEvent.id
-        savedSlug = existingEvent.slug
+        savedSlug = existingEvent.is_public === false ? existingEvent.private_link_token : existingEvent.slug
       } else {
         const newEventResult = await createEvent(data)
         if (newEventResult && newEventResult.success) {
@@ -808,7 +806,7 @@ export default function EventCreate() {
             max_capacity_presencial: (updated.max_capacity_presencial !== null && updated.max_capacity_presencial !== undefined) ? updated.max_capacity_presencial : '',
             max_capacity_virtual: (updated.max_capacity_virtual !== null && updated.max_capacity_virtual !== undefined) ? updated.max_capacity_virtual : '',
             location: updated.location || '',
-            is_public: updated.status === 'published' || updated.status === 'in_progress',
+            is_public: updated.is_public !== false,
             show_on_home: updated.show_on_home || false,
             live_link: updated.live_link || '',
             zoom_details: updated.zoom_details || '',
@@ -817,7 +815,7 @@ export default function EventCreate() {
             registrations_open: updated.registrations_open || false,
             allow_multiple_registrations: updated.allow_multiple_registrations || false,
           })
-          savedSlug = updated.slug
+          savedSlug = updated.is_public === false ? updated.private_link_token : updated.slug
         }
       }
 
@@ -1006,7 +1004,7 @@ export default function EventCreate() {
         <div className="flex flex-wrap items-center gap-3">
           {existingEvent && (
             <a
-              href={`/evento/${existingEvent.slug}/inscripcion?preview=true`}
+              href={`/evento/${existingEvent.is_public === false ? existingEvent.private_link_token : existingEvent.slug}/inscripcion?preview=true`}
               target="_blank"
               rel="noreferrer"
               className="btn-secondary !py-2.5 !px-5 shadow-lg shadow-[var(--color-dark-gray)]/5 flex items-center gap-1.5"
