@@ -79,10 +79,6 @@ module.exports = async (req, res) => {
         const desc = `Portal exclusivo para revisar y gestionar publicaciones coordinadas con Leandro Velasques.`;
 
         html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
-        // Event shares should be text-only; remove the generic app preview image.
-        html = html.replace(/<meta property="og:image"[^>]*>\s*/gi, '');
-        html = html.replace(/<meta name="twitter:image"[^>]*>\s*/gi, '');
-
         const metaTags = `
   <!-- SEO & Social Meta Tags -->
   <meta name="description" content="${desc.replace(/"/g, '&quot;')}">
@@ -127,6 +123,9 @@ module.exports = async (req, res) => {
           : `https://www.leandrovelasques.com.ar/evento/${slug}`;
 
         html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+        // Event shares should be text-only; remove the generic app preview image.
+        html = html.replace(/<meta property="og:image"[^>]*>\s*/gi, '');
+        html = html.replace(/<meta name="twitter:image"[^>]*>\s*/gi, '');
 
         const metaTags = `
   <!-- SEO & Social Meta Tags -->
