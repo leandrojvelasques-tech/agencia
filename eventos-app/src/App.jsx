@@ -37,6 +37,7 @@ import EventRegister from './pages/public/EventRegister'
 import EventConfirmation from './pages/public/EventConfirmation'
 import AttendanceCheck from './pages/public/AttendanceCheck'
 import EventParticipantsPublic from './pages/public/EventParticipantsPublic'
+import ChatGptWorkBrochure from './pages/public/ChatGptWorkBrochure'
 import EventFeedback from './pages/public/EventFeedback'
 
 // CRM Public Shared Portal
@@ -123,6 +124,7 @@ export default function App() {
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />
         <Route path="/asistencia/:slug" element={<AttendanceCheck />} />
         <Route path="/evento/:slug/inscritos" element={<EventParticipantsPublic />} />
+        <Route path="/brochure/chatgpt-work" element={<ChatGptWorkBrochure />} />
         <Route path="/evento/:slug/reporte" element={<EventReport isPublic={true} />} />
         <Route path="/encuesta/:slug" element={<EventFeedback />} />
         <Route path="/presentacion/:id" element={<CrmPresentationPlayer isPublic={true} />} />

@@ -108,7 +108,7 @@ async function runApiHandler(req, res, handler, query) {
 }
 
 function isSpaRoute(pathname) {
-  return ['/admin', '/asistencia', '/clase', '/crm', '/encuesta', '/evento', '/presupuesto', '/presentacion', '/relevamiento-proceso']
+  return ['/admin', '/asistencia', '/clase', '/crm', '/encuesta', '/evento', '/presupuesto', '/presentacion', '/relevamiento-proceso', '/brochure']
     .some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
