@@ -1,0 +1,8 @@
+{
+  "outputDirectory": "../_app",
+  "rewrites": [
+    { "source": "/_app/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/_app/:path*", "destination": "/:path*" },
+    { "source": "/((?!assets/|favicon\\.ico$).*)", "destination": "/index.html" }
+  ]
+}
