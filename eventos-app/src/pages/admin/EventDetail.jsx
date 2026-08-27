@@ -209,7 +209,8 @@ export default function EventDetail() {
 
   const statusCfg = STATUS_CONFIG[event.status] || STATUS_CONFIG.draft
   const eventDate = new Date(event.event_date + 'T12:00:00')
-  const eventUrl = `${window.location.origin}/evento/${event.slug}`
+  const eventAccessKey = event.is_public === false ? event.private_link_token : event.slug
+  const eventUrl = `${window.location.origin}/evento/${eventAccessKey}`
   const attendanceUrl = `${window.location.origin}/evento/${event.slug}/asistencia`
 
   const handleStatusChange = async (newStatus) => {

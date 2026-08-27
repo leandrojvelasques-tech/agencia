@@ -52,6 +52,11 @@ module.exports = async (req, res) => {
   const supabaseUrl = 'https://oaapnglvbkvxyydjnmun.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXBuZ2x2Ymt2eHl5ZGpubXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjg3MDAsImV4cCI6MjA5MTcwNDcwMH0.Q0H0K1dKT77gawhU-YfkqmpAnDqgzq0i8etoY9bLM_0';
 
+  const runtimeConfig = JSON.stringify({ supabaseUrl, supabaseAnonKey: supabaseKey }).replace(/</g, '\\u003c');
+  const injectRuntimeConfig = (source) => source.includes('__APP_CONFIG__')
+    ? source
+    : source.replace('</head>', `<script>globalThis.__APP_CONFIG__=${runtimeConfig}</script></head>`);
+
   try {
     // Leer el index.html UNA SOLA VEZ al inicio
     const indexPath = path.join(__dirname, '..', '_app', 'index.html');
@@ -140,6 +145,7 @@ module.exports = async (req, res) => {
     }
 
     // Devolver el HTML (con o sin meta tags inyectadas)
+    html = injectRuntimeConfig(html);
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
     return res.status(200).send(html);
@@ -149,7 +155,7 @@ module.exports = async (req, res) => {
     // En caso de error, devolvemos el index.html original sin cambios
     try {
       const fallbackPath = path.join(__dirname, '..', '_app', 'index.html');
-      const fallbackHtml = fs.readFileSync(fallbackPath, 'utf8');
+      const fallbackHtml = injectRuntimeConfig(fs.readFileSync(fallbackPath, 'utf8'));
       res.setHeader('Content-Type', 'text/html');
       return res.status(200).send(fallbackHtml);
     } catch (e) {
