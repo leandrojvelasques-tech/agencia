@@ -126,6 +126,7 @@ module.exports = async (req, res) => {
         // Event shares should be text-only; remove the generic app preview image.
         html = html.replace(/<meta property="og:image"[^>]*>\s*/gi, '');
         html = html.replace(/<meta name="twitter:image"[^>]*>\s*/gi, '');
+        html = html.replace(/<link rel="icon"[^>]*>\s*/gi, '');
 
         const metaTags = `
   <!-- SEO & Social Meta Tags -->
