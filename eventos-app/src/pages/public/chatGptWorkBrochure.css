@@ -206,14 +206,38 @@
 
 .work-brochure__block-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr .65fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 18px;
   align-items: stretch;
-  margin-top: 46px;
+  margin-top: 18px;
 }
 
-.work-brochure__block,
-.work-brochure__break {
+.work-brochure__day {
+  margin-top: 48px;
+}
+
+.work-brochure__day-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.work-brochure__day-heading span {
+  color: var(--brand-green);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.work-brochure__day-heading strong {
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 21px;
+  letter-spacing: -.025em;
+}
+
+.work-brochure__block {
   padding: 31px;
   background: #fff;
   border: 1px solid rgba(17, 23, 28, .11);
@@ -253,8 +277,7 @@
   letter-spacing: -.03em;
 }
 
-.work-brochure__block > p,
-.work-brochure__break p {
+.work-brochure__block > p {
   margin: 16px 0 24px;
   font-size: 15px;
   line-height: 1.55;
@@ -279,31 +302,6 @@
   content: "—";
   padding-right: 7px;
   color: var(--signal);
-}
-
-.work-brochure__break {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--graphite);
-  color: #fff;
-}
-
-.work-brochure__break span {
-  color: #78d7dc;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .15em;
-}
-
-.work-brochure__break strong {
-  margin-top: 13px;
-  font-size: 40px;
-  letter-spacing: -.05em;
-}
-
-.work-brochure__break p {
-  color: rgba(255, 255, 255, .72);
 }
 
 .work-brochure__method {
@@ -435,11 +433,6 @@
   .work-brochure__block-grid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .work-brochure__break {
-    grid-column: 1 / -1;
-    min-height: 200px;
-  }
 }
 
 @media (max-width: 760px) {
@@ -508,9 +501,13 @@
     margin-top: 34px;
   }
 
-  .work-brochure__break {
-    grid-column: auto;
-    min-height: 220px;
+  .work-brochure__day {
+    margin-top: 42px;
+  }
+
+  .work-brochure__day-heading {
+    display: grid;
+    gap: 6px;
   }
 
   .work-brochure__facts {
