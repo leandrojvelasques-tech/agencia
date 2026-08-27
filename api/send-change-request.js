@@ -42,8 +42,10 @@ module.exports = async (req, res) => {
   if (!apiKey) return res.status(500).json({ error: 'El servicio de correo no está configurado.' });
 
   try {
-    const { to, recipientName, subject, message } = req.body || {};
+    const { to, recipientName, subject, message, attachments = [] } = req.body || {};
     if (!to || !subject || !message) return res.status(400).json({ error: 'Faltan destinatario, asunto o mensaje.' });
+    if (!Array.isArray(attachments) || attachments.some(attachment => !attachment?.name || !attachment?.content)) return res.status(400).json({ error: 'Hay un archivo adjunto inválido.' });
+    if (attachments.reduce((sum, attachment) => sum + Buffer.byteLength(attachment.content, 'base64'), 0) > 8 * 1024 * 1024) return res.status(400).json({ error: 'Los archivos adjuntos no pueden superar 8 MB en total.' });
 
     const response = await safeFetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -53,6 +55,7 @@ module.exports = async (req, res) => {
         to: [{ email: to, name: recipientName || 'Cliente' }],
         subject,
         htmlContent: `<div style="font-family:Arial,sans-serif;color:#4F4C4D;line-height:1.6;white-space:normal">${escapeHtml(message).replace(/\n/g, '<br>')}</div>`,
+        ...(attachments.length ? { attachment: attachments.map(attachment => ({ name: attachment.name, content: attachment.content })) } : {}),
       },
     });
     const result = await response.json();
