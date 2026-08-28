@@ -57,7 +57,7 @@ function sendPrivatePortal(res, access, token) {
   res.end(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes · ${access.client}</title><style>body{margin:0;background:#f5f3ef;color:#222;font-family:Arial,sans-serif}.box{max-width:620px;margin:12vh auto;padding:34px;background:#fff;border-radius:18px;box-shadow:0 8px 30px #00000012}p{color:#666;line-height:1.5}a{display:block;padding:16px 18px;margin-top:12px;border-radius:10px;background:#285a47;color:#fff;text-decoration:none;font-weight:700}ul{margin:0;padding:0;list-style:none}</style></head><body><main class="box"><p>LEANDRO VELASQUES · INFORMES</p><h1>${access.client}</h1><p>Seleccioná el período que querés consultar.</p><ul>${links}</ul></main></body></html>`);
 }
 
-function sendAppIndex(res) {
+function sendAppIndex(res, pathname = '') {
   const filePath = path.join(appDir, 'index.html');
   fs.readFile(filePath, 'utf8', (error, html) => {
     if (error) {
@@ -71,7 +71,14 @@ function sendAppIndex(res) {
       supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY || '',
     }).replace(/</g, '\\u003c');
     const runtimeScript = `<script>globalThis.__APP_CONFIG__=${config}</script>`;
-    const renderedHtml = html.replace('</head>', `${runtimeScript}</head>`);
+    const isChatGptWorkBrochure = pathname === '/brochure/chatgpt-work';
+    const brochureHtml = isChatGptWorkBrochure
+      ? html
+        // WhatsApp should receive a text-only preview for this brochure.
+        .replace(/<meta[^>]+(?:property=["']og:image["']|name=["']twitter:image["'])[^>]*>\s*/gi, '')
+        .replace(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*>\s*/gi, '')
+      : html;
+    const renderedHtml = brochureHtml.replace('</head>', `${runtimeScript}</head>`);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(renderedHtml);
   });
@@ -154,7 +161,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const changeRequestMatch = pathname.match(/^\/crm\/cliente\/([^/]+)\/solicitudes\/?$/);
-    if (changeRequestMatch) return sendAppIndex(res);
+    if (changeRequestMatch) return sendAppIndex(res, pathname);
 
     const crmMatch = pathname.match(/^\/crm\/cliente\/([^/]+)(?:\/.*)?$/);
     if (crmMatch) return runApiHandler(req, res, apiHandlers['event-meta'], { ...query, token: crmMatch[1] });
@@ -164,7 +171,7 @@ const server = http.createServer(async (req, res) => {
       return res.end('Not found');
     }
     if (staticProposalRoutes[pathname]) return sendFile(res, staticProposalRoutes[pathname]);
-    if (isSpaRoute(pathname)) return sendAppIndex(res);
+    if (isSpaRoute(pathname)) return sendAppIndex(res, pathname);
 
     // The public root is the institutional site. The events app is served only
     // for its explicit SPA routes, including /admin.
