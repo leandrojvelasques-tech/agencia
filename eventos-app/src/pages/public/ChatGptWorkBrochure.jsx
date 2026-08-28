@@ -2,7 +2,8 @@ import './chatGptWorkBrochure.css'
 
 const heroImage = 'https://oaapnglvbkvxyydjnmun.supabase.co/storage/v1/object/public/banners/workshop-tapa-chatgpt-work-de-0-a-agente.png'
 const journeyMap = 'https://oaapnglvbkvxyydjnmun.supabase.co/storage/v1/object/public/banners/slide-1787700708337-qqxkc.png'
-const credentialUrl = 'https://cpcech-team.com.ar/validar/valida_credencial.php?d1=MA==&d2=MzA5NTUxNjY='
+const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
+const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
 const registrationUrl = 'mailto:leandrojvelasques@gmail.com?subject=Consulta%20-%20Taller%20ChatGPT%20Work'
 
 const dayOneBlocks = [
@@ -64,12 +65,12 @@ const dayTwoBlocks = [
 ]
 
 const dayTwoSteps = [
-  ['01', 'Analizar el caso'],
-  ['02', 'Definir el resultado'],
-  ['03', 'Configurar el proyecto'],
-  ['04', 'Construir reglas y skill'],
-  ['05', 'Integrar y ejecutar'],
-  ['06', 'Revisar y mejorar'],
+  ['01', 'Analizar el caso', 'Comprender la situación, el objetivo y los criterios de calidad.'],
+  ['02', 'Definir el resultado', 'Acordar qué debe producir el entorno y cómo se evaluará.'],
+  ['03', 'Configurar el proyecto', 'Ordenar el contexto, los archivos y las fuentes de trabajo.'],
+  ['04', 'Construir reglas y skill', 'Crear las instrucciones y el proceso reutilizable para el caso.'],
+  ['05', 'Integrar y ejecutar', 'Combinar herramientas, navegador y aplicaciones necesarias.'],
+  ['06', 'Revisar y mejorar', 'Comparar resultados e incorporar una siguiente mejora.'],
 ]
 
 function ProgramBlock({ block }) {
@@ -101,7 +102,7 @@ export default function ChatGptWorkBrochure() {
       <section className="work-landing__hero" id="inicio">
         <div className="work-landing__hero-copy">
           <p className="work-landing__eyebrow">TALLER INTENSIVO · CIENCIAS ECONÓMICAS</p>
-          <h1><span>ChatGPT Work:</span> Tu nuevo entorno de trabajo</h1>
+          <h1>Tu nuevo entorno de trabajo</h1>
           <p className="work-landing__lead">Una propuesta para potenciar tus capacidades profesionales a través del entorno de trabajo agéntico de ChatGPT Work.</p>
           <div className="work-landing__facts" aria-label="Datos principales del taller">
             <div><strong>2</strong><span>jornadas</span></div>
@@ -126,9 +127,13 @@ export default function ChatGptWorkBrochure() {
       </section>
 
       <section className="work-landing__section work-landing__proposal">
-        <div>
+        <div className="work-landing__proposal-intro">
           <p className="work-landing__eyebrow">LA PROPUESTA</p>
           <h2>Dos jornadas de inmersión a la IA para pasar de 0 a 100.</h2>
+          <figure className="work-landing__proposal-photo">
+            <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
+            <figcaption><strong>Experiencia aplicada</strong><span>Aprender, probar y resolver en equipo.</span></figcaption>
+          </figure>
         </div>
         <div className="work-landing__proposal-copy">
           <p>El taller recorre el entorno de ChatGPT Work para que comprendas su lógica y aprendas a configurarlo por tu propia cuenta.</p>
@@ -161,9 +166,16 @@ export default function ChatGptWorkBrochure() {
             <div><h3>Construir un caso práctico integrador</h3><p>Trabajo guiado para configurar y probar un entorno agéntico aplicado a una situación profesional concreta.</p></div>
           </div>
           <div className="work-landing__blocks">{dayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
-          <div className="work-landing__practice-map">
-            <div className="work-landing__practice-map-head"><span>Mapa preliminar de la jornada 2</span><strong>El paso a paso se ajustará al caso práctico definitivo.</strong></div>
-            <ol>{dayTwoSteps.map(([number, title]) => <li key={number}><span>{number}</span><strong>{title}</strong></li>)}</ol>
+          <div className="work-landing__practice-showcase">
+            <figure className="work-landing__practice-photo">
+              <img src={practicePhoto} alt="Edición presencial de capacitación en el CPCE Chubut" loading="lazy" />
+              <figcaption><span>Del mapa a la práctica</span><strong>Trabajo presencial y colaborativo.</strong></figcaption>
+            </figure>
+            <div className="work-landing__practice-map">
+              <div className="work-landing__practice-map-head"><span>Mapa preliminar de la jornada 2</span><strong>Seis pasos para construir, probar y mejorar.</strong></div>
+              <ol>{dayTwoSteps.map(([number, title, description]) => <li key={number}><span>{number}</span><strong>{title}</strong><small>{description}</small></li>)}</ol>
+              <p className="work-landing__practice-map-note">El paso a paso se ajustará al caso práctico definitivo.</p>
+            </div>
           </div>
           <div className="work-landing__requirements">
             <div><span className="work-landing__requirements-icon">+</span><div><strong>Recomendación para la jornada práctica</strong><p>Para participar activamente se recomienda contar con ChatGPT Plus, con acceso a las funciones utilizadas durante el taller.</p></div></div>
@@ -178,14 +190,10 @@ export default function ChatGptWorkBrochure() {
           <p className="work-landing__eyebrow">SOBRE EL CAPACITADOR</p>
           <h2>Lic. Adm. Leandro Velasques</h2>
           <p className="work-landing__trainer-role">Consultor y director de proyectos de inteligencia artificial aplicada a negocios.</p>
-          <p>Licenciado en Administración por la Universidad Nacional de la Patagonia San Juan Bosco, con matrícula profesional del Consejo Profesional de Ciencias Económicas del Chubut —Tomo III, Folio 58— y quince años de experiencia profesional en gestión, procesos y mejora continua.</p>
-          <p>Con sede en Comodoro Rivadavia, acompaña a profesionales, pymes y organizaciones en la incorporación práctica de inteligencia artificial, automatización y marketing digital para resolver necesidades concretas y desarrollar nuevas capacidades de trabajo.</p>
+          <p>Licenciado en Administración (UNPSJB), matriculado en el CPCECH y con quince años de experiencia profesional en gestión, procesos y mejora continua.</p>
+          <p>Desde Comodoro Rivadavia acompaña a profesionales, pymes y organizaciones en la incorporación práctica de inteligencia artificial, automatización y marketing digital.</p>
           <a className="work-landing__text-link" href="https://www.linkedin.com/in/leandrojvelasques" target="_blank" rel="noreferrer">Ver perfil profesional en LinkedIn <span>↗</span></a>
         </div>
-        <a className="work-landing__credential" href={credentialUrl} target="_blank" rel="noreferrer" aria-label="Validar matrícula profesional en el Consejo Profesional de Ciencias Económicas del Chubut">
-          <img src="/qr-credencial-cpce.png" alt="Código QR para validar la matrícula profesional" loading="lazy" />
-          <div><span>Matrícula profesional</span><strong>Tomo III · Folio 58</strong><small>Escaneá o tocá para validar</small></div>
-        </a>
       </section>
 
       <section className="work-landing__cta" id="participar">
