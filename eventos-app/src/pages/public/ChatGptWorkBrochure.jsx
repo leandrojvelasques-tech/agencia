@@ -1,8 +1,8 @@
 import './chatGptWorkBrochure.css'
 
 const heroImage = 'https://oaapnglvbkvxyydjnmun.supabase.co/storage/v1/object/public/banners/workshop-tapa-chatgpt-work-de-0-a-agente.png'
-const journeyMap = 'https://oaapnglvbkvxyydjnmun.supabase.co/storage/v1/object/public/banners/slide-1787700708337-qqxkc.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
+const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
 const registrationUrl = 'mailto:leandrojvelasques@gmail.com?subject=Consulta%20-%20Taller%20ChatGPT%20Work'
 
@@ -73,6 +73,17 @@ const dayTwoSteps = [
   ['06', 'Revisar y mejorar', 'Comparar resultados e incorporar una siguiente mejora.'],
 ]
 
+const dayOneSteps = [
+  ['01', 'Configuración', 'Instalá la aplicación y elegí dónde se ejecutará el trabajo.'],
+  ['02', 'Proyectos', 'Reuní conversaciones, archivos y contexto en un mismo espacio.'],
+  ['03', 'Instrucciones · AGENTS.md', 'Dejá por escrito las reglas que el agente debe seguir.'],
+  ['04', 'Plugins', 'Agregá capacidades y herramientas listas para utilizar.'],
+  ['05', 'Apps y conectores', 'Conectá las herramientas y fuentes que ya usás.'],
+  ['06', 'Skills', 'Convertí un proceso probado en una forma reutilizable.'],
+  ['07', 'Sites', 'Creá sitios, tableros o herramientas internas.'],
+  ['08', 'Navegador y computadora', 'Investigá y operá herramientas con supervisión.'],
+]
+
 function ProgramBlock({ block }) {
   return (
     <article className="work-landing__block">
@@ -130,16 +141,16 @@ export default function ChatGptWorkBrochure() {
         <div className="work-landing__proposal-intro">
           <p className="work-landing__eyebrow">LA PROPUESTA</p>
           <h2>Dos jornadas de inmersión a la IA para pasar de 0 a 100.</h2>
-          <figure className="work-landing__proposal-photo">
-            <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
-            <figcaption><strong>Experiencia aplicada</strong><span>Aprender, probar y resolver en equipo.</span></figcaption>
-          </figure>
         </div>
         <div className="work-landing__proposal-copy">
           <p>El taller recorre el entorno de ChatGPT Work para que comprendas su lógica y aprendas a configurarlo por tu propia cuenta.</p>
           <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.</p>
-          <aside><strong>Al finalizar</strong><span>Vas a contar con los conceptos, los criterios y la práctica necesarios para empezar a pensar, configurar y desarrollar tus propios entornos de trabajo agénticos adaptados a tus necesidades.</span></aside>
         </div>
+        <figure className="work-landing__proposal-photo">
+          <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
+          <figcaption><strong>Experiencia aplicada</strong><span>Aprender, probar y resolver en equipo.</span></figcaption>
+        </figure>
+        <aside className="work-landing__proposal-result"><strong>Al finalizar</strong><span>Vas a contar con los conceptos, los criterios y la práctica necesarios para empezar a pensar, configurar y desarrollar tus propios entornos de trabajo agénticos adaptados a tus necesidades.</span></aside>
       </section>
 
       <section className="work-landing__program" id="programa">
@@ -154,10 +165,17 @@ export default function ChatGptWorkBrochure() {
             <div><h3>Conocer el entorno y verlo en acción</h3><p>Explicaciones aplicadas y demostraciones en vivo de las principales capacidades de ChatGPT Work.</p></div>
           </div>
           <div className="work-landing__blocks">{dayOneBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
-          <figure className="work-landing__map">
-            <figcaption><span>Mapa de la jornada 1</span><strong>Ocho capacidades, un mismo entorno de trabajo.</strong></figcaption>
-            <img src={journeyMap} alt="Mapa de ocho pasos del recorrido práctico de ChatGPT Work" loading="lazy" />
-          </figure>
+          <div className="work-landing__practice-showcase work-landing__practice-showcase--day-one">
+            <figure className="work-landing__practice-photo work-landing__practice-photo--day-one">
+              <img src={dayOnePhoto} alt="Participantes siguiendo una demostración práctica en el CPCE Chubut" loading="lazy" />
+              <figcaption><span>Demostraciones en vivo</span><strong>Capacidades, criterios y casos reales.</strong></figcaption>
+            </figure>
+            <div className="work-landing__practice-map work-landing__practice-map--day-one">
+              <div className="work-landing__practice-map-head"><span>Mapa de la jornada 1</span><strong>Ocho capacidades, un mismo entorno de trabajo.</strong></div>
+              <ol>{dayOneSteps.map(([number, title, description]) => <li key={number}><span>{number}</span><strong>{title}</strong><small>{description}</small></li>)}</ol>
+              <p className="work-landing__practice-map-note">Configurá el entorno, dale contexto y reglas, y después ampliá lo que el agente puede hacer.</p>
+            </div>
+          </div>
         </section>
 
         <section className="work-landing__day work-landing__day--practice">
@@ -167,7 +185,7 @@ export default function ChatGptWorkBrochure() {
           </div>
           <div className="work-landing__blocks">{dayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
           <div className="work-landing__practice-showcase">
-            <figure className="work-landing__practice-photo">
+            <figure className="work-landing__practice-photo work-landing__practice-photo--day-two">
               <img src={practicePhoto} alt="Edición presencial de capacitación en el CPCE Chubut" loading="lazy" />
               <figcaption><span>Del mapa a la práctica</span><strong>Trabajo presencial y colaborativo.</strong></figcaption>
             </figure>
