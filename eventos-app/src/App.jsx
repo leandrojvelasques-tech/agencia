@@ -48,6 +48,8 @@ import GmpObrasProposal from './pages/public/GmpObrasProposal'
 import CoworkerAttendance from './pages/public/CoworkerAttendance'
 import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
 import ChangeRequestsDashboard from './pages/admin/ChangeRequestsDashboard'
+import ChangeRequestCreate from './pages/admin/ChangeRequestCreate'
+import ChangeRequestDetail from './pages/admin/ChangeRequestDetail'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -114,6 +116,8 @@ export default function App() {
           <Route path="clientes/:id/editar" element={<CrmClientCreate />} />
           <Route path="reportes-clientes" element={<CrmReportsDashboard />} />
           <Route path="pedidos-cambios" element={<ChangeRequestsDashboard />} />
+          <Route path="pedidos-cambios/nueva" element={<ChangeRequestCreate />} />
+          <Route path="pedidos-cambios/:id" element={<ChangeRequestDetail />} />
 
           {/* Presupuestos (Back Office) */}
           <Route path="presupuestos" element={<CrmProposalsDashboard />} />
