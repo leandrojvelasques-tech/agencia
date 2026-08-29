@@ -526,6 +526,8 @@
   height: auto;
 }
 
+.work-landing__hero-selected picture { display: block; }
+
 .work-landing__hero-selected-cta {
   position: absolute;
   top: 66.2%;
@@ -555,4 +557,11 @@
 
 @media (max-width: 760px) {
   .work-landing__hero { padding-left: 0; padding-right: 0; padding-top: 0; }
+  .work-landing__hero-selected { max-width: 845px; }
+  .work-landing__hero-selected-cta {
+    top: 66%;
+    left: 6.5%;
+    width: 87%;
+    height: 5.9%;
+  }
 }

@@ -1,6 +1,7 @@
 import './chatGptWorkBrochure.css'
 
 const heroImage = '/workshop-chatgpt-work/hero-option-1-selected.png'
+const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
@@ -104,7 +105,10 @@ export default function ChatGptWorkBrochure() {
     <main className="work-landing">
       <section className="work-landing__hero" id="inicio">
         <figure className="work-landing__hero-selected">
-          <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
+          <picture>
+            <source media="(max-width: 760px)" srcSet={heroMobileImage} />
+            <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
+          </picture>
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
         </figure>
       </section>
