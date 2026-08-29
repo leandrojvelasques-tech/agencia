@@ -1,6 +1,6 @@
 import './chatGptWorkBrochure.css'
 
-const heroImage = '/workshop-chatgpt-work/hero-agent-workspace-network-v1.png'
+const heroImage = '/workshop-chatgpt-work/hero-chatgpt-work-integrated-v3.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
@@ -123,21 +123,8 @@ export default function ChatGptWorkBrochure() {
           <a className="work-landing__button work-landing__button--dark" href="#programa">Conocer el programa</a>
         </div>
         <figure className="work-landing__hero-art">
-          <img src={heroImage} alt="Visual abstracto de un entorno de trabajo agéntico" />
+          <img src={heroImage} alt="Imagen oficial del taller ChatGPT Work" />
         </figure>
-      </section>
-
-      <section className="work-landing__work-strip" aria-label="Qué es ChatGPT Work">
-        <div>
-          <p className="work-landing__eyebrow">EL ENTORNO</p>
-          <h2>ChatGPT Work: <span>de 0 a 100</span></h2>
-          <p>Todo lo que necesitás para empezar a trabajar con agentes de IA.</p>
-        </div>
-        <div className="work-landing__mode-switch" aria-label="De Chat a Work">
-          <span>Chat</span>
-          <i aria-hidden="true">✦</i>
-          <strong>Work</strong>
-        </div>
       </section>
 
       <section className="work-landing__section work-landing__context">
