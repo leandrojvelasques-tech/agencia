@@ -1,0 +1,76 @@
+:root {
+  --registration-ink: #10181d;
+  --registration-black: #05080b;
+  --registration-cyan: #2ab8c0;
+  --registration-mist: #eef1f2;
+}
+
+.work-registration { min-height: 100vh; background: var(--registration-mist); color: var(--registration-ink); font-family: 'Plus Jakarta Sans', Inter, sans-serif; }
+.work-registration__header { min-height: 62px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(34px, calc((100% - 1220px) / 2)); background: #285a47; border-bottom: 3px solid #a8d5c1; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
+.work-registration__header span { font-size: 11px; }
+.work-registration__back { color: #fff; text-decoration: none; opacity: .88; }
+.work-registration__back:hover { opacity: 1; text-decoration: underline; }
+.work-registration__hero { padding: 72px max(34px, calc((100% - 1220px) / 2)) 78px; background: radial-gradient(circle at 78% 8%, rgba(42,184,192,.18), transparent 26%), var(--registration-black); color: #fff; }
+.work-registration__eyebrow { margin: 0 0 18px; color: #72d5da; font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+.work-registration__hero h1 { max-width: 900px; margin: 0; font-size: clamp(44px, 6vw, 82px); font-weight: 400; letter-spacing: -.06em; line-height: .96; }
+.work-registration__hero h1 em { color: #72d5da; font-style: normal; }
+.work-registration__hero > p:last-child { max-width: 650px; margin: 26px 0 0; color: rgba(255,255,255,.76); font-size: 17px; line-height: 1.65; }
+.work-registration__content { max-width: 1220px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 62px; margin: 0 auto; padding: 68px 34px 90px; }
+.work-registration__summary { align-self: start; position: sticky; top: 26px; padding: 28px; background: var(--registration-black); color: #fff; box-shadow: inset 4px 0 0 var(--registration-cyan); }
+.work-registration__summary > p { margin: 0; color: #72d5da; font-size: 10px; font-weight: 900; letter-spacing: .15em; }
+.work-registration__summary h2 { margin: 7px 0 28px; font-size: 35px; letter-spacing: -.05em; }
+.work-registration__facts { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(255,255,255,.15); border-bottom: 1px solid rgba(255,255,255,.15); padding: 17px 0; }
+.work-registration__facts div + div { border-left: 1px solid rgba(255,255,255,.14); padding-left: 10px; }
+.work-registration__facts strong { display: block; color: #72d5da; font-size: 22px; }
+.work-registration__facts span { display: block; margin-top: 2px; color: rgba(255,255,255,.64); font-size: 8px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.work-registration__summary-note { display: grid; grid-template-columns: 28px 1fr; gap: 13px 10px; padding-top: 25px; }
+.work-registration__summary-note span { color: #72d5da; font-size: 10px; font-weight: 900; }
+.work-registration__summary-note p { margin: 0; color: rgba(255,255,255,.73); font-size: 12px; line-height: 1.45; }
+.work-registration__form { background: #fff; padding: clamp(28px, 5vw, 58px); box-shadow: 0 14px 45px rgba(16,24,29,.08); }
+.work-registration__step { padding-bottom: 42px; border-bottom: 1px solid #d9e0e3; }
+.work-registration__step + .work-registration__step { padding-top: 40px; }
+.work-registration__step--last { padding-bottom: 30px; }
+.work-registration__step-head { display: grid; grid-template-columns: 42px 1fr; gap: 16px; margin-bottom: 28px; }
+.work-registration__step-head > span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--registration-cyan); color: #071013; font-size: 11px; font-weight: 900; }
+.work-registration__step h2 { margin: 0; font-size: clamp(24px, 3vw, 33px); letter-spacing: -.045em; }
+.work-registration__step-head p { margin: 7px 0 0; color: #5c6870; font-size: 14px; line-height: 1.5; }
+.work-registration__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.work-registration label { display: grid; gap: 8px; color: #253239; font-size: 12px; font-weight: 800; }
+.work-registration input, .work-registration textarea { width: 100%; box-sizing: border-box; border: 1px solid #cbd5d8; border-radius: 0; padding: 14px 15px; background: #fbfcfc; color: var(--registration-ink); font: inherit; font-size: 15px; font-weight: 500; outline: none; }
+.work-registration textarea { resize: vertical; line-height: 1.5; }
+.work-registration input:focus, .work-registration textarea:focus { border-color: var(--registration-cyan); box-shadow: 0 0 0 3px rgba(42,184,192,.14); }
+.work-registration input::placeholder, .work-registration textarea::placeholder { color: #8c999f; }
+.work-registration__field-full { grid-column: 1 / -1; }
+.work-registration__choices { display: grid; gap: 10px; }
+.work-registration__choice { grid-template-columns: 18px 1fr 18px; align-items: center; gap: 13px; padding: 17px; border: 1px solid #d1dbde; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+.work-registration__choice input { width: 16px; height: 16px; margin: 0; accent-color: var(--registration-cyan); }
+.work-registration__choice strong { display: block; font-size: 14px; }
+.work-registration__choice small { display: block; margin-top: 4px; color: #66747a; font-size: 12px; font-weight: 500; }
+.work-registration__choice i { width: 8px; height: 8px; border: 1px solid #8d9a9f; border-radius: 50%; }
+.work-registration__choice.is-selected { border-color: var(--registration-cyan); background: rgba(42,184,192,.06); }
+.work-registration__choice.is-selected i { background: var(--registration-cyan); box-shadow: 0 0 0 4px rgba(42,184,192,.16); }
+.work-registration__conditional { margin-top: 20px; padding: 20px; background: #f0f7f7; border-left: 3px solid var(--registration-cyan); }
+.work-registration__conditional p { margin: 10px 0 0; color: #5a686e; font-size: 12px; line-height: 1.5; }
+.work-registration__consent { grid-template-columns: 18px 1fr; align-items: start; gap: 11px; margin-top: 22px; color: #5b686e !important; font-size: 12px !important; font-weight: 600 !important; line-height: 1.45; }
+.work-registration__consent input { width: 16px; height: 16px; margin-top: 1px; accent-color: var(--registration-cyan); }
+.work-registration__notice { margin: 24px 0 0; padding: 14px 17px; border-left: 3px solid #c4933c; background: #fff8e9; color: #61470f; font-size: 13px; }
+.work-registration__submit { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding: 19px 22px; border: 0; background: var(--registration-ink); color: #fff; cursor: pointer; font: inherit; font-size: 15px; font-weight: 900; }
+.work-registration__submit:hover { background: #1c2d34; }
+.work-registration__submit span { color: #72d5da; font-size: 24px; line-height: .5; }
+
+@media (max-width: 820px) {
+  .work-registration__header { padding: 0 22px; }
+  .work-registration__header span { display: none; }
+  .work-registration__hero { padding: 58px 22px 64px; }
+  .work-registration__hero h1 { font-size: clamp(43px, 13vw, 66px); }
+  .work-registration__hero > p:last-child { font-size: 16px; }
+  .work-registration__content { grid-template-columns: 1fr; gap: 0; padding: 0 0 66px; }
+  .work-registration__summary { position: static; padding: 25px 22px; box-shadow: inset 3px 0 0 var(--registration-cyan); }
+  .work-registration__summary h2 { margin-bottom: 20px; }
+  .work-registration__summary-note { display: none; }
+  .work-registration__form { padding: 32px 22px 38px; box-shadow: none; }
+  .work-registration__fields { grid-template-columns: 1fr; gap: 17px; }
+  .work-registration__field-full { grid-column: auto; }
+  .work-registration__step { padding-bottom: 34px; }
+  .work-registration__step + .work-registration__step { padding-top: 34px; }
+}
