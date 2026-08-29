@@ -528,6 +528,37 @@
 
 .work-landing__hero-selected picture { display: block; }
 
+.work-landing__hero-mode {
+  position: absolute;
+  top: 7.8%;
+  right: 5.5%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 16px 10px 11px;
+  border: 1px solid rgba(114, 213, 218, .42);
+  border-radius: 999px;
+  background: rgba(5, 8, 11, .76);
+  box-shadow: 0 0 24px rgba(38, 183, 189, .11);
+  color: #fff;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+.work-landing__hero-mode-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #2d8cff;
+}
+
+.work-landing__hero-mode-icon svg { width: 19px; height: 19px; fill: #fff; }
+.work-landing__hero-mode > span:last-child { display: grid; gap: 4px; }
+.work-landing__hero-mode small { color: #91a0a7; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.work-landing__hero-mode strong { color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .01em; }
+
 .work-landing__hero-selected-cta {
   position: absolute;
   top: 66.2%;
@@ -564,4 +595,17 @@
     width: 87%;
     height: 5.9%;
   }
+  .work-landing__hero-mode {
+    top: 49%;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 9px;
+    padding: 8px 14px 8px 9px;
+    white-space: nowrap;
+  }
+  .work-landing__hero-mode-icon { width: 29px; height: 29px; }
+  .work-landing__hero-mode-icon svg { width: 17px; height: 17px; }
+  .work-landing__hero-mode small { font-size: 8px; }
+  .work-landing__hero-mode strong { font-size: 13px; }
 }

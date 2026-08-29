@@ -109,6 +109,12 @@ export default function ChatGptWorkBrochure() {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
+          <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
+            <span className="work-landing__hero-mode-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
+            </span>
+            <span><small>Modalidad online</small><strong>Por Zoom</strong></span>
+          </div>
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
         </figure>
       </section>
