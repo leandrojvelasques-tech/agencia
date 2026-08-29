@@ -138,13 +138,13 @@ export default function ChatGptWorkBrochure() {
       <section className="work-landing__program" id="programa">
         <div className="work-landing__program-head">
           <p className="work-landing__eyebrow">PROGRAMA</p>
-          <h2>Ver cómo funciona. Construirlo con tus propias manos.</h2>
+          <h2>Dos jornadas para potenciar tu práctica profesional con IA.</h2>
         </div>
 
         <section className="work-landing__day">
           <div className="work-landing__day-title">
             <span>Jornada 1</span>
-            <div><h3>Conocer el entorno y verlo en acción</h3><p>Explicaciones aplicadas y demostraciones en vivo de las principales capacidades de ChatGPT Work.</p></div>
+            <div><h3>Conocer el entorno y verlo en acción</h3><p>Un recorrido práctico por la interfaz de ChatGPT Work para reconocer sus funciones principales y ver cómo se aplican en situaciones profesionales.</p></div>
           </div>
           <div className="work-landing__blocks">{dayOneBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
           <div className="work-landing__practice-showcase work-landing__practice-showcase--day-one">
