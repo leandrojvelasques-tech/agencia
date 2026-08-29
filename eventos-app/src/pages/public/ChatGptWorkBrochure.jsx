@@ -138,7 +138,7 @@ export default function ChatGptWorkBrochure() {
       <section className="work-landing__program" id="programa">
         <div className="work-landing__program-head">
           <p className="work-landing__eyebrow">PROGRAMA</p>
-          <h2>Dos jornadas para potenciar tu práctica profesional con IA.</h2>
+          <h2>Conceptos, demostraciones y práctica guiada para llevar ChatGPT Work a tu trabajo.</h2>
         </div>
 
         <section className="work-landing__day">
