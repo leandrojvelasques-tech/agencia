@@ -1,6 +1,6 @@
 import './chatGptWorkBrochure.css'
 
-const heroImage = '/workshop-chatgpt-work/hero-chatgpt-work-compact-v2.png'
+const heroImage = '/workshop-chatgpt-work/hero-chatgpt-work-integrated-v3.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
