@@ -302,20 +302,27 @@
 
 .work-landing__day-title {
   display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 28px;
-  align-items: start;
-  margin-bottom: 28px;
+  grid-template-columns: 170px 1fr;
+  gap: 32px;
+  align-items: stretch;
+  margin-bottom: 24px;
+  padding: 26px;
+  border: 1px solid rgba(114,213,218,.28);
+  border-left: 5px solid var(--signal);
+  background: linear-gradient(100deg, rgba(38,183,189,.1), rgba(255,255,255,.035) 48%, rgba(255,255,255,.018));
 }
 
 .work-landing__day-title > span {
-  width: fit-content;
-  padding: 8px 12px;
+  width: 100%;
+  min-height: 92px;
+  display: grid;
+  place-items: center;
+  padding: 14px 18px;
   background: var(--signal);
   color: #071013;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 900;
-  letter-spacing: .13em;
+  letter-spacing: .15em;
   text-transform: uppercase;
 }
 
@@ -378,13 +385,6 @@
 .work-landing__practice-map li strong { color: var(--ink); font-size: 14px; line-height: 1.3; }
 .work-landing__practice-map li small { color: #59636a; font-size: 11px; line-height: 1.45; }
 .work-landing__practice-map-note { margin: 18px 0 0; color: rgba(255,255,255,.58); font-size: 11px; text-align: right; }
-
-.work-landing__requirements { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; margin-top: 18px; padding: 24px 27px; background: #eef0f1; }
-.work-landing__requirements > div { display: flex; gap: 15px; align-items: flex-start; }
-.work-landing__requirements-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: var(--white); font-size: 19px; }
-.work-landing__requirements strong { color: var(--ink); font-size: 14px; }
-.work-landing__requirements p { margin: 6px 0 0; color: #5a6267; font-size: 13px; line-height: 1.5; }
-.work-landing__requirements > p { margin: 0; }
 
 .work-landing__trainer {
   display: grid;
@@ -475,14 +475,14 @@
   .work-landing__program { padding-top: 78px; padding-bottom: 84px; }
   .work-landing__day { margin-top: 58px; }
   .work-landing__day + .work-landing__day { padding-top: 58px; }
-  .work-landing__day-title { grid-template-columns: 1fr; gap: 15px; }
+  .work-landing__day-title { grid-template-columns: 1fr; gap: 18px; padding: 20px; }
+  .work-landing__day-title > span { width: fit-content; min-height: 0; padding: 10px 13px; font-size: 11px; }
   .work-landing__blocks { grid-template-columns: 1fr; }
   .work-landing__block { padding: 25px; }
   .work-landing__practice-map-head { display: grid; gap: 7px; }
   .work-landing__practice-map { padding: 23px; }
   .work-landing__practice-map ol { grid-template-columns: 1fr 1fr; }
   .work-landing__practice-map li { min-height: 174px; }
-  .work-landing__requirements { grid-template-columns: 1fr; gap: 16px; }
   .work-landing__portrait { max-width: 300px; }
   .work-landing__trainer { gap: 38px; }
   .work-landing__cta { padding-top: 78px; padding-bottom: 78px; }

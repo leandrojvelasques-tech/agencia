@@ -163,7 +163,7 @@ export default function ChatGptWorkBrochure() {
         <section className="work-landing__day work-landing__day--practice">
           <div className="work-landing__day-title">
             <span>Jornada 2</span>
-            <div><h3>Construir un caso práctico integrador</h3><p>Trabajo guiado para configurar y probar un entorno agéntico aplicado a una situación profesional concreta.</p></div>
+            <div><h3>Construir un caso práctico integrador</h3><p>Desarrollo guiado de un estudio de caso preparado para aplicar en la práctica todos los conocimientos y recorrer, paso a paso, las etapas de configuración y prueba de un entorno agéntico ante una situación profesional concreta.</p></div>
           </div>
           <div className="work-landing__blocks">{dayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
           <div className="work-landing__practice-showcase">
@@ -176,10 +176,6 @@ export default function ChatGptWorkBrochure() {
               <ol>{dayTwoSteps.map(([number, title, description]) => <li key={number}><span>{number}</span><strong>{title}</strong><small>{description}</small></li>)}</ol>
               <p className="work-landing__practice-map-note">El paso a paso se ajustará al caso práctico definitivo.</p>
             </div>
-          </div>
-          <div className="work-landing__requirements">
-            <div><span className="work-landing__requirements-icon">+</span><div><strong>Recomendación para la jornada práctica</strong><p>Para participar activamente se recomienda contar con ChatGPT Plus, con acceso a las funciones utilizadas durante el taller.</p></div></div>
-            <p>Quienes no dispongan de ese acceso podrán seguir el trabajo y participar de la resolución grupal o conformar equipo con participantes que lo tengan.</p>
           </div>
         </section>
       </section>
