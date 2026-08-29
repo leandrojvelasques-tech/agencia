@@ -150,6 +150,7 @@
 .work-landing__button--dark { background: var(--ink); color: var(--white); }
 
 .work-landing__hero-art {
+  aspect-ratio: 4 / 3;
   margin: 0;
   padding: 9px;
   background: #080c10;
@@ -158,7 +159,7 @@
   box-shadow: 0 30px 70px rgba(16, 22, 27, .22);
 }
 
-.work-landing__hero-art img { width: 100%; display: block; border-radius: 10px; }
+.work-landing__hero-art img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 10px; }
 
 .work-landing__section { padding-top: 112px; padding-bottom: 112px; }
 
@@ -271,15 +272,16 @@
 .work-landing__practice-showcase {
   display: grid;
   grid-template-columns: .34fr 1fr;
+  align-items: stretch;
   gap: 18px;
   margin-top: 28px;
 }
 
-.work-landing__practice-photo { position: relative; min-height: 510px; margin: 0; overflow: hidden; background: #080c10; border: 1px solid rgba(114,213,218,.25); }
+.work-landing__practice-photo { position: relative; min-height: 445px; margin: 0; overflow: hidden; background: #080c10; border: 1px solid rgba(114,213,218,.25); }
 .work-landing__practice-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(8,12,16,.92) 100%); pointer-events: none; }
-.work-landing__practice-photo img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 32%; filter: saturate(.82) contrast(1.05); }
-.work-landing__practice-photo--day-one img { object-position: center 58%; }
-.work-landing__practice-photo--day-two img { transform: scaleX(-1); }
+.work-landing__practice-photo img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: center 32%; filter: saturate(.82) contrast(1.05); }
+.work-landing__practice-photo--day-one img { object-position: center 76%; transform: scale(1.07); }
+.work-landing__practice-photo--day-two img { object-position: center 62%; transform: scaleX(-1) scale(1.07); }
 .work-landing__practice-photo figcaption { position: absolute; z-index: 1; right: 22px; bottom: 22px; left: 22px; display: grid; gap: 7px; }
 .work-landing__practice-photo figcaption span { color: #72d5da; font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .work-landing__practice-photo figcaption strong { color: var(--white); font-size: 18px; line-height: 1.3; }
@@ -290,10 +292,10 @@
 .work-landing__practice-map-head strong { color: rgba(255,255,255,.68); font-size: 12px; font-weight: 700; }
 .work-landing__practice-map ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .work-landing__practice-map--day-one ol { grid-template-columns: repeat(4, 1fr); }
-.work-landing__practice-map--day-one li { min-height: 183px; padding: 15px; }
+.work-landing__practice-map--day-one li { min-height: 150px; padding: 15px; }
 .work-landing__practice-map--day-one li strong { font-size: 13px; }
 .work-landing__practice-map--day-one li small { font-size: 10.5px; }
-.work-landing__practice-map li { display: grid; align-content: start; gap: 8px; min-height: 183px; padding: 18px; background: #f4f6f6; border-top: 3px solid var(--signal); }
+.work-landing__practice-map li { display: grid; align-content: start; gap: 8px; min-height: 150px; padding: 18px; background: #f4f6f6; border-top: 3px solid var(--signal); }
 .work-landing__practice-map li:nth-child(2),
 .work-landing__practice-map li:nth-child(6) { background: #e7f2ee; }
 .work-landing__practice-map li:nth-child(3),
@@ -362,8 +364,8 @@
   .work-landing__trainer { grid-template-columns: 250px 1fr; }
   .work-landing__practice-showcase { grid-template-columns: 1fr; }
   .work-landing__practice-photo { min-height: 340px; }
-  .work-landing__practice-photo--day-one img { object-position: center 58%; }
-  .work-landing__practice-photo--day-two img { object-position: center 38%; }
+  .work-landing__practice-photo--day-one img { object-position: center 68%; }
+  .work-landing__practice-photo--day-two img { object-position: center 52%; }
 }
 
 @media (max-width: 760px) {
