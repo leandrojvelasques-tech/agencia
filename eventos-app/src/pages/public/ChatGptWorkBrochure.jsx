@@ -5,7 +5,7 @@ const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
-const registrationUrl = 'mailto:leandrojvelasques@gmail.com?subject=Consulta%20-%20Taller%20ChatGPT%20Work'
+const registrationUrl = '/brochure/chatgpt-work/inscripcion'
 
 const dayOneBlocks = [
   {
