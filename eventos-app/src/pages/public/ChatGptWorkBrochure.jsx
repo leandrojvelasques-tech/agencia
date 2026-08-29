@@ -1,6 +1,6 @@
 import './chatGptWorkBrochure.css'
 
-const heroImage = '/workshop-chatgpt-work/hero-chatgpt-work-integrated-v3.png'
+const heroImage = '/workshop-chatgpt-work/hero-agent-network-option-1.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
@@ -102,29 +102,34 @@ function ProgramBlock({ block }) {
 export default function ChatGptWorkBrochure() {
   return (
     <main className="work-landing">
-      <header className="work-landing__header">
-        <a className="work-landing__brand" href="#inicio" aria-label="Ir al inicio">
-          <img src="/logo_triskel.png" alt="" />
-          <span>Leandro Velasques · IA aplicada</span>
-        </a>
-        <a className="work-landing__header-link" href="#participar">Participar</a>
-      </header>
-
       <section className="work-landing__hero" id="inicio">
-        <div className="work-landing__hero-copy">
-          <p className="work-landing__eyebrow">TALLER INTENSIVO · CIENCIAS ECONÓMICAS</p>
-          <h1>Tu nuevo <span>entorno de trabajo</span></h1>
-          <p className="work-landing__lead">Una propuesta para potenciar tus capacidades profesionales a través del entorno de trabajo agéntico de ChatGPT Work.</p>
-          <div className="work-landing__facts" aria-label="Datos principales del taller">
-            <div><strong>2</strong><span>jornadas</span></div>
-            <div><strong>4</strong><span>bloques</span></div>
-            <div><strong>4 h</strong><span>duración estimada</span></div>
+        <div className="work-landing__hero-main">
+          <div className="work-landing__hero-copy">
+            <p className="work-landing__eyebrow">TALLER INTENSIVO · CIENCIAS ECONÓMICAS</p>
+            <h1>Tu nuevo <span>entorno de trabajo</span></h1>
+            <p className="work-landing__lead">Una propuesta para potenciar tus capacidades profesionales a través del entorno de trabajo agéntico de ChatGPT Work.</p>
+            <div className="work-landing__facts" aria-label="Datos principales del taller">
+              <div><strong>2</strong><span>jornadas</span></div>
+              <div><strong>4</strong><span>bloques</span></div>
+              <div><strong>6 h</strong><span>duración estimada</span></div>
+            </div>
+            <a className="work-landing__button work-landing__button--dark" href="#programa">Conocer el programa</a>
           </div>
-          <a className="work-landing__button work-landing__button--dark" href="#programa">Conocer el programa</a>
+          <figure className="work-landing__hero-art">
+            <img src={heroImage} alt="Visual abstracto de un entorno de trabajo agéntico" />
+          </figure>
         </div>
-        <figure className="work-landing__hero-art">
-          <img src={heroImage} alt="Imagen oficial del taller ChatGPT Work" />
-        </figure>
+        <div className="work-landing__hero-continuation" aria-label="ChatGPT Work de cero a cien">
+          <div>
+            <h2>ChatGPT Work: <span>de 0 a 100</span></h2>
+            <p>Todo lo que necesitás para empezar a trabajar con agentes de IA.</p>
+          </div>
+          <div className="work-landing__mode-switch" aria-label="De Chat a Work">
+            <span>Chat</span>
+            <i aria-hidden="true">✦</i>
+            <strong>Work</strong>
+          </div>
+        </div>
       </section>
 
       <section className="work-landing__section work-landing__context">
