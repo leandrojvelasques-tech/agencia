@@ -71,15 +71,25 @@
 .work-landing__hero {
   min-height: 680px;
   display: grid;
-  grid-template-columns: .9fr 1.1fr;
+  grid-template-columns: .93fr 1.07fr;
   align-items: center;
-  gap: 58px;
+  gap: 0;
   padding-top: 82px;
   padding-bottom: 96px;
   background:
-    linear-gradient(90deg, transparent 0 48%, rgba(16, 22, 27, .07) 48% 48.15%, transparent 48.15%),
-    linear-gradient(145deg, #f6f7f7 0%, #e4e8ea 100%);
+    radial-gradient(circle at 47% 50%, rgba(38, 183, 189, .11), transparent 34%),
+    #05080b;
 }
+
+.work-landing__hero-copy { position: relative; padding-right: 48px; }
+.work-landing__hero-copy::after { content: ""; position: absolute; top: 12%; right: 0; width: 1px; height: 76%; background: linear-gradient(transparent, rgba(38,183,189,.36), transparent); }
+.work-landing__hero .work-landing__eyebrow { color: #72d5da; }
+.work-landing .work-landing__hero h1 { color: var(--white); }
+.work-landing__hero h1 span { display: block; color: #72d5da; }
+.work-landing__hero .work-landing__lead { color: #c5ced2; }
+.work-landing__hero .work-landing__facts strong { color: var(--white); }
+.work-landing__hero .work-landing__facts span { color: #91a0a7; }
+.work-landing__hero .work-landing__button--dark { background: var(--white); color: var(--ink); }
 
 .work-landing__eyebrow {
   margin: 0 0 18px;
@@ -150,16 +160,13 @@
 .work-landing__button--dark { background: var(--ink); color: var(--white); }
 
 .work-landing__hero-art {
-  aspect-ratio: 4 / 3;
+  align-self: stretch;
+  min-height: 520px;
   margin: 0;
-  padding: 9px;
-  background: #080c10;
-  border: 1px solid rgba(38, 183, 189, .38);
-  border-radius: 17px;
-  box-shadow: 0 30px 70px rgba(16, 22, 27, .22);
+  background: radial-gradient(circle at 52% 48%, rgba(38,183,189,.1), transparent 46%);
 }
 
-.work-landing__hero-art img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 10px; }
+.work-landing__hero-art img { width: 100%; height: 100%; display: block; object-fit: contain; }
 
 .work-landing__section { padding-top: 112px; padding-bottom: 112px; }
 
@@ -359,7 +366,9 @@
 .work-landing__footer a { color: var(--white); font-size: 11px; font-weight: 800; text-decoration: none; }
 
 @media (max-width: 980px) {
-  .work-landing__hero { grid-template-columns: 1fr; gap: 58px; padding-top: 76px; padding-bottom: 76px; background: linear-gradient(145deg, #f6f7f7 0%, #e4e8ea 100%); }
+  .work-landing__hero { grid-template-columns: 1fr; gap: 52px; padding-top: 76px; padding-bottom: 76px; background: radial-gradient(circle at 50% 42%, rgba(38,183,189,.1), transparent 36%), #05080b; }
+  .work-landing__hero-copy { padding-right: 0; }
+  .work-landing__hero-copy::after { display: none; }
   .work-landing__hero-art { max-width: 780px; }
   .work-landing__trainer { grid-template-columns: 250px 1fr; }
   .work-landing__practice-showcase { grid-template-columns: 1fr; }
@@ -381,8 +390,7 @@
   .work-landing__hero { min-height: auto; padding-top: 62px; padding-bottom: 66px; }
   .work-landing h1 { font-size: clamp(45px, 13.8vw, 63px); }
   .work-landing__lead { font-size: 17px; }
-  .work-landing__hero-art { padding: 6px; border-radius: 11px; }
-  .work-landing__hero-art img { border-radius: 6px; }
+  .work-landing__hero-art { width: 100%; min-height: 350px; }
   .work-landing__section { padding-top: 78px; padding-bottom: 78px; }
   .work-landing__context,
   .work-landing__proposal,

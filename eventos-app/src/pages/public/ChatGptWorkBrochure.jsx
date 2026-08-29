@@ -113,7 +113,7 @@ export default function ChatGptWorkBrochure() {
       <section className="work-landing__hero" id="inicio">
         <div className="work-landing__hero-copy">
           <p className="work-landing__eyebrow">TALLER INTENSIVO · CIENCIAS ECONÓMICAS</p>
-          <h1>Tu nuevo entorno de trabajo</h1>
+          <h1>Tu nuevo <span>entorno de trabajo</span></h1>
           <p className="work-landing__lead">Una propuesta para potenciar tus capacidades profesionales a través del entorno de trabajo agéntico de ChatGPT Work.</p>
           <div className="work-landing__facts" aria-label="Datos principales del taller">
             <div><strong>2</strong><span>jornadas</span></div>
