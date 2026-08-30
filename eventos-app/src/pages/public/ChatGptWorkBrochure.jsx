@@ -88,6 +88,7 @@ const dayOneSteps = [
 const faqItems = [
   ['Nunca usé inteligencia artificial. ¿Puedo hacer el taller?', 'Sí. El taller está pensado también para quienes arrancan desde cero, nunca descargaron la aplicación o solo la usaron de manera muy básica. Vamos a comenzar por la configuración general de ChatGPT y recorrer las funciones más importantes, de forma gradual y aplicada.'],
   ['¿Puedo participar con la versión gratuita de ChatGPT?', 'Sí. La versión gratuita permite explorar la interfaz y probar distintas funcionalidades, aunque con límites de uso. No es una condición excluyente para participar.'],
+  ['¿Soy estudiante universitario? ¿Puedo participar?', 'Sí. La inscripción es gratuita para estudiantes de Ciencias Económicas de la Facultad de Ciencias Económicas de la Universidad Nacional de la Patagonia San Juan Bosco (UNPSJB).'],
   ['¿Necesito tener ChatGPT Plus?', 'No es obligatorio. Podés participar con una cuenta gratuita o incluso comenzar desde cero. La diferencia es que, durante la jornada práctica, una cuenta Plus permite realizar más pruebas e iteraciones antes de alcanzar los límites de uso de la versión gratuita. De todos modos, quedarte sin crédito en algún momento no impide que participes ni que puedas seguir el desarrollo del caso práctico.'],
   ['Yo uso Claude u otra inteligencia artificial. ¿Me sirve igualmente?', 'Sí. El taller se concentra en ChatGPT Work, pero los conceptos de proyectos, instrucciones, skills, agentes y formas de trabajo se pueden trasladar a otras herramientas, como Claude, Gemini u otras IA que ya uses.'],
   ['¿Cómo será la parte práctica?', 'Durante la segunda jornada vamos a desarrollar un estudio de caso guiado. Vas a configurar un proyecto, definir instrucciones, construir un skill y probar distintas capacidades dentro de un entorno de trabajo agéntico.'],
@@ -205,7 +206,6 @@ export default function ChatGptWorkBrochure() {
         <div className="work-landing__faq-intro">
           <p className="work-landing__eyebrow">PREGUNTAS FRECUENTES</p>
           <h2>Antes de empezar, despejemos las dudas más comunes.</h2>
-          <p>La propuesta está pensada para que puedas sumarte desde tu punto de partida y avanzar con acompañamiento.</p>
         </div>
         <div className="work-landing__faq-list">
           {faqItems.map(([question, answer]) => (
