@@ -85,6 +85,17 @@ const dayOneSteps = [
   ['08', 'Navegador y computadora', 'Investigá y operá herramientas con supervisión.'],
 ]
 
+const faqItems = [
+  ['Nunca usé inteligencia artificial. ¿Puedo hacer el taller?', 'Sí. El taller está pensado también para quienes arrancan desde cero, nunca descargaron la aplicación o solo la usaron de manera muy básica. Vamos a comenzar por la configuración general de ChatGPT y recorrer las funciones más importantes, de forma gradual y aplicada.'],
+  ['¿Puedo participar con la versión gratuita de ChatGPT?', 'Sí. La versión gratuita permite explorar la interfaz y probar distintas funcionalidades, aunque con límites de uso. No es una condición excluyente para participar.'],
+  ['¿Necesito tener ChatGPT Plus?', 'No es obligatorio. Podés participar con una cuenta gratuita o incluso comenzar desde cero. La diferencia es que, durante la jornada práctica, una cuenta Plus permite realizar más pruebas e iteraciones antes de alcanzar los límites de uso de la versión gratuita. De todos modos, quedarte sin crédito en algún momento no impide que participes ni que puedas seguir el desarrollo del caso práctico.'],
+  ['Yo uso Claude u otra inteligencia artificial. ¿Me sirve igualmente?', 'Sí. El taller se concentra en ChatGPT Work, pero los conceptos de proyectos, instrucciones, skills, agentes y formas de trabajo se pueden trasladar a otras herramientas, como Claude, Gemini u otras IA que ya uses.'],
+  ['¿Cómo será la parte práctica?', 'Durante la segunda jornada vamos a desarrollar un estudio de caso guiado. Vas a configurar un proyecto, definir instrucciones, construir un skill y probar distintas capacidades dentro de un entorno de trabajo agéntico.'],
+  ['¿Necesito instalar algo antes?', 'Solo necesitás una computadora con conexión estable a internet, una cuenta de ChatGPT —gratuita o Plus— y acceso a Zoom. Para aprovechar mejor la práctica, recomendamos usar notebook o PC en lugar de celular.'],
+  ['¿Las jornadas quedarán grabadas?', 'Sí. La presentación quedará grabada y el video será compartido con las personas inscriptas dentro de las 48 horas posteriores.'],
+  ['¿Qué pasa si no puedo participar de una de las jornadas en vivo?', 'Vas a poder acceder a la grabación. De todos modos, la segunda jornada tiene una dinámica práctica, por lo que recomendamos asistir en vivo para aprovechar el acompañamiento y el intercambio.'],
+]
+
 function ProgramBlock({ block }) {
   return (
     <article className="work-landing__block">
@@ -188,6 +199,22 @@ export default function ChatGptWorkBrochure() {
             </div>
           </div>
         </section>
+      </section>
+
+      <section className="work-landing__faq" id="preguntas-frecuentes">
+        <div className="work-landing__faq-intro">
+          <p className="work-landing__eyebrow">PREGUNTAS FRECUENTES</p>
+          <h2>Antes de empezar, despejemos las dudas más comunes.</h2>
+          <p>La propuesta está pensada para que puedas sumarte desde tu punto de partida y avanzar con acompañamiento.</p>
+        </div>
+        <div className="work-landing__faq-list">
+          {faqItems.map(([question, answer]) => (
+            <details key={question}>
+              <summary><span>{question}</span><b aria-hidden="true">+</b></summary>
+              <p>{answer}</p>
+            </details>
+          ))}
+        </div>
       </section>
 
       <section className="work-landing__section work-landing__trainer" id="capacitador">
