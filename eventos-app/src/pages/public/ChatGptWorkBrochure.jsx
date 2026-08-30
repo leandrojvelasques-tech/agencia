@@ -128,6 +128,7 @@ export default function ChatGptWorkBrochure() {
             <span><small>Modalidad online</small><strong>Por Zoom</strong></span>
           </div>
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
+          <a className="work-landing__hero-register-cta" href={registrationUrl}>Inscribirme</a>
         </figure>
       </section>
 
@@ -233,7 +234,7 @@ export default function ChatGptWorkBrochure() {
         <p className="work-landing__eyebrow">PRÓXIMAS EDICIONES</p>
         <h2>Prepará tu práctica profesional para trabajar con agentes.</h2>
         <p>Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.</p>
-        <a className="work-landing__button work-landing__button--light" href={registrationUrl}>Quiero participar</a>
+        <a className="work-landing__button work-landing__button--light" href={registrationUrl}>Inscribirme</a>
       </section>
 
       <footer className="work-landing__footer">

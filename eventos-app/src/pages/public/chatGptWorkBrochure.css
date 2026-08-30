@@ -623,14 +623,72 @@
   border: 0;
 }
 
+.work-landing__hero-register-cta {
+  position: absolute;
+  top: 66.2%;
+  left: 28%;
+  width: 16.5%;
+  height: 7.4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(114, 213, 218, .72);
+  border-radius: 3px;
+  background: #2ab8c0;
+  color: #071013;
+  box-shadow: 0 8px 24px rgba(42, 184, 192, .18);
+  font-size: clamp(10px, 1vw, 15px);
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+  transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.work-landing__hero-register-cta:hover {
+  background: #72d5da;
+  box-shadow: 0 13px 28px rgba(42, 184, 192, .3);
+  transform: translateY(-3px);
+}
+
+.work-landing__hero-register-cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
 @media (max-width: 760px) {
   .work-landing__hero { padding-left: 0; padding-right: 0; padding-top: 0; }
   .work-landing__hero-selected { max-width: 845px; }
   .work-landing__hero-selected-cta {
     top: 66%;
     left: 6.5%;
-    width: 87%;
+    width: 43.5%;
     height: 5.9%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.88);
+    background: #fff;
+    color: #071013;
+    font-size: clamp(8px, 2.2vw, 11px);
+    font-weight: 900;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .work-landing__hero-selected-cta span {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  .work-landing__hero-register-cta {
+    top: 66%;
+    left: 50%;
+    width: 43.5%;
+    height: 5.9%;
+    font-size: clamp(8px, 2.2vw, 11px);
   }
   .work-landing__hero-mode {
     top: 49%;
@@ -645,4 +703,9 @@
   .work-landing__hero-mode-icon svg { width: 17px; height: 17px; }
   .work-landing__hero-mode small { font-size: 8px; }
   .work-landing__hero-mode strong { font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-landing__hero-register-cta { transition: none; }
+  .work-landing__hero-register-cta:hover { transform: none; }
 }
