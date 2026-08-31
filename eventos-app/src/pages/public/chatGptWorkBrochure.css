@@ -625,10 +625,11 @@
 
 .work-landing__hero-register-cta {
   position: absolute;
-  top: 66.2%;
+  top: 67.4%;
   left: 28%;
   width: 16.5%;
-  height: 7.4%;
+  height: 6.7%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
