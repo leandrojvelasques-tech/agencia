@@ -84,6 +84,7 @@ export default function EventCreate() {
     official_banner_url: '',
     client_logo_url: '',
     registration_variant: 'council',
+    landing_template: 'standard',
     video_url: '',
     is_public: true,
     show_on_home: false,
@@ -470,6 +471,7 @@ export default function EventCreate() {
             ...data,
             agenda: normalizeAgenda(data.agenda),
             registration_mode: data.registration_mode || 'both',
+            landing_template: data.landing_template || 'standard',
             max_capacity_presencial: (data.max_capacity_presencial !== null && data.max_capacity_presencial !== undefined) ? data.max_capacity_presencial : '',
             max_capacity_virtual: (data.max_capacity_virtual !== null && data.max_capacity_virtual !== undefined) ? data.max_capacity_virtual : '',
             location: data.location || '',
@@ -1133,6 +1135,14 @@ export default function EventCreate() {
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Descripción extendida <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>
               <textarea className="form-input min-h-[120px]" placeholder="Detalle completo del evento" value={form.description_extended} onChange={e => update('description_extended', e.target.value)} />
+            </div>
+            <div className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/55 border border-[var(--color-deep-green)]/10">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Presentación pública</label>
+              <select className="form-input" value={form.landing_template || 'standard'} onChange={e => update('landing_template', e.target.value)}>
+                <option value="standard">Landing estándar del evento</option>
+                <option value="chatgpt-work">Brochure ChatGPT Work</option>
+              </select>
+              <p className="text-xs text-[var(--color-dark-gray)]/50 mt-2">La plantilla toma del evento las fechas, el horario y la sede. El botón de inscripción conserva el mismo flujo de participantes.</p>
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Requisitos <span className="normal-case text-[var(--color-dark-gray)]/30">(opcional)</span></label>

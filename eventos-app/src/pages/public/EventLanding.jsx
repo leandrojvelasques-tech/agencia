@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
+import ChatGptWorkBrochure from './ChatGptWorkBrochure'
 
 const ensureAbsoluteUrl = (url) => {
   if (!url) return ''
@@ -76,6 +77,10 @@ export default function EventLanding() {
         </div>
       </div>
     )
+  }
+
+  if (event.landing_template === 'chatgpt-work') {
+    return <ChatGptWorkBrochure event={event} />
   }
 
   const availableDates = event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : [event.event_date]

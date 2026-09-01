@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS events (
     client_logo_url TEXT,
     registration_mode TEXT NOT NULL DEFAULT 'both' CHECK (registration_mode IN ('manual', 'self', 'both')),
     registration_variant TEXT NOT NULL DEFAULT 'council' CHECK (registration_variant IN ('council', 'company')),
+    landing_template TEXT NOT NULL DEFAULT 'standard' CHECK (landing_template IN ('standard', 'chatgpt-work')),
     requirements TEXT,
     status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'in_progress', 'completed', 'cancelled')),
     max_capacity INTEGER,

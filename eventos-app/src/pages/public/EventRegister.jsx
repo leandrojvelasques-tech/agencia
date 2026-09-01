@@ -298,6 +298,13 @@ export default function EventRegister() {
 
     const cat = getPricingCategory(survey.profesion, survey);
 
+    if (!isCompanyRegistration && event.landing_template === 'chatgpt-work' && (
+      cat !== 'matriculado_chubut' || survey.delegacion !== 'Delegación Comodoro Rivadavia'
+    )) {
+      setError('Esta actividad está destinada exclusivamente a matriculados de la Delegación Comodoro Rivadavia.')
+      return
+    }
+
     if (!isCompanyRegistration && cat === 'matriculado_chubut') {
       if (!survey.delegacion) {
         setError('Debes seleccionar tu delegación de Chubut')
@@ -585,11 +592,9 @@ export default function EventRegister() {
                 >
                   <span className="text-sm font-bold">🏫 Presencial</span>
                   {hasPresencial ? (
-                    event.max_capacity_presencial && (
-                      <span className="text-[10px] opacity-60 font-medium mt-1">
-                        {isPresencialFull ? 'Agotado' : `${regs.filter(r => r.attendance_mode === 'presencial' && (r.selected_date === form.selected_date || (!r.selected_date && form.selected_date === event.event_date))).length} / ${event.max_capacity_presencial} lugares`}
-                      </span>
-                    )
+                    <span className="text-[10px] opacity-60 font-medium mt-1">
+                      {event.max_capacity_presencial ? (isPresencialFull ? 'Agotado' : `${regs.filter(r => r.attendance_mode === 'presencial' && (r.selected_date === form.selected_date || (!r.selected_date && form.selected_date === event.event_date))).length} / ${event.max_capacity_presencial} lugares`) : 'Sin límite de cupo'}
+                    </span>
                   ) : (
                     <span className="text-[10px] opacity-50 font-medium mt-1">No habilitado</span>
                   )}

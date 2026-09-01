@@ -5,7 +5,18 @@ const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
-const registrationUrl = '/brochure/chatgpt-work/inscripcion'
+const formatEditionDate = (date) => new Intl.DateTimeFormat('es-AR', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+}).format(new Date(`${date}T12:00:00`))
+
+const formatTimeRange = (startTime, durationMinutes) => {
+  if (!startTime) return ''
+  const [hours, minutes] = startTime.slice(0, 5).split(':').map(Number)
+  const totalMinutes = hours * 60 + minutes + (durationMinutes || 0)
+  const endHours = Math.floor(totalMinutes / 60) % 24
+  const endMinutes = totalMinutes % 60
+  return `${startTime.slice(0, 5)} a ${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')} hs`
+}
 
 const dayOneBlocks = [
   {
@@ -85,7 +96,7 @@ const dayOneSteps = [
   ['08', 'Navegador y computadora', 'Investigá y operá herramientas con supervisión.'],
 ]
 
-const faqItems = [
+const genericFaqItems = [
   ['Nunca usé inteligencia artificial. ¿Puedo hacer el taller?', 'Sí. El taller está pensado también para quienes arrancan desde cero, nunca descargaron la aplicación o solo la usaron de manera muy básica. Vamos a comenzar por la configuración general de ChatGPT y recorrer las funciones más importantes, de forma gradual y aplicada.'],
   ['¿Puedo participar con la versión gratuita de ChatGPT?', 'Sí. La versión gratuita permite explorar la interfaz y probar distintas funcionalidades, aunque con límites de uso. No es una condición excluyente para participar.'],
   ['¿Soy estudiante universitario? ¿Puedo participar?', 'Sí. La inscripción es gratuita para estudiantes de Ciencias Económicas de la Facultad de Ciencias Económicas de la Universidad Nacional de la Patagonia San Juan Bosco (UNPSJB).'],
@@ -112,7 +123,19 @@ function ProgramBlock({ block }) {
   )
 }
 
-export default function ChatGptWorkBrochure() {
+export default function ChatGptWorkBrochure({ event = null }) {
+  const isEventEdition = Boolean(event)
+  const registrationUrl = event ? `/evento/${event.slug}/inscripcion` : '/brochure/chatgpt-work/inscripcion'
+  const dates = event?.offered_dates?.length ? event.offered_dates : (event?.event_date ? [event.event_date] : [])
+  const editionDates = dates.map(formatEditionDate)
+  const faqItems = isEventEdition
+    ? genericFaqItems.map(([question, answer]) => {
+      if (question === '¿Necesito instalar algo antes?') return [question, 'Necesitás una computadora con conexión estable a internet y una cuenta de ChatGPT —gratuita o Plus—. Para aprovechar mejor la parte práctica, recomendamos asistir con notebook o PC.']
+      if (question === '¿Las jornadas quedarán grabadas?') return [question, 'Sí. Las jornadas serán grabadas y el material se compartirá con las personas inscriptas.']
+      if (question === '¿Qué pasa si no puedo participar de una de las jornadas en vivo?') return [question, 'Vas a poder acceder a la grabación. De todos modos, la segunda jornada tiene una dinámica práctica, por lo que recomendamos asistir presencialmente para aprovechar el acompañamiento y el intercambio.']
+      return [question, answer]
+    })
+    : genericFaqItems
   return (
     <main className="work-landing">
       <section className="work-landing__hero" id="inicio">
@@ -121,16 +144,30 @@ export default function ChatGptWorkBrochure() {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
-          <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
+          <div className="work-landing__hero-mode" aria-label={isEventEdition ? 'Modalidad presencial' : 'Modalidad online por Zoom'}>
             <span className="work-landing__hero-mode-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
             </span>
-            <span><small>Modalidad online</small><strong>Por Zoom</strong></span>
+            <span><small>{isEventEdition ? 'Modalidad' : 'Modalidad online'}</small><strong>{isEventEdition ? 'Presencial' : 'Por Zoom'}</strong></span>
           </div>
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
           <a className="work-landing__hero-register-cta" href={registrationUrl}>Inscribirme</a>
         </figure>
       </section>
+
+      {isEventEdition && (
+        <section className="work-landing__edition" aria-label="Datos de esta edición">
+          <p className="work-landing__eyebrow">EDICIÓN PRESENCIAL · COMODORO RIVADAVIA</p>
+          <h1>{event.title}</h1>
+          <div className="work-landing__edition-data">
+            <div><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
+            <div><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
+            <div><span>Lugar</span><strong>{event.location}</strong></div>
+          </div>
+          <p className="work-landing__edition-note">Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa. Las jornadas serán grabadas.</p>
+          <a className="work-landing__button" href={registrationUrl}>Inscribirme sin cargo</a>
+        </section>
+      )}
 
       <section className="work-landing__section work-landing__context">
         <div className="work-landing__context-index" aria-hidden="true">2026</div>
@@ -231,10 +268,10 @@ export default function ChatGptWorkBrochure() {
       </section>
 
       <section className="work-landing__cta" id="participar">
-        <p className="work-landing__eyebrow">PRÓXIMAS EDICIONES</p>
+        <p className="work-landing__eyebrow">{isEventEdition ? 'INSCRIPCIÓN' : 'PRÓXIMAS EDICIONES'}</p>
         <h2>Prepará tu práctica profesional para trabajar con agentes.</h2>
-        <p>Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.</p>
-        <a className="work-landing__button work-landing__button--light" href={registrationUrl}>Inscribirme</a>
+        <p>{isEventEdition ? 'La actividad es sin cargo y está destinada exclusivamente a matriculados de la Delegación Comodoro. Requiere inscripción previa.' : 'Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.'}</p>
+        <a className="work-landing__button work-landing__button--light" href={registrationUrl}>{isEventEdition ? 'Completar inscripción' : 'Inscribirme'}</a>
       </section>
 
       <footer className="work-landing__footer">
