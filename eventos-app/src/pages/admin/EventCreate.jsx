@@ -1036,6 +1036,46 @@ export default function EventCreate() {
     update('satisfaction_questions', list)
   }
 
+  const renderNotificationRecipients = () => (
+    <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+            Notificaciones de inscripción
+          </label>
+          <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+            Agregá los emails del Consejo u otras personas que recibirán un aviso automático cada vez que alguien se inscriba o cancele.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => update('notification_recipients', [...(form.notification_recipients || []), { name: '', email: '' }])}
+          className="btn-secondary !py-1.5 !px-3.5 !text-xs flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+        >
+          <span className="material-symbols-outlined text-xs">add</span> Agregar email
+        </button>
+      </div>
+      {(!form.notification_recipients || form.notification_recipients.length === 0) ? (
+        <div className="p-4 text-center border border-dashed border-[var(--color-deep-green)]/10 rounded-xl bg-white/40">
+          <span className="material-symbols-outlined text-2xl text-[var(--color-dark-gray)]/20 mb-1 block">notifications_off</span>
+          <p className="text-xs font-semibold text-[var(--color-dark-gray)]/45">Todavía no hay destinatarios configurados.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {form.notification_recipients.map((recipient, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white p-3 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm">
+              <input type="text" className="form-input !py-2 text-xs flex-1" placeholder="Nombre (opcional)" value={recipient.name || ''} onChange={e => update('notification_recipients', form.notification_recipients.map((r, i) => i === idx ? { ...r, name: e.target.value } : r))} />
+              <input type="email" required className="form-input !py-2 text-xs flex-1" placeholder="email@ejemplo.com" value={recipient.email || ''} onChange={e => update('notification_recipients', form.notification_recipients.map((r, i) => i === idx ? { ...r, email: e.target.value } : r))} />
+              <button type="button" onClick={() => update('notification_recipients', form.notification_recipients.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-650 transition-colors p-1 cursor-pointer self-end sm:self-auto" title="Eliminar destinatario">
+                <span className="material-symbols-outlined text-lg">delete</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
@@ -1236,6 +1276,8 @@ export default function EventCreate() {
               </select>
               <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-2">Si el cliente tiene nombre y logo cargados, se completarán también como organizador del evento.</p>
             </div>
+
+            {renderNotificationRecipients()}
 
             {/* Banner Upload */}
             <div className="border-t border-[var(--color-deep-green)]/8 pt-5 mt-5">
@@ -2093,81 +2135,6 @@ export default function EventCreate() {
                   onChange={(e) => update('official_banner_url', e.target.value)}
                 />
               </div>
-            </div>
-
-            {/* Notificaciones de Inscripción (Coordinadores) */}
-            <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
-                    Notificaciones de Inscripción (Coordinadores)
-                  </label>
-                  <p className="text-[10px] text-[var(--color-dark-gray)]/50">
-                    Configurá los nombres e emails de las personas que recibirán un correo automático cada vez que alguien se inscriba o cancele.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = form.notification_recipients || [];
-                    update('notification_recipients', [...current, { name: '', email: '' }]);
-                  }}
-                  className="btn-secondary !py-1.5 !px-3.5 !text-xs flex items-center gap-1 cursor-pointer self-start sm:self-auto"
-                >
-                  <span className="material-symbols-outlined text-xs">add</span> Agregar Persona
-                </button>
-              </div>
-
-              {(!form.notification_recipients || form.notification_recipients.length === 0) ? (
-                <div className="p-6 text-center border border-dashed border-[var(--color-deep-green)]/10 rounded-xl bg-white/40">
-                  <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/20 mb-1 block">notifications_off</span>
-                  <p className="text-xs font-semibold text-[var(--color-dark-gray)]/45">Sin destinatarios configurados (solo el inscripto recibirá confirmación)</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {form.notification_recipients.map((recipient, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          required
-                          className="form-input !py-2 text-xs"
-                          placeholder="Nombre del Coordinador"
-                          value={recipient.name || ''}
-                          onChange={e => {
-                            const updated = form.notification_recipients.map((r, i) => i === idx ? { ...r, name: e.target.value } : r);
-                            update('notification_recipients', updated);
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <input
-                          type="email"
-                          required
-                          className="form-input !py-2 text-xs"
-                          placeholder="email@ejemplo.com"
-                          value={recipient.email || ''}
-                          onChange={e => {
-                            const updated = form.notification_recipients.map((r, i) => i === idx ? { ...r, email: e.target.value } : r);
-                            update('notification_recipients', updated);
-                          }}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = form.notification_recipients.filter((_, i) => i !== idx);
-                          update('notification_recipients', updated);
-                        }}
-                        className="text-red-400 hover:text-red-650 transition-colors p-1 cursor-pointer"
-                        title="Eliminar destinatario"
-                      >
-                        <span className="material-symbols-outlined text-lg">delete</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Recordatorios Automáticos */}
