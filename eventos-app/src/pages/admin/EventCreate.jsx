@@ -112,9 +112,12 @@ export default function EventCreate() {
   const [uploadError, setUploadError] = useState('')
   const [uploadingOfficial, setUploadingOfficial] = useState(false)
   const [uploadOfficialError, setUploadOfficialError] = useState('')
+  const [uploadingOrganizerLogo, setUploadingOrganizerLogo] = useState(false)
+  const [uploadOrganizerLogoError, setUploadOrganizerLogoError] = useState('')
   const [uploadingMaterialIndex, setUploadingMaterialIndex] = useState(null)
   const fileInputRef = useRef(null)
   const officialBannerInputRef = useRef(null)
+  const organizerLogoInputRef = useRef(null)
 
   const [associatedPresentations, setAssociatedPresentations] = useState([])
   const [availablePresentations, setAvailablePresentations] = useState([])
@@ -460,6 +463,34 @@ export default function EventCreate() {
     }
   }
 
+  const handleOrganizerLogoUpload = async (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadOrganizerLogoError('Solo se permiten imágenes (PNG, SVG, JPG o WEBP)')
+      return
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setUploadOrganizerLogoError('El archivo no puede superar los 3 MB')
+      return
+    }
+    setUploadOrganizerLogoError('')
+    setUploadingOrganizerLogo(true)
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+      const fileName = `organizer-logo-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName)
+      update('client_logo_url', publicUrl)
+    } catch (err) {
+      setUploadOrganizerLogoError('Error al subir el logo: ' + (err.message || err))
+    } finally {
+      setUploadingOrganizerLogo(false)
+    }
+  }
+
   useEffect(() => {
     if (id) {
       async function loadEvent() {
@@ -508,6 +539,16 @@ export default function EventCreate() {
   }, [id])
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
+
+  const handleClientChange = (clientId) => {
+    const selectedClient = crmClients.find(client => client.id === clientId)
+    setForm(prev => ({
+      ...prev,
+      client_id: clientId,
+      organizer: selectedClient ? (selectedClient.company || selectedClient.name || prev.organizer) : prev.organizer,
+      client_logo_url: selectedClient?.logo_url || prev.client_logo_url,
+    }))
+  }
 
   const addClass = () => setForm(prev => {
     const nextAgenda = Array.isArray(prev.agenda) ? [...prev.agenda] : []
@@ -1161,14 +1202,39 @@ export default function EventCreate() {
             </div>
 
             <div className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/55 border border-[var(--color-deep-green)]/10">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="w-full sm:w-52 h-24 rounded-xl bg-[#071016] border border-[var(--color-deep-green)]/15 flex items-center justify-center p-4 shrink-0">
+                  {form.client_logo_url ? (
+                    <img src={form.client_logo_url} alt="Vista previa del logo del organizador" className="max-w-full max-h-full object-contain" />
+                  ) : (
+                    <span className="text-xs text-white/45 text-center">Sin logo del organizador</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Logo del organizador <span className="normal-case text-[var(--color-dark-gray)]/40">(opcional)</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className="btn-secondary !py-2 !px-4" disabled={uploadingOrganizerLogo} onClick={() => organizerLogoInputRef.current?.click()}>
+                      {uploadingOrganizerLogo ? 'Subiendo...' : 'Seleccionar logo'}
+                    </button>
+                    {form.client_logo_url && <button type="button" className="btn-secondary !py-2 !px-4" onClick={() => update('client_logo_url', '')}>Quitar</button>}
+                  </div>
+                  <input ref={organizerLogoInputRef} type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) handleOrganizerLogoUpload(file); e.target.value = '' }} />
+                  <input className="form-input text-sm mt-3" placeholder="O pegá la URL del logo" value={form.client_logo_url || ''} onChange={e => update('client_logo_url', e.target.value)} />
+                  {uploadOrganizerLogoError && <p className="text-xs text-red-500 font-semibold mt-2">{uploadOrganizerLogoError}</p>}
+                  <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-2">Se mostrará junto al nombre del organizador en la landing pública.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/55 border border-[var(--color-deep-green)]/10">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Cliente del evento <span className="normal-case text-[var(--color-dark-gray)]/40">(opcional)</span></label>
-              <select className="form-input" value={form.client_id || ''} onChange={e => update('client_id', e.target.value)}>
+              <select className="form-input" value={form.client_id || ''} onChange={e => handleClientChange(e.target.value)}>
                 <option value="">Sin cliente asociado — usar identidad de Leandro</option>
                 {crmClients.map(client => (
                   <option key={client.id} value={client.id}>{client.company || client.name}</option>
                 ))}
               </select>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-2">Al generar la minuta, se incorporará el logo y el nombre de este cliente como membrete del comprobante.</p>
+              <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-2">Si el cliente tiene nombre y logo cargados, se completarán también como organizador del evento.</p>
             </div>
 
             {/* Banner Upload */}

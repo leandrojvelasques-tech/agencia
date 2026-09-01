@@ -455,6 +455,8 @@
 .work-landing__edition-data > div:last-child { border-right: 0; }
 .work-landing__edition-data span { color: #72d5da; font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
 .work-landing__edition-data strong { font-size: 15px; line-height: 1.35; }
+.work-landing__edition-organizer-brand { display: grid; gap: 10px; color: var(--white) !important; letter-spacing: normal !important; text-transform: none !important; }
+.work-landing__edition-organizer-brand img { display: block; width: auto; max-width: 180px; height: 34px; object-fit: contain; object-position: left center; }
 .work-landing__edition-note { max-width: 760px; margin: 0; color: rgba(255,255,255,.76); font-size: 16px; line-height: 1.6; }
 
 .work-landing__cta .work-landing__eyebrow { color: #72d5da; }

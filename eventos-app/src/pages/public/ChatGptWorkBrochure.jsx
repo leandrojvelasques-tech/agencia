@@ -165,7 +165,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
             <div className="work-landing__edition-time"><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
             <div className="work-landing__edition-location"><span>Lugar</span><strong>{event.location}</strong></div>
-            {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><strong>{event.organizer}</strong></div>}
+            {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
           </div>
           <p className="work-landing__edition-note">Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa.</p>
         </section>
