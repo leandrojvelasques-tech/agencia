@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
   { to: '/admin/reportes-clientes', icon: 'insights', label: 'Reportes de clientes' },
   { to: '/admin/pedidos-cambios', icon: 'assignment_turned_in', label: 'Pedidos de cambios' },
+  { to: '/admin/reportes-pedidos', icon: 'summarize', label: 'Reporte de pedidos' },
   { to: '/admin/configuracion', icon: 'settings', label: 'Configuración' },
 ]
 

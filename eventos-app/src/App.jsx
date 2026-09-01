@@ -51,6 +51,7 @@ import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
 import ChangeRequestsDashboard from './pages/admin/ChangeRequestsDashboard'
 import ChangeRequestCreate from './pages/admin/ChangeRequestCreate'
 import ChangeRequestDetail from './pages/admin/ChangeRequestDetail'
+import ChangeRequestReports from './pages/admin/ChangeRequestReports'
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useStore(s => s.isAuthenticated)
@@ -119,6 +120,7 @@ export default function App() {
           <Route path="pedidos-cambios" element={<ChangeRequestsDashboard />} />
           <Route path="pedidos-cambios/nueva" element={<ChangeRequestCreate />} />
           <Route path="pedidos-cambios/:id" element={<ChangeRequestDetail />} />
+          <Route path="reportes-pedidos" element={<ChangeRequestReports />} />
 
           {/* Presupuestos (Back Office) */}
           <Route path="presupuestos" element={<CrmProposalsDashboard />} />
