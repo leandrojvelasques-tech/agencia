@@ -129,10 +129,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
   const dates = event?.offered_dates?.length ? event.offered_dates : (event?.event_date ? [event.event_date] : [])
   const editionDates = dates.map(formatEditionDate)
   const faqItems = isEventEdition
-    ? genericFaqItems.map(([question, answer]) => {
+    ? genericFaqItems.filter(([question]) => ![
+      '¿Las jornadas quedarán grabadas?',
+      '¿Qué pasa si no puedo participar de una de las jornadas en vivo?',
+    ].includes(question)).map(([question, answer]) => {
       if (question === '¿Necesito instalar algo antes?') return [question, 'Necesitás una computadora con conexión estable a internet y una cuenta de ChatGPT —gratuita o Plus—. Para aprovechar mejor la parte práctica, recomendamos asistir con notebook o PC.']
-      if (question === '¿Las jornadas quedarán grabadas?') return [question, 'Sí. Las jornadas serán grabadas y el material se compartirá con las personas inscriptas.']
-      if (question === '¿Qué pasa si no puedo participar de una de las jornadas en vivo?') return [question, 'Vas a poder acceder a la grabación. De todos modos, la segunda jornada tiene una dinámica práctica, por lo que recomendamos asistir presencialmente para aprovechar el acompañamiento y el intercambio.']
       return [question, answer]
     })
     : genericFaqItems
@@ -144,12 +145,14 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
-          <div className="work-landing__hero-mode" aria-label={isEventEdition ? 'Modalidad presencial' : 'Modalidad online por Zoom'}>
-            <span className="work-landing__hero-mode-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
-            </span>
-            <span><small>{isEventEdition ? 'Modalidad' : 'Modalidad online'}</small><strong>{isEventEdition ? 'Presencial' : 'Por Zoom'}</strong></span>
-          </div>
+          {!isEventEdition && (
+            <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
+              <span className="work-landing__hero-mode-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
+              </span>
+              <span><small>Modalidad online</small><strong>Por Zoom</strong></span>
+            </div>
+          )}
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
           <a className="work-landing__hero-register-cta" href={registrationUrl}>Inscribirme</a>
         </figure>
@@ -158,14 +161,13 @@ export default function ChatGptWorkBrochure({ event = null }) {
       {isEventEdition && (
         <section className="work-landing__edition" aria-label="Datos de esta edición">
           <p className="work-landing__eyebrow">EDICIÓN PRESENCIAL · COMODORO RIVADAVIA</p>
-          <h1>{event.title}</h1>
           <div className="work-landing__edition-data">
-            <div><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
-            <div><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
-            <div><span>Lugar</span><strong>{event.location}</strong></div>
+            <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
+            <div className="work-landing__edition-time"><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
+            <div className="work-landing__edition-location"><span>Lugar</span><strong>{event.location}</strong></div>
+            {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><strong>{event.organizer}</strong></div>}
           </div>
-          <p className="work-landing__edition-note">Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa. Las jornadas serán grabadas.</p>
-          <a className="work-landing__button" href={registrationUrl}>Inscribirme sin cargo</a>
+          <p className="work-landing__edition-note">Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa.</p>
         </section>
       )}
 
