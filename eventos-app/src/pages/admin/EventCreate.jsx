@@ -700,6 +700,9 @@ export default function EventCreate() {
     const data = { 
       ...eventData, 
       event_date: firstDate,
+      // client_id es UUID nullable: el selector vacío debe persistirse como null,
+      // nunca como la cadena vacía que PostgreSQL no puede convertir a uuid.
+      client_id: eventData.client_id || null,
       status: existingEvent?.status || form.status || 'draft',
       max_capacity_presencial: (eventData.max_capacity_presencial || eventData.max_capacity_presencial === 0 || eventData.max_capacity_presencial === '0') ? Number(eventData.max_capacity_presencial) : null,
       max_capacity_virtual: (eventData.max_capacity_virtual || eventData.max_capacity_virtual === 0 || eventData.max_capacity_virtual === '0') ? Number(eventData.max_capacity_virtual) : null
