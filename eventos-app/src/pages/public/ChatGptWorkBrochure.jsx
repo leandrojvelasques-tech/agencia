@@ -145,6 +145,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
+          <span className="work-landing__hero-duration" aria-label="4 horas de duración estimada">4 h</span>
           {!isEventEdition && (
             <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
