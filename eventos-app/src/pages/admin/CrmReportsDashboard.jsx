@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const GOOGLE_CATEGORY = 'Reportes mensuales de encuestas de Google'
+const SOCIAL_CATEGORY = 'Reportes mensuales de redes sociales'
+
 function answerLabel(report) {
   if (report.answered == null) return 'Pendiente de verificación'
   return `${report.answered}/${report.reviews} contestadas`
@@ -38,6 +41,16 @@ export default function CrmReportsDashboard() {
     (clientFilter === 'Todos los clientes' || report.client === clientFilter) &&
     (periodFilter === 'Todos los períodos' || report.period === periodFilter)
   )), [clientFilter, periodFilter, reports])
+
+  const groupedReports = useMemo(() => {
+    const groups = new Map()
+    filteredReports.forEach(report => {
+      const category = report.category || GOOGLE_CATEGORY
+      if (!groups.has(category)) groups.set(category, [])
+      groups.get(category).push(report)
+    })
+    return [...groups.entries()].map(([category, categoryReports]) => ({ category, reports: categoryReports }))
+  }, [filteredReports])
 
   const getPrivateLink = async report => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -83,7 +96,7 @@ export default function CrmReportsDashboard() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-deep-green)]/60 mb-2">CRM · Clientes</p>
           <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Reportes de clientes</h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium mt-2 max-w-2xl">
-            Consultá la evolución mensual de las opiniones, compartí cada reporte y mantené separados los resultados de cada marca.
+            Consultá la evolución mensual de cada cliente, compartí cada reporte y mantené separados los resultados por marca y tipo de gestión.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-[var(--color-dark-gray)]/55">
@@ -113,8 +126,17 @@ export default function CrmReportsDashboard() {
 
       {loading ? (
         <div className="py-16 text-center text-sm font-semibold text-[var(--color-dark-gray)]/55">Cargando reportes privados…</div>
-      ) : <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        {filteredReports.map(report => (
+      ) : <div className="space-y-10">
+        {groupedReports.map(group => <section key={group.category} aria-labelledby={`report-category-${group.category}`}>
+          <div className="flex items-end justify-between gap-4 mb-4 border-b border-[var(--color-deep-green)]/10 pb-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--color-deep-green)]/55">Categoría</p>
+              <h2 id={`report-category-${group.category}`} className="text-xl font-extrabold text-[var(--color-deep-green)] mt-1">{group.category}</h2>
+            </div>
+            <span className="text-xs font-bold text-[var(--color-dark-gray)]/45">{group.reports.length} {group.reports.length === 1 ? 'reporte' : 'reportes'}</span>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        {group.reports.map(report => (
           <article key={report.id} className="bg-white rounded-2xl border border-[var(--color-deep-green)]/8 shadow-sm overflow-hidden">
             <div className="h-2" style={{ backgroundColor: report.accent }} />
             <div className="p-6">
@@ -128,7 +150,26 @@ export default function CrmReportsDashboard() {
 
               <p className="text-sm text-[var(--color-dark-gray)]/65 leading-relaxed mb-5">{report.summary}</p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              {report.category === SOCIAL_CATEGORY ? <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Interacciones</p>
+                  <p className="text-xl font-extrabold mt-1">{report.totalInteractions?.toLocaleString('es-AR') || '—'}</p>
+                </div>
+                <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Seguidores netos</p>
+                  <p className="text-xl font-extrabold mt-1">+{report.netFollowers ?? '—'}</p>
+                </div>
+                <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Facebook</p>
+                  <p className="text-xl font-extrabold mt-1">{report.facebookInteractions?.toLocaleString('es-AR') || '—'}</p>
+                  <p className="text-[10px] text-[var(--color-dark-gray)]/45 mt-1">interacciones</p>
+                </div>
+                <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Instagram</p>
+                  <p className="text-xl font-extrabold mt-1">{report.instagramInteractions?.toLocaleString('es-AR') || '—'}</p>
+                  <p className="text-[10px] text-[var(--color-dark-gray)]/45 mt-1">interacciones</p>
+                </div>
+              </div> : <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                 <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Opiniones</p>
                   <p className="text-xl font-extrabold mt-1">{report.reviews}</p>
@@ -145,7 +186,7 @@ export default function CrmReportsDashboard() {
                   <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Respuestas</p>
                   <p className="text-sm font-extrabold mt-2 leading-tight">{answerLabel(report)}</p>
                 </div>
-              </div>
+              </div>}
 
               <div className="flex flex-wrap gap-3">
                 <button type="button" onClick={() => openPrivateReport(report)} className="btn-primary inline-flex items-center gap-2">
@@ -158,6 +199,8 @@ export default function CrmReportsDashboard() {
             </div>
           </article>
         ))}
+          </div>
+        </section>)}
       </div>}
 
       {!loading && filteredReports.length === 0 && (

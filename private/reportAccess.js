@@ -5,24 +5,25 @@ const ACCESS = [
     client: 'Puerto Cangrejo',
     token: 'w7Vsl43hdw4UGsq8bMcJIsJto08-ER_CgifP5bISUk0',
     reports: [
-      { id: 'puerto-cangrejo-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'puerto-cangrejo-julio-2026.html', score: 4.91, historicalScore: 4.43, reviews: 22, answered: null, positiveRate: 100, accent: '#a80d13', summary: 'Julio registra un volumen alto de opiniones y mantiene una calificación muy por encima del promedio histórico.' },
-      { id: 'puerto-cangrejo-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'puerto-cangrejo-agosto-2026.html', score: 4.69, historicalScore: 4.43, reviews: 16, answered: null, positiveRate: 93.8, accent: '#a80d13', summary: 'Agosto registra 16 opiniones y mantiene un promedio de 4,69; el volumen se sostiene y queda un punto de atención sobre la música del salón.' },
+      { id: 'puerto-cangrejo-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'puerto-cangrejo-julio-2026.html', score: 4.91, historicalScore: 4.43, reviews: 22, answered: null, positiveRate: 100, accent: '#a80d13', category: 'Reportes mensuales de encuestas de Google', summary: 'Julio registra un volumen alto de opiniones y mantiene una calificación muy por encima del promedio histórico.' },
+      { id: 'puerto-cangrejo-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'puerto-cangrejo-agosto-2026.html', score: 4.69, historicalScore: 4.43, reviews: 16, answered: null, positiveRate: 93.8, accent: '#a80d13', category: 'Reportes mensuales de encuestas de Google', summary: 'Agosto registra 16 opiniones y mantiene un promedio de 4,69; el volumen se sostiene y queda un punto de atención sobre la música del salón.' },
     ],
   },
   {
     client: 'Cayo Coco',
     token: 'l-BLoZq2fo2Gn1JXy5pebtrGNj8H-cVrfDXJ9Nw0Hls',
     reports: [
-      { id: 'cayo-coco-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'cayo-coco-julio-2026.html', score: 4.29, historicalScore: 4.14, reviews: 14, answered: null, positiveRate: 85.7, accent: '#285a47', summary: 'Julio se mantiene por encima del promedio histórico y concentra respuestas positivas.' },
-      { id: 'cayo-coco-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'cayo-coco-agosto-2026.html', score: 4.86, historicalScore: 4.14, reviews: 22, answered: null, positiveRate: 100, accent: '#285a47', summary: 'Agosto registra el mayor volumen del año disponible y un promedio de 4,86, por encima del promedio histórico.' },
+      { id: 'cayo-coco-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'cayo-coco-julio-2026.html', score: 4.29, historicalScore: 4.14, reviews: 14, answered: null, positiveRate: 85.7, accent: '#285a47', category: 'Reportes mensuales de encuestas de Google', summary: 'Julio se mantiene por encima del promedio histórico y concentra respuestas positivas.' },
+      { id: 'cayo-coco-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'cayo-coco-agosto-2026.html', score: 4.86, historicalScore: 4.14, reviews: 22, answered: null, positiveRate: 100, accent: '#285a47', category: 'Reportes mensuales de encuestas de Google', summary: 'Agosto registra el mayor volumen del año disponible y un promedio de 4,86, por encima del promedio histórico.' },
+      { id: 'cayo-coco-redes-sociales-agosto-2026', label: 'Agosto 2026 · Redes sociales', period: 'Agosto 2026', file: 'cayo-coco-redes-sociales-agosto-2026.html', category: 'Reportes mensuales de redes sociales', type: 'social-media', totalInteractions: 1442, netFollowers: 215, facebookInteractions: 706, instagramInteractions: 736, accent: '#ffcb05', summary: 'Agosto concentró 1.442 interacciones con el contenido y sumó 215 seguidores netos entre Facebook e Instagram.' },
     ],
   },
   {
     client: 'Consultora Jubilarse',
     token: 'Rk_1BQYee0oZwvzTYpSYMG0Khmx6KNEUFPeExlSnFG4',
     reports: [
-      { id: 'consultora-jubilarse-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'consultora-jubilarse-julio-2026.html', score: 5, historicalScore: null, reviews: 8, answered: null, positiveRate: 100, accent: '#013388', summary: 'Julio reúne ocho opiniones de 5 estrellas; las seis más recientes quedan reservadas para la comparación de agosto.' },
-      { id: 'consultora-jubilarse-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'consultora-jubilarse-agosto-2026.html', score: 5, historicalScore: 5, reviews: 6, answered: null, positiveRate: 100, accent: '#013388', summary: 'Agosto incorpora 6 opiniones, todas de 5 estrellas; el promedio visible se mantiene en 5,0.' },
+      { id: 'consultora-jubilarse-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'consultora-jubilarse-julio-2026.html', score: 5, historicalScore: null, reviews: 8, answered: null, positiveRate: 100, accent: '#013388', category: 'Reportes mensuales de encuestas de Google', summary: 'Julio reúne ocho opiniones de 5 estrellas; las seis más recientes quedan reservadas para la comparación de agosto.' },
+      { id: 'consultora-jubilarse-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'consultora-jubilarse-agosto-2026.html', score: 5, historicalScore: 5, reviews: 6, answered: null, positiveRate: 100, accent: '#013388', category: 'Reportes mensuales de encuestas de Google', summary: 'Agosto incorpora 6 opiniones, todas de 5 estrellas; el promedio visible se mantiene en 5,0.' },
     ],
   },
 ]
