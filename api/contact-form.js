@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
     const response = await safeFetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: { 'api-key': brevoApiKey },
-      body: { sender: { name: 'Sitio web · Leandro Velasques', email: 'info@leandrovelasques.com.ar' }, to: [{ email: 'info@leandrovelasques.com.ar', name: 'Leandro Velasques' }], replyTo: { email, name }, subject, htmlContent }
+      body: { sender: { name: 'Sitio web · Leandro Velasques', email: 'info@leandrovelasques.com.ar' }, to: [{ email: 'info@leandrovelasques.com.ar', name: 'Leandro Velasques' }, { email: 'leandrojvelasques@gmail.com', name: 'Leandro Velasques' }], replyTo: { email, name }, subject, htmlContent }
     });
     if (response.status < 200 || response.status >= 300) {
       console.error('Brevo contact form error:', response.status, response.data && response.data.message);
