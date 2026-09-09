@@ -727,3 +727,4 @@ section[id]{scroll-margin-top:115px}
 .solution-watermark.image-watermark .watermark-pair img{width:112px;height:112px;border-radius:18px}
 .solution-card.automation .solution-watermark.image-watermark{opacity:.13}
 @media(max-width:620px){.solution-watermark.image-watermark{transform:translateY(14px)}.solution-watermark.image-watermark img{width:120px;height:120px;border-radius:20px}.solution-watermark.image-watermark .watermark-pair{gap:5px}.solution-watermark.image-watermark .watermark-pair img{width:86px;height:86px;border-radius:14px}}
+ .form-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}

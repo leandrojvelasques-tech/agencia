@@ -12,6 +12,7 @@ const apiHandlers = {
   'brevo-test': require('./api/brevo-test'),
   'event-meta': require('./api/event-meta'),
   'send-email': require('./api/send-email'),
+  'contact-form': require('./api/contact-form'),
   'send-change-request': require('./api/send-change-request'),
   'send-minuta': require('./api/send-minuta'),
   'send-proposal': require('./api/send-proposal'),
