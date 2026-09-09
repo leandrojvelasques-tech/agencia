@@ -120,7 +120,7 @@ export default function ChangeRequestsDashboard() {
     }
   }
 
-  return <div className="max-w-7xl mx-auto">
+  return <div className="change-requests-dashboard max-w-7xl mx-auto">
     {toast && <div className={`fixed z-50 top-4 right-4 rounded-xl px-5 py-3 text-sm font-bold shadow-lg ${toast.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-800'}`}>{toast.text}</div>}
     <div className="flex flex-col lg:flex-row gap-5 justify-between items-start mb-8"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[var(--color-deep-green)]/55">Seguimiento operativo</p><h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Solicitudes de cambio</h1><p className="text-sm text-[var(--color-dark-gray)]/60 mt-1">Centralizá los pedidos de sitios y plataformas, desde el ingreso hasta su facturación.</p></div><div className="flex flex-wrap gap-3 items-center"><Link to="/admin/pedidos-cambios/nueva" className="btn-primary"><span className="material-symbols-outlined text-lg">add</span>Nueva solicitud</Link><Stat label="Total" value={requests.length} /><Stat label="A facturar" value={billable.length} accent /></div></div>
     <div className="grid xl:grid-cols-[minmax(0,1fr)_360px] gap-7 items-start">

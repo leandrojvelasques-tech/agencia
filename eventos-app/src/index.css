@@ -166,6 +166,12 @@ h1, h2, h3, h4, h5, h6 {
 .change-request-form > .card > :not(:first-child) {
   margin-top: 20px;
 }
+.change-requests-dashboard > .grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.change-requests-dashboard > .grid > aside {
+  display: none;
+}
 @media (min-width: 768px) {
   .change-request-form > .card {
     padding: 28px;
