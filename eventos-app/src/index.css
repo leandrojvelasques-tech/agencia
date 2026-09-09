@@ -160,6 +160,17 @@ h1, h2, h3, h4, h5, h6 {
 .card:hover {
   box-shadow: var(--shadow-card-hover);
 }
+.change-request-form > .card {
+  padding: 20px;
+}
+.change-request-form > .card > :not(:first-child) {
+  margin-top: 20px;
+}
+@media (min-width: 768px) {
+  .change-request-form > .card {
+    padding: 28px;
+  }
+}
 .card-interactive:hover {
   transform: translateY(-2px);
 }
