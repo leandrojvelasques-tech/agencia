@@ -24,7 +24,7 @@ const ensureAbsoluteUrl = (url) => {
 export default function EventDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getEventById, getEventStats, updateEvent, publishEvent, deleteEvent, isLoading, registrations, fetchEventData } = useStore()
+  const { getEventById, getEventStats, updateEvent, publishEvent, deleteEvent, duplicateEvent, isLoading, registrations, fetchEventData } = useStore()
   const [event, setEvent] = useState(null)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -40,6 +40,7 @@ export default function EventDetail() {
   const [previewHtml, setPreviewHtml] = useState('')
   const [testingBroadcast, setTestingBroadcast] = useState(false)
   const [sendingSatisfaction, setSendingSatisfaction] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
 
   const handleSendSatisfactionSurvey = async () => {
     const confirmSend = window.confirm(
@@ -231,6 +232,21 @@ export default function EventDetail() {
     }
   }
 
+  const handleDuplicate = async () => {
+    if (!window.confirm('Se creará un nuevo evento en borrador, sin inscriptos ni asistencia. ¿Querés continuar?')) return
+
+    setDuplicating(true)
+    try {
+      const result = await duplicateEvent(event.id)
+      if (!result.success) throw new Error(result.error?.message || 'No se pudo duplicar el evento')
+      navigate(`/admin/eventos/${result.data.id}/editar`)
+    } catch (error) {
+      alert(`No se pudo duplicar el evento: ${error.message}`)
+    } finally {
+      setDuplicating(false)
+    }
+  }
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
   }
@@ -407,6 +423,17 @@ export default function EventDetail() {
             <span className="material-symbols-outlined text-lg">edit</span>
             <span className="hidden sm:inline">Editar</span>
           </Link>
+          <button
+            onClick={handleDuplicate}
+            disabled={duplicating}
+            className="btn-ghost !text-[var(--color-deep-green)] hover:!bg-[var(--color-light-green)]/15 disabled:opacity-50"
+            title="Crear una copia editable de este evento"
+          >
+            <span className={`material-symbols-outlined text-lg ${duplicating ? 'animate-spin' : ''}`}>
+              {duplicating ? 'sync' : 'content_copy'}
+            </span>
+            <span className="hidden sm:inline">{duplicating ? 'Duplicando...' : 'Duplicar evento'}</span>
+          </button>
           <button onClick={handleDelete} className="btn-ghost text-red-500 hover:!bg-red-50">
             <span className="material-symbols-outlined text-lg">delete</span>
           </button>

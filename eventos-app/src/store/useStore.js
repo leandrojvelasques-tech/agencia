@@ -142,6 +142,47 @@ export const useStore = create((set, get) => ({
     return { success: false, error }
   },
 
+  duplicateEvent: async (id) => {
+    const source = await get().getEventById(id)
+    if (!source) {
+      return { success: false, error: new Error('No se encontró el evento original') }
+    }
+
+    // La copia es un borrador independiente: no hereda enlaces ni estado
+    // operativo del evento original. Las inscripciones y asistencias tampoco
+    // se copian porque pertenecen exclusivamente al registro original.
+    const eventData = { ...source }
+    const eventMaterials = eventData.event_materials || []
+    ;['event_materials', 'id', 'created_at', 'updated_at', 'slug', 'status', 'private_link_token', 'attendance_link_token']
+      .forEach(field => delete eventData[field])
+
+    const result = await get().createEvent({
+      ...eventData,
+      title: `${source.title} (copia)`,
+      status: 'draft',
+      is_public: false,
+      show_on_home: false,
+      registrations_open: false,
+      private_link_token: null,
+      attendance_link_token: null,
+    })
+
+    if (!result.success) return result
+
+    const materials = eventMaterials.map(material => {
+      const cleanMaterial = { ...material }
+      ;['id', 'event_id', 'created_at'].forEach(field => delete cleanMaterial[field])
+      return cleanMaterial
+    })
+    const materialsResult = await get().saveMaterials(result.data.id, materials)
+    if (materialsResult?.error) {
+      console.error('Supabase Error duplicando materiales del evento:', materialsResult.error)
+      return { success: false, error: materialsResult.error }
+    }
+
+    return { success: true, data: result.data }
+  },
+
   updateEvent: async (id, data) => {
     const { data: updated, error } = await supabase
       .from('events')
