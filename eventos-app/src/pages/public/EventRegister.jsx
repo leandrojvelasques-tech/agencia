@@ -5,6 +5,13 @@ import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
+const formatEventDate = (dateStr) => {
+  const parts = dateStr.split('-')
+  const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+  const formatted = format(date, "EEEE d 'de' MMMM", { locale: es })
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
+
 export default function EventRegister() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -126,7 +133,7 @@ export default function EventRegister() {
         setRegs(regsData || [])
         
         const dates = data.offered_dates && data.offered_dates.length > 0 ? data.offered_dates : [data.event_date]
-        setForm(p => ({ ...p, selected_date: dates[0] }))
+        setForm(p => ({ ...p, selected_date: dates.join(',') }))
       }
       setLoadingEvent(false)
     }
@@ -137,24 +144,29 @@ export default function EventRegister() {
   const hasVirtual = event && event.max_capacity_virtual !== 0 && event.max_capacity_virtual !== '0' && event.max_capacity_virtual !== 0.0
   const isCompanyRegistration = event?.registration_variant === 'company'
 
+  const availableDates = event && event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : (event ? [event.event_date] : [])
+  const isMultiDayEvent = availableDates.length > 1
+
   const isDatePresencialFull = (date) => {
     if (!hasPresencial) return true;
     if (!event || event.max_capacity_presencial === null || event.max_capacity_presencial === undefined || event.max_capacity_presencial === '') return false;
-    const count = regs.filter(r => r.attendance_mode === 'presencial' && (r.selected_date === date || (!r.selected_date && date === event.event_date))).length;
+    const count = regs.filter(r => r.attendance_mode === 'presencial' && (
+      isMultiDayEvent || r.selected_date === date || (!r.selected_date && date === event.event_date)
+    )).length;
     return count >= Number(event.max_capacity_presencial);
   }
 
   const isDateVirtualFull = (date) => {
     if (!hasVirtual) return true;
     if (!event || event.max_capacity_virtual === null || event.max_capacity_virtual === undefined || event.max_capacity_virtual === '') return false;
-    const count = regs.filter(r => r.attendance_mode === 'virtual' && (r.selected_date === date || (!r.selected_date && date === event.event_date))).length;
+    const count = regs.filter(r => r.attendance_mode === 'virtual' && (
+      isMultiDayEvent || r.selected_date === date || (!r.selected_date && date === event.event_date)
+    )).length;
     return count >= Number(event.max_capacity_virtual);
   }
 
   const isPresencialFull = isDatePresencialFull(form.selected_date)
   const isVirtualFull = isDateVirtualFull(form.selected_date)
-
-  const availableDates = event && event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : (event ? [event.event_date] : [])
 
   // Set default attendance mode based on availability and configured modalities
   useEffect(() => {
@@ -530,40 +542,11 @@ export default function EventRegister() {
 
           {/* Date Selector */}
           {availableDates.length > 1 && (
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Día de asistencia *</label>
-              <div className="grid grid-cols-1 gap-2.5">
-                {availableDates.map(dateStr => {
-                  const parts = dateStr.split('-');
-                  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-                  const formatted = format(d, "EEEE d 'de' MMMM", { locale: es });
-                  const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-                  
-                  const pFull = isDatePresencialFull(dateStr);
-                  const vFull = isDateVirtualFull(dateStr);
-                  const isFullyBooked = pFull && vFull; // Both modalities full
-                  const isCurrentModeFull = form.attendance_mode === 'presencial' ? pFull : vFull;
-                  
-                  return (
-                    <button
-                      key={dateStr}
-                      type="button"
-                      disabled={isFullyBooked}
-                      onClick={() => setForm(p => ({ ...p, selected_date: dateStr }))}
-                      className={`p-3.5 rounded-[var(--radius-premium)] text-left border-2 transition-all flex justify-between items-center ${
-                        form.selected_date === dateStr
-                          ? 'border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 text-[var(--color-deep-green)] font-bold'
-                          : 'border-[var(--color-deep-green)]/10 text-[var(--color-dark-gray)]'
-                      } ${isFullyBooked ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-200' : 'cursor-pointer hover:border-[var(--color-deep-green)]/30'}`}
-                    >
-                      <span className="text-sm font-semibold">{capitalized}</span>
-                      <span className="text-xs opacity-75 font-medium">
-                        {isFullyBooked ? '🚫 Cupos agotados' : (isCurrentModeFull ? `🚫 Cupo agotado (${form.attendance_mode === 'presencial' ? '🏫' : '💻'})` : '✅ Disponible')}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="rounded-[var(--radius-premium)] border-2 border-[var(--color-deep-green)] bg-[var(--color-deep-green)]/5 p-4">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Días de asistencia</label>
+              <p className="text-sm font-bold text-[var(--color-deep-green)]">Inscripción para las dos jornadas</p>
+              <p className="text-xs text-[var(--color-dark-gray)]/65 mt-1">{availableDates.map(formatEventDate).join(' y ')}</p>
+              <p className="text-xs text-[var(--color-dark-gray)]/55 mt-2">La inscripción comprende el evento completo; no hace falta seleccionar cada día por separado.</p>
             </div>
           )}
 

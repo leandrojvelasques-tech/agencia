@@ -4,6 +4,14 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
+const formatRegistrationDates = (selectedDate, event) => {
+  const dates = selectedDate
+    ? selectedDate.split(',').filter(Boolean)
+    : (event.offered_dates?.length ? event.offered_dates : [event.event_date])
+
+  return dates.map(dateStr => format(new Date(`${dateStr}T12:00:00`), "EEEE d 'de' MMMM, yyyy", { locale: es })).join(' y ')
+}
+
 export default function EventConfirmation() {
   const { slug } = useParams()
   const location = useLocation()
@@ -44,10 +52,7 @@ export default function EventConfirmation() {
               <div className="flex items-center gap-3 text-sm">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">calendar_today</span>
                 <span className="font-medium">
-                  {(() => {
-                    const displayDateStr = location.state?.selectedDate || event.event_date;
-                    return format(new Date(displayDateStr + 'T12:00:00'), "EEEE d 'de' MMMM, yyyy", { locale: es });
-                  })()}
+                  {formatRegistrationDates(location.state?.selectedDate, event)}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">

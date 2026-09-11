@@ -352,6 +352,7 @@
 .work-landing__block-top small { color: #69737a; font-size: 10px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
 .work-landing__block-type { margin: 0 0 8px; color: var(--brand); font-size: 10px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
 .work-landing__block h3 { font-size: 27px; line-height: 1.12; letter-spacing: -.03em; }
+.work-landing__block-subtitle { margin: 14px 0 0; color: #59636a; font-size: 13px; line-height: 1.5; }
 .work-landing__block ul { display: grid; gap: 9px; margin: 24px 0; padding: 0; list-style: none; }
 .work-landing__block li { padding-top: 9px; border-top: 1px solid rgba(16,22,27,.1); color: #3f474c; font-size: 13px; font-weight: 700; line-height: 1.4; }
 .work-landing__block li::before { content: "—"; padding-right: 7px; color: var(--signal); }

@@ -18,6 +18,21 @@ const formatTimeRange = (startTime, durationMinutes) => {
   return `${startTime.slice(0, 5)} a ${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')} hs`
 }
 
+const eventAgendaBlocks = (event, classIndex, fallbackBlocks, type) => {
+  const blocks = event?.agenda?.[classIndex]?.blocks
+  if (!Array.isArray(blocks) || blocks.length === 0) return fallbackBlocks
+
+  return blocks.map((block, index) => ({
+    number: String(classIndex * 2 + index + 1).padStart(2, '0'),
+    title: block.title || `Bloque ${index + 1}`,
+    subtitle: block.subtitle || '',
+    type,
+    items: [],
+    practice: block.description || '',
+    practiceLabel: 'Descripción',
+  }))
+}
+
 const dayOneBlocks = [
   {
     number: '01',
@@ -117,8 +132,9 @@ function ProgramBlock({ block }) {
       </div>
       <p className="work-landing__block-type">{block.type}</p>
       <h3>{block.title}</h3>
-      <ul>{block.items.map((item) => <li key={item}>{item}</li>)}</ul>
-      <p className="work-landing__practice"><strong>En acción:</strong> {block.practice}</p>
+      {block.subtitle && <p className="work-landing__block-subtitle">{block.subtitle}</p>}
+      {block.items.length > 0 && <ul>{block.items.map((item) => <li key={item}>{item}</li>)}</ul>}
+      {block.practice && <p className="work-landing__practice"><strong>{block.practiceLabel || 'En acción'}:</strong> {block.practice}</p>}
     </article>
   )
 }
@@ -128,6 +144,22 @@ export default function ChatGptWorkBrochure({ event = null }) {
   const registrationUrl = event ? `/evento/${event.slug}/inscripcion` : '/brochure/chatgpt-work/inscripcion'
   const dates = event?.offered_dates?.length ? event.offered_dates : (event?.event_date ? [event.event_date] : [])
   const editionDates = dates.map(formatEditionDate)
+  const hasTwoDayAgenda = Array.isArray(event?.agenda) && event.agenda.length >= 2 && event.agenda.slice(0, 2).every(day => Array.isArray(day.blocks) && day.blocks.length > 0)
+  const hasVirtualCapacity = event && (
+    event.max_capacity_virtual === null ||
+    event.max_capacity_virtual === undefined ||
+    event.max_capacity_virtual === '' ||
+    Number(event.max_capacity_virtual) > 0
+  )
+  const isVirtualEdition = Boolean(event && (
+    event.registration_mode === 'virtual' ||
+    (Number(event.max_capacity_presencial) === 0 && hasVirtualCapacity)
+  ))
+  const hasCustomPricing = Boolean(event?.prices?.length)
+  const agendaDayOneBlocks = hasTwoDayAgenda ? eventAgendaBlocks(event, 0, dayOneBlocks, 'Demostración en vivo') : dayOneBlocks
+  const agendaDayTwoBlocks = hasTwoDayAgenda ? eventAgendaBlocks(event, 1, dayTwoBlocks, 'Actividad práctica') : dayTwoBlocks
+  const dayOneTitle = hasTwoDayAgenda ? event.agenda[0].title?.replace(/^Día\s*1\s*·\s*/i, '') : 'Conocer el entorno y verlo en acción'
+  const dayTwoTitle = hasTwoDayAgenda ? event.agenda[1].title?.replace(/^Día\s*2\s*·\s*/i, '') : 'Construir un caso práctico integrador'
   const faqItems = isEventEdition
     ? genericFaqItems.filter(([question]) => ![
       '¿Las jornadas quedarán grabadas?',
@@ -146,7 +178,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
           <span className="work-landing__hero-duration" aria-label="4 horas de duración estimada">4 h</span>
-          {!isEventEdition && (
+          {(!isEventEdition || isVirtualEdition) && (
             <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
@@ -161,14 +193,18 @@ export default function ChatGptWorkBrochure({ event = null }) {
 
       {isEventEdition && (
         <section className="work-landing__edition" aria-label="Datos de esta edición">
-          <p className="work-landing__eyebrow">EDICIÓN PRESENCIAL · COMODORO RIVADAVIA</p>
+          <p className="work-landing__eyebrow">{isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
           <div className="work-landing__edition-data">
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
             <div className="work-landing__edition-time"><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
-            <div className="work-landing__edition-location"><span>Lugar</span><strong>{event.location}</strong></div>
+            <div className="work-landing__edition-location"><span>Lugar</span><strong>{isVirtualEdition ? 'Online' : (event.location || '—')}</strong></div>
             {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
           </div>
-          <p className="work-landing__edition-note">Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa.</p>
+          <p className="work-landing__edition-note">
+            {hasCustomPricing
+              ? 'Inscripción previa. Consultá las modalidades y aranceles en el formulario de inscripción.'
+              : (isVirtualEdition ? 'Actividad online por Zoom, con inscripción previa.' : 'Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa.')}
+          </p>
         </section>
       )}
 
@@ -205,11 +241,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </div>
 
         <section className="work-landing__day">
-          <div className="work-landing__day-title">
-            <span>Jornada 1</span>
-            <div><h3>Conocer el entorno y verlo en acción</h3><p>Un recorrido práctico por la interfaz de ChatGPT Work para reconocer sus funciones principales y ver cómo se aplican en situaciones profesionales.</p></div>
-          </div>
-          <div className="work-landing__blocks">{dayOneBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
+           <div className="work-landing__day-title">
+             <span>Jornada 1</span>
+             <div><h3>{dayOneTitle}</h3><p>Una primera jornada de demostraciones y recorrido guiado por las capacidades de ChatGPT Work, desde la configuración del entorno hasta sus herramientas de ampliación.</p></div>
+           </div>
+           <div className="work-landing__blocks">{agendaDayOneBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
           <div className="work-landing__practice-showcase work-landing__practice-showcase--day-one">
             <figure className="work-landing__practice-photo work-landing__practice-photo--day-one">
               <img src={dayOnePhoto} alt="Participantes siguiendo una demostración práctica en el CPCE Chubut" loading="lazy" />
@@ -224,15 +260,15 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </section>
 
         <section className="work-landing__day work-landing__day--practice">
-          <div className="work-landing__day-title">
-            <span>Jornada 2</span>
-            <div><h3>Construir un caso práctico integrador</h3><p>Desarrollo guiado de un estudio de caso preparado para aplicar en la práctica todos los conocimientos y recorrer, paso a paso, las etapas de configuración y prueba de un entorno agéntico ante una situación profesional concreta.</p></div>
-          </div>
-          <div className="work-landing__blocks">{dayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
+           <div className="work-landing__day-title">
+             <span>Jornada 2</span>
+             <div><h3>{dayTwoTitle}</h3><p>Una jornada práctica para aplicar los recursos trabajados durante el primer día y construir, probar y mejorar una solución sobre un caso profesional concreto.</p></div>
+           </div>
+           <div className="work-landing__blocks">{agendaDayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
           <div className="work-landing__practice-showcase">
             <figure className="work-landing__practice-photo work-landing__practice-photo--day-two">
-              <img src={practicePhoto} alt="Edición presencial de capacitación en el CPCE Chubut" loading="lazy" />
-              <figcaption><span>Del mapa a la práctica</span><strong>Trabajo presencial y colaborativo.</strong></figcaption>
+               <img src={practicePhoto} alt={isVirtualEdition ? 'Participantes trabajando sobre un caso profesional' : 'Edición presencial de capacitación en el CPCE Chubut'} loading="lazy" />
+               <figcaption><span>{isVirtualEdition ? 'De la configuración a la solución' : 'Del mapa a la práctica'}</span><strong>{isVirtualEdition ? 'Trabajo guiado sobre un caso profesional.' : 'Trabajo presencial y colaborativo.'}</strong></figcaption>
             </figure>
             <div className="work-landing__practice-map">
               <div className="work-landing__practice-map-head"><span>Mapa preliminar de la jornada 2</span><strong>Seis pasos para construir, probar y mejorar.</strong></div>
