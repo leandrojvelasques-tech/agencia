@@ -27,6 +27,13 @@ export default function EventRegister() {
   const [showEmailWarning, setShowEmailWarning] = useState(false)
   const [paymentReceiptUrl, setPaymentReceiptUrl] = useState('')
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const [academicDocuments, setAcademicDocuments] = useState({
+    analiticoUrl: '',
+    analiticoName: '',
+    certificadoUrl: '',
+    certificadoName: '',
+  })
+  const [uploadingAcademicDocument, setUploadingAcademicDocument] = useState('')
   const [hasCompanion, setHasCompanion] = useState(false)
   const [secondParticipant, setSecondParticipant] = useState({ first_name: '', last_name: '', email: '', phone: '' })
 
@@ -195,6 +202,39 @@ export default function EventRegister() {
   const cat = getPricingCategory(survey.profesion, survey)
   const isChubutMatriculado = cat === 'matriculado_chubut' || 
     (survey.profesion === 'Profesional de Ciencias Económicas' && survey.esta_matriculado === 'Sí' && survey.consejo === 'Chubut')
+  const isAcademicFreeOption = cat === 'free_student' && Boolean(survey.profesion) && (
+    survey.profesion === 'Estudiante Universitario' ||
+    survey.profesion.toLowerCase().includes('estudiante') ||
+    survey.profesion.toLowerCase().includes('título') ||
+    survey.profesion.toLowerCase().includes('titulo')
+  )
+
+  const handleAcademicDocumentUpload = async (kind, file) => {
+    if (!file) return
+
+    setUploadingAcademicDocument(kind)
+    setError('')
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `academic-documents/${kind}-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, { upsert: true, contentType: file.type })
+
+      if (upErr) throw upErr
+
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName)
+      setAcademicDocuments(previous => ({
+        ...previous,
+        [kind === 'analitico' ? 'analiticoUrl' : 'certificadoUrl']: publicUrl,
+        [kind === 'analitico' ? 'analiticoName' : 'certificadoName']: file.name,
+      }))
+    } catch (err) {
+      setError(`Error al subir el documento: ${err.message || err}`)
+    } finally {
+      setUploadingAcademicDocument('')
+    }
+  }
 
   // Load CPCECh matriculados padron only when selected
   useEffect(() => {
@@ -404,6 +444,10 @@ export default function EventRegister() {
           profesion_estudiante_carrera: survey.profesion_estudiante_carrera || null,
           profesion_estudiante_univ: survey.profesion_estudiante_univ || null,
           profesion_otro: survey.profesion_otro || null,
+          analitico_url: academicDocuments.analiticoUrl || null,
+          analitico_nombre: academicDocuments.analiticoName || null,
+          certificado_alumno_regular_url: academicDocuments.certificadoUrl || null,
+          certificado_alumno_regular_nombre: academicDocuments.certificadoName || null,
           ...survey
         }
 
@@ -961,6 +1005,50 @@ export default function EventRegister() {
                     required
                   />
                 </div>
+              </div>
+            )}
+
+            {isAcademicFreeOption && (
+              <div className="space-y-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 animate-fade-in">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">
+                    Constancias académicas <span className="normal-case text-[var(--color-dark-gray)]/40">(opcional)</span>
+                  </h3>
+                  <p className="text-xs text-[var(--color-dark-gray)]/55 mt-1">
+                    Para acreditar la condición de estudiante avanzado o título en trámite, podés adjuntar el analítico y el certificado de alumno regular. El envío de la inscripción no se bloquea si no adjuntás alguno de los documentos.
+                  </p>
+                </div>
+
+                {[
+                  ['analitico', 'Analítico'],
+                  ['certificado', 'Certificado de alumno regular'],
+                ].map(([kind, label]) => {
+                  const url = kind === 'analitico' ? academicDocuments.analiticoUrl : academicDocuments.certificadoUrl
+                  const name = kind === 'analitico' ? academicDocuments.analiticoName : academicDocuments.certificadoName
+                  return (
+                    <div key={kind} className="flex flex-wrap items-center gap-3">
+                      <input
+                        type="file"
+                        id={`${kind}-academic-document`}
+                        className="hidden"
+                        accept="image/*,application/pdf"
+                        onChange={e => handleAcademicDocumentUpload(kind, e.target.files?.[0])}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById(`${kind}-academic-document`)?.click()}
+                        className="btn-secondary !py-2 !px-3.5 !text-xs flex items-center gap-1.5 cursor-pointer"
+                        disabled={uploadingAcademicDocument === kind}
+                      >
+                        <span className="material-symbols-outlined text-base">cloud_upload</span>
+                        {uploadingAcademicDocument === kind ? 'Subiendo...' : `Adjuntar ${label}`}
+                      </button>
+                      <span className={`text-[11px] font-semibold ${url ? 'text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]/45'}`}>
+                        {url ? `Cargado: ${name}` : 'No adjuntado'}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             )}
 
