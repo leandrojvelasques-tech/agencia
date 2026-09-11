@@ -383,6 +383,8 @@ export const useStore = create((set, get) => ({
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
     const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, ...pData } = participantData
+    // Multi-day registrations represent the complete event; do not persist a comma-separated value as one date.
+    const registrationDate = Array.isArray(event.offered_dates) && event.offered_dates.length > 1 ? null : selected_date
 
     // Check capacity for chosen modality and selected date
     const maxCap = attendance_mode === 'presencial' ? event.max_capacity_presencial : event.max_capacity_virtual;
@@ -394,8 +396,8 @@ export const useStore = create((set, get) => ({
         .eq('attendance_mode', attendance_mode)
         .neq('status', 'cancelled')
       
-      if (selected_date) {
-        query.eq('selected_date', selected_date)
+      if (registrationDate) {
+        query.eq('selected_date', registrationDate)
       }
 
       const { count, error: countErr } = await query
@@ -437,7 +439,7 @@ export const useStore = create((set, get) => ({
         source: 'self_registration',
         status: 'confirmed',
         attendance_mode,
-        selected_date,
+        selected_date: registrationDate,
         survey_responses,
         payment_receipt_url
       }])
