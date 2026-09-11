@@ -13,7 +13,7 @@ select
 <tr>
   <td style="padding:0 36px 28px 36px;">
     <div style="background-color:#F1F7F4; border-left:4px solid #A8D5C1; border-radius:6px; padding:16px 18px;">
-      <p style="margin:0 0 10px 0; color:#4F4C4D; font-size:14px; line-height:1.65;"><strong style="color:#285A47;">Esta inscripción comprende las dos jornadas</strong> del workshop, el jueves 24 y viernes 25 de septiembre de 2026, de 14:00 a 16:30 hs.</p>
+      <p style="margin:0 0 10px 0; color:#4F4C4D; font-size:14px; line-height:1.65;"><strong style="color:#285A47;">Esta inscripción comprende las dos jornadas</strong> del workshop ({{fecha}}), de {{horario}} hs.</p>
       <p style="margin:0 0 10px 0; color:#4F4C4D; font-size:14px; line-height:1.65;">Dentro de las 24 horas previas al evento recibirás el recordatorio y el enlace de Zoom para conectarte.</p>
       <p style="margin:0; color:#4F4C4D; font-size:14px; line-height:1.65;">Por consultas, podés comunicarte con la Delegación Comodoro del Consejo Profesional de Ciencias Económicas del Chubut, de 9:00 a 15:00 hs, por WhatsApp al <strong>+54 9 2974 08-6332</strong> o por correo a <a href="mailto:comodoro@cpcechubut.org.ar" style="color:#285A47; font-weight:700;">comodoro@cpcechubut.org.ar</a>.</p>
     </div>
