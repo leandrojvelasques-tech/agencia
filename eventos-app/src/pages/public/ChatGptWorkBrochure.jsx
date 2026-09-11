@@ -309,7 +309,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
       <section className="work-landing__cta" id="participar">
         <p className="work-landing__eyebrow">{isEventEdition ? 'INSCRIPCIÓN' : 'PRÓXIMAS EDICIONES'}</p>
         <h2>Prepará tu práctica profesional para trabajar con agentes.</h2>
-        <p>{isEventEdition ? 'La actividad es sin cargo y está destinada exclusivamente a matriculados de la Delegación Comodoro. Requiere inscripción previa.' : 'Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.'}</p>
+        <p>{isEventEdition
+          ? (hasCustomPricing
+            ? 'La inscripción comprende las dos jornadas. Matriculados CPCECh: sin costo. Profesionales no matriculados: $ 116.300.-. Título en trámite y estudiantes avanzados de Ciencias Económicas: sin cargo. Requiere inscripción previa.'
+            : 'La actividad es sin cargo y está destinada exclusivamente a matriculados de la Delegación Comodoro. Requiere inscripción previa.')
+          : 'Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.'}</p>
         <a className="work-landing__button work-landing__button--light" href={registrationUrl}>{isEventEdition ? 'Completar inscripción' : 'Inscribirme'}</a>
       </section>
 
