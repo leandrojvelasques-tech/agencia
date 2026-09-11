@@ -5,6 +5,7 @@ const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
 const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
 const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
 const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
+const desktopDownloadUrl = 'https://chatgpt.com/es-419/download/'
 const formatEditionDate = (date) => new Intl.DateTimeFormat('es-AR', {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
 }).format(new Date(`${date}T12:00:00`))
@@ -118,7 +119,7 @@ const genericFaqItems = [
   ['¿Necesito tener ChatGPT Plus?', 'No es obligatorio. Podés participar con una cuenta gratuita o incluso comenzar desde cero. La diferencia es que, durante la jornada práctica, una cuenta Plus permite realizar más pruebas e iteraciones antes de alcanzar los límites de uso de la versión gratuita. De todos modos, quedarte sin crédito en algún momento no impide que participes ni que puedas seguir el desarrollo del caso práctico.'],
   ['Yo uso Claude u otra inteligencia artificial. ¿Me sirve igualmente?', 'Sí. El taller se concentra en ChatGPT Work, pero los conceptos de proyectos, instrucciones, skills, agentes y formas de trabajo se pueden trasladar a otras herramientas, como Claude, Gemini u otras IA que ya uses.'],
   ['¿Cómo será la parte práctica?', 'Durante la segunda jornada vamos a desarrollar un estudio de caso guiado. Vas a configurar un proyecto, definir instrucciones, construir un skill y probar distintas capacidades dentro de un entorno de trabajo agéntico.'],
-  ['¿Necesito instalar algo antes?', 'Solo necesitás una computadora con conexión estable a internet, una cuenta de ChatGPT —gratuita o Plus— y acceso a Zoom. Para aprovechar mejor la práctica, recomendamos usar notebook o PC en lugar de celular.'],
+  ['¿Necesito instalar algo antes?', 'Para el primer día no es necesario tener instalada la aplicación: la jornada será principalmente expositiva. Para aprovechar mejor el segundo día, recomendamos instalar ChatGPT para escritorio con anticipación y evitar perder tiempo en la instalación. Si tenés una cuenta gratuita, podés seguir la demostración del docente, trabajar junto con alguien que tenga ChatGPT Plus o participar con las restricciones propias de tu plan. También necesitás una computadora con conexión estable a internet y acceso a Zoom.'],
   ['¿Las jornadas quedarán grabadas?', 'Sí. La presentación quedará grabada y el video será compartido con las personas inscriptas dentro de las 48 horas posteriores.'],
   ['¿Qué pasa si no puedo participar de una de las jornadas en vivo?', 'Vas a poder acceder a la grabación. De todos modos, la segunda jornada tiene una dinámica práctica, por lo que recomendamos asistir en vivo para aprovechar el acompañamiento y el intercambio.'],
 ]
@@ -136,6 +137,17 @@ function ProgramBlock({ block }) {
       {block.items.length > 0 && <ul>{block.items.map((item) => <li key={item}>{item}</li>)}</ul>}
       {block.practice && <p className="work-landing__practice"><strong>{block.practiceLabel || 'En acción'}:</strong> {block.practice}</p>}
     </article>
+  )
+}
+
+function FaqAnswer({ question, answer }) {
+  return (
+    <p>
+      {answer}
+      {question === '¿Necesito instalar algo antes?' && (
+        <> <a href={desktopDownloadUrl} target="_blank" rel="noreferrer">Descargar ChatGPT para escritorio</a>.</>
+      )}
+    </p>
   )
 }
 
@@ -165,7 +177,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
       '¿Las jornadas quedarán grabadas?',
       '¿Qué pasa si no puedo participar de una de las jornadas en vivo?',
     ].includes(question)).map(([question, answer]) => {
-      if (question === '¿Necesito instalar algo antes?') return [question, 'Necesitás una computadora con conexión estable a internet y una cuenta de ChatGPT —gratuita o Plus—. Para aprovechar mejor la parte práctica, recomendamos asistir con notebook o PC.']
+      if (question === '¿Necesito instalar algo antes?') return [question, 'Para el primer día no es necesario tener instalada la aplicación: la jornada será principalmente expositiva. Para aprovechar mejor el segundo día, recomendamos instalar ChatGPT para escritorio con anticipación y evitar perder tiempo en la instalación. Si tenés una cuenta gratuita, podés seguir la demostración del docente, trabajar junto con alguien que tenga ChatGPT Plus o participar con las restricciones propias de tu plan. También necesitás una computadora con conexión estable a internet y acceso a Zoom.']
       return [question, answer]
     })
     : genericFaqItems
@@ -288,7 +300,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
           {faqItems.map(([question, answer]) => (
             <details key={question}>
               <summary><span>{question}</span><b aria-hidden="true">+</b></summary>
-              <p>{answer}</p>
+              <FaqAnswer question={question} answer={answer} />
             </details>
           ))}
         </div>
