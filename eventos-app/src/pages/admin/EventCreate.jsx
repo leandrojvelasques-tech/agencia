@@ -100,8 +100,9 @@ export default function EventCreate() {
     send_reminder_next_day: false,
     prices: [],
     payment_methods: '',
-    contact_info: '',
-    notification_recipients: [],
+  contact_info: '',
+  welcome_email_template_id: 'welcome',
+  notification_recipients: [],
     satisfaction_questions: DEFAULT_SATISFACTION_QUESTIONS,
     registrations_open: false,
     allow_multiple_registrations: false,
@@ -523,6 +524,7 @@ export default function EventCreate() {
             prices: data.prices || [],
             payment_methods: data.payment_methods || '',
             contact_info: data.contact_info || '',
+            welcome_email_template_id: data.welcome_email_template_id || 'welcome',
             notification_recipients: data.notification_recipients || [],
             satisfaction_questions: data.satisfaction_questions && data.satisfaction_questions.length === 5
               ? data.satisfaction_questions
@@ -2049,9 +2051,9 @@ export default function EventCreate() {
 
             {/* Consultas por Inscripciones */}
             <div className="space-y-4 pt-5 border-t border-[var(--color-deep-green)]/8">
-              <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
-                  Contacto para Consultas por Inscripciones
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                Contacto para Consultas por Inscripciones
                 </label>
                 <p className="text-[10px] text-[var(--color-dark-gray)]/50">
                   Ingresá información de contacto, email o teléfono para que los asistentes puedan enviar sus dudas.
@@ -2064,6 +2066,28 @@ export default function EventCreate() {
                 value={form.contact_info || ''}
                 onChange={e => update('contact_info', e.target.value)}
               />
+            </div>
+
+            <div className="space-y-3 pt-5 border-t border-[var(--color-deep-green)]/8">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">
+                  Plantilla de confirmación por email
+                </label>
+                <p className="text-[10px] text-[var(--color-dark-gray)]/50">
+                  Elegí el mensaje que recibirá la persona al inscribirse en este evento.
+                </p>
+              </div>
+              <select
+                className="form-input text-sm"
+                value={form.welcome_email_template_id || 'welcome'}
+                onChange={e => update('welcome_email_template_id', e.target.value)}
+              >
+                {emailTemplates
+                  .filter(template => template.id === 'welcome' || template.id.startsWith('welcome_'))
+                  .map(template => (
+                    <option key={template.id} value={template.id}>{template.name}</option>
+                  ))}
+              </select>
             </div>
 
             {/* Banner Oficial (1080x1350) Upload */}
