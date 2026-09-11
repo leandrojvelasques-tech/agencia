@@ -374,6 +374,22 @@ export default function SettingsDashboard() {
                 >
                   Recordatorio (Día Sig.)
                 </button>
+                {templates
+                  .filter(template => template.id.startsWith('welcome_'))
+                  .map(template => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleTemplateChange(template.id)}
+                      className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        selectedTemplateId === template.id
+                          ? 'bg-[var(--color-deep-green)] text-white shadow-sm'
+                          : 'text-[var(--color-dark-gray)]/65 hover:bg-white/50'
+                      }`}
+                    >
+                      {template.name}
+                    </button>
+                  ))}
               </div>
 
               <form onSubmit={handleSaveTemplate} className="space-y-4">
