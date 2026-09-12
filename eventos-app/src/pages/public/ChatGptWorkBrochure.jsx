@@ -222,7 +222,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <p className="work-landing__edition-note">
             {hasCustomPricing
               ? 'Inscripción previa. Consultá las modalidades y aranceles en el formulario de inscripción.'
-              : (isVirtualEdition ? 'Actividad online por Zoom, con inscripción previa.' : 'Sin cargo para matriculados de la Delegación Comodoro, con inscripción previa.')}
+              : (isVirtualEdition ? 'Actividad online por Zoom, con inscripción previa.' : 'Sin cargo para matriculados del CPCE Chubut, de todas sus delegaciones, con inscripción previa.')}
           </p>
         </section>
       )}
@@ -331,7 +331,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         <p>{isEventEdition
           ? (hasCustomPricing
             ? 'La inscripción comprende las dos jornadas. Matriculados CPCECh: sin costo. Profesionales no matriculados: $ 116.300.-. Título en trámite y estudiantes avanzados de Ciencias Económicas: sin cargo. Requiere inscripción previa.'
-            : 'La actividad es sin cargo y está destinada exclusivamente a matriculados de la Delegación Comodoro. Requiere inscripción previa.')
+            : 'La actividad es sin cargo y está destinada a matriculados del CPCE Chubut de todas sus delegaciones. Requiere inscripción previa.')
           : 'Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.'}</p>
         <a className="work-landing__button work-landing__button--light" href={registrationUrl}>{isEventEdition ? 'Completar inscripción' : 'Inscribirme'}</a>
       </section>

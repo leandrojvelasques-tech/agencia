@@ -350,13 +350,6 @@ export default function EventRegister() {
 
     const cat = getPricingCategory(survey.profesion, survey);
 
-    if (!isCompanyRegistration && event.landing_template === 'chatgpt-work' && (
-      cat !== 'matriculado_chubut' || survey.delegacion !== 'Delegación Comodoro Rivadavia'
-    )) {
-      setError('Esta actividad está destinada exclusivamente a matriculados de la Delegación Comodoro Rivadavia.')
-      return
-    }
-
     if (!isCompanyRegistration && cat === 'matriculado_chubut') {
       if (!survey.delegacion) {
         setError('Debes seleccionar tu delegación de Chubut')
