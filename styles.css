@@ -727,4 +727,42 @@ section[id]{scroll-margin-top:115px}
 .solution-watermark.image-watermark .watermark-pair img{width:112px;height:112px;border-radius:18px}
 .solution-card.automation .solution-watermark.image-watermark{opacity:.13}
 @media(max-width:620px){.solution-watermark.image-watermark{transform:translateY(14px)}.solution-watermark.image-watermark img{width:120px;height:120px;border-radius:20px}.solution-watermark.image-watermark .watermark-pair{gap:5px}.solution-watermark.image-watermark .watermark-pair img{width:86px;height:86px;border-radius:14px}}
+
+/* Home · revisión 25: clientes de marketing digital */
+.client-proof{display:grid;grid-template-columns:minmax(225px,.72fr) minmax(0,2.55fr);align-items:center;gap:38px;margin-top:46px;padding-top:28px;border-top:1px solid #ffffff29}
+.client-proof-heading p{margin:0 0 8px;color:var(--mint);font-size:10px;line-height:1.4;font-weight:700;letter-spacing:.13em}
+.client-proof-heading h3{max-width:260px;color:#fff;font:500 clamp(23px,2.05vw,30px)/1.14 var(--body);letter-spacing:-.045em}
+.client-proof-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.client-card{position:relative;display:flex;min-width:0;height:104px;align-items:center;justify-content:center;padding:13px 17px;overflow:hidden;border:1px solid #ffffff3b;border-radius:10px;background:#f8f9f8;box-shadow:0 12px 24px #211f2024;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.client-card img{width:100%;height:100%;max-height:76px;object-fit:contain;object-position:center}
+.client-card--cayo img{max-width:112px}
+.client-card--cangrejo img{max-width:105px}
+.client-card--jubilarse img{max-width:94px;max-height:78px}
+.client-card--gmp img{max-width:116px;max-height:64px}
+a.client-card:hover{transform:translateY(-3px);border-color:var(--mint);box-shadow:0 16px 28px #211f203d}
+a.client-card:focus-visible{outline:3px solid var(--mint);outline-offset:4px}
+.client-card-mark{position:absolute;top:9px;right:9px;display:grid;width:22px;height:22px;place-items:center;border-radius:50%;background:#edf5f1;color:var(--green)}
+.client-card-mark svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8}
+
+@media(max-width:1100px){
+  .client-proof{grid-template-columns:200px minmax(0,1fr);gap:28px}
+  .client-proof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:860px){
+  .client-proof{grid-template-columns:1fr;gap:22px}
+  .client-proof-heading h3{max-width:none}
+  .client-card{height:100px}
+}
+@media(max-width:620px){
+  .client-proof{margin-top:34px;padding-top:24px}
+  .client-proof-heading h3{max-width:290px;font-size:25px}
+  .client-proof-grid{gap:10px}
+  .client-card{height:92px;padding:12px 13px;border-radius:8px}
+  .client-card--cayo img{max-width:94px}
+  .client-card--cangrejo img{max-width:86px}
+  .client-card--jubilarse img{max-width:80px}
+  .client-card--gmp img{max-width:98px}
+  .client-card-mark{top:7px;right:7px;width:20px;height:20px}
+}
+@media(prefers-reduced-motion:reduce){a.client-card{transition:none}a.client-card:hover{transform:none}}
  .form-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
