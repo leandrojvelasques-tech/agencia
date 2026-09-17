@@ -172,6 +172,12 @@ h1, h2, h3, h4, h5, h6 {
 .change-requests-dashboard > .grid > aside {
   display: none;
 }
+.max-w-5xl > form > aside {
+  display: none;
+}
+.max-w-5xl > form {
+  grid-template-columns: minmax(0, 1fr);
+}
 @media (min-width: 768px) {
   .change-request-form > .card {
     padding: 28px;
