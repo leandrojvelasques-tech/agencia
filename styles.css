@@ -48,3 +48,12 @@
 .marketing-case-page .case-team-support-card figure{aspect-ratio:1/1;height:auto}
 @media(max-width:760px){.marketing-case-page .case-team-support{grid-template-columns:repeat(2,minmax(0,220px))}}
 @media(max-width:620px){.marketing-case-link{grid-template-columns:1fr;gap:0;margin-top:34px}.marketing-case-link-media{min-height:180px}.marketing-case-link-copy{padding:22px}.marketing-case-link-copy h3{font-size:25px}.marketing-case-page .case-team-support{grid-template-columns:1fr}}
+
+/* Marketing case: closing feature below the client proof, with the shared case CTA. */
+.marketing-case-link{max-width:820px;margin-top:42px;grid-template-columns:210px minmax(0,1fr)}
+.marketing-case-link-copy{padding:25px 28px 25px 0}
+.marketing-case-link-copy .implementation-case-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin-top:20px;padding:11px 15px;color:#fff;background:var(--clay);border:0;border-radius:7px;box-shadow:0 9px 18px #b56e5230;font-size:12px;line-height:1.2;transition:background .2s ease,transform .2s ease,box-shadow .2s ease}
+.marketing-case-link-copy .implementation-case-cta b{display:grid;width:20px;height:20px;place-items:center;margin-left:0;color:var(--clay);background:#fff;border-radius:50%;font-size:13px;line-height:1}
+.marketing-case-link-copy .implementation-case-cta:hover,.marketing-case-link-copy .implementation-case-cta:focus-visible{background:#99563f;box-shadow:0 12px 22px #b56e5238;transform:translateY(-1px)}
+@media (max-width:620px){.marketing-case-link{max-width:none;grid-template-columns:1fr;margin-top:34px}.marketing-case-link-copy{padding:22px}.marketing-case-link-copy .implementation-case-cta{margin-top:19px;padding:10px 13px}}
+@media (prefers-reduced-motion:reduce){.marketing-case-link-copy .implementation-case-cta{transition:none}.marketing-case-link-copy .implementation-case-cta:hover,.marketing-case-link-copy .implementation-case-cta:focus-visible{transform:none}}
