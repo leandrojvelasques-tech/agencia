@@ -52,7 +52,7 @@ function setupImplementationCases(){
     const content=cases[index];if(!content)return;
     const description=card.querySelector('.implementation-case-body>p');if(description)description.textContent=content.description;
     card.querySelector('.implementation-tags')?.remove();
-    const cta=card.querySelector('.implementation-case-cta');if(cta&&cta.firstChild)cta.firstChild.textContent='Ver el desarrollo completo ';
+    const cta=card.querySelector('.implementation-case-cta');if(cta&&cta.firstChild)cta.firstChild.textContent='Ver caso ';
     const visual=card.querySelector('.implementation-case-visual');if(visual&&!visual.querySelector('.implementation-handnote'))visual.append(createCaseHandnote(content.note));
   });
 }

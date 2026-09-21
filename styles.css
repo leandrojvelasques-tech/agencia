@@ -20,13 +20,13 @@
 .implementation-case-body{display:flex;flex:1;flex-direction:column}
 .implementation-case-body>p{min-height:0}
 .implementation-tags{display:none}
-.implementation-case-cta{min-height:52px;margin-top:26px;padding:0 18px;color:#fff;background:var(--clay);border:0;border-radius:8px;box-shadow:0 9px 18px #b56e5230;transition:background .2s ease,transform .2s ease,box-shadow .2s ease}
-.implementation-case-cta b{display:grid;width:24px;height:24px;place-items:center;color:var(--clay);background:#fff;border-radius:50%;font-size:15px;line-height:1}
-.implementation-case-card:hover .implementation-case-cta{background:#99563f;box-shadow:0 12px 22px #b56e5238;transform:translateY(-1px)}
-.implementation-handnote{position:absolute;z-index:7;top:18px;right:16px;width:220px;color:var(--clay);pointer-events:none;text-align:right;transform:rotate(-2deg);filter:drop-shadow(0 1px 0 #ffffff90)}
+.implementation-case-cta{align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:0;margin-top:26px;padding:11px 15px;color:#fff;background:var(--clay);border:0;border-radius:7px;box-shadow:0 9px 18px #b56e5230;font-size:12px;line-height:1.2;transition:background .2s ease,transform .2s ease,box-shadow .2s ease}
+.implementation-case-cta b{display:grid;width:20px;height:20px;place-items:center;color:var(--clay);background:#fff;border-radius:50%;font-size:13px;line-height:1}
+.implementation-case-cta:hover,.implementation-case-cta:focus-visible{background:#99563f;box-shadow:0 12px 22px #b56e5238;transform:translateY(-1px)}
+.implementation-handnote{position:absolute;z-index:7;top:42px;right:16px;width:255px;color:var(--clay);pointer-events:none;text-align:right;transform:rotate(-2deg);filter:drop-shadow(0 1px 0 #ffffff90)}
 .implementation-handnote span{display:block;padding-right:3px;font:500 24px/1 "Segoe Print","Bradley Hand","Comic Sans MS",cursive;letter-spacing:-.04em;white-space:nowrap}
 .implementation-handnote svg{display:block;width:100%;height:auto;margin-top:-5px;overflow:visible}
 .implementation-handnote path{fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
 .implementation-handnote .implementation-handnote-arrow{stroke-width:3.3}
-@media (max-width:620px){.implementation-case-cta{min-height:50px;margin-top:23px;padding:0 16px;font-size:12px}.implementation-handnote{top:8px;right:4px;width:156px;transform:rotate(-2deg) scale(.85);transform-origin:top right}.implementation-handnote span{font-size:18px}}
-@media (prefers-reduced-motion:reduce){.implementation-case-cta{transition:none}.implementation-case-card:hover .implementation-case-cta{transform:none}}
+@media (max-width:620px){.implementation-case-cta{margin-top:23px;padding:10px 13px;font-size:12px}.implementation-handnote{top:18px;right:4px;width:190px;transform:rotate(-2deg) scale(.85);transform-origin:top right}.implementation-handnote span{font-size:18px}}
+@media (prefers-reduced-motion:reduce){.implementation-case-cta{transition:none}.implementation-case-cta:hover,.implementation-case-cta:focus-visible{transform:none}}
