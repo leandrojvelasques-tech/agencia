@@ -119,9 +119,9 @@ function setupCaseTeam(){
   const support=document.createElement('div');
   support.className='case-team-support';
   const members=[
-    {src:'assets/equipo-nuni-v2.png',alt:'Nuni, integrante del equipo de contenidos',label:'PRODUCCIÓN DE CONTENIDOS',title:'Producción de contenidos',description:'Desarrollo de piezas y contenidos para sostener la comunicación.'},
-    {src:'assets/equipo-camila-maqueta.png',alt:'Camila, project manager del proyecto',label:'PROJECT MANAGER',title:'Coordinación del proyecto',description:'Agenda, calendario de publicaciones y coordinación de producciones.'},
-    {src:'assets/equipo-cami-2.jpg',alt:'Camila, integrante del equipo audiovisual',label:'PRODUCCIÓN AUDIOVISUAL',title:'Producción audiovisual',description:'Registro y producción audiovisual a partir del trabajo real.'}
+    {src:'assets/equipo-nuni-v2.png',alt:'Nuni, integrante del equipo de contenidos',label:'PRODUCCIÓN DE CONTENIDOS',title:'Nuni',description:'Desarrollo de piezas y contenidos para sostener la comunicación.'},
+    {src:'assets/equipo-camila-maqueta.png',alt:'Camila 1, project manager del proyecto',label:'PROJECT MANAGER',title:'Camila 1',description:'Agenda, calendario de publicaciones y coordinación de producciones.'},
+    {src:'assets/equipo-cami-2.jpg',alt:'Camila 2, integrante del equipo audiovisual',label:'PRODUCCIÓN AUDIOVISUAL',title:'Camila 2',description:'Registro y producción audiovisual a partir del trabajo real.'}
   ];
   members.forEach(member=>{
     const card=document.createElement('article');
