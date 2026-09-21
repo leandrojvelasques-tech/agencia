@@ -35,5 +35,26 @@ async function setupPhotoEditor(){
   form.addEventListener('submit',async e=>{e.preventDefault();const button=form.querySelector('button[type=submit]');button.disabled=true;status.textContent='Guardando fotos…';try{const files=[...form.elements.photos.files];if(!files.length)throw Error('Seleccioná al menos una foto.');const records=[];for(const file of files){if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Usá fotos JPG, PNG o WebP.');if(file.size>40*1024*1024)throw Error('Cada foto debe pesar menos de 40 MB.');const bitmap=await createImageBitmap(file);bitmap.close();records.push({id:crypto.randomUUID(),created:Date.now()+records.length,group:form.elements.group.value,title:form.elements.title.value.trim(),place:form.elements.place.value.trim(),description:form.elements.description.value.trim(),alt:form.elements.title.value.trim(),blob:file,contain:form.elements.contain.checked})}if(!records[0].title)throw Error('Escribí un título.');await saveGalleryPhotos(records);form.reset();await refresh();status.textContent='Fotos guardadas. Recargá la maqueta para verlas en su galería.'}catch(error){status.textContent='No se guardaron las fotos. '+(error.message||'Intentá nuevamente.')}finally{button.disabled=false}});
   try{await refresh()}catch{status.textContent='Este navegador no permite guardar fotos localmente.'}
 }
-renderGalleries();setupPhotoEditor();
+function createCaseHandnote(label){
+  const note=document.createElement('div');note.className='implementation-handnote';note.setAttribute('aria-hidden','true');
+  const text=textElement('span',label);
+  const arrow=document.createElementNS('http://www.w3.org/2000/svg','svg');arrow.setAttribute('viewBox','0 0 230 145');arrow.setAttribute('focusable','false');
+  const line=document.createElementNS('http://www.w3.org/2000/svg','path');line.setAttribute('d','M207 22 C155 29 120 56 105 126');
+  const head=document.createElementNS('http://www.w3.org/2000/svg','path');head.setAttribute('d','M105 126 L94 111 M105 126 L119 118');head.classList.add('implementation-handnote-arrow');
+  arrow.append(line,head);note.append(text,arrow);return note;
+}
+function setupImplementationCases(){
+  const cases=[
+    {description:'Una aplicación integrada que conecta el sitio público —servicios, eventos, novedades y canales de contacto— con un back office para administrar turnos, agenda interna, reuniones, visitas a ANSES y proveedores, clientes, pagos, contenidos y un chatbot de atención.',note:'Agenda de turnos'},
+    {description:'Una aplicación integrada con sitio institucional, portal de socios y portal administrativo para la comisión directiva. Permite pagar cuotas, consultar y suscribirse a eventos, ver novedades institucionales y regionales, y gestionar socios, cobranzas, caja, eventos y comunicaciones.',note:'Gestión administrativa'}
+  ];
+  document.querySelectorAll('.implementation-case-card').forEach((card,index)=>{
+    const content=cases[index];if(!content)return;
+    const description=card.querySelector('.implementation-case-body>p');if(description)description.textContent=content.description;
+    card.querySelector('.implementation-tags')?.remove();
+    const cta=card.querySelector('.implementation-case-cta');if(cta&&cta.firstChild)cta.firstChild.textContent='Ver el desarrollo completo ';
+    const visual=card.querySelector('.implementation-case-visual');if(visual&&!visual.querySelector('.implementation-handnote'))visual.append(createCaseHandnote(content.note));
+  });
+}
+renderGalleries();setupPhotoEditor();setupImplementationCases();
 window.addEventListener('pagehide',()=>photoUrls.forEach(url=>URL.revokeObjectURL(url)));
