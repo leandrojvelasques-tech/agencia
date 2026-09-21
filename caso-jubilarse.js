@@ -112,3 +112,23 @@
   });
   show(0);
 })();
+
+function setupCaseTeam(){
+  const team=document.querySelector('.marketing-case-team');
+  if(!team||team.querySelector('.case-team-support'))return;
+  const support=document.createElement('div');
+  support.className='case-team-support';
+  const members=[
+    {src:'assets/equipo-nuni-v2.png',alt:'Integrante del equipo de contenidos',label:'CONTENIDOS Y PIEZAS',title:'Producción de contenidos',description:'Desarrollo de piezas y contenidos para sostener la comunicación.'},
+    {src:'assets/equipo-camila-maqueta.png',alt:'Integrante del equipo de diseño',label:'DISEÑO Y EDICIÓN',title:'Diseño visual',description:'Diseño y edición de materiales para distintos formatos.'},
+    {src:'assets/equipo-cami-1-v2.png',alt:'Integrante del equipo audiovisual',label:'FOTOGRAFÍA Y VIDEO',title:'Producción audiovisual',description:'Registro y producción audiovisual a partir del trabajo real.'}
+  ];
+  members.forEach(member=>{
+    const card=document.createElement('article');
+    card.className='case-team-card case-team-support-card';
+    card.innerHTML=`<figure><img src="${member.src}" alt="${member.alt}" loading="lazy" width="1152" height="1536"></figure><div class="case-team-copy"><span>${member.label}</span><h3>${member.title}</h3><p>${member.description}</p></div>`;
+    support.append(card);
+  });
+  team.append(support);
+}
+setupCaseTeam();

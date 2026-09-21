@@ -56,5 +56,16 @@ function setupImplementationCases(){
     const visual=card.querySelector('.implementation-case-visual');if(visual&&!visual.querySelector('.implementation-handnote'))visual.append(createCaseHandnote(content.note));
   });
 }
+function setupHomeStructure(){
+  if(!document.querySelector('.marketing'))return;
+  document.querySelector('.services')?.remove();
+  document.querySelector('nav a[href="#servicios"]')?.remove();
+  document.querySelectorAll('a[href="#servicios"]').forEach(link=>link.setAttribute('href','#formacion-experiencias'));
+  const caseLink=document.querySelector('.marketing-case-link');
+  if(caseLink){
+    caseLink.innerHTML='<figure class="marketing-case-link-media"><img src="assets/jubilarse-instagram-profile.jpg" alt="Perfil de Instagram de Consultora Jubilarse" loading="lazy" width="1080" height="1080"><span aria-hidden="true">Instagram</span></figure><div class="marketing-case-link-copy"><span>CASO REAL · CONSULTORA JUBILARSE</span><h3>Una comunicación con estrategia y continuidad.</h3><p>Planificación, producción, redes sociales, fotografía y seguimiento reunidos en un caso real.</p><strong>Ver caso de marketing <b aria-hidden="true">↗</b></strong></div>';
+  }
+}
 renderGalleries();setupPhotoEditor();setupImplementationCases();
+setupHomeStructure();
 window.addEventListener('pagehide',()=>photoUrls.forEach(url=>URL.revokeObjectURL(url)));
