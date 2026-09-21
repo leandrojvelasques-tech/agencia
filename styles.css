@@ -9,3 +9,8 @@
 .implementation-back-label{right:27px;bottom:27px}
 @media (max-width:620px){.implementation-back-window{right:13px;bottom:14px;width:55%;height:48%;border-width:2px}.implementation-back-label{right:20px;bottom:21px}}
 @media (prefers-reduced-motion:reduce){.implementation-back-window img{transition:none}.implementation-case-card:hover .implementation-back-window img{transform:none}}
+
+/* Keeps the case covers focused on the public site and the back office. */
+.implementation-brand-chip,.implementation-connector{display:none}
+.implementation-back-label{font-size:0}
+.implementation-back-label::after{content:"BACK OFFICE";font-size:9px;letter-spacing:.1em}
