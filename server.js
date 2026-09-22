@@ -177,6 +177,9 @@ const server = http.createServer(async (req, res) => {
     // The public root is the institutional site. The events app is served only
     // for its explicit SPA routes, including /admin.
     if (pathname === '/') return sendFile(res, path.join(rootDir, 'index.html'));
+    if (pathname.toLowerCase() === '/cv' || pathname.toLowerCase() === '/cv/') {
+      return sendFile(res, path.join(rootDir, 'cv', 'index.html'));
+    }
 
     const requestedPath = pathname;
     const rootStaticPath = path.resolve(rootDir, `.${requestedPath}`);
