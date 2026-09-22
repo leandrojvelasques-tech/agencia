@@ -1207,6 +1207,15 @@ html&gt;body{padding:0}&lt;/style&gt;
 @media(max-width:960px){#cayo-web-preview .top-six-grid{grid-template-columns:1fr}}
 @media(max-width:760px){#cayo-web-preview .top-six-card{grid-template-columns:116px minmax(0,1fr);min-height:300px}#cayo-web-preview .top-six-media{min-height:300px}#cayo-web-preview .top-six-copy{padding:14px}#cayo-web-preview .top-six-copy h3{font-size:18px}#cayo-web-preview .top-six-why{font-size:11px}#cayo-web-preview .top-six-meta{font-size:9px}#cayo-web-preview .top-six-meta em{font-size:7px}}
 &lt;/style&gt;
+&lt;style&gt;
+#cayo-web-preview .top-six-card{grid-template-columns:190px minmax(0,1fr);min-height:342px}
+#cayo-web-preview .top-six-media{min-height:342px;display:flex;align-items:center;justify-content:center}
+#cayo-web-preview .top-six-media img{object-fit:contain}
+#cayo-web-preview .top-six-copy{padding:17px 17px 15px}
+#cayo-web-preview .top-six-copy h3{margin-top:10px;font-size:20px}
+#cayo-web-preview .top-six-why{margin-top:8px;font-size:11px;line-height:1.38}
+@media(max-width:760px){#cayo-web-preview .top-six-card{grid-template-columns:116px minmax(0,1fr);min-height:300px}#cayo-web-preview .top-six-media{min-height:300px}}
+&lt;/style&gt;
   &lt;section class=&quot;report-section top-six-stories-section&quot; aria-labelledby=&quot;top-six-stories-title&quot;&gt;
   &lt;div class=&quot;section-heading&quot;&gt;&lt;div&gt;&lt;h2 id=&quot;top-six-stories-title&quot;&gt;Top 6 &#183; stories que m&#225;s conectaron&lt;/h2&gt;&lt;p&gt;Historias de agosto ordenadas por prioridad de acci&#243;n, interacci&#243;n, alcance y circulaci&#243;n.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;section-label&quot;&gt;STORIES&lt;/span&gt;&lt;/div&gt;
   &lt;div class=&quot;top-six-stories-grid&quot;&gt;
@@ -1276,6 +1285,138 @@ html&gt;body{padding:0}&lt;/style&gt;
   &lt;/script&gt;
   &lt;script&gt;
     document.addEventListener(&#39;DOMContentLoaded&#39;,()=&gt;{const preview=document.getElementById(&#39;cayo-web-preview&#39;);const sync=()=&gt;preview.classList.toggle(&#39;phone-preview&#39;,preview.querySelector(&#39;[data-device=&quot;phone&quot;]&#39;).classList.contains(&#39;active&#39;));preview.querySelectorAll(&#39;[data-device]&#39;).forEach(button=&gt;button.addEventListener(&#39;click&#39;,sync));sync()});
+  &lt;/script&gt;
+  &lt;style&gt;
+    #cayo-web-preview .top-six-grid,#cayo-web-preview .top-six-stories-grid{display:block;margin-top:24px}
+    #cayo-web-preview .top-six-grid .top-six-card,#cayo-web-preview .top-six-stories-grid .top-six-story-card{display:none}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active{display:grid;grid-template-columns:minmax(280px,42%) minmax(0,58%);height:390px;min-height:390px;align-items:stretch;background:#191714;overflow:hidden}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-media{height:390px;min-height:0}
+    #cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active{display:grid;grid-template-columns:minmax(280px,42%) minmax(0,58%);height:390px;min-height:390px;align-items:stretch;background:#191714;overflow:hidden}
+    #cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media{height:390px;min-height:0;display:flex;align-items:center;justify-content:center}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-media img,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media img{object-fit:contain}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{height:390px;min-height:0;padding:27px 31px 23px;overflow:auto}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-meta,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .top-six-meta{display:flex;color:#ffcb05;font-size:11px}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active h3,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active h3{margin-top:13px;font-size:30px;line-height:1.04;color:#fff}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-why,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .top-six-why{margin-top:12px;color:#e9e2d9;font-size:14px;line-height:1.48}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .fixed-metrics,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .fixed-metrics{margin-top:auto;padding-top:17px;gap:12px 20px}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .fixed-metric b,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .fixed-metric b{font-size:25px}
+    #cayo-web-preview .top-six-grid .top-six-card.carousel-active .fixed-metric span,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .fixed-metric span{font-size:10px}
+    #cayo-web-preview .top-six-carousel-nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}
+    #cayo-web-preview .top-six-carousel-nav button{width:42px;height:42px;border:1px solid #191714;border-radius:50%;background:#fff;color:#191714;cursor:pointer;font-size:24px;line-height:1;transition:background .18s,color .18s,transform .18s}
+    #cayo-web-preview .top-six-carousel-nav button:hover,#cayo-web-preview .top-six-carousel-nav button:focus-visible{background:#ffcb05;color:#191714;transform:translateY(-1px);outline:2px solid #191714;outline-offset:2px}
+    #cayo-web-preview .top-six-carousel-nav .top-six-carousel-count{font-size:11px;color:#746e64;letter-spacing:.08em;text-transform:uppercase}
+    #cayo-web-preview .top-six-carousel-nav .top-six-carousel-hint{margin-left:auto;color:#746e64;font-size:10px;letter-spacing:.04em}
+    @media(max-width:760px){
+      #cayo-web-preview .top-six-grid .top-six-card.carousel-active,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active{display:flex;height:auto;min-height:0;flex-direction:column}
+      #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-media,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media{min-height:0;height:min(78vw,360px)}
+      #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{height:auto;min-height:315px;padding:23px 22px 20px;overflow:visible}
+      #cayo-web-preview .top-six-grid .top-six-card.carousel-active h3,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active h3{font-size:26px}
+      #cayo-web-preview .top-six-grid .top-six-card.carousel-active .top-six-why,#cayo-web-preview .top-six-stories-grid .top-six-story-card.carousel-active .top-six-why{font-size:13px}
+      #cayo-web-preview .top-six-carousel-nav .top-six-carousel-hint{display:none}
+    }
+    /* Dos carruseles para comparar contenido y stories sin alargar el reporte. */
+     #cayo-web-preview .top-six-dual-section{display:grid;grid-template-columns:1fr;gap:42px;width:100%;max-width:1220px;margin-left:auto;margin-right:auto;padding-top:42px}
+    #cayo-web-preview .top-six-dual-section .top-six-section,#cayo-web-preview .top-six-dual-section .top-six-stories-section{min-width:0;padding-top:0}
+    #cayo-web-preview .top-six-dual-section .section-heading{align-items:flex-start;padding-bottom:11px}
+    #cayo-web-preview .top-six-dual-section .section-heading h2{font-size:27px;line-height:1.05}
+    #cayo-web-preview .top-six-dual-section .section-heading p{font-size:11px;line-height:1.35}
+    #cayo-web-preview .top-six-dual-section .section-label{font-size:9px}
+    #cayo-web-preview .top-six-dual-section .top-six-grid,#cayo-web-preview .top-six-dual-section .top-six-stories-grid{display:block!important;margin-top:16px}
+    #cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card{display:none!important}
+     #cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active{display:grid!important;grid-template-columns:minmax(150px,41%) minmax(0,59%);width:100%;height:320px!important;min-height:320px!important;background:#191714;overflow:hidden}
+    #cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-media,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media{display:flex;height:320px!important;min-height:0!important;align-items:center;justify-content:center;background:#0f0e0c}
+    #cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-media img,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media img{width:100%;height:100%;object-fit:contain!important}
+    #cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{display:flex;height:320px!important;min-height:0!important;padding:17px 18px 14px!important;overflow:hidden}
+    #cayo-web-preview .top-six-dual-section .top-six-meta{display:flex!important;gap:6px;font-size:8px!important;line-height:1.2}
+    #cayo-web-preview .top-six-dual-section .top-six-meta em{font-size:7px!important;line-height:1.15}
+    #cayo-web-preview .top-six-dual-section h3{margin-top:8px!important;font-size:21px!important;line-height:1.06!important}
+    #cayo-web-preview .top-six-dual-section .top-six-why{display:-webkit-box;margin-top:7px!important;color:#e9e2d9!important;font-size:11px!important;line-height:1.35!important;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+    #cayo-web-preview .top-six-dual-section .fixed-metrics{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto auto;gap:8px 9px;margin-top:auto!important;padding-top:10px!important}
+    #cayo-web-preview .top-six-dual-section .fixed-metric{min-height:0!important}
+    #cayo-web-preview .top-six-dual-section .metric-views{grid-column:1;grid-row:1}
+    #cayo-web-preview .top-six-dual-section .metric-likes{grid-column:2;grid-row:1}
+    #cayo-web-preview .top-six-dual-section .metric-shares{grid-column:3;grid-row:1}
+    #cayo-web-preview .top-six-dual-section .metric-interactions{grid-column:1;grid-row:2}
+    #cayo-web-preview .top-six-dual-section .metric-extra{grid-column:2;grid-row:2}
+    #cayo-web-preview .top-six-dual-section .fixed-metric b{font-size:17px!important;line-height:1!important}
+    #cayo-web-preview .top-six-dual-section .fixed-metric span{font-size:7px!important;line-height:1.15!important;letter-spacing:.02em}
+    #cayo-web-preview .top-six-dual-section .top-six-carousel-nav{display:flex!important;margin-top:8px}
+    #cayo-web-preview .top-six-dual-section .top-six-carousel-nav button{width:34px;height:34px;font-size:20px}
+    #cayo-web-preview .top-six-dual-section .top-six-carousel-count{font-size:9px}
+    #cayo-web-preview .top-six-dual-section .top-six-carousel-hint{display:none}
+    @media(max-width:820px){#cayo-web-preview .top-six-dual-section{grid-template-columns:1fr;gap:32px}#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active{height:280px!important;min-height:280px!important}#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-media,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media,#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{height:280px!important}}
+     @media(max-width:500px){#cayo-web-preview .top-six-dual-section{gap:28px}#cayo-web-preview .top-six-dual-section .section-heading h2{font-size:25px}#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active{grid-template-columns:38% 62%;height:255px!important;min-height:255px!important}#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-media,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .story-ranking-media,#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{height:255px!important}#cayo-web-preview .top-six-dual-section .top-six-grid .top-six-card.carousel-active .top-six-copy,#cayo-web-preview .top-six-dual-section .top-six-stories-grid .top-six-story-card.carousel-active .top-six-story-copy{padding:14px 13px 12px!important}#cayo-web-preview .top-six-dual-section h3{font-size:18px!important}#cayo-web-preview .top-six-dual-section .top-six-why{font-size:10px!important;-webkit-line-clamp:2}#cayo-web-preview .top-six-dual-section .fixed-metrics{gap:6px 7px;padding-top:8px!important}#cayo-web-preview .top-six-dual-section .fixed-metric b{font-size:15px!important}}
+     /* La vista de celular del reporte usa un marco de ancho fijo: apilamos ambos rankings de forma explícita. */
+     #cayo-web-preview.phone-preview .top-six-dual-section,
+     #cayo-web-preview .site-frame.phone .top-six-dual-section{grid-template-columns:1fr;gap:28px}
+     #cayo-web-preview.phone-preview .top-six-dual-section .top-six-section,
+     #cayo-web-preview.phone-preview .top-six-dual-section .top-six-stories-section,
+     #cayo-web-preview .site-frame.phone .top-six-dual-section .top-six-section,
+     #cayo-web-preview .site-frame.phone .top-six-dual-section .top-six-stories-section{width:100%;min-width:0}
+   &lt;/style&gt;
+  &lt;script&gt;
+    (()=&gt;{
+      const setupCarousel=(gridSelector,itemSelector,label)=&gt;{
+        const grid=document.querySelector(gridSelector);
+        if(!grid || grid.dataset.carouselReady===&#39;true&#39;) return;
+        const items=[...grid.querySelectorAll(itemSelector)];
+        if(items.length&lt;2) return;
+        grid.dataset.carouselReady=&#39;true&#39;;
+        let current=0;
+        items.forEach((item,index)=&gt;{
+          item.classList.toggle(&#39;carousel-active&#39;,index===0);
+          item.setAttribute(&#39;aria-hidden&#39;,index===0?&#39;false&#39;:&#39;true&#39;);
+        });
+        grid.setAttribute(&#39;role&#39;,&#39;region&#39;);
+        grid.setAttribute(&#39;aria-roledescription&#39;,&#39;carrusel&#39;);
+        grid.setAttribute(&#39;aria-label&#39;,label);
+        grid.tabIndex=0;
+        const nav=document.createElement(&#39;div&#39;);
+        nav.className=&#39;top-six-carousel-nav&#39;;
+        nav.innerHTML=&#39;&lt;button type=&quot;button&quot; data-carousel-dir=&quot;-1&quot; aria-label=&quot;Contenido anterior&quot;&gt;‹&lt;/button&gt;&lt;span class=&quot;top-six-carousel-count&quot; aria-live=&quot;polite&quot;&gt;1 de &#39;+items.length+&#39;&lt;/span&gt;&lt;span class=&quot;top-six-carousel-hint&quot;&gt;Usá las flechas para recorrer el ranking&lt;/span&gt;&lt;button type=&quot;button&quot; data-carousel-dir=&quot;1&quot; aria-label=&quot;Contenido siguiente&quot;&gt;›&lt;/button&gt;&#39;;
+        grid.after(nav);
+        const update=(next)=&gt;{
+          current=(next+items.length)%items.length;
+          items.forEach((item,index)=&gt;{
+            const active=index===current;
+            item.classList.toggle(&#39;carousel-active&#39;,active);
+            item.setAttribute(&#39;aria-hidden&#39;,active?&#39;false&#39;:&#39;true&#39;);
+          });
+          nav.querySelector(&#39;.top-six-carousel-count&#39;).textContent=(current+1)+&#39; de &#39;+items.length;
+        };
+        nav.addEventListener(&#39;click&#39;,event=&gt;{
+          const button=event.target.closest(&#39;[data-carousel-dir]&#39;);
+          if(button) update(current+Number(button.dataset.carouselDir));
+        });
+        grid.addEventListener(&#39;keydown&#39;,event=&gt;{
+          if(event.key===&#39;ArrowLeft&#39;){event.preventDefault();update(current-1)}
+          if(event.key===&#39;ArrowRight&#39;){event.preventDefault();update(current+1)}
+        });
+        let touchStartX=null;
+        grid.addEventListener(&#39;touchstart&#39;,event=&gt;{touchStartX=event.changedTouches[0]?.clientX??null},{passive:true});
+        grid.addEventListener(&#39;touchend&#39;,event=&gt;{
+          if(touchStartX===null) return;
+          const delta=event.changedTouches[0]?.clientX-touchStartX;
+          if(Math.abs(delta)&gt;45) update(current+(delta&lt;0?1:-1));
+          touchStartX=null;
+        },{passive:true});
+      };
+      const init=()=&gt;{
+        const contentSection=document.querySelector(&#39;#cayo-web-preview .top-six-section&#39;);
+        const storiesSection=document.querySelector(&#39;#cayo-web-preview .top-six-stories-section&#39;);
+        if(contentSection &amp;&amp; storiesSection &amp;&amp; !contentSection.parentElement?.classList.contains(&#39;top-six-dual-section&#39;)){
+          const pair=document.createElement(&#39;section&#39;);
+          pair.className=&#39;report-section top-six-dual-section&#39;;
+          const footer=storiesSection.querySelector(&#39;.report-social-footer-final&#39;);
+          contentSection.before(pair);
+          pair.append(contentSection,storiesSection);
+          if(footer) pair.after(footer);
+        }
+        setupCarousel(&#39;#cayo-web-preview .top-six-grid&#39;,&#39;.top-six-card&#39;,&#39;Ranking de contenidos destacados de agosto&#39;);
+        setupCarousel(&#39;#cayo-web-preview .top-six-stories-grid&#39;,&#39;.top-six-story-card&#39;,&#39;Ranking de stories destacadas de agosto&#39;);
+      };
+      if(document.readyState===&#39;loading&#39;) document.addEventListener(&#39;DOMContentLoaded&#39;,init,{once:true}); else init();
+    })();
   &lt;/script&gt;
 &lt;/div&gt;
 
@@ -1631,8 +1772,103 @@ html&gt;body{padding:0}&lt;/style&gt;
 })();
 &lt;/script&gt;
 
+&lt;script&gt;
+(() =&gt; {
+  const mountPublicationHistory = () =&gt; {
+    if (document.querySelector('.publication-history-section')) return;
+    const anchor = document.querySelector('.report-social-footer-final') || document.querySelector('.report-footer');
+    if (!anchor) return;
+    const section = document.createElement('section');
+    section.className = 'report-section publication-history-section';
+    const tableStyle = document.createElement('style');
+    tableStyle.textContent = '.publication-history-section table th:not(:first-child), .publication-history-section table td:not(:first-child) { text-align: center !important; } .paid-history-block{margin-top:34px;padding-top:28px;border-top:1px solid #d9d2c2} .paid-history-table-wrap{margin-top:18px} .paid-history-table{min-width:980px} .paid-history-table .paid-spend{color:#8a4e1f;font-weight:700} .paid-history-table .paid-result{color:#4f7a35;font-weight:700} .paid-history-table .paid-zero{color:#746e64} .paid-history-grid{margin-top:20px}';
+    document.head.appendChild(tableStyle);
+    section.innerHTML = `
+      &lt;div class=&quot;section-heading&quot;&gt;&lt;div&gt;&lt;h2&gt;Volumen de publicaciones&lt;/h2&gt;&lt;p&gt;Registros creados en Meta por mes y plataforma, cruzados con las interacciones y las conversaciones iniciadas.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;section-label&quot;&gt;CONTENIDO&lt;/span&gt;&lt;/div&gt;
+      &lt;p style=&quot;margin:0 0 18px;color:#746e64;font-size:12px;line-height:1.5&quot;&gt;Feed reúne fotos, secuencias y publicaciones con varios archivos multimedia. Cada fila cuenta una publicación en la plataforma correspondiente; si una pieza se publicó en Facebook e Instagram, se contabiliza en cada plataforma. Un cero indica que Meta no registró publicaciones para ese mes y plataforma. Las columnas de conversaciones muestran las conversaciones con mensajes iniciadas en cada plataforma durante el mes.&lt;/p&gt;
+      &lt;div style=&quot;overflow-x:auto;border:1px solid #d9d2c2;background:#fff&quot;&gt;&lt;table style=&quot;width:100%;min-width:980px;border-collapse:collapse;font-size:11px&quot;&gt;&lt;thead&gt;&lt;tr style=&quot;background:#191714;color:#fff;text-transform:uppercase;letter-spacing:.08em&quot;&gt;&lt;th style=&quot;padding:12px 10px;text-align:left&quot;&gt;Mes&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;FB feed&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;FB reels&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;FB stories&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;IG feed&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;IG reels&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;IG stories&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;Total&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;Interacciones&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;Conversaciones FB&lt;/th&gt;&lt;th style=&quot;padding:12px 10px;text-align:center&quot;&gt;Conversaciones IG&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:12px 10px;border-bottom:1px solid #e4ded3;text-align:left;font-weight:600&quot;&gt;Abril&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;12&lt;/td&gt;&lt;td&gt;18&lt;/td&gt;&lt;td&gt;28&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:12px 10px;border-bottom:1px solid #e4ded3;text-align:left;font-weight:600&quot;&gt;Mayo&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;16&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;13&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:12px 10px;border-bottom:1px solid #e4ded3;text-align:left;font-weight:600&quot;&gt;Junio&lt;/td&gt;&lt;td&gt;7&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;56&lt;/td&gt;&lt;td&gt;76&lt;/td&gt;&lt;td&gt;1.546&lt;/td&gt;&lt;td&gt;13&lt;/td&gt;&lt;td&gt;34&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:12px 10px;border-bottom:1px solid #e4ded3;text-align:left;font-weight:600&quot;&gt;Julio&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;13&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;50&lt;/td&gt;&lt;td&gt;65&lt;/td&gt;&lt;td&gt;953&lt;/td&gt;&lt;td&gt;15&lt;/td&gt;&lt;td&gt;24&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:12px 10px;text-align:left;font-weight:600&quot;&gt;Agosto&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;td&gt;19&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;44&lt;/td&gt;&lt;td&gt;76&lt;/td&gt;&lt;td&gt;1.442&lt;/td&gt;&lt;td&gt;12&lt;/td&gt;&lt;td&gt;30&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+      &lt;div style=&quot;display:grid;grid-template-columns:1.25fr .75fr;gap:26px;margin-top:24px&quot;&gt;&lt;div style=&quot;padding:24px;background:#f4efe4;border-left:7px solid #ffcb05&quot;&gt;&lt;h3 style=&quot;margin:0;font-family:Georgia,serif;font-size:24px&quot;&gt;Más contenido, más oportunidades de respuesta&lt;/h3&gt;&lt;p style=&quot;margin:12px 0 0;color:#5f594f;font-size:13px;line-height:1.55&quot;&gt;Agosto cerró con 76 registros de publicación: 13 en Facebook y 63 en Instagram. El mayor volumen se concentró en las stories de Instagram (44), mientras que el feed de Instagram sumó 19 piezas y Facebook incorporó 8 stories. Las 1.442 interacciones convivieron con 30 conversaciones iniciadas en Instagram y 12 en Facebook.&lt;/p&gt;&lt;/div&gt;&lt;div style=&quot;padding:24px;background:#f4efe4;border-left:7px solid #ffcb05&quot;&gt;&lt;h3 style=&quot;margin:0;font-family:Georgia,serif;font-size:24px&quot;&gt;Acumulado abril–agosto&lt;/h3&gt;&lt;p style=&quot;margin:14px 0 0;color:#5f594f;font-size:13px;line-height:1.7&quot;&gt;&lt;strong&gt;236&lt;/strong&gt; registros de publicación · &lt;strong&gt;207&lt;/strong&gt; en Instagram · &lt;strong&gt;29&lt;/strong&gt; en Facebook · &lt;strong&gt;151&lt;/strong&gt; conversaciones iniciadas: 109 en Instagram y 42 en Facebook.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;paid-history-block&quot;&gt;&lt;div class=&quot;section-heading&quot;&gt;&lt;div&gt;&lt;h2&gt;Publicidad paga&lt;/h2&gt;&lt;p&gt;Campañas de Meta realizadas entre abril y agosto de 2026.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;section-label&quot;&gt;ANUNCIOS&lt;/span&gt;&lt;/div&gt;&lt;p class=&quot;publication-history-note&quot;&gt;Se identificaron seis anuncios en la cuenta Cocollo. Cuatro tuvieron inversión y dos finalizaron sin gasto; todos se lanzaron en junio y dos extendieron su período hasta el 3 de julio.&lt;/p&gt;&lt;div class=&quot;publication-table-wrap paid-history-table-wrap&quot;&gt;&lt;table class=&quot;publication-table paid-history-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Campaña&lt;/th&gt;&lt;th&gt;Período&lt;/th&gt;&lt;th&gt;Conversaciones&lt;/th&gt;&lt;th&gt;Costo / conv.&lt;/th&gt;&lt;th&gt;Importe gastado&lt;/th&gt;&lt;th&gt;Visualizaciones&lt;/th&gt;&lt;th&gt;Alcance&lt;/th&gt;&lt;th&gt;Presupuesto&lt;/th&gt;&lt;th&gt;Estado&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Día del Padre I&lt;/td&gt;&lt;td&gt;14–21 jun&lt;/td&gt;&lt;td class=&quot;paid-result&quot;&gt;2&lt;/td&gt;&lt;td&gt;$530,66&lt;/td&gt;&lt;td class=&quot;paid-spend&quot;&gt;$1.061,31&lt;/td&gt;&lt;td&gt;617&lt;/td&gt;&lt;td&gt;539&lt;/td&gt;&lt;td&gt;$50.000&lt;/td&gt;&lt;td&gt;Completada&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Día del Padre II&lt;/td&gt;&lt;td&gt;14–21 jun&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;0&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td class=&quot;paid-spend&quot;&gt;$295,25&lt;/td&gt;&lt;td&gt;187&lt;/td&gt;&lt;td&gt;166&lt;/td&gt;&lt;td&gt;$50.000&lt;/td&gt;&lt;td&gt;Completada&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Anuncio I&lt;/td&gt;&lt;td&gt;15–30 jun&lt;/td&gt;&lt;td class=&quot;paid-result&quot;&gt;1&lt;/td&gt;&lt;td&gt;$625,09&lt;/td&gt;&lt;td class=&quot;paid-spend&quot;&gt;$625,09&lt;/td&gt;&lt;td&gt;252&lt;/td&gt;&lt;td&gt;226&lt;/td&gt;&lt;td&gt;$100.000&lt;/td&gt;&lt;td&gt;Completada&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Anuncio II&lt;/td&gt;&lt;td&gt;15–30 jun&lt;/td&gt;&lt;td class=&quot;paid-result&quot;&gt;3&lt;/td&gt;&lt;td&gt;$428,89&lt;/td&gt;&lt;td class=&quot;paid-spend&quot;&gt;$1.286,68&lt;/td&gt;&lt;td&gt;784&lt;/td&gt;&lt;td&gt;657&lt;/td&gt;&lt;td&gt;$100.000&lt;/td&gt;&lt;td&gt;Completada&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Anuncio I&lt;/td&gt;&lt;td&gt;15 jun–3 jul&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;0&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;$0,00&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td&gt;$50.000&lt;/td&gt;&lt;td&gt;Sin gasto&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;text-align:left;font-weight:600&quot;&gt;Anuncio II&lt;/td&gt;&lt;td&gt;15 jun–3 jul&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;0&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;$0,00&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td class=&quot;paid-zero&quot;&gt;—&lt;/td&gt;&lt;td&gt;$50.000&lt;/td&gt;&lt;td&gt;Sin gasto&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;div class=&quot;publication-history-grid paid-history-grid&quot;&gt;&lt;div class=&quot;publication-summary&quot;&gt;&lt;h3&gt;Resultado pago acumulado&lt;/h3&gt;&lt;p&gt;Las cuatro campañas con inversión generaron &lt;strong&gt;6 conversaciones iniciadas&lt;/strong&gt;, &lt;strong&gt;1.840 visualizaciones&lt;/strong&gt; y &lt;strong&gt;1.588 personas alcanzadas&lt;/strong&gt;, con una inversión total de &lt;strong&gt;$3.268,33&lt;/strong&gt; y un costo promedio de &lt;strong&gt;$544,72 por conversación&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;publication-summary&quot;&gt;&lt;h3&gt;Lectura rápida&lt;/h3&gt;&lt;p&gt;El mejor costo por conversación fue Anuncio II (&lt;strong&gt;$428,89&lt;/strong&gt;). Las campañas del Día del Padre sumaron 2 conversaciones con $1.356,56 de inversión. Los dos anuncios restantes finalizaron sin gasto.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+    `;
+    anchor.before(section);
+  };
+  mountPublicationHistory();
+})();
+&lt;/script&gt;
+
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
+<script>
+(() => {
+  const frame = document.querySelector('iframe');
+  if (!frame) return;
+  const mount = () => {
+    const doc = frame.contentDocument;
+    if (!doc || !doc.body || doc.querySelector('.publication-history-section')) return;
+    const style = doc.createElement('style');
+    style.textContent = `
+      .publication-history-section { background: #fffdf7; }
+      .publication-history-section .section-heading { margin-bottom: 20px; }
+      .publication-history-note { margin: 0 0 18px; color: #746e64; font-size: 12px; line-height: 1.5; }
+      .publication-table-wrap { overflow-x: auto; border: 1px solid #d9d2c2; background: #fff; }
+      .publication-table { width: 100%; min-width: 850px; border-collapse: collapse; font-size: 11px; }
+      .publication-table th { padding: 12px 10px; background: #191714; color: #fff; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; text-align: right; white-space: nowrap; }
+      .publication-table th:first-child, .publication-table td:first-child { text-align: left; }
+      .publication-table td { padding: 12px 10px; border-bottom: 1px solid #e4ded3; color: #302d28; text-align: center; white-space: nowrap; }
+      .publication-table th:not(:first-child) { text-align: center; }
+      .publication-table tr:last-child td { border-bottom: 0; }
+      .publication-table .month { font-weight: 600; }
+      .publication-table .total { color: #a14c2f; font-weight: 700; }
+      .publication-table .ig { color: #b42368; }
+      .publication-table .fb { color: #2165a5; }
+      .publication-table .conversations { color: #4f7a35; font-weight: 600; }
+      .publication-history-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 26px; margin-top: 24px; }
+      .publication-summary { padding: 24px; background: #f4efe4; border-left: 7px solid #ffcb05; }
+      .publication-summary h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 24px; }
+      .publication-summary p { margin: 12px 0 0; color: #5f594f; font-size: 13px; line-height: 1.55; }
+      .publication-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+      .publication-kpi { padding: 15px; background: #fff; border-top: 3px solid #ffcb05; }
+      .publication-kpi b { display: block; font-size: 25px; font-weight: 500; }
+      .publication-kpi span { display: block; margin-top: 5px; color: #746e64; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+      .paid-history-block { margin-top: 34px; padding-top: 28px; border-top: 1px solid #d9d2c2; }
+      .paid-history-table-wrap { margin-top: 18px; }
+      .paid-history-table { min-width: 980px; }
+      .paid-history-table .paid-spend { color: #8a4e1f; font-weight: 700; }
+      .paid-history-table .paid-result { color: #4f7a35; font-weight: 700; }
+      .paid-history-table .paid-zero { color: #746e64; }
+      .paid-history-grid { margin-top: 20px; }
+      @media (max-width: 760px) { .publication-history-grid { grid-template-columns: 1fr; } .publication-summary { padding: 20px; } }
+    `;
+    doc.head.appendChild(style);
+    const section = doc.createElement('section');
+    section.className = 'report-section publication-history-section';
+    section.innerHTML = `
+      <div class="section-heading"><div><h2>Volumen de publicaciones</h2><p>Registros creados en Meta por mes y plataforma, cruzados con las interacciones y las conversaciones iniciadas.</p></div><span class="section-label">CONTENIDO</span></div>
+      <p class="publication-history-note">Feed reúne fotos, secuencias y publicaciones con varios archivos multimedia. Cada fila cuenta una publicación en la plataforma correspondiente; si una pieza se publicó en Facebook e Instagram, se contabiliza en cada plataforma. Un cero indica que Meta no registró publicaciones para ese mes y plataforma. Las columnas de conversaciones muestran las conversaciones con mensajes iniciadas en cada plataforma durante el mes.</p>
+      <div class="publication-table-wrap"><table class="publication-table"><thead><tr><th>Mes</th><th class="fb">FB feed</th><th class="fb">FB reels</th><th class="fb">FB stories</th><th class="ig">IG feed</th><th class="ig">IG reels</th><th class="ig">IG stories</th><th>Total piezas</th><th>Interacciones</th><th>Conversaciones FB</th><th>Conversaciones IG</th></tr></thead><tbody>
+        <tr><td class="month">Abril</td><td class="fb">4</td><td class="fb">0</td><td class="fb">0</td><td class="ig">0</td><td class="ig">2</td><td class="ig">12</td><td class="total">18</td><td>28</td><td class="conversations">0</td><td class="conversations">8</td></tr>
+        <tr><td class="month">Mayo</td><td class="fb">1</td><td class="fb">0</td><td class="fb">0</td><td class="ig">0</td><td class="ig">0</td><td class="ig">0</td><td class="total">1</td><td>16</td><td class="conversations">2</td><td class="conversations">13</td></tr>
+        <tr><td class="month">Junio</td><td class="fb">7</td><td class="fb">2</td><td class="fb">0</td><td class="ig">8</td><td class="ig">3</td><td class="ig">56</td><td class="total">76</td><td>1.546</td><td class="conversations">13</td><td class="conversations">34</td></tr>
+        <tr><td class="month">Julio</td><td class="fb">1</td><td class="fb">1</td><td class="fb">0</td><td class="ig">13</td><td class="ig">0</td><td class="ig">50</td><td class="total">65</td><td>953</td><td class="conversations">15</td><td class="conversations">24</td></tr>
+        <tr><td class="month">Agosto</td><td class="fb">5</td><td class="fb">0</td><td class="fb">8</td><td class="ig">19</td><td class="ig">0</td><td class="ig">44</td><td class="total">76</td><td>1.442</td><td class="conversations">12</td><td class="conversations">30</td></tr>
+      </tbody></table></div>
+      <div class="publication-history-grid"><div class="publication-summary"><h3>Más contenido, más oportunidades de respuesta</h3><p>Agosto cerró con 76 registros de publicación: 13 en Facebook y 63 en Instagram. El mayor volumen se concentró en las stories de Instagram (44), mientras que el feed de Instagram sumó 19 piezas y Facebook incorporó 8 stories. Las 1.442 interacciones convivieron con 30 conversaciones iniciadas en Instagram y 12 en Facebook.</p></div><div class="publication-summary"><h3>Acumulado abril–agosto</h3><div class="publication-kpis"><div class="publication-kpi"><b>236</b><span>registros de publicación</span></div><div class="publication-kpi"><b>207</b><span>Instagram</span></div><div class="publication-kpi"><b>29</b><span>Facebook</span></div><div class="publication-kpi"><b>151</b><span>conversaciones iniciadas</span></div></div></div></div>
+      <div class="paid-history-block"><div class="section-heading"><div><h2>Publicidad paga</h2><p>Campañas de Meta realizadas entre abril y agosto de 2026.</p></div><span class="section-label">ANUNCIOS</span></div><p class="publication-history-note">Se identificaron seis anuncios en la cuenta Cocollo. Cuatro tuvieron inversión y dos finalizaron sin gasto; todos se lanzaron en junio y dos extendieron su período hasta el 3 de julio.</p><div class="publication-table-wrap paid-history-table-wrap"><table class="publication-table paid-history-table"><thead><tr><th>Campaña</th><th>Período</th><th>Conversaciones</th><th>Costo / conv.</th><th>Importe gastado</th><th>Visualizaciones</th><th>Alcance</th><th>Presupuesto</th><th>Estado</th></tr></thead><tbody><tr><td class="month">Día del Padre I</td><td>14–21 jun</td><td class="paid-result">2</td><td>$530,66</td><td class="paid-spend">$1.061,31</td><td>617</td><td>539</td><td>$50.000</td><td>Completada</td></tr><tr><td class="month">Día del Padre II</td><td>14–21 jun</td><td class="paid-zero">0</td><td class="paid-zero">—</td><td class="paid-spend">$295,25</td><td>187</td><td>166</td><td>$50.000</td><td>Completada</td></tr><tr><td class="month">Anuncio I</td><td>15–30 jun</td><td class="paid-result">1</td><td>$625,09</td><td class="paid-spend">$625,09</td><td>252</td><td>226</td><td>$100.000</td><td>Completada</td></tr><tr><td class="month">Anuncio II</td><td>15–30 jun</td><td class="paid-result">3</td><td>$428,89</td><td class="paid-spend">$1.286,68</td><td>784</td><td>657</td><td>$100.000</td><td>Completada</td></tr><tr><td class="month">Anuncio I</td><td>15 jun–3 jul</td><td class="paid-zero">0</td><td class="paid-zero">—</td><td class="paid-zero">$0,00</td><td class="paid-zero">—</td><td class="paid-zero">—</td><td>$50.000</td><td>Sin gasto</td></tr><tr><td class="month">Anuncio II</td><td>15 jun–3 jul</td><td class="paid-zero">0</td><td class="paid-zero">—</td><td class="paid-zero">$0,00</td><td class="paid-zero">—</td><td class="paid-zero">—</td><td>$50.000</td><td>Sin gasto</td></tr></tbody></table></div><div class="publication-history-grid paid-history-grid"><div class="publication-summary"><h3>Resultado pago acumulado</h3><p>Las cuatro campañas con inversión generaron <strong>6 conversaciones iniciadas</strong>, <strong>1.840 visualizaciones</strong> y <strong>1.588 personas alcanzadas</strong>, con una inversión total de <strong>$3.268,33</strong> y un costo promedio de <strong>$544,72 por conversación</strong>.</p></div><div class="publication-summary"><h3>Lectura rápida</h3><p>El mejor costo por conversación fue Anuncio II (<strong>$428,89</strong>). Las campañas del Día del Padre sumaron 2 conversaciones con $1.356,56 de inversión. Los dos anuncios restantes finalizaron sin gasto.</p></div></div></div>
+    `;
+    const anchor = doc.querySelector('.report-social-footer-final') || doc.querySelector('.report-footer');
+    anchor?.before(section);
+  };
+  frame.addEventListener('load', mount, { once: false });
+  mount();
+  setTimeout(mount, 800);
+})();
+</script>
 </body>
 </html>

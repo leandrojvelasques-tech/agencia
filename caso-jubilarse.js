@@ -1,4 +1,21 @@
 (() => {
+  const planningCalendar = document.querySelector(".marketing-calendar");
+  if (planningCalendar) {
+    planningCalendar.classList.add("marketing-calendar-real");
+    planningCalendar.innerHTML = `
+      <div class="marketing-calendar-image-wrap">
+        <img
+          src="assets/jubilarse-calendario-contenidos-septiembre-2026.png"
+          alt="Calendario mensual real de contenidos de Consultora Jubilarse para septiembre de 2026"
+          width="1288"
+          height="721"
+          loading="lazy"
+        />
+      </div>
+      <figcaption>El calendario real de trabajo: temas, fechas y formatos organizados para revisar cada publicación.</figcaption>
+    `;
+  }
+
   const carousel = document.querySelector("[data-case-carousel]");
   if (!carousel) return;
   const items = [
