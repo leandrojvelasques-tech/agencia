@@ -1,0 +1,1 @@
+Carpeta vacía intencional para representar el esquema diario de archivo.
