@@ -33,6 +33,7 @@ import CrmPresentationPlayer from './pages/admin/CrmPresentationPlayer'
 
 // Public (participant) pages
 import EventLanding from './pages/public/EventLanding'
+import EventMaterials from './pages/public/EventMaterials'
 import EventRegister from './pages/public/EventRegister'
 import EventConfirmation from './pages/public/EventConfirmation'
 import AttendanceCheck from './pages/public/AttendanceCheck'
@@ -134,6 +135,7 @@ export default function App() {
 
         {/* Public Participant Routes */}
         <Route path="/evento/:slug" element={<EventLanding />} />
+        <Route path="/evento/:slug/materiales" element={<EventMaterials />} />
         <Route path="/evento/:slug/inscripcion" element={<EventRegister />} />
         <Route path="/evento/:slug/confirmacion" element={<EventConfirmation />} />
         <Route path="/evento/:slug/asistencia" element={<AttendanceCheck />} />

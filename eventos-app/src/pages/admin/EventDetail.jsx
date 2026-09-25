@@ -366,6 +366,8 @@ export default function EventDetail() {
   }
 
 
+  const materials = event.event_materials?.filter(m => m.type !== 'image') || []
+  const materialsUrl = `${window.location.origin}/evento/${eventAccessKey}/materiales`
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
     { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas de Inscripción', count: null },
@@ -373,8 +375,10 @@ export default function EventDetail() {
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },
     { to: `/admin/eventos/${id}/participantes?tab=satisfaction`, icon: 'thumb_up', label: 'Encuesta de Satisfacción', count: feedbackCount },
     { to: `/admin/eventos/${id}/reporte`, icon: 'assessment', label: 'Reporte del Evento', count: null },
+    ...(event.status !== 'draft'
+      ? [{ to: `/evento/${eventAccessKey}/materiales`, icon: 'folder_open', label: 'Materiales de trabajo', count: materials.length, external: true }]
+      : []),
   ]
-  const materials = event.event_materials?.filter(m => m.type !== 'image') || []
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
 
   return (
@@ -641,7 +645,7 @@ export default function EventDetail() {
       {/* Action Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         {ACTIONS.map(action => (
-          <Link key={action.to} to={action.to} className="card card-interactive p-5 flex items-center gap-4 group">
+          <Link key={action.to} to={action.to} target={action.external ? '_blank' : undefined} rel={action.external ? 'noreferrer' : undefined} className="card card-interactive p-5 flex items-center gap-4 group">
             <div className="w-10 h-10 rounded-[var(--radius-premium)] bg-[var(--color-deep-green)]/8 flex items-center justify-center group-hover:bg-[var(--color-deep-green)] transition-colors">
               <span className="material-symbols-outlined text-xl text-[var(--color-deep-green)] group-hover:text-white transition-colors">{action.icon}</span>
             </div>
@@ -675,6 +679,31 @@ export default function EventDetail() {
                 Copiar
               </button>
             </div>
+
+            {event.status !== 'draft' && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-3 border border-[var(--color-deep-green)]/10">
+                <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]">folder_open</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-0.5">Materiales de trabajo</p>
+                  <p className="text-sm font-medium text-[var(--color-dark-gray)] truncate">{materialsUrl}</p>
+                  <p className="text-xs text-[var(--color-dark-gray)]/50 mt-0.5">{materials.length ? `${materials.length} recursos publicados` : 'Todavía no hay recursos cargados'}</p>
+                </div>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <Link to={`/admin/eventos/${id}/editar`} className="btn-ghost !px-3 !py-1.5 text-xs">
+                    <span className="material-symbols-outlined text-base">edit</span>
+                    Gestionar
+                  </Link>
+                  <a href={materialsUrl} target="_blank" rel="noreferrer" className="btn-ghost !px-3 !py-1.5 text-xs">
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                    Ver
+                  </a>
+                  <button onClick={() => { copyToClipboard(materialsUrl); alert('Link de materiales copiado'); }} className="btn-ghost !px-3 !py-1.5 text-xs">
+                    <span className="material-symbols-outlined text-base">content_copy</span>
+                    Copiar link
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[var(--color-refined-gray)] rounded-[var(--radius-premium)] p-3 border border-[var(--color-deep-green)]/10">
               <div className="flex items-center gap-3 flex-1 min-w-0">
