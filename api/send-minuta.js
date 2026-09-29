@@ -160,9 +160,15 @@ module.exports = async (req, res) => {
       ...(Array.isArray(photoUrls) ? photoUrls : []),
       ...(photoUrl ? [photoUrl] : [])
     ].map(ensureAbsoluteUrl).filter(Boolean))];
-    const finalExtraFiles = Array.isArray(extraFiles)
-      ? extraFiles.map(ensureAbsoluteUrl).filter(Boolean)
-      : (extraFiles ? [ensureAbsoluteUrl(extraFiles)] : []);
+    const finalExtraFiles = (Array.isArray(extraFiles) ? extraFiles : (extraFiles ? [extraFiles] : []))
+      .map((item) => {
+        const media = typeof item === 'string' ? { url: item, title: '' } : item;
+        return {
+          url: ensureAbsoluteUrl(media?.url),
+          title: String(media?.title || '').trim()
+        };
+      })
+      .filter((item) => item.url);
     const finalAttendanceLink = ensureAbsoluteUrl(attendanceLink);
     const finalSurveyLink = ensureAbsoluteUrl(surveyLink);
     const clientName = client?.name ? escapeHtml(client.name) : '';
@@ -278,11 +284,11 @@ module.exports = async (req, res) => {
       }
 
       if (hasExtra) {
-        finalExtraFiles.forEach((url, index) => {
+        finalExtraFiles.forEach((media, index) => {
           materialsHtml += `
           <div style="margin-bottom: 12px;">
-            <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #1e3a8a; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
-              🎥 Ver / Descargar Grabación ${index + 1}
+            <a href="${media.url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #1e3a8a; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
+              🎥 ${escapeHtml(media.title || `Ver / Descargar Grabación ${index + 1}`)}
             </a>
           </div>
         `;

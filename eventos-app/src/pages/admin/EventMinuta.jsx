@@ -18,6 +18,9 @@ const programFromAgenda = (agenda) => {
   }).join('\n')
 }
 
+const recordingTitle = (recording, index) =>
+  recording.title?.replace(/^Minuta · Grabación · /, '').trim() || `Grabación ${index + 1}`
+
 export default function EventMinuta() {
   const { id } = useParams()
   const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual, updateEvent } = useStore()
@@ -39,6 +42,7 @@ export default function EventMinuta() {
   const [presentationLink, setPresentationLink] = useState('')
   const [recordings, setRecordings] = useState([])
   const [recordingLink, setRecordingLink] = useState('')
+  const [recordingDescription, setRecordingDescription] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [toast, setToast] = useState('')
@@ -341,7 +345,9 @@ export default function EventMinuta() {
     const url = (field === 'photo' ? photoLink : recordingLink).trim()
     if (!url) return
 
-    const title = field === 'photo' ? 'Minuta · Foto · Enlace' : 'Minuta · Grabación · Enlace'
+    const title = field === 'photo'
+      ? 'Minuta · Foto · Enlace'
+      : `Minuta · Grabación · ${recordingDescription.trim() || 'Enlace'}`
     const type = field === 'photo' ? 'image' : 'link'
     try {
       const { data: material, error } = await supabase
@@ -357,6 +363,7 @@ export default function EventMinuta() {
       } else {
         setRecordings(current => current.some(recording => recording.url === url) ? current : [...current, material])
         setRecordingLink('')
+        setRecordingDescription('')
       }
     } catch (err) {
       setToast('No se pudo guardar el enlace: ' + err.message)
@@ -377,6 +384,21 @@ export default function EventMinuta() {
     else setRecordings(current => current.filter(item => item !== media))
   }
 
+  const handleUpdateRecordingTitle = async (recording, value) => {
+    const title = `Minuta · Grabación · ${value.trim() || 'Grabación'}`
+    const query = recording.id
+      ? supabase.from('event_materials').update({ title }).eq('id', recording.id)
+      : supabase.from('event_materials').insert({ event_id: event.id, type: 'link', title, url: recording.url })
+    const { data, error } = await query.select('id, title, url').single()
+    if (error) {
+      setToast('No se pudo guardar el nombre: ' + error.message)
+      setTimeout(() => setToast(''), 5000)
+      return
+    }
+
+    setRecordings(current => current.map(item => item.url === recording.url ? data : item))
+  }
+
   const handleSaveDraft = () => {
     const draft = {
       summary,
@@ -385,7 +407,7 @@ export default function EventMinuta() {
       photos: photos.map(photo => photo.url),
       observations,
       presentationLink,
-      recordings: recordings.map(recording => recording.url),
+      recordings,
       includeAttendees,
       includeAbsentees,
       externalEmails,
@@ -446,7 +468,7 @@ export default function EventMinuta() {
       photoUrls: photos.map(photo => photo.url),
       presentationLink,
       attachedSlideInfo,
-      extraFiles: recordings.map(recording => recording.url),
+      extraFiles: recordings.map((recording, index) => ({ url: recording.url, title: recordingTitle(recording, index) })),
       attendees: includeAttendees ? presentRegs.map(r => {
         const p = getParticipant(r)
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
@@ -563,7 +585,7 @@ export default function EventMinuta() {
       photoUrls: photos.map(photo => photo.url),
       presentationLink,
       attachedSlideInfo,
-      extraFiles: recordings.map(recording => recording.url),
+      extraFiles: recordings.map((recording, index) => ({ url: recording.url, title: recordingTitle(recording, index) })),
       attendees: includeAttendees ? presentRegs.map(r => {
         const p = getParticipant(r)
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
@@ -1053,12 +1075,26 @@ export default function EventMinuta() {
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Podés seleccionar varias grabaciones juntas o agregar enlaces de a uno.</p>
+              <input
+                className="form-input mt-2"
+                placeholder="Nombre o aclaración (ej. Jornada 1, Jornada 2)"
+                aria-label="Nombre o aclaración de la grabación"
+                value={recordingDescription}
+                onChange={e => setRecordingDescription(e.target.value)}
+              />
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Podés seleccionar varias grabaciones juntas o agregar enlaces de a uno. Editá el nombre y se guarda al salir del campo.</p>
               {recordings.map((recording, index) => (
                 <div key={recording.id || recording.url} className="flex items-center gap-2 mt-2 bg-blue-50/70 border border-blue-200 rounded-lg p-2.5">
                   <span className="material-symbols-outlined text-blue-600">videocam</span>
-                  <a href={recording.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-900 hover:underline truncate max-w-md flex-1">
-                    {recording.title?.replace('Minuta · Grabación · ', '') || `Grabación ${index + 1}`}
+                  <input
+                    className="form-input flex-1 !py-1.5 text-xs"
+                    aria-label={`Nombre de la grabación ${index + 1}`}
+                    value={recordingTitle(recording, index)}
+                    onChange={e => setRecordings(current => current.map(item => item.url === recording.url ? { ...item, title: `Minuta · Grabación · ${e.target.value}` } : item))}
+                    onBlur={e => handleUpdateRecordingTitle(recording, e.target.value)}
+                  />
+                  <a href={recording.url} target="_blank" rel="noreferrer" className="text-blue-900 hover:text-blue-700 p-1" title="Abrir enlace de la grabación">
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
                   </a>
                   <button type="button" onClick={() => handleRemoveMedia('recording', recording)} className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center" title="Quitar grabación">
                     <span className="material-symbols-outlined text-base">close</span>
@@ -1257,7 +1293,7 @@ export default function EventMinuta() {
                   <div className="mb-3" key={recording.id || recording.url}>
                     <a href={recording.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-900 hover:bg-blue-950 rounded-[var(--radius-normal)] text-xs font-bold text-white transition-colors shadow-sm">
                       <span className="material-symbols-outlined text-[18px]">videocam</span>
-                      Ver / Descargar Grabación {index + 1}
+                      {recordingTitle(recording, index)}
                     </a>
                   </div>
                 ))}
