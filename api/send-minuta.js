@@ -156,10 +156,19 @@ module.exports = async (req, res) => {
 
     const finalPresentationLink = ensureAbsoluteUrl(presentationLink);
     const finalPhotoUrl = ensureAbsoluteUrl(photoUrl);
-    const finalPhotoUrls = [...new Set([
-      ...(Array.isArray(photoUrls) ? photoUrls : []),
-      ...(photoUrl ? [photoUrl] : [])
-    ].map(ensureAbsoluteUrl).filter(Boolean))];
+    const finalPhotoUrls = (Array.isArray(photoUrls) ? photoUrls : [])
+      .map((item) => {
+        const media = typeof item === 'string' ? { url: item, title: '' } : item;
+        return {
+          url: ensureAbsoluteUrl(media?.url),
+          title: String(media?.title || '').trim()
+        };
+      })
+      .filter((item) => item.url);
+    const legacyPhotoUrl = ensureAbsoluteUrl(photoUrl);
+    if (legacyPhotoUrl && !finalPhotoUrls.some((photo) => photo.url === legacyPhotoUrl)) {
+      finalPhotoUrls.push({ url: legacyPhotoUrl, title: '' });
+    }
     const finalExtraFiles = (Array.isArray(extraFiles) ? extraFiles : (extraFiles ? [extraFiles] : []))
       .map((item) => {
         const media = typeof item === 'string' ? { url: item, title: '' } : item;
@@ -189,9 +198,10 @@ module.exports = async (req, res) => {
     // Construct photo HTML section
     let photoHtml = '';
     if (finalPhotoUrls.length > 0) {
-      photoHtml = finalPhotoUrls.map((url, index) => `
+      photoHtml = finalPhotoUrls.map((photo, index) => `
         <div style="margin-bottom: 16px; text-align: center;">
-          <img src="${url}" alt="Foto ${index + 1} del evento" style="max-width: 100%; height: auto; max-height: 320px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; display: block; margin: 0 auto;" />
+          <img src="${photo.url}" alt="${escapeHtml(photo.title || `Foto ${index + 1} del evento`)}" style="max-width: 100%; height: auto; max-height: 320px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; display: block; margin: 0 auto;" />
+          ${photo.title ? `<p style="margin: 8px 0 0; color: #4F4C4D; font-size: 12px;">${escapeHtml(photo.title)}</p>` : ''}
         </div>
       `).join('');
     }
@@ -272,11 +282,11 @@ module.exports = async (req, res) => {
       }
 
       if (hasPhoto) {
-        finalPhotoUrls.forEach((url, index) => {
+        finalPhotoUrls.forEach((photo, index) => {
           materialsHtml += `
           <div style="margin-bottom: 12px;">
-            <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #f3f7f5; border: 1px solid #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #285A47; text-decoration: none; font-family: sans-serif;">
-              📸 Ver Foto ${index + 1} del Evento
+            <a href="${photo.url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #f3f7f5; border: 1px solid #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #285A47; text-decoration: none; font-family: sans-serif;">
+              📸 ${escapeHtml(photo.title || `Ver Foto ${index + 1} del Evento`)}
             </a>
           </div>
         `;

@@ -21,6 +21,9 @@ const programFromAgenda = (agenda) => {
 const recordingTitle = (recording, index) =>
   recording.title?.replace(/^Minuta · Grabación · /, '').trim() || `Grabación ${index + 1}`
 
+const photoTitle = (photo, index) =>
+  photo.title?.replace(/^Minuta · Foto · /, '').trim() || `Foto ${index + 1}`
+
 export default function EventMinuta() {
   const { id } = useParams()
   const { getEventById, fetchEventData, registrations, attendance, updateParticipantManual, updateEvent } = useStore()
@@ -35,6 +38,7 @@ export default function EventMinuta() {
   const [includeProgram, setIncludeProgram] = useState(true)
   const [photos, setPhotos] = useState([])
   const [photoLink, setPhotoLink] = useState('')
+  const [photoDescription, setPhotoDescription] = useState('')
   const [observations, setObservations] = useState([''])
   const [includeAttendees, setIncludeAttendees] = useState(true)
   const [includeAbsentees, setIncludeAbsentees] = useState(true)
@@ -346,7 +350,7 @@ export default function EventMinuta() {
     if (!url) return
 
     const title = field === 'photo'
-      ? 'Minuta · Foto · Enlace'
+      ? `Minuta · Foto · ${photoDescription.trim() || 'Enlace'}`
       : `Minuta · Grabación · ${recordingDescription.trim() || 'Enlace'}`
     const type = field === 'photo' ? 'image' : 'link'
     try {
@@ -360,6 +364,7 @@ export default function EventMinuta() {
       if (field === 'photo') {
         setPhotos(current => current.some(photo => photo.url === url) ? current : [...current, material])
         setPhotoLink('')
+        setPhotoDescription('')
       } else {
         setRecordings(current => current.some(recording => recording.url === url) ? current : [...current, material])
         setRecordingLink('')
@@ -399,12 +404,27 @@ export default function EventMinuta() {
     setRecordings(current => current.map(item => item.url === recording.url ? data : item))
   }
 
+  const handleUpdatePhotoTitle = async (photo, value) => {
+    const title = `Minuta · Foto · ${value.trim() || 'Foto'}`
+    const query = photo.id
+      ? supabase.from('event_materials').update({ title }).eq('id', photo.id)
+      : supabase.from('event_materials').insert({ event_id: event.id, type: 'image', title, url: photo.url })
+    const { data, error } = await query.select('id, title, url').single()
+    if (error) {
+      setToast('No se pudo guardar el nombre de la foto: ' + error.message)
+      setTimeout(() => setToast(''), 5000)
+      return
+    }
+
+    setPhotos(current => current.map(item => item.url === photo.url ? data : item))
+  }
+
   const handleSaveDraft = () => {
     const draft = {
       summary,
       program,
       includeProgram,
-      photos: photos.map(photo => photo.url),
+      photos,
       observations,
       presentationLink,
       recordings,
@@ -465,7 +485,7 @@ export default function EventMinuta() {
       client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
       photoUrl: primaryPhotoUrl,
-      photoUrls: photos.map(photo => photo.url),
+      photoUrls: photos.map((photo, index) => ({ url: photo.url, title: photoTitle(photo, index) })),
       presentationLink,
       attachedSlideInfo,
       extraFiles: recordings.map((recording, index) => ({ url: recording.url, title: recordingTitle(recording, index) })),
@@ -582,7 +602,7 @@ export default function EventMinuta() {
       client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
       photoUrl: primaryPhotoUrl,
-      photoUrls: photos.map(photo => photo.url),
+      photoUrls: photos.map((photo, index) => ({ url: photo.url, title: photoTitle(photo, index) })),
       presentationLink,
       attachedSlideInfo,
       extraFiles: recordings.map((recording, index) => ({ url: recording.url, title: recordingTitle(recording, index) })),
@@ -825,8 +845,15 @@ export default function EventMinuta() {
               />
             </label>
           </div>
+          <input
+            className="form-input mt-2"
+            placeholder="Nombre o aclaración de la foto (ej. Jornada 1)"
+            aria-label="Nombre o aclaración de la foto"
+            value={photoDescription}
+            onChange={e => setPhotoDescription(e.target.value)}
+          />
           <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">
-            Podés seleccionar varias fotos juntas o agregar enlaces de a uno.
+            Podés seleccionar varias fotos juntas o agregar enlaces de a uno. Editá el nombre de cada foto y se guarda al salir del campo.
           </p>
           {photos.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
@@ -836,6 +863,13 @@ export default function EventMinuta() {
                   <button type="button" onClick={() => handleRemoveMedia('photo', photo)} className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors shadow-md flex items-center justify-center cursor-pointer" title="Quitar foto">
                     <span className="material-symbols-outlined text-sm leading-none">close</span>
                   </button>
+                  <input
+                    className="form-input mt-2 !py-1.5 text-xs"
+                    aria-label={`Nombre de la foto ${index + 1}`}
+                    value={photoTitle(photo, index)}
+                    onChange={e => setPhotos(current => current.map(item => item.url === photo.url ? { ...item, title: `Minuta · Foto · ${e.target.value}` } : item))}
+                    onBlur={e => handleUpdatePhotoTitle(photo, e.target.value)}
+                  />
                 </div>
               ))}
             </div>
@@ -1146,7 +1180,7 @@ export default function EventMinuta() {
 
             {photos.length > 0 && (
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {photos.map((photo, index) => <img key={photo.id || photo.url} src={photo.url} alt={`Foto ${index + 1} del evento`} className="w-full h-52 object-cover rounded-[10px] shadow-sm" onError={e => e.target.style.display = 'none'} />)}
+                {photos.map((photo, index) => <img key={photo.id || photo.url} src={photo.url} alt={photoTitle(photo, index)} title={photoTitle(photo, index)} className="w-full h-52 object-cover rounded-[10px] shadow-sm" onError={e => e.target.style.display = 'none'} />)}
               </div>
             )}
 
@@ -1284,7 +1318,7 @@ export default function EventMinuta() {
                   <div className="mb-3" key={photo.id || photo.url}>
                     <a href={photo.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
                       <span className="material-symbols-outlined text-[18px]">photo_library</span>
-                      Ver Foto {index + 1} del Evento
+                      {photoTitle(photo, index)}
                     </a>
                   </div>
                 ))}
