@@ -30,13 +30,15 @@ export default function EventMinuta() {
   const [summary, setSummary] = useState('')
   const [program, setProgram] = useState('')
   const [includeProgram, setIncludeProgram] = useState(true)
-  const [photoUrl, setPhotoUrl] = useState('')
+  const [photos, setPhotos] = useState([])
+  const [photoLink, setPhotoLink] = useState('')
   const [observations, setObservations] = useState([''])
   const [includeAttendees, setIncludeAttendees] = useState(true)
   const [includeAbsentees, setIncludeAbsentees] = useState(true)
   const [externalEmails, setExternalEmails] = useState('')
   const [presentationLink, setPresentationLink] = useState('')
-  const [extraFiles, setExtraFiles] = useState('')
+  const [recordings, setRecordings] = useState([])
+  const [recordingLink, setRecordingLink] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [toast, setToast] = useState('')
@@ -136,6 +138,11 @@ export default function EventMinuta() {
 
           // Load draft if available
           const draft = localStorage.getItem(`minuta_draft_${targetId}`) || localStorage.getItem(`minuta_draft_${id}`)
+          const minutaMedia = (eventData.event_materials || [])
+            .filter(material => material.title?.startsWith('Minuta · '))
+            .map(material => ({ id: material.id, url: material.url, title: material.title }))
+          setPhotos(minutaMedia.filter(material => material.title.startsWith('Minuta · Foto')))
+          setRecordings(minutaMedia.filter(material => material.title.startsWith('Minuta · Grabación')))
           if (draft) {
             try {
               const parsed = JSON.parse(draft)
@@ -143,10 +150,23 @@ export default function EventMinuta() {
               if (parsed.program !== undefined) setProgram(parsed.program)
               else setProgram(suggestedProgram)
               if (parsed.includeProgram !== undefined) setIncludeProgram(parsed.includeProgram)
-              if (parsed.photoUrl) setPhotoUrl(parsed.photoUrl)
+              if (parsed.photos || parsed.photoUrl) {
+                const draftPhotos = Array.isArray(parsed.photos)
+                  ? parsed.photos.map(item => typeof item === 'string' ? { url: item } : item)
+                  : [{ url: parsed.photoUrl }]
+                setPhotos(current => [...new Map([...current, ...draftPhotos].filter(item => item?.url).map(item => [item.url, item])).values()])
+              }
               if (Array.isArray(parsed.observations)) setObservations(parsed.observations)
               if (parsed.presentationLink) setPresentationLink(parsed.presentationLink)
-              if (parsed.extraFiles) setExtraFiles(parsed.extraFiles)
+              if (parsed.recordings || parsed.extraFiles) {
+                const draftRecordings = Array.isArray(parsed.recordings)
+                  ? parsed.recordings.map(item => typeof item === 'string' ? { url: item } : item)
+                  : (Array.isArray(parsed.extraFiles)
+                    ? parsed.extraFiles
+                    : String(parsed.extraFiles).split(/[\n,]+/).map(url => url.trim()).filter(Boolean)
+                  ).map(url => typeof url === 'string' ? { url } : url)
+                setRecordings(current => [...new Map([...current, ...draftRecordings].filter(item => item?.url).map(item => [item.url, item])).values()])
+              }
               if (parsed.includeAttendees !== undefined) setIncludeAttendees(parsed.includeAttendees)
               if (parsed.includeAbsentees !== undefined) setIncludeAbsentees(parsed.includeAbsentees)
               if (parsed.externalEmails) setExternalEmails(parsed.externalEmails)
@@ -171,7 +191,11 @@ export default function EventMinuta() {
               const draft = localStorage.getItem(`minuta_draft_${targetId}`)
               if (!draft) {
                 if (reportData.summary) setSummary(reportData.summary)
-                if (reportData.photo_url) setPhotoUrl(reportData.photo_url)
+                if (reportData.photo_url) {
+                  setPhotos(current => current.some(photo => photo.url === reportData.photo_url)
+                    ? current
+                    : [...current, { url: reportData.photo_url, title: 'Foto anterior' }])
+                }
                 if (reportData.program) setProgram(reportData.program)
                 if (reportData.include_program !== undefined) setIncludeProgram(reportData.include_program)
               }
@@ -230,6 +254,8 @@ export default function EventMinuta() {
   if (loading) return <div className="text-center py-20"><p className="animate-pulse text-[var(--color-deep-green)] font-bold">Cargando minuta...</p></div>
   if (!event) return <div className="text-center py-20"><p className="text-gray-600">Evento no encontrado</p></div>
 
+  const primaryPhotoUrl = photos[0]?.url || ''
+
   const attendees = (registrations || [])
     .filter(r => {
       const att = (attendance || []).find(a => a.registration_id === r.id)
@@ -253,42 +279,53 @@ export default function EventMinuta() {
   })()
 
   const handleFileUpload = async (e, field) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
 
     // Supabase Free Tier maximum file size limit (50MB)
     const MAX_SIZE_MB = 50
     const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
-    if (file.size > MAX_SIZE_BYTES) {
-      alert(`El archivo es demasiado grande (${(file.size / (1024 * 1024)).toFixed(1)} MB). La cuenta de Supabase tiene un límite de ${MAX_SIZE_MB} MB por archivo.\n\nTe recomendamos:\n1. Si es la presentación, descárgala de nuevo como PDF (ahora son mucho más ligeros).\n2. Si es otro archivo grande, súbelo a Google Drive/Dropbox y pega el enlace directo.`);
+    const oversizedFile = files.find(file => file.size > MAX_SIZE_BYTES)
+    if (oversizedFile) {
+      alert(`El archivo ${oversizedFile.name} supera el límite de ${MAX_SIZE_MB} MB por archivo.`)
+      e.target.value = ''
       return
     }
 
     setUploadingField(field)
     try {
-      const ext = file.name.split('.').pop()
-      const folder = field === 'photo' ? 'minuta-photos' : field === 'presentation' ? 'minuta-presentations' : 'minuta-files'
-      const fileName = `${folder}/minuta-${id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
-      
-      const { error: upErr } = await supabase.storage
-        .from('banners')
-        .upload(fileName, file, { upsert: true, contentType: file.type })
-      
-      if (upErr) throw upErr
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('banners')
-        .getPublicUrl(fileName)
-      
-      if (field === 'photo') {
-        setPhotoUrl(publicUrl)
-      } else if (field === 'presentation') {
-        setPresentationLink(publicUrl)
-      } else if (field === 'extra') {
-        setExtraFiles(publicUrl)
+      for (const file of files) {
+        const ext = file.name.split('.').pop()
+        const folder = field === 'photo' ? 'minuta-photos' : field === 'presentation' ? 'minuta-presentations' : field === 'recording' ? 'minuta-recordings' : 'minuta-files'
+        const fileName = `${folder}/minuta-${id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`
+
+        const { error: upErr } = await supabase.storage
+          .from('banners')
+          .upload(fileName, file, { upsert: true, contentType: file.type })
+
+        if (upErr) throw upErr
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('banners')
+          .getPublicUrl(fileName)
+
+        if (field === 'photo' || field === 'recording') {
+          const title = field === 'photo' ? `Minuta · Foto · ${file.name}` : `Minuta · Grabación · ${file.name}`
+          const type = field === 'photo' ? 'image' : 'link'
+          const { data: material, error: materialError } = await supabase
+            .from('event_materials')
+            .insert({ event_id: event.id, type, title, url: publicUrl })
+            .select('id, title, url')
+            .single()
+          if (materialError) throw materialError
+          if (field === 'photo') setPhotos(current => [...current, material])
+          else setRecordings(current => [...current, material])
+        } else if (field === 'presentation') {
+          setPresentationLink(publicUrl)
+        }
       }
-      
-      setToast('Archivo subido correctamente')
+
+      setToast(`${files.length} archivo${files.length === 1 ? '' : 's'} subido${files.length === 1 ? '' : 's'} correctamente`)
       setTimeout(() => setToast(''), 3000)
     } catch (err) {
       console.error('Error al subir archivo:', err)
@@ -296,7 +333,48 @@ export default function EventMinuta() {
       setTimeout(() => setToast(''), 5000)
     } finally {
       setUploadingField(null)
+      e.target.value = ''
     }
+  }
+
+  const handleAddMediaLink = async (field) => {
+    const url = (field === 'photo' ? photoLink : recordingLink).trim()
+    if (!url) return
+
+    const title = field === 'photo' ? 'Minuta · Foto · Enlace' : 'Minuta · Grabación · Enlace'
+    const type = field === 'photo' ? 'image' : 'link'
+    try {
+      const { data: material, error } = await supabase
+        .from('event_materials')
+        .insert({ event_id: event.id, type, title, url })
+        .select('id, title, url')
+        .single()
+      if (error) throw error
+
+      if (field === 'photo') {
+        setPhotos(current => current.some(photo => photo.url === url) ? current : [...current, material])
+        setPhotoLink('')
+      } else {
+        setRecordings(current => current.some(recording => recording.url === url) ? current : [...current, material])
+        setRecordingLink('')
+      }
+    } catch (err) {
+      setToast('No se pudo guardar el enlace: ' + err.message)
+      setTimeout(() => setToast(''), 5000)
+    }
+  }
+
+  const handleRemoveMedia = async (field, media) => {
+    if (media.id) {
+      const { error } = await supabase.from('event_materials').delete().eq('id', media.id)
+      if (error) {
+        setToast('No se pudo quitar el archivo: ' + error.message)
+        setTimeout(() => setToast(''), 5000)
+        return
+      }
+    }
+    if (field === 'photo') setPhotos(current => current.filter(item => item !== media))
+    else setRecordings(current => current.filter(item => item !== media))
   }
 
   const handleSaveDraft = () => {
@@ -304,10 +382,10 @@ export default function EventMinuta() {
       summary,
       program,
       includeProgram,
-      photoUrl,
+      photos: photos.map(photo => photo.url),
       observations,
       presentationLink,
-      extraFiles,
+      recordings: recordings.map(recording => recording.url),
       includeAttendees,
       includeAbsentees,
       externalEmails,
@@ -364,10 +442,11 @@ export default function EventMinuta() {
       program: includeProgram ? program : '',
       client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
-      photoUrl,
+      photoUrl: primaryPhotoUrl,
+      photoUrls: photos.map(photo => photo.url),
       presentationLink,
       attachedSlideInfo,
-      extraFiles: extraFiles ? [extraFiles] : [],
+      extraFiles: recordings.map(recording => recording.url),
       attendees: includeAttendees ? presentRegs.map(r => {
         const p = getParticipant(r)
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
@@ -480,10 +559,11 @@ export default function EventMinuta() {
       program: includeProgram ? program : '',
       client: client ? { name: client.company || client.name, logoUrl: client.logo_url || '' } : null,
       observations: observations.filter(o => o.trim()),
-      photoUrl,
+      photoUrl: primaryPhotoUrl,
+      photoUrls: photos.map(photo => photo.url),
       presentationLink,
       attachedSlideInfo,
-      extraFiles: extraFiles ? [extraFiles] : [],
+      extraFiles: recordings.map(recording => recording.url),
       attendees: includeAttendees ? presentRegs.map(r => {
         const p = getParticipant(r)
         return `${p?.first_name || ''} ${p?.last_name || ''}`.trim()
@@ -535,7 +615,7 @@ export default function EventMinuta() {
         summary: summary,
         program,
         include_program: includeProgram,
-        photo_url: photoUrl,
+        photo_url: photos[0]?.url || null,
         sent: true,
         sent_at: new Date().toISOString()
       }, { onConflict: 'event_id' })
@@ -689,15 +769,18 @@ export default function EventMinuta() {
 
         <div>
           <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">
-            Foto del evento
+            Fotos del evento
           </label>
           <div className="flex gap-2">
             <input
               className="form-input flex-1"
-              placeholder="Enlace directo a la imagen o subí una desde tu PC..."
-              value={photoUrl}
-              onChange={e => setPhotoUrl(e.target.value)}
+              placeholder="Pegá un enlace de imagen y agregalo..."
+              value={photoLink}
+              onChange={e => setPhotoLink(e.target.value)}
             />
+            <button type="button" className="btn-secondary px-4 text-xs font-bold shrink-0" onClick={() => handleAddMediaLink('photo')} disabled={!photoLink.trim()}>
+              Agregar enlace
+            </button>
             <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'photo' ? 'opacity-55 pointer-events-none' : ''}`}>
               {uploadingField === 'photo' ? (
                 <>
@@ -713,6 +796,7 @@ export default function EventMinuta() {
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
                 onChange={e => handleFileUpload(e, 'photo')}
                 disabled={uploadingField !== null}
@@ -720,19 +804,18 @@ export default function EventMinuta() {
             </label>
           </div>
           <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-2">
-            Podés pegar una dirección web de imagen o subir un archivo directamente.
+            Podés seleccionar varias fotos juntas o agregar enlaces de a uno.
           </p>
-          {photoUrl && (
-            <div className="relative mt-3 group">
-              <img src={photoUrl} alt="Preview" className="rounded-[var(--radius-card)] max-h-48 object-cover w-full" onError={e => e.target.style.display = 'none'} />
-              <button
-                type="button"
-                onClick={() => setPhotoUrl('')}
-                className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors shadow-md flex items-center justify-center cursor-pointer"
-                title="Quitar foto"
-              >
-                <span className="material-symbols-outlined text-sm leading-none">close</span>
-              </button>
+          {photos.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+              {photos.map((photo, index) => (
+                <div key={photo.id || photo.url} className="relative group">
+                  <img src={photo.url} alt={`Foto ${index + 1} del evento`} className="rounded-[var(--radius-card)] h-36 object-cover w-full" onError={e => e.target.style.display = 'none'} />
+                  <button type="button" onClick={() => handleRemoveMedia('photo', photo)} className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-1.5 transition-colors shadow-md flex items-center justify-center cursor-pointer" title="Quitar foto">
+                    <span className="material-symbols-outlined text-sm leading-none">close</span>
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -941,12 +1024,15 @@ export default function EventMinuta() {
               <div className="flex gap-2">
                 <input
                   className="form-input flex-1"
-                  placeholder="Enlace de YouTube, Zoom, Drive, Vimeo o subí el archivo de video..."
-                  value={extraFiles}
-                  onChange={e => setExtraFiles(e.target.value)}
+                  placeholder="Enlace de YouTube, Zoom, Drive o Vimeo..."
+                  value={recordingLink}
+                  onChange={e => setRecordingLink(e.target.value)}
                 />
-                <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'extra' ? 'opacity-55 pointer-events-none' : ''}`}>
-                  {uploadingField === 'extra' ? (
+                <button type="button" className="btn-secondary px-4 text-xs font-bold shrink-0" onClick={() => handleAddMediaLink('recording')} disabled={!recordingLink.trim()}>
+                  Agregar enlace
+                </button>
+                <label className={`btn-secondary flex items-center justify-center gap-1.5 cursor-pointer px-4 text-xs font-bold shrink-0 ${uploadingField === 'recording' ? 'opacity-55 pointer-events-none' : ''}`}>
+                  {uploadingField === 'recording' ? (
                     <>
                       <span className="material-symbols-outlined text-sm animate-spin">sync</span>
                       Subiendo...
@@ -960,29 +1046,25 @@ export default function EventMinuta() {
                   <input
                     type="file"
                     accept="video/*,.mp4,.mov,.webm,.mkv"
+                    multiple
                     className="hidden"
-                    onChange={e => handleFileUpload(e, 'extra')}
+                    onChange={e => handleFileUpload(e, 'recording')}
                     disabled={uploadingField !== null}
                   />
                 </label>
               </div>
-              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Pegá el enlace de la grabación (YouTube, Zoom, Drive, Vimeo) o subí el archivo de video del evento.</p>
-              {extraFiles && (
-                <div className="flex items-center gap-2 mt-2 bg-blue-50/70 border border-blue-200 rounded-lg p-2.5">
+              <p className="text-[10px] text-[var(--color-dark-gray)]/40 mt-1">Podés seleccionar varias grabaciones juntas o agregar enlaces de a uno.</p>
+              {recordings.map((recording, index) => (
+                <div key={recording.id || recording.url} className="flex items-center gap-2 mt-2 bg-blue-50/70 border border-blue-200 rounded-lg p-2.5">
                   <span className="material-symbols-outlined text-blue-600">videocam</span>
-                  <a href={extraFiles} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-900 hover:underline truncate max-w-md flex-1">
-                    {extraFiles}
+                  <a href={recording.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-900 hover:underline truncate max-w-md flex-1">
+                    {recording.title?.replace('Minuta · Grabación · ', '') || `Grabación ${index + 1}`}
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => setExtraFiles('')}
-                    className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center"
-                    title="Quitar grabación"
-                  >
+                  <button type="button" onClick={() => handleRemoveMedia('recording', recording)} className="text-red-500 hover:text-red-700 p-1 transition-colors cursor-pointer flex items-center justify-center" title="Quitar grabación">
                     <span className="material-symbols-outlined text-base">close</span>
                   </button>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -1026,8 +1108,10 @@ export default function EventMinuta() {
                <p className="mb-0"><strong>Coordinador:</strong> {event.coordinator}</p>
             </div>
 
-            {photoUrl && (
-              <img src={photoUrl} alt="Evento" className="w-full h-auto max-h-80 object-cover rounded-[10px] mb-8 shadow-sm grayscale hover:grayscale-0 transition-all duration-700" onError={e => e.target.style.display = 'none'} />
+            {photos.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {photos.map((photo, index) => <img key={photo.id || photo.url} src={photo.url} alt={`Foto ${index + 1} del evento`} className="w-full h-52 object-cover rounded-[10px] shadow-sm" onError={e => e.target.style.display = 'none'} />)}
+              </div>
             )}
 
             <div className="mb-8 mt-2">
@@ -1147,7 +1231,7 @@ export default function EventMinuta() {
               </div>
             ) : null}
 
-            {(photoUrl || presentationLink || extraFiles || attachedSlideInfo) && (
+            {(photos.length > 0 || presentationLink || recordings.length > 0 || attachedSlideInfo) && (
               <div className="mt-8 pt-6 border-t border-[var(--color-dark-gray)]/10">
                 <h4 className="text-[13px] font-bold text-[var(--color-deep-green)] uppercase tracking-wider mb-4">Materiales y Descargas</h4>
                 
@@ -1160,23 +1244,23 @@ export default function EventMinuta() {
                   </div>
                 )}
                 
-                {photoUrl && (
-                  <div className="mb-3">
-                    <a href={photoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
+                {photos.map((photo, index) => (
+                  <div className="mb-3" key={photo.id || photo.url}>
+                    <a href={photo.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-refined-gray)] hover:bg-gray-200 rounded-[var(--radius-normal)] text-sm font-bold text-[var(--color-deep-green)] transition-colors">
                       <span className="material-symbols-outlined text-[18px]">photo_library</span>
-                      Ver Álbum / Foto del Evento
+                      Ver Foto {index + 1} del Evento
                     </a>
                   </div>
-                )}
+                ))}
 
-                {extraFiles && (
-                  <div className="mb-3">
-                    <a href={extraFiles} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-900 hover:bg-blue-950 rounded-[var(--radius-normal)] text-xs font-bold text-white transition-colors shadow-sm">
+                {recordings.map((recording, index) => (
+                  <div className="mb-3" key={recording.id || recording.url}>
+                    <a href={recording.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-900 hover:bg-blue-950 rounded-[var(--radius-normal)] text-xs font-bold text-white transition-colors shadow-sm">
                       <span className="material-symbols-outlined text-[18px]">videocam</span>
-                      🎥 Ver / Descargar Grabación del Evento
+                      Ver / Descargar Grabación {index + 1}
                     </a>
                   </div>
-                )}
+                ))}
               </div>
             )}
 

@@ -103,6 +103,7 @@ module.exports = async (req, res) => {
     client,
     observations = [],
     photoUrl,
+    photoUrls = [],
     presentationLink,
     attachedSlideInfo,
     extraFiles = [],
@@ -155,6 +156,10 @@ module.exports = async (req, res) => {
 
     const finalPresentationLink = ensureAbsoluteUrl(presentationLink);
     const finalPhotoUrl = ensureAbsoluteUrl(photoUrl);
+    const finalPhotoUrls = [...new Set([
+      ...(Array.isArray(photoUrls) ? photoUrls : []),
+      ...(photoUrl ? [photoUrl] : [])
+    ].map(ensureAbsoluteUrl).filter(Boolean))];
     const finalExtraFiles = Array.isArray(extraFiles)
       ? extraFiles.map(ensureAbsoluteUrl).filter(Boolean)
       : (extraFiles ? [ensureAbsoluteUrl(extraFiles)] : []);
@@ -177,12 +182,12 @@ module.exports = async (req, res) => {
 
     // Construct photo HTML section
     let photoHtml = '';
-    if (finalPhotoUrl) {
-      photoHtml = `
-        <div style="margin-bottom: 25px; text-align: center;">
-          <img src="${finalPhotoUrl}" alt="Foto del evento" style="max-width: 100%; height: auto; max-height: 320px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; display: block; margin: 0 auto;" />
+    if (finalPhotoUrls.length > 0) {
+      photoHtml = finalPhotoUrls.map((url, index) => `
+        <div style="margin-bottom: 16px; text-align: center;">
+          <img src="${url}" alt="Foto ${index + 1} del evento" style="max-width: 100%; height: auto; max-height: 320px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; display: block; margin: 0 auto;" />
         </div>
-      `;
+      `).join('');
     }
 
     // Construct observations HTML section
@@ -240,7 +245,7 @@ module.exports = async (req, res) => {
     // Construct attachments/materials HTML section
     let materialsHtml = '';
     const hasPresentation = !!finalPresentationLink;
-    const hasPhoto = !!finalPhotoUrl;
+    const hasPhoto = finalPhotoUrls.length > 0 || !!finalPhotoUrl;
     const hasExtra = finalExtraFiles.length > 0;
 
     if (hasPresentation || hasPhoto || hasExtra) {
@@ -261,23 +266,27 @@ module.exports = async (req, res) => {
       }
 
       if (hasPhoto) {
-        materialsHtml += `
+        finalPhotoUrls.forEach((url, index) => {
+          materialsHtml += `
           <div style="margin-bottom: 12px;">
-            <a href="${finalPhotoUrl}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #f3f7f5; border: 1px solid #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #285A47; text-decoration: none; font-family: sans-serif;">
-              📸 Ver Álbum / Foto del Evento
+            <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #f3f7f5; border: 1px solid #285A47; border-radius: 6px; font-size: 13px; font-weight: bold; color: #285A47; text-decoration: none; font-family: sans-serif;">
+              📸 Ver Foto ${index + 1} del Evento
             </a>
           </div>
         `;
+        });
       }
 
       if (hasExtra) {
-        materialsHtml += `
+        finalExtraFiles.forEach((url, index) => {
+          materialsHtml += `
           <div style="margin-bottom: 12px;">
-            <a href="${finalExtraFiles[0]}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #1e3a8a; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
-              🎥 Ver / Descargar Grabación del Evento
+            <a href="${url}" target="_blank" style="display: inline-block; padding: 10px 18px; background-color: #1e3a8a; border-radius: 6px; font-size: 13px; font-weight: bold; color: #ffffff; text-decoration: none; font-family: sans-serif;">
+              🎥 Ver / Descargar Grabación ${index + 1}
             </a>
           </div>
         `;
+        });
       }
 
       materialsHtml += `
