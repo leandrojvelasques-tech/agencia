@@ -7,6 +7,7 @@ const ACCESS = [
     reports: [
       { id: 'puerto-cangrejo-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'puerto-cangrejo-julio-2026.html', score: 4.91, historicalScore: 4.43, reviews: 22, answered: null, positiveRate: 100, accent: '#a80d13', category: 'Reportes mensuales de encuestas de Google', summary: 'Julio registra un volumen alto de opiniones y mantiene una calificación muy por encima del promedio histórico.' },
       { id: 'puerto-cangrejo-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'puerto-cangrejo-agosto-2026.html', score: 4.69, historicalScore: 4.43, reviews: 16, answered: null, positiveRate: 93.8, accent: '#a80d13', category: 'Reportes mensuales de encuestas de Google', summary: 'Agosto registra 16 opiniones y mantiene un promedio de 4,69; el volumen se sostiene y queda un punto de atención sobre la música del salón.' },
+      { id: 'puerto-cangrejo-septiembre-2026', label: 'Septiembre 2026', period: 'Septiembre 2026', file: 'puerto-cangrejo-septiembre-2026.html', score: 4.82, historicalScore: 4.43, reviews: 22, answered: null, positiveRate: 95.5, accent: '#9e1017', category: 'Reportes mensuales de encuestas de Google', summary: 'Septiembre reúne 22 opiniones, con un promedio de 4,82 y 95,5% de calificaciones positivas. Las fechas relativas de Google son aproximadas.' },
     ],
   },
   {
