@@ -67,6 +67,12 @@
 .cv-course-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
 .cv-course-grid p{padding:15px 17px;border:1px solid var(--cv-line);border-radius:9px;color:#53615b;font-size:13px;line-height:1.5}
 .cv-course-grid strong{color:var(--cv-green)}
+.cv-contact{padding-top:62px;padding-bottom:62px;background:var(--cv-fog)}
+.cv-contact h2{color:var(--cv-dark);font:500 clamp(34px,4.5vw,58px)/1.02 var(--body);letter-spacing:-.065em}
+.cv-contact-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:28px;margin-top:30px}
+.cv-contact-details dt{margin-bottom:8px;color:var(--cv-green);font-size:14px;font-weight:700}
+.cv-contact-details dd{margin:0;color:var(--cv-dark);font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.cv-contact-details a{text-decoration:underline;text-underline-offset:4px}
 .cv-download{padding-top:62px;padding-bottom:62px;background:var(--cv-copper)}
 .cv-download-inner{display:flex;align-items:center;justify-content:space-between;gap:40px}
 .cv-download .eyebrow{margin-bottom:14px;color:var(--cv-dark)}

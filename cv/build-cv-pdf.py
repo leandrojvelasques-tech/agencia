@@ -183,7 +183,17 @@ story += heading("CURSOS Y CERTIFICACIONES COMPLEMENTARIAS", "Formación complem
 for item in education.xpath('.//div[contains(@class,"cv-course-grid")]/p'):
     story += [para(text(item), "course"), Spacer(1, 4)]
 
-story += [Spacer(1, 12), HRFlowable(width="100%", thickness=1, color=MINT), Spacer(1, 8)]
+contact = first('//section[contains(@class,"cv-contact")]')
+contact_parts = [para("INFORMACIÓN DE CONTACTO", "eyebrow")]
+for item in contact.xpath('.//dl/div'):
+    label = escape(text(item.xpath('./dt')[0]))
+    detail = item.xpath('./dd')[0]
+    value = escape(text(detail))
+    links = detail.xpath('./a')
+    if links:
+        value = f'<link href="{escape(links[0].get("href"), quote=True)}" color="#285A47">{value}</link>'
+    contact_parts.append(Paragraph(f'<b>{label}:</b> {value}', styles["small"]))
+story += [Spacer(1, 12), KeepTogether(contact_parts), Spacer(1, 8), HRFlowable(width="100%", thickness=1, color=MINT), Spacer(1, 8)]
 story.append(Paragraph('<link href="https://www.linkedin.com/in/leandrojvelasques/" color="#285A47">LinkedIn</link>  ·  <link href="https://www.leandrovelasques.com.ar/" color="#285A47">Sitio web</link>', styles["small"]))
 
 doc = SimpleDocTemplate(
