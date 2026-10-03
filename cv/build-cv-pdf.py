@@ -157,7 +157,7 @@ for index, article in enumerate(experience.xpath('.//article[contains(@class,"cv
     parts = [para(text(article.xpath('./span')[0]), "date"), para(text(article.xpath('.//h3')[0]), "item")]
     parts.append(para(text(article.xpath('.//p[contains(@class,"cv-company")]')[0]), "org"))
     parts.append(para(text(article.xpath('.//div/p[last()]')[0]), "small"))
-    story += [card(parts, top=True), Spacer(1, 10)]
+    story += [card(parts, top=True), Spacer(1, 4)]
 other = experience.xpath('.//div[contains(@class,"cv-other-experience")]/p')
 story.append(para("OTRAS EXPERIENCIAS", "eyebrow"))
 for item in other:
@@ -169,7 +169,7 @@ for article in volunteer.xpath('.//div[contains(@class,"cv-volunteer-grid")]/art
     parts = [para(text(article.xpath('./span')[0]), "date"), para(text(article.xpath('./h3')[0]), "item")]
     parts.append(para(text(article.xpath('./p[contains(@class,"cv-volunteer-org")]')[0]), "org"))
     parts.append(para(text(article.xpath('./p[last()]')[0]), "small"))
-    story += [card(parts), Spacer(1, 10)]
+    story += [card(parts), Spacer(1, 4)]
 
 story.append(PageBreak())
 education = first('//section[contains(@class,"cv-education")]')
