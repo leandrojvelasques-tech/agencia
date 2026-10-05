@@ -28,6 +28,7 @@ const ACCESS = [
     reports: [
       { id: 'consultora-jubilarse-julio-2026', label: 'Julio 2026', period: 'Julio 2026', file: 'consultora-jubilarse-julio-2026.html', score: 5, historicalScore: null, reviews: 8, answered: null, positiveRate: 100, accent: '#013388', category: 'Reportes mensuales de encuestas de Google', summary: 'Julio reúne ocho opiniones de 5 estrellas; las seis más recientes quedan reservadas para la comparación de agosto.' },
       { id: 'consultora-jubilarse-agosto-2026', label: 'Agosto 2026', period: 'Agosto 2026', file: 'consultora-jubilarse-agosto-2026.html', score: 5, historicalScore: 5, reviews: 6, answered: null, positiveRate: 100, accent: '#013388', category: 'Reportes mensuales de encuestas de Google', summary: 'Agosto incorpora 6 opiniones, todas de 5 estrellas; el promedio visible se mantiene en 5,0.' },
+      { id: 'consultora-jubilarse-septiembre-2026', label: 'Septiembre 2026', period: 'Septiembre 2026', file: 'consultora-jubilarse-septiembre-2026.html', score: 5, historicalScore: 5, reviews: 6, answered: null, positiveRate: 100, accent: '#013388', category: 'Reportes mensuales de encuestas de Google', summary: 'Septiembre registra 6 opiniones, todas de 5 estrellas; mantiene el volumen de agosto y un promedio de 5,0.' },
     ],
   },
 ]
