@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import { getPublicMeetLink } from '../../lib/publicMeetAccess'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -110,6 +111,7 @@ export default function EventRegister() {
 
   const requiresPayment = (selectedProfession) => {
     if (!selectedProfession) return false;
+    if (!event?.prices?.length) return false;
     
     if (event && event.prices && event.prices.length > 0) {
       const matchedPrice = event.prices.find(p => p.concept === selectedProfession);
@@ -150,6 +152,7 @@ export default function EventRegister() {
   const hasPresencial = event && event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0' && event.max_capacity_presencial !== 0.0
   const hasVirtual = event && event.max_capacity_virtual !== 0 && event.max_capacity_virtual !== '0' && event.max_capacity_virtual !== 0.0
   const isCompanyRegistration = event?.registration_variant === 'company'
+  const publicMeetLink = getPublicMeetLink(event)
 
   const availableDates = event && event.offered_dates && event.offered_dates.length > 0 ? event.offered_dates : (event ? [event.event_date] : [])
   const isMultiDayEvent = availableDates.length > 1
@@ -476,6 +479,18 @@ export default function EventRegister() {
           {event.client_logo_url && <img src={event.client_logo_url} alt={event.organizer || 'Organización'} className="mx-auto mb-4 h-14 w-auto object-contain" />}
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title}</p>
         </div>
+
+        {publicMeetLink && (
+          <div className="card p-5 mb-6 text-center bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/15">
+            <p className="text-sm text-[var(--color-dark-gray)]/85 mb-3">
+              Esta clase es gratuita. Inscribirte nos ayuda a saber cuántas personas van a participar.
+            </p>
+            <a href={publicMeetLink} target="_blank" rel="noopener noreferrer" className="btn-ghost inline-flex items-center justify-center gap-2 !px-5 !py-3 border border-[var(--color-deep-green)]/25">
+              <span className="material-symbols-outlined text-xl">videocam</span>
+              Entrar por Meet sin inscribirme
+            </a>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="card p-6 lg:p-8 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

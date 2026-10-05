@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
+import { getPublicMeetLink } from '../../lib/publicMeetAccess'
 import ChatGptWorkBrochure from './ChatGptWorkBrochure'
 
 const ensureAbsoluteUrl = (url) => {
@@ -88,6 +89,7 @@ export default function EventLanding() {
   const eventDate = new Date(latestDateStr + 'T23:59:59')
   const isPastEvent = eventDate < new Date()
   const canRegister = event.status === 'published' && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
+  const publicMeetLink = !isPastEvent ? getPublicMeetLink(event) : ''
 
   const materials = event.event_materials?.filter(m => m.type !== 'image') || []
   const photos = event.event_materials?.filter(m => m.type === 'image') || []
@@ -503,12 +505,36 @@ export default function EventLanding() {
         )}
 
         {/* CTA */}
-        {canRegister && (
+        {canRegister && !publicMeetLink && (
           <div className="text-center py-6">
             <Link to={`/evento/${slug}/inscripcion`} className="btn-primary !text-lg !px-10 !py-5">
               <span className="material-symbols-outlined text-2xl">how_to_reg</span>
               Inscribirme ahora
             </Link>
+          </div>
+        )}
+
+        {publicMeetLink && (
+          <div className="text-center py-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {canRegister && (
+                <Link to={`/evento/${slug}/inscripcion`} className="btn-primary !text-lg !px-8 !py-4 w-full sm:w-auto">
+                  <span className="material-symbols-outlined text-2xl">how_to_reg</span>
+                  Inscribirme gratis
+                </Link>
+              )}
+              {publicMeetLink && (
+                <a href={publicMeetLink} target="_blank" rel="noopener noreferrer" className="btn-ghost !text-lg !px-8 !py-4 w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[var(--color-deep-green)]/25">
+                  <span className="material-symbols-outlined text-2xl">videocam</span>
+                  Entrar por Google Meet
+                </a>
+              )}
+            </div>
+            {canRegister && publicMeetLink && (
+              <p className="text-sm text-[var(--color-dark-gray)]/75 mt-4 max-w-lg mx-auto">
+                La inscripción es gratuita y nos ayuda a estimar cuántas personas participarán. También podés entrar a la clase sin inscribirte.
+              </p>
+            )}
           </div>
         )}
 
