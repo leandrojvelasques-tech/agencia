@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import { useStore } from '../../store/useStore'
+import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 
 const STATUS_CONFIG = {
   draft: { label: 'Borrador', color: 'gray', icon: 'edit_note' },
@@ -16,7 +17,7 @@ const STATUS_CONFIG = {
 function getProposalPublicPath(proposal) {
   const sourceText = [proposal?.description, proposal?.subtitle, proposal?.title].filter(Boolean).join(' ')
   const versionCode = sourceText.match(/\b\d{4}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*-v\d{2}\b/i)?.[0]
-  return versionCode ? `/presupuesto/${versionCode.toLowerCase()}` : `/presupuesto/${proposal.share_token}`
+  return versionCode ? `/presupuesto/${versionCode.toLowerCase()}` : getProposalPath(proposal)
 }
 
 export default function CrmProposalsDashboard() {
@@ -567,7 +568,7 @@ export default function CrmProposalsDashboard() {
                                         <Link to={`/admin/presupuestos/${proposal.id}/editar`} className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-[var(--color-deep-green)] flex items-center justify-center" title="Editar">
                                           <span className="material-symbols-outlined text-base">edit</span>
                                         </Link>
-                                        <a href={`/presupuesto/${proposal.share_token}`} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-gray-500 flex items-center justify-center" title="Ver Propuesta">
+                                        <a href={getProposalPublicPath(proposal)} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-gray-500 flex items-center justify-center" title="Ver Propuesta">
                                           <span className="material-symbols-outlined text-base">open_in_new</span>
                                         </a>
                                       </div>

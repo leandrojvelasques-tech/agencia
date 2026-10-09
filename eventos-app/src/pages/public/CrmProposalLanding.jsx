@@ -1,16 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
+import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
 
-export default function CrmProposalLanding() {
+export default function CrmProposalLanding({ previewProposal = null }) {
   const { token } = useParams()
+  const navigate = useNavigate()
   const { fetchProposalByToken, updateProposal } = useStore()
   const viewTracked = useRef(false)
 
   // State
-  const [proposal, setProposal] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [savedProposal, setProposal] = useState(null)
+  const proposal = previewProposal || savedProposal
+  const [remoteLoading, setLoading] = useState(true)
+  const loading = !previewProposal && remoteLoading
   const [submitting, setSubmitting] = useState(false)
   const [errorState, setErrorState] = useState(null)
   
@@ -27,6 +31,7 @@ export default function CrmProposalLanding() {
   const [lightboxImage, setLightboxImage] = useState(null)
 
   useEffect(() => {
+    if (previewProposal) return
     async function loadData() {
       setLoading(true)
       try {
@@ -37,7 +42,9 @@ export default function CrmProposalLanding() {
           setProposal(data)
           
           // Update the browser tab title dynamically
-          document.title = `Presupuesto de ${data.client_name || data.crm_clients?.name || 'Cliente'} | Leandro Velasques`
+          document.title = `${data.title} · Presupuesto comercial | Leandro Velasques`
+          const canonicalPath = getProposalPath(data)
+          if (window.location.pathname !== canonicalPath) navigate(canonicalPath, { replace: true })
 
           // Track view only once per session
           if (!viewTracked.current && !data.viewed_at && data.status !== 'accepted') {
@@ -63,7 +70,7 @@ export default function CrmProposalLanding() {
       }
     }
     loadData()
-  }, [token])
+  }, [token, previewProposal, navigate, fetchProposalByToken])
 
   const handleApproveSubmit = async (e) => {
     e.preventDefault()
@@ -223,7 +230,7 @@ export default function CrmProposalLanding() {
 
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)] pb-16 relative">
-      <style>{`
+      {!previewProposal && <style>{`
         @media print {
           body {
             background: white !important;
@@ -252,7 +259,7 @@ export default function CrmProposalLanding() {
             background: transparent !important;
           }
         }
-      `}</style>
+      `}</style>}
 
       {/* Header */}
       <header className="glass-nav sticky top-0 z-30 no-print">
@@ -262,6 +269,7 @@ export default function CrmProposalLanding() {
             <span className="font-heading font-extrabold text-[var(--color-deep-green)] text-sm tracking-tight">LEANDRO VELASQUES</span>
           </a>
           <button 
+            disabled={!!previewProposal}
             onClick={() => window.print()} 
             className="btn-secondary !py-2 !px-4 !text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
           >
@@ -313,7 +321,7 @@ export default function CrmProposalLanding() {
             <div>
               <p className="text-sm font-bold">Presupuesto vencido</p>
               <p className="text-xs text-amber-700/80 mt-0.5 leading-relaxed">
-                Este presupuesto venció el {new Date(proposal.valid_until).toLocaleDateString('es-AR')}. Por favor, consulta por una propuesta actualizada.
+                Este presupuesto venció el {new Date(proposal.valid_until + 'T12:00:00').toLocaleDateString('es-AR')}. Por favor, consulta por una propuesta actualizada.
               </p>
             </div>
           </div>
@@ -322,6 +330,7 @@ export default function CrmProposalLanding() {
         {/* Corporate Header Info */}
         <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
+            <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-deep-green)]">Presupuesto comercial</p>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">
               {proposal.proposal_number ? <span className="opacity-60 font-semibold mr-2">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
               {proposal.title}
@@ -344,7 +353,7 @@ export default function CrmProposalLanding() {
             {proposal.valid_until && (
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40">Válido hasta</p>
-                <p className="text-xs font-semibold text-amber-700">{new Date(proposal.valid_until).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                <p className="text-xs font-semibold text-amber-700">{new Date(proposal.valid_until + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
               </div>
             )}
           </div>
@@ -391,8 +400,8 @@ export default function CrmProposalLanding() {
               Proveedor:
             </h2>
             <div className="space-y-1 text-xs">
-              <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Leandro Velasques</p>
-              <p className="font-semibold text-[var(--color-dark-gray)]/65">Consultoría & Diseño Web</p>
+              <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Lic. Leandro Velasques</p>
+              <p className="font-semibold text-[var(--color-dark-gray)]/65">Licenciado en Administración · IA aplicada a negocios</p>
               <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
               <p className="text-[var(--color-dark-gray)]/50">Comodoro Rivadavia, Chubut, Argentina</p>
             </div>
@@ -531,7 +540,7 @@ export default function CrmProposalLanding() {
               ))
             ) : proposal.payment_details?.schedule ? (
               <div className="p-3.5 text-center text-xs font-semibold text-[var(--color-dark-gray)]/50 rounded-lg bg-[var(--color-refined-gray)]/30 border border-gray-100/80">
-                Sin plan de pagos fraccionado (Pago único al finalizar / contra entrega).
+                Forma de pago: según los términos y condiciones comerciales.
               </div>
             ) : (
               <>
@@ -587,7 +596,7 @@ export default function CrmProposalLanding() {
           <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm">gavel</span>
-              Términos Comerciales & Condiciones
+              Términos y condiciones comerciales
             </h2>
             <p className="text-xs text-[var(--color-dark-gray)]/65 font-medium leading-relaxed whitespace-pre-wrap">
               {proposal.terms_conditions}
@@ -599,6 +608,7 @@ export default function CrmProposalLanding() {
         {canAct && (
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 no-print">
             <button
+              disabled={!!previewProposal}
               onClick={() => { setActionError(''); setRevisionFeedback(''); setShowRevisionModal(true) }}
               className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto"
             >
@@ -606,6 +616,7 @@ export default function CrmProposalLanding() {
               Solicitar Cambios
             </button>
             <button
+              disabled={!!previewProposal}
               onClick={() => { setActionError(''); setRejectFeedback(''); setShowRejectModal(true) }}
               className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto !border-red-200 !text-red-600 hover:!bg-red-50"
             >
@@ -613,6 +624,7 @@ export default function CrmProposalLanding() {
               Rechazar
             </button>
             <button
+              disabled={!!previewProposal}
               onClick={() => { setActionError(''); setShowApproveModal(true) }}
               className="btn-primary !py-3.5 !px-10 text-sm w-full sm:w-auto shadow-lg shadow-[var(--color-deep-green)]/20"
             >
@@ -636,6 +648,15 @@ export default function CrmProposalLanding() {
             </div>
           </div>
         )}
+        <section aria-label="Firma y contacto profesional" className="mt-8 pt-6 border-t border-[var(--color-deep-green)]/20 space-y-2 text-sm break-words">
+          <p className="text-lg font-extrabold text-[var(--color-deep-green)]">Lic. Leandro Velasques</p>
+          <p>Licenciado en Administración</p>
+          <p>Matrícula profesional · CPCE Chubut · Tomo III · Folio 58</p>
+          <p><a href="mailto:info@leandrovelasques.com.ar" className="hover:underline">info@leandrovelasques.com.ar</a></p>
+          <p>Teléfono / WhatsApp: <a href="https://wa.me/5492974059568" target="_blank" rel="noreferrer" className="hover:underline">+54 9 297 4059568</a></p>
+          <p><a href="https://www.leandrovelasques.com.ar" target="_blank" rel="noreferrer" className="hover:underline">www.leandrovelasques.com.ar</a></p>
+          <p>Comodoro Rivadavia, Chubut, Argentina</p>
+        </section>
       </main>
 
       {/* APPROVAL MODAL */}
@@ -845,7 +866,7 @@ export default function CrmProposalLanding() {
       {/* Footer */}
       <footer className="py-6 mt-12 border-t border-[var(--color-deep-green)]/8 no-print">
         <div className="max-w-4xl mx-auto px-6 text-center text-[10px] text-[var(--color-dark-gray)]/40 font-medium">
-          Leandro Velasques · Consultoría & Desarrollo Web · leandrovelasques.com.ar
+          Lic. Leandro Velasques · Presupuesto comercial
         </div>
       </footer>
     </div>

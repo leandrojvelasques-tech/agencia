@@ -158,7 +158,8 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: to, title, shareToken' });
     }
 
-    const shareLink = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/presupuesto/${shareToken}`
+    const { getProposalPath } = await import('../shared/proposal-links.mjs')
+    const shareLink = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}${getProposalPath({ title, share_token: shareToken })}`
 
     const html = buildProposalEmailHtml({
       clientName,

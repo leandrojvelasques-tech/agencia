@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import CrmProposalLanding from '../public/CrmProposalLanding'
+import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 
 export default function CrmProposalCreate() {
   const { id } = useParams()
@@ -24,6 +26,7 @@ export default function CrmProposalCreate() {
   const [sendingEmail, setSendingEmail] = useState(false)
   const [toast, setToast] = useState(null)
   const [savedShareToken, setSavedShareToken] = useState(null)
+  const [savedProposal, setSavedProposal] = useState(null)
 
   const [form, setForm] = useState({
     proposal_number: null,
@@ -114,6 +117,7 @@ export default function CrmProposalCreate() {
         
         if (pErr) throw pErr
         if (proposal) {
+          setSavedProposal(proposal)
           setSavedShareToken(proposal.share_token)
           setForm({
             proposal_number: proposal.proposal_number || null,
@@ -337,7 +341,7 @@ export default function CrmProposalCreate() {
       showToast('Guardá el presupuesto primero para obtener el enlace.', 'error')
       return
     }
-    const link = `${window.location.origin}/presupuesto/${savedShareToken}`
+    const link = `${window.location.origin}${getProposalPath({ title: form.title, share_token: savedShareToken })}`
     navigator.clipboard.writeText(link)
     setCopiedLink(true)
     showToast('¡Enlace copiado!')
@@ -391,7 +395,7 @@ export default function CrmProposalCreate() {
       showToast('Guardá el presupuesto primero.', 'error')
       return
     }
-    const link = `${window.location.origin}/presupuesto/${savedShareToken}`
+    const link = `${window.location.origin}${getProposalPath({ title: form.title, share_token: savedShareToken })}`
     const clientName = form.client_name || 'cliente'
     const text = `Hola ${clientName}, te envío la propuesta comercial "${form.title}". Podés revisarla, aprobarla o dejarnos tus comentarios desde este enlace:\n\n${link}\n\nQuedo a disposición para cualquier consulta. ¡Saludos!`
     const whatsappUrl = form.client_phone
@@ -549,7 +553,7 @@ export default function CrmProposalCreate() {
           <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-deep-green)]">
             <span className="material-symbols-outlined text-lg">link</span>
             <span className="hidden sm:inline truncate max-w-xs">
-              {window.location.origin}/presupuesto/{savedShareToken.substring(0, 8)}...
+              {window.location.origin}{getProposalPath({ title: form.title, share_token: savedShareToken }).split('/').slice(0, -1).join('/')} /...
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -1272,199 +1276,13 @@ export default function CrmProposalCreate() {
             </button>
           </div>
 
-          {/* Landing Content Wrapper */}
-          <div className="w-full max-w-4xl shrink-0 bg-[var(--color-refined-gray)] rounded-2xl overflow-hidden shadow-2xl border border-gray-100 pb-12 relative text-left">
-            
-            {/* Header */}
-            <div className="glass-nav sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100">
-              <div className="max-w-4xl mx-auto px-6 flex items-center justify-between h-16">
-                <div className="flex items-center gap-2">
-                  <img src="https://www.leandrovelasques.com.ar/logo_triskel.png" alt="Logo" className="h-7 w-auto" style={{ mixBlendMode: 'multiply' }} />
-                  <span className="font-heading font-extrabold text-[var(--color-deep-green)] text-sm tracking-tight">LEANDRO VELASQUES</span>
-                </div>
-                <button 
-                  type="button"
-                  disabled
-                  className="btn-secondary !py-2 !px-4 !text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm opacity-50 cursor-not-allowed"
-                >
-                  <span className="material-symbols-outlined text-base">picture_as_pdf</span>
-                  Imprimir / Guardar PDF
-                </button>
-              </div>
-            </div>
-
-            <div className="max-w-4xl mx-auto px-6 py-8 lg:py-12">
-              {/* Corporate Header Info */}
-              <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">{form.title || 'Propuesta Comercial Sin Título'}</h1>
-                  {form.subtitle && (
-                    <p className="text-sm md:text-base text-[var(--color-dark-gray)]/65 font-medium leading-snug">{form.subtitle}</p>
-                  )}
-                  <div className="flex gap-2 pt-1.5">
-                    <span className="badge badge-yellow">⏳ Pendiente de revisión</span>
-                  </div>
-                </div>
-
-                <div className="border-t md:border-t-0 md:border-l border-[var(--color-deep-green)]/8 pt-4 md:pt-0 md:pl-6 space-y-2 min-w-[200px]">
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40">Fecha de emisión</p>
-                    <p className="text-xs font-semibold">{new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                  </div>
-                  {form.valid_until && (
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/40">Válido hasta</p>
-                      <p className="text-xs font-semibold text-amber-700">{new Date(form.valid_until + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              {form.description && (
-                <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
-                  <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-xl">description</span>
-                    Descripción General
-                  </h2>
-                  <p className="text-xs text-[var(--color-dark-gray)]/75 font-medium leading-relaxed whitespace-pre-wrap">
-                    {form.description}
-                  </p>
-                </div>
-              )}
-
-              {/* Items Table */}
-              {form.items.length > 0 && (
-                <div className="card p-0 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 overflow-hidden">
-                  <div className="p-6 border-b border-[var(--color-deep-green)]/8">
-                    <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-xl">list_alt</span>
-                      Detalle de la Inversión
-                    </h2>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
-                      <thead className="bg-[var(--color-refined-gray)]/50 text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">
-                        <tr>
-                          <th className="px-6 py-4">Descripción del Ítem</th>
-                          <th className="px-6 py-4 text-center">Cant.</th>
-                          <th className="px-6 py-4 text-right">Precio Unit.</th>
-                          <th className="px-6 py-4 text-right">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {form.items.map((item, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4">
-                              <p className="font-extrabold text-[var(--color-deep-green)] text-sm">{item.title}</p>
-                              {item.description && (
-                                <p className="text-xs text-[var(--color-dark-gray)]/60 mt-0.5 whitespace-pre-wrap">{item.description}</p>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center font-mono text-xs">{item.quantity}</td>
-                            <td className="px-6 py-4 text-right font-mono text-xs">
-                              ${Number(item.unit_price).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                            </td>
-                            <td className="px-6 py-4 text-right font-mono font-bold text-[var(--color-dark-gray)]">
-                              ${(Number(item.quantity) * Number(item.unit_price)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Attachments Gallery */}
-              {form.attachments.length > 0 && (
-                <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-3">
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm">collections</span>
-                    Material de Referencia
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {form.attachments.map((att, i) => (
-                      <div key={i} className="rounded-xl overflow-hidden border border-gray-100">
-                        {isImageFile(att.type) ? (
-                          <img src={att.url} alt={att.name} className="w-full h-32 object-cover" />
-                        ) : (
-                          <div className="w-full h-32 flex flex-col items-center justify-center gap-1 bg-[var(--color-refined-gray)] p-2">
-                            <span className="material-symbols-outlined text-3xl text-[var(--color-dark-gray)]/30">
-                              {att.type === 'application/pdf' ? 'picture_as_pdf' : 'insert_drive_file'}
-                            </span>
-                            <p className="text-[10px] font-semibold text-[var(--color-dark-gray)]/60 truncate max-w-full px-1">{att.name}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PAYMENT SCHEDULE PLAN */}
-              <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 space-y-4">
-                <h2 className="text-sm font-extrabold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-xl">payments</span>
-                  Total y Plan de Pagos
-                </h2>
-                
-                <div className="space-y-3.5 text-xs font-semibold text-[var(--color-dark-gray)]">
-                  <div className="flex justify-between items-center pt-2 pb-4 mb-2 border-b-2 border-dashed border-gray-200 text-sm font-extrabold">
-                    <span className="uppercase tracking-widest text-[10px]">Total del Presupuesto Comercial:</span>
-                    <span className="text-xl font-extrabold text-[var(--color-deep-green)] font-mono">
-                      ${Number(form.total_amount || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  {(form.payment_details?.schedule && form.payment_details.schedule.length > 0) ? (
-                    form.payment_details.schedule.map((item, idx) => (
-                      <div key={item.id || idx} className={`flex justify-between items-center p-3 rounded-lg ${idx === 0 ? 'bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10' : 'bg-[var(--color-refined-gray)]/50 border border-gray-100'}`}>
-                        <div>
-                          <p className={`font-bold ${idx === 0 ? 'text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]/85'}`}>{item.name}</p>
-                          <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Corresponde al {item.percentage}% del total.</p>
-                        </div>
-                        <span className={`font-mono font-bold ${idx === 0 ? 'text-sm text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]'}`}>
-                          ${(Number(form.total_amount || 0) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    ))
-                  ) : form.payment_details?.schedule ? (
-                    <div className="p-3.5 text-center text-xs font-semibold text-[var(--color-dark-gray)]/50 rounded-lg bg-[var(--color-refined-gray)]/30 border border-gray-100/80">
-                      Sin plan de pagos fraccionado (Pago único al finalizar / contra entrega).
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10">
-                        <div>
-                          <p className="font-extrabold text-[var(--color-deep-green)]">Pago Inicial (50% de anticipo al comenzar)</p>
-                        </div>
-                        <span className="text-sm font-extrabold font-mono text-[var(--color-deep-green)]">
-                          ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center p-3 rounded-lg bg-[var(--color-refined-gray)]/50 border border-gray-100">
-                        <div>
-                          <p className="font-bold text-[var(--color-dark-gray)]/85">Pago Final (50% restante al finalizar)</p>
-                        </div>
-                        <span className="font-mono font-bold text-[var(--color-dark-gray)]">
-                          ${(Number(form.total_amount || 0) * 0.5).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Simulated Client Actions */}
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 opacity-50 pointer-events-none">
-                <button type="button" className="btn-primary !py-3.5 !px-10 text-sm w-full sm:w-auto shadow-lg shadow-[var(--color-deep-green)]/20">
-                  <span className="material-symbols-outlined text-lg">check_circle</span>
-                  Aprobar Presupuesto
-                </button>
-              </div>
-            </div>
+          {/* La vista previa comparte el diseño del presupuesto público. */}
+          <div className="w-full max-w-4xl shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 text-left">
+            <CrmProposalLanding previewProposal={{
+              ...savedProposal,
+              ...form,
+              created_at: savedProposal?.created_at || new Date().toISOString(),
+            }} />
           </div>
         </div>
       )}

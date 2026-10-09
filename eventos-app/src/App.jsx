@@ -153,6 +153,7 @@ export default function App() {
         <Route path="/crm/cliente/:token/:slug?" element={<CrmClientPortal />} />
         <Route path="/presupuesto/2026-09-gmp-obras-v01" element={<GmpObrasProposal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
+        <Route path="/presupuesto/:slug/:token" element={<CrmProposalLanding />} />
         <Route path="/clase/:token/asistencia" element={<CoworkerAttendance />} />
 
         {/* Relevamiento de Procesos Public Route */}
