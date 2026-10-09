@@ -1,0 +1,89 @@
+.proposal-document {
+  --proposal-green: #285a47;
+  --proposal-copper: #b86f4d;
+  --proposal-copper-dark: #8b543c;
+  --proposal-dark: #25302c;
+  --proposal-ink: #202724;
+  --proposal-line: #d7ded9;
+  background: #e3e7e4;
+  color: var(--proposal-ink);
+}
+
+.proposal-document .glass-nav { background: #f8f8f4; border-bottom-color: var(--proposal-line); }
+.proposal-document .card {
+  border-color: var(--proposal-line);
+  box-shadow: 0 8px 24px #2027240a;
+}
+.proposal-document .proposal-hero {
+  border-left: 6px solid var(--proposal-copper);
+  box-shadow: 0 12px 30px #20272412;
+}
+.proposal-document .proposal-hero h1 { color: var(--proposal-dark); }
+.proposal-document .proposal-number { color: var(--proposal-copper-dark); }
+.proposal-document main > .card > h2 { color: var(--proposal-dark); border-bottom-color: var(--proposal-line); }
+.proposal-document main > .card > h2 .material-symbols-outlined { color: var(--proposal-copper-dark); }
+
+.proposal-document .proposal-party.card {
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 10px 24px #20272414;
+}
+.proposal-document .proposal-party-heading {
+  padding: 16px 24px;
+  margin: 0;
+  color: white;
+  line-height: 1.5;
+}
+.proposal-document .proposal-client .proposal-party-heading { background: var(--proposal-copper-dark); }
+.proposal-document .proposal-provider .proposal-party-heading { background: var(--proposal-dark); border-bottom: 3px solid var(--proposal-green); }
+.proposal-document .proposal-party-body { padding: 22px 24px 24px; margin-top: 0; }
+.proposal-document .proposal-provider .proposal-party-body { background: #f8f8f4; }
+.proposal-document .proposal-party-body p { color: #52615a; line-height: 1.6; }
+.proposal-document .proposal-party-body p:first-child { color: var(--proposal-ink); }
+.proposal-document .proposal-party-body img { flex-shrink: 0; }
+.proposal-document .proposal-party-body > .flex > div { min-width: 0; overflow-wrap: anywhere; }
+
+.proposal-document .proposal-total {
+  gap: 16px;
+  padding: 18px;
+  border-top: 3px solid var(--proposal-copper);
+  border-radius: 8px;
+  background: var(--proposal-dark);
+  color: white;
+}
+.proposal-document .proposal-total > span:last-child { color: #a8d5c1; }
+.proposal-document .proposal-signature {
+  padding: 24px;
+  border: 1px solid var(--proposal-line);
+  border-left: 4px solid var(--proposal-copper);
+  border-radius: 8px;
+  background: #f8f8f4;
+}
+.proposal-document a:focus-visible, .proposal-document button:focus-visible {
+  outline: 2px solid var(--proposal-copper-dark);
+  outline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .proposal-document .proposal-total { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .proposal-document .proposal-party-heading { padding: 14px 20px; }
+  .proposal-document .proposal-party-body { padding: 20px; }
+}
+
+@media print {
+  .proposal-document { background: white !important; }
+  .proposal-document .proposal-party.card { padding: 0 !important; }
+  .proposal-document .proposal-hero { border-left: 5px solid var(--proposal-copper) !important; }
+  .proposal-document .proposal-party-heading {
+    background: white !important;
+    color: var(--proposal-ink) !important;
+    border-bottom: 3px solid var(--proposal-green);
+  }
+  .proposal-document .proposal-client .proposal-party-heading { border-bottom-color: var(--proposal-copper); }
+  .proposal-document .proposal-total, .proposal-document .proposal-signature {
+    background: white !important;
+    color: var(--proposal-ink) !important;
+  }
+  .proposal-document .proposal-total > span:last-child { color: var(--proposal-green) !important; }
+  .proposal-document .proposal-party, .proposal-document .proposal-signature { break-inside: avoid; }
+}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import './crmProposalLanding.css'
 
 export default function CrmProposalLanding({ previewProposal = null }) {
   const { token } = useParams()
@@ -229,7 +230,7 @@ export default function CrmProposalLanding({ previewProposal = null }) {
   const attachments = proposal.attachments || []
 
   return (
-    <div className="min-h-screen bg-[var(--color-refined-gray)] pb-16 relative">
+    <div className="proposal-document min-h-screen bg-[var(--color-refined-gray)] pb-16 relative">
       {!previewProposal && <style>{`
         @media print {
           body {
@@ -328,11 +329,11 @@ export default function CrmProposalLanding({ previewProposal = null }) {
         )}
 
         {/* Corporate Header Info */}
-        <div className="card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="proposal-hero card p-6 md:p-8 bg-white border border-[var(--color-deep-green)]/5 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-deep-green)]">Presupuesto comercial</p>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--color-deep-green)]">
-              {proposal.proposal_number ? <span className="opacity-60 font-semibold mr-2">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
+              {proposal.proposal_number ? <span className="proposal-number font-semibold mr-2">#{proposal.proposal_number.toString().padStart(4, '0')}</span> : null}
               {proposal.title}
             </h1>
             {proposal.subtitle && (
@@ -360,12 +361,13 @@ export default function CrmProposalLanding({ previewProposal = null }) {
         </div>
 
         {/* Client & Vendor Details */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+        <div className="proposal-parties grid md:grid-cols-2 gap-6 mb-6">
+          <div className="proposal-party proposal-client card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+            <h2 className="proposal-party-heading text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm">person</span>
               Propuesta preparada para:
             </h2>
+            <div className="proposal-party-body">
             {(proposal.client_name || proposal.crm_clients) ? (
               <div className="flex items-start gap-4">
                 {(proposal.client_logo_url || proposal.crm_clients?.logo_url) && (
@@ -392,14 +394,15 @@ export default function CrmProposalLanding({ previewProposal = null }) {
             ) : (
               <p className="text-xs text-[var(--color-dark-gray)]/40">Cliente no especificado</p>
             )}
+            </div>
           </div>
 
-          <div className="card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-1.5 flex items-center gap-1.5">
+          <div className="proposal-party proposal-provider card p-6 bg-white border border-[var(--color-deep-green)]/5 shadow-sm space-y-3">
+            <h2 className="proposal-party-heading text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm">apartment</span>
               Proveedor:
             </h2>
-            <div className="space-y-1 text-xs">
+            <div className="proposal-party-body space-y-1 text-xs">
               <p className="text-sm font-extrabold text-[var(--color-dark-gray)]">Lic. Leandro Velasques</p>
               <p className="font-semibold text-[var(--color-dark-gray)]/65">Licenciado en Administración · IA aplicada a negocios</p>
               <p className="text-[var(--color-dark-gray)]/50">leandrovelasques.com.ar</p>
@@ -566,7 +569,7 @@ export default function CrmProposalLanding({ previewProposal = null }) {
               </>
             )}
 
-            <div className="flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
+            <div className="proposal-total flex justify-between items-center pt-3 border-t border-[var(--color-deep-green)]/8 text-sm font-extrabold">
               <span>Total del Presupuesto Comercial:</span>
               <span className="text-lg font-extrabold text-[var(--color-deep-green)] font-mono">
                 ${Number(proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -648,7 +651,7 @@ export default function CrmProposalLanding({ previewProposal = null }) {
             </div>
           </div>
         )}
-        <section aria-label="Firma y contacto profesional" className="mt-8 pt-6 border-t border-[var(--color-deep-green)]/20 space-y-2 text-sm break-words">
+        <section aria-label="Firma y contacto profesional" className="proposal-signature mt-8 pt-6 border-t border-[var(--color-deep-green)]/20 space-y-2 text-sm break-words">
           <p className="text-lg font-extrabold text-[var(--color-deep-green)]">Lic. Leandro Velasques</p>
           <p>Licenciado en Administración</p>
           <p>Matrícula profesional · CPCE Chubut · Tomo III · Folio 58</p>
