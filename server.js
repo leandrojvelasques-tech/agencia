@@ -72,14 +72,15 @@ function sendAppIndex(res, pathname = '') {
       supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY || '',
     }).replace(/</g, '\\u003c');
     const runtimeScript = `<script>globalThis.__APP_CONFIG__=${config}</script>`;
-    const isChatGptWorkBrochure = pathname === '/brochure/chatgpt-work';
-    const brochureHtml = isChatGptWorkBrochure
+    const isTextOnlyPreview = pathname === '/brochure/chatgpt-work'
+      || pathname === '/presupuesto' || pathname.startsWith('/presupuesto/');
+    const previewHtml = isTextOnlyPreview
       ? html
-        // WhatsApp should receive a text-only preview for this brochure.
+        // These links use text-only previews in WhatsApp, without a logo fallback.
         .replace(/<meta[^>]+(?:property=["']og:image["']|name=["']twitter:image["'])[^>]*>\s*/gi, '')
         .replace(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*>\s*/gi, '')
       : html;
-    const renderedHtml = brochureHtml.replace('</head>', `${runtimeScript}</head>`);
+    const renderedHtml = previewHtml.replace('</head>', `${runtimeScript}</head>`);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(renderedHtml);
   });
