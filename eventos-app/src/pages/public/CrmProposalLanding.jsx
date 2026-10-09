@@ -8,7 +8,7 @@ import './crmProposalLanding.css'
 export default function CrmProposalLanding({ previewProposal = null }) {
   const { token } = useParams()
   const navigate = useNavigate()
-  const { fetchProposalByToken, updateProposal } = useStore()
+  const { fetchProposalByToken } = useStore()
   const viewTracked = useRef(false)
 
   // State
@@ -16,18 +16,8 @@ export default function CrmProposalLanding({ previewProposal = null }) {
   const proposal = previewProposal || savedProposal
   const [remoteLoading, setLoading] = useState(true)
   const loading = !previewProposal && remoteLoading
-  const [submitting, setSubmitting] = useState(false)
   const [errorState, setErrorState] = useState(null)
   
-  // Modals / Actions State
-  const [showApproveModal, setShowApproveModal] = useState(false)
-  const [showRejectModal, setShowRejectModal] = useState(false)
-  const [showRevisionModal, setShowRevisionModal] = useState(false)
-  const [approveForm, setApproveForm] = useState({ name: '', email: '', acceptTerms: false })
-  const [rejectFeedback, setRejectFeedback] = useState('')
-  const [revisionFeedback, setRevisionFeedback] = useState('')
-  const [actionError, setActionError] = useState('')
-
   // Lightbox
   const [lightboxImage, setLightboxImage] = useState(null)
 
@@ -73,116 +63,6 @@ export default function CrmProposalLanding({ previewProposal = null }) {
     loadData()
   }, [token, previewProposal, navigate, fetchProposalByToken])
 
-  const handleApproveSubmit = async (e) => {
-    e.preventDefault()
-    setActionError('')
-
-    if (!approveForm.name || !approveForm.email) {
-      setActionError('Por favor, completa todos los campos de confirmación.')
-      return
-    }
-    if (!approveForm.acceptTerms) {
-      setActionError('Debes aceptar los términos y condiciones.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const feedback = `Aprobado digitalmente.`
-      const result = await updateProposal(proposal.id, {
-        status: 'accepted',
-        approved_by_name: approveForm.name,
-        approved_by_email: approveForm.email,
-        approved_at: new Date().toISOString(),
-        client_feedback: feedback
-      })
-
-      if (result.success) {
-        setProposal(prev => ({
-          ...prev,
-          status: 'accepted',
-          approved_by_name: approveForm.name,
-          approved_by_email: approveForm.email,
-          approved_at: new Date().toISOString(),
-          client_feedback: feedback
-        }))
-        setShowApproveModal(false)
-      } else {
-        throw new Error(result.error?.message || 'Error al aprobar')
-      }
-    } catch (err) {
-      setActionError('No se pudo procesar la aprobación: ' + err.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleRejectSubmit = async (e) => {
-    e.preventDefault()
-    setActionError('')
-
-    if (!rejectFeedback.trim()) {
-      setActionError('Por favor, ingresa el motivo del rechazo.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const result = await updateProposal(proposal.id, {
-        status: 'rejected',
-        client_feedback: rejectFeedback
-      })
-
-      if (result.success) {
-        setProposal(prev => ({
-          ...prev,
-          status: 'rejected',
-          client_feedback: rejectFeedback
-        }))
-        setShowRejectModal(false)
-      } else {
-        throw new Error(result.error?.message || 'Error al actualizar')
-      }
-    } catch (err) {
-      setActionError('No se pudo enviar el comentario: ' + err.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleRevisionSubmit = async (e) => {
-    e.preventDefault()
-    setActionError('')
-
-    if (!revisionFeedback.trim()) {
-      setActionError('Por favor, describí qué cambios necesitás.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const result = await updateProposal(proposal.id, {
-        status: 'revision_requested',
-        client_feedback: revisionFeedback
-      })
-
-      if (result.success) {
-        setProposal(prev => ({
-          ...prev,
-          status: 'revision_requested',
-          client_feedback: revisionFeedback
-        }))
-        setShowRevisionModal(false)
-      } else {
-        throw new Error(result.error?.message || 'Error al enviar')
-      }
-    } catch (err) {
-      setActionError('No se pudo enviar la solicitud de cambios: ' + err.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   const isImageFile = (type) => type && type.startsWith('image/')
 
   if (loading) {
@@ -215,7 +95,6 @@ export default function CrmProposalLanding({ previewProposal = null }) {
   const isAccepted = proposal.status === 'accepted'
   const isRejected = proposal.status === 'rejected'
   const isRevisionRequested = proposal.status === 'revision_requested'
-  const canAct = !isAccepted && !isRejected && !isPastValidity
 
   // Default bank details if database doesn't have it
   const bankDetails = proposal.payment_details || {
@@ -607,36 +486,6 @@ export default function CrmProposalLanding({ previewProposal = null }) {
           </div>
         )}
 
-        {/* Interactive Actions */}
-        {canAct && (
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 py-6 no-print">
-            <button
-              disabled={!!previewProposal}
-              onClick={() => { setActionError(''); setRevisionFeedback(''); setShowRevisionModal(true) }}
-              className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto"
-            >
-              <span className="material-symbols-outlined text-lg">rate_review</span>
-              Solicitar Cambios
-            </button>
-            <button
-              disabled={!!previewProposal}
-              onClick={() => { setActionError(''); setRejectFeedback(''); setShowRejectModal(true) }}
-              className="btn-secondary !py-3.5 !px-8 text-sm w-full sm:w-auto !border-red-200 !text-red-600 hover:!bg-red-50"
-            >
-              <span className="material-symbols-outlined text-lg">cancel</span>
-              Rechazar
-            </button>
-            <button
-              disabled={!!previewProposal}
-              onClick={() => { setActionError(''); setShowApproveModal(true) }}
-              className="btn-primary !py-3.5 !px-10 text-sm w-full sm:w-auto shadow-lg shadow-[var(--color-deep-green)]/20"
-            >
-              <span className="material-symbols-outlined text-lg">check_circle</span>
-              Aprobar Presupuesto
-            </button>
-          </div>
-        )}
-
         {/* Approval PDF Signature Details */}
         {isAccepted && (
           <div className="card p-6 bg-[var(--color-light-green)]/10 border-2 border-emerald-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6">
@@ -661,189 +510,6 @@ export default function CrmProposalLanding({ previewProposal = null }) {
           <p>Comodoro Rivadavia, Chubut, Argentina</p>
         </section>
       </main>
-
-      {/* APPROVAL MODAL */}
-      {showApproveModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in modal no-print">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="font-extrabold text-[var(--color-deep-green)] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-xl">task_alt</span>
-                Aprobación del Presupuesto
-              </h3>
-              <button onClick={() => setShowApproveModal(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            
-            <form onSubmit={handleApproveSubmit} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">Nombre del Firmante *</label>
-                <input
-                  type="text"
-                  placeholder="Tu nombre completo"
-                  className="form-input text-xs"
-                  value={approveForm.name}
-                  onChange={e => setApproveForm(p => ({ ...p, name: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">Email corporativo *</label>
-                <input
-                  type="email"
-                  placeholder="ejemplo@empresa.com"
-                  className="form-input text-xs"
-                  value={approveForm.email}
-                  onChange={e => setApproveForm(p => ({ ...p, email: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="flex items-start gap-2 pt-1.5">
-                <input
-                  type="checkbox"
-                  id="chk-terms"
-                  checked={approveForm.acceptTerms}
-                  onChange={e => setApproveForm(p => ({ ...p, acceptTerms: e.target.checked }))}
-                  className="accent-[var(--color-deep-green)] rounded mt-0.5"
-                  required
-                />
-                <label htmlFor="chk-terms" className="text-xs text-[var(--color-dark-gray)]/65 cursor-pointer leading-tight">
-                  Acepto comenzar la contratación bajo los conceptos, plan de pagos y términos y condiciones detallados en este presupuesto.
-                </label>
-              </div>
-
-              {actionError && (
-                <p className="text-xs font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">{actionError}</p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setShowApproveModal(false)}
-                  className="btn-secondary !py-2 !px-4 !text-xs"
-                  disabled={submitting}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary !py-2 !px-5 !text-xs"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Procesando...' : 'Confirmar Aceptación'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* REJECT MODAL */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in modal no-print">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="font-extrabold text-red-600 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-xl">cancel</span>
-                Rechazar Presupuesto
-              </h3>
-              <button onClick={() => setShowRejectModal(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            
-            <form onSubmit={handleRejectSubmit} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">Motivo del rechazo *</label>
-                <textarea
-                  placeholder="Indicá por qué rechazás esta propuesta..."
-                  className="form-input text-xs min-h-[120px] leading-relaxed"
-                  value={rejectFeedback}
-                  onChange={e => setRejectFeedback(e.target.value)}
-                  required
-                />
-              </div>
-
-              {actionError && (
-                <p className="text-xs font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">{actionError}</p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setShowRejectModal(false)}
-                  className="btn-secondary !py-2 !px-4 !text-xs"
-                  disabled={submitting}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary !py-2 !px-5 !text-xs bg-red-500 border-red-500 hover:bg-red-600"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Enviando...' : 'Confirmar Rechazo'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* REVISION REQUEST MODAL */}
-      {showRevisionModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in modal no-print">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="font-extrabold text-orange-600 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-xl">rate_review</span>
-                Solicitar Cambios
-              </h3>
-              <button onClick={() => setShowRevisionModal(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            
-            <form onSubmit={handleRevisionSubmit} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1.5 block">¿Qué cambios necesitás? *</label>
-                <textarea
-                  placeholder="Describí los ajustes que necesitás antes de aprobar el presupuesto. Por ejemplo: cambiar el plazo de entrega, ajustar el alcance del servicio, modificar la forma de pago..."
-                  className="form-input text-xs min-h-[140px] leading-relaxed"
-                  value={revisionFeedback}
-                  onChange={e => setRevisionFeedback(e.target.value)}
-                  required
-                />
-              </div>
-
-              {actionError && (
-                <p className="text-xs font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">{actionError}</p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setShowRevisionModal(false)}
-                  className="btn-secondary !py-2 !px-4 !text-xs"
-                  disabled={submitting}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary !py-2 !px-5 !text-xs !bg-orange-500 !border-orange-500 hover:!bg-orange-600"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Enviando...' : 'Enviar Solicitud de Cambios'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Lightbox */}
       {lightboxImage && (
