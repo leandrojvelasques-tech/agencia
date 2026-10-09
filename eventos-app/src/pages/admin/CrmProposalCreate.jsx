@@ -1258,7 +1258,7 @@ export default function CrmProposalCreate() {
       {showPreview && (
         <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
           {/* Admin Header Banner */}
-          <div className="w-full max-w-4xl mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
+          <div className="w-full max-w-4xl shrink-0 mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined">visibility</span>
               <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
@@ -1273,7 +1273,7 @@ export default function CrmProposalCreate() {
           </div>
 
           {/* Landing Content Wrapper */}
-          <div className="w-full max-w-4xl bg-[var(--color-refined-gray)] rounded-2xl overflow-hidden shadow-2xl border border-gray-100 pb-12 relative text-left">
+          <div className="w-full max-w-4xl shrink-0 bg-[var(--color-refined-gray)] rounded-2xl overflow-hidden shadow-2xl border border-gray-100 pb-12 relative text-left">
             
             {/* Header */}
             <div className="glass-nav sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100">
