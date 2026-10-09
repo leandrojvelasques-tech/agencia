@@ -400,15 +400,19 @@ export default function CrmProposalCreate() {
     window.open(whatsappUrl, '_blank')
   }
 
-  const handleSave = async (e) => {
-    e.preventDefault()
+  const saveBusy = loading || uploadingPdf || uploadingAttachments || uploadingLogo || sendingEmail
+  const canSaveDraft = !id || form.status === 'draft'
+
+  const handleSave = async (e, asDraft = false) => {
+    e?.preventDefault()
+    if (saveBusy) return
     setError('')
 
-    if (!form.client_name) {
+    if (!asDraft && !form.client_name.trim()) {
       setError('Por favor, ingresa el nombre del cliente')
       return
     }
-    if (!form.title) {
+    if (!asDraft && !form.title.trim()) {
       setError('El título de la propuesta es obligatorio')
       return
     }
@@ -428,7 +432,7 @@ export default function CrmProposalCreate() {
       subtitle: form.subtitle || null,
       description: form.description || null,
       valid_until: form.valid_until || null,
-      status: form.status,
+      status: asDraft ? 'draft' : form.status,
       terms_conditions: form.terms_conditions || null,
       pdf_url: form.pdf_url || null,
       attachments: form.attachments || [],
@@ -438,7 +442,7 @@ export default function CrmProposalCreate() {
     }
 
     // Auto-create client if not selected
-    if (!proposalData.client_id && proposalData.client_name) {
+    if (!asDraft && !proposalData.client_id && proposalData.client_name) {
       if (window.confirm(`El cliente "${proposalData.client_name}" no está en tu directorio. ¿Deseas agregarlo ahora para usarlo a futuro?`)) {
         const clientResult = await createCrmClient({
           name: proposalData.client_name,
@@ -463,14 +467,15 @@ export default function CrmProposalCreate() {
       if (id) {
         const result = await updateProposal(id, proposalData)
         if (!result.success) throw new Error(result.error?.message || 'Error al actualizar')
-        showToast('Presupuesto actualizado correctamente.')
+        setForm(prev => ({ ...prev, status: result.data.status }))
+        showToast(asDraft ? 'Borrador guardado. Podés seguir editándolo.' : 'Presupuesto actualizado correctamente.')
       } else {
         const result = await createProposal(proposalData)
         if (!result.success) throw new Error(result.error?.message || 'Error al crear')
         // Navigate to edit mode so the share token becomes available
         if (result.data?.id) {
           navigate(`/admin/presupuestos/${result.data.id}/editar`, { replace: true })
-          showToast('¡Presupuesto creado! Ya podés compartirlo.')
+          showToast(asDraft ? 'Borrador guardado. Podés seguir editándolo.' : '¡Presupuesto creado! Ya podés compartirlo.')
           return
         }
       }
@@ -511,7 +516,7 @@ export default function CrmProposalCreate() {
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <Link to="/admin/presupuestos" className="p-2 hover:bg-[var(--color-deep-green)]/5 rounded-lg text-[var(--color-dark-gray)] transition-all">
           <span className="material-symbols-outlined text-xl">arrow_back</span>
         </Link>
@@ -525,6 +530,17 @@ export default function CrmProposalCreate() {
             Completá los detalles del presupuesto, adjuntá archivos y compartilo con tu cliente.
           </p>
         </div>
+        {canSaveDraft && (
+          <button
+            type="button"
+            onClick={() => handleSave(null, true)}
+            disabled={saveBusy}
+            className="btn-primary disabled:opacity-50"
+          >
+            <span className={`material-symbols-outlined text-lg ${loading ? 'animate-spin' : ''}`}>{loading ? 'progress_activity' : 'save'}</span>
+            {loading ? 'Guardando...' : 'Guardar borrador'}
+          </button>
+        )}
       </div>
 
       {/* Quick Actions Bar (only when editing) */}
@@ -1196,11 +1212,11 @@ export default function CrmProposalCreate() {
         )}
 
         {/* Submit Actions */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <Link to="/admin/presupuestos" className="btn-ghost">
             Cancelar
           </Link>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => setShowPreview(true)}
@@ -1209,10 +1225,21 @@ export default function CrmProposalCreate() {
               <span className="material-symbols-outlined text-base">visibility</span>
               Vista Preliminar
             </button>
+            {canSaveDraft && (
+              <button
+                type="button"
+                onClick={() => handleSave(null, true)}
+                disabled={saveBusy}
+                className="btn-secondary disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">save</span>
+                {loading ? 'Guardando...' : 'Guardar borrador'}
+              </button>
+            )}
             <button
               type="submit"
               className="btn-primary"
-              disabled={loading}
+              disabled={saveBusy}
             >
               {loading ? (
                 <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
