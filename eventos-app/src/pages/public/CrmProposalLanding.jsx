@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import { getPaymentAmount } from '../../lib/paymentSchedule'
 import './crmProposalLanding.css'
 
 export default function CrmProposalLanding({ previewProposal = null }) {
@@ -413,10 +414,9 @@ export default function CrmProposalLanding({ previewProposal = null }) {
                 <div key={item.id || idx} className={`flex justify-between items-center p-3 rounded-lg ${idx === 0 ? 'bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/10' : 'bg-[var(--color-refined-gray)]/50 border border-gray-100'}`}>
                   <div>
                     <p className={`font-bold ${idx === 0 ? 'text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]/85'}`}>{item.name}</p>
-                    <p className="text-[10px] text-[var(--color-dark-gray)]/50 mt-0.5">Corresponde al {item.percentage}% del total.</p>
                   </div>
                   <span className={`font-mono font-bold ${idx === 0 ? 'text-sm text-[var(--color-deep-green)]' : 'text-[var(--color-dark-gray)]'}`}>
-                    ${(Number(proposal.total_amount) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    ${getPaymentAmount(item, proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               ))

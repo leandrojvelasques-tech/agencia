@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import { normalizePaymentSchedule } from '../../lib/paymentSchedule'
 import CrmProposalLanding from '../public/CrmProposalLanding'
 import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 
@@ -58,8 +59,8 @@ export default function CrmProposalCreate() {
       cuit: '20309551665',
       cuenta: 'CA $ 00150846000113486326',
       schedule: [
-        { id: '1', name: 'Pago Inicial (Anticipo al comenzar)', percentage: 50 },
-        { id: '2', name: 'Pago Final (Al finalizar el proyecto)', percentage: 50 }
+        { id: '1', name: 'Pago Inicial (Anticipo al comenzar)', amount: 0 },
+        { id: '2', name: 'Pago Final (Al finalizar el proyecto)', amount: 0 }
       ]
     }
   })
@@ -141,17 +142,19 @@ export default function CrmProposalCreate() {
             attachments: proposal.attachments || [],
             items: proposal.items || [],
             total_amount: proposal.total_amount || 0,
-            payment_details: proposal.payment_details || {
-              banco: 'Banco ICBC',
-              nombre: 'LEANDRO JOSE VELASQUES',
-              cbu: '0150846601000134863268',
-              alias: 'LEANDRO.TANGO',
-              cuit: proposal.payment_details?.cuit || '20309551665',
-              cuenta: proposal.payment_details?.cuenta || 'CA $ 00150846000113486326',
-              schedule: proposal.payment_details?.schedule || [
+            payment_details: {
+              ...(proposal.payment_details || {
+                banco: 'Banco ICBC',
+                nombre: 'LEANDRO JOSE VELASQUES',
+                cbu: '0150846601000134863268',
+                alias: 'LEANDRO.TANGO',
+                cuit: '20309551665',
+                cuenta: 'CA $ 00150846000113486326'
+              }),
+              schedule: normalizePaymentSchedule(proposal.payment_details?.schedule || [
                 { id: '1', name: 'Pago Inicial (Anticipo al comenzar)', percentage: 50 },
                 { id: '2', name: 'Pago Final (Al finalizar el proyecto)', percentage: 50 }
-              ]
+              ], proposal.total_amount)
             }
           })
         }
@@ -191,7 +194,7 @@ export default function CrmProposalCreate() {
   const handleAddScheduleItem = () => {
     const newId = Date.now().toString()
     const currentSchedule = form.payment_details.schedule || []
-    updatePaymentDetails('schedule', [...currentSchedule, { id: newId, name: 'Nuevo Pago', percentage: 0 }])
+    updatePaymentDetails('schedule', [...currentSchedule, { id: newId, name: 'Nuevo Pago', amount: 0 }])
   }
 
   const handleUpdateScheduleItem = (id, field, value) => {
@@ -1074,30 +1077,20 @@ export default function CrmProposalCreate() {
                     required
                   />
                 </div>
-                <div className="w-24">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">
-                    Porcentaje (%)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      className="form-input !py-1.5 text-xs font-mono pr-6"
-                      value={item.percentage}
-                      onChange={e => handleUpdateScheduleItem(item.id, 'percentage', Number(e.target.value))}
-                      required
-                    />
-                    <span className="absolute right-2 top-1.5 text-xs font-bold text-[var(--color-dark-gray)]/40">%</span>
-                  </div>
-                </div>
-                <div className="w-[100px]">
+                <div className="w-32">
                   <label className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block text-right">
                     Monto
                   </label>
-                  <div className="form-input !py-1.5 text-xs font-mono bg-gray-50 text-right opacity-70">
-                    ${(Number(form.total_amount || 0) * (item.percentage / 100)).toLocaleString('es-AR', { minimumFractionDigits: 0 })}
-                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    aria-label={`Monto del pago ${idx + 1}`}
+                    className="form-input !py-1.5 text-xs font-mono text-right"
+                    value={item.amount ?? 0}
+                    onChange={e => handleUpdateScheduleItem(item.id, 'amount', e.target.value === '' ? '' : Number(e.target.value))}
+                    required
+                  />
                 </div>
                 <div className="pt-4 flex-shrink-0">
                   <button
@@ -1112,19 +1105,6 @@ export default function CrmProposalCreate() {
               </div>
             ))}
             
-            {/* Validation Total */}
-            {(() => {
-              const totalPercentage = (form.payment_details?.schedule || []).reduce((acc, curr) => acc + (Number(curr.percentage) || 0), 0)
-              if (totalPercentage !== 100 && (form.payment_details?.schedule || []).length > 0) {
-                return (
-                  <p className="text-[10px] font-bold text-amber-600 flex items-center gap-1 pt-1">
-                    <span className="material-symbols-outlined text-[14px]">warning</span>
-                    Atención: Los porcentajes suman {totalPercentage}%. Deberían sumar 100%.
-                  </p>
-                )
-              }
-              return null
-            })()}
           </div>
         </div>
 
