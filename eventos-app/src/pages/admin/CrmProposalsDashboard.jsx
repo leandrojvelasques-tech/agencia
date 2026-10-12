@@ -20,6 +20,33 @@ function getProposalPublicPath(proposal) {
   return versionCode ? `/presupuesto/${versionCode.toLowerCase()}` : getProposalPath(proposal)
 }
 
+function ProposalLifecycleControls({ proposal, onStatusChange, onArchiveChange }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {!proposal.archived_at && <label className="text-xs font-semibold text-[var(--color-dark-gray)]/70">
+        Estado
+        <select
+          aria-label={`Estado de ${proposal.title}`}
+          value={proposal.status}
+          onChange={e => onStatusChange(proposal, e.target.value)}
+          className="ml-2 max-w-48 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-[var(--color-dark-gray)]"
+        >
+          {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+            <option key={value} value={value}>{config.label}</option>
+          ))}
+        </select>
+      </label>}
+      <button
+        type="button"
+        onClick={() => onArchiveChange(proposal)}
+        className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-semibold text-[var(--color-deep-green)] hover:bg-[var(--color-deep-green)]/5"
+      >
+        {proposal.archived_at ? 'Restaurar' : 'Archivar'}
+      </button>
+    </div>
+  )
+}
+
 export default function CrmProposalsDashboard() {
   const { proposals, fetchProposals, deleteProposal, updateProposal, isLoading } = useStore()
   const [viewMode, setViewMode] = useState('kanban')
@@ -36,7 +63,7 @@ export default function CrmProposalsDashboard() {
 
   const clientGroups = useMemo(() => {
     const groups = {}
-    proposals.forEach(p => {
+    proposals.filter(p => filterStatus === 'archived' ? !!p.archived_at : !p.archived_at).forEach(p => {
       const clientName = p.client_name || p.crm_clients?.name || 'Cliente sin nombre'
       const clientCompany = p.client_company || p.crm_clients?.company || ''
       const key = p.client_id || clientName
@@ -76,7 +103,7 @@ export default function CrmProposalsDashboard() {
       }
     })
     return Object.values(groups)
-  }, [proposals])
+  }, [proposals, filterStatus])
 
   const searchedGroups = useMemo(() => {
     if (!search) return clientGroups
@@ -126,7 +153,7 @@ export default function CrmProposalsDashboard() {
     const proposalId = e.dataTransfer.getData('text/plain')
     
     const proposal = proposals.find(p => p.id === proposalId)
-    if (proposal && proposal.status !== newStatus) {
+    if (proposal && !proposal.archived_at && proposal.status !== newStatus) {
       // Optimistic update could be done, but we'll await the server response
       const result = await updateProposal(proposalId, { status: newStatus })
       if (!result.success) {
@@ -136,6 +163,29 @@ export default function CrmProposalsDashboard() {
         fetchProposals()
       }
     }
+  }
+
+  const handleStatusChange = async (proposal, status) => {
+    if (status === proposal.status) return
+    const result = await updateProposal(proposal.id, { status })
+    if (!result.success) {
+      showToast('Error al cambiar el estado: ' + (result.error?.message || 'Error desconocido'), 'error')
+      return
+    }
+    showToast(`Presupuesto marcado como ${STATUS_CONFIG[status].label}`)
+    fetchProposals()
+  }
+
+  const handleArchiveChange = async (proposal) => {
+    const result = await updateProposal(proposal.id, {
+      archived_at: proposal.archived_at ? null : new Date().toISOString(),
+    })
+    if (!result.success) {
+      showToast('Error al actualizar el archivo: ' + (result.error?.message || 'Error desconocido'), 'error')
+      return
+    }
+    showToast(proposal.archived_at ? 'Presupuesto restaurado.' : 'Presupuesto archivado.')
+    fetchProposals()
   }
 
   const handleCopyLink = (proposal, id) => {
@@ -208,7 +258,8 @@ export default function CrmProposalsDashboard() {
   }
 
   const filtered = (proposals || [])
-    .filter(p => filterStatus === 'all' || p.status === filterStatus)
+    .filter(p => filterStatus === 'archived' ? !!p.archived_at : !p.archived_at)
+    .filter(p => filterStatus === 'all' || filterStatus === 'archived' || p.status === filterStatus)
     .filter(p => {
       if (!search) return true
       const q = search.toLowerCase()
@@ -223,12 +274,14 @@ export default function CrmProposalsDashboard() {
     })
 
   // Summary stats
-  const totalAmount = proposals.reduce((sum, p) => sum + (['accepted', 'completed_pending', 'completed_paid'].includes(p.status) ? Number(p.total_amount) : 0), 0)
-  const countAccepted = proposals.filter(p => p.status === 'accepted').length
-  const countCompleted = proposals.filter(p => p.status === 'completed_pending' || p.status === 'completed_paid').length
-  const countSent = proposals.filter(p => p.status === 'sent' || p.status === 'viewed').length
-  const countPending = proposals.filter(p => p.status === 'draft').length
-  const countRevision = proposals.filter(p => p.status === 'revision_requested').length
+  const activeProposals = proposals.filter(p => !p.archived_at)
+  const totalAmount = activeProposals.reduce((sum, p) => sum + (['accepted', 'completed_pending', 'completed_paid'].includes(p.status) ? Number(p.total_amount) : 0), 0)
+  const countAccepted = activeProposals.filter(p => p.status === 'accepted').length
+  const countCompleted = activeProposals.filter(p => p.status === 'completed_pending' || p.status === 'completed_paid').length
+  const countSent = activeProposals.filter(p => p.status === 'sent' || p.status === 'viewed').length
+  const countPending = activeProposals.filter(p => p.status === 'draft').length
+  const countRevision = activeProposals.filter(p => p.status === 'revision_requested').length
+  const countRejected = activeProposals.filter(p => p.status === 'rejected').length
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -263,7 +316,7 @@ export default function CrmProposalsDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Total Aprobado</p>
           <p className="text-xl md:text-2xl font-extrabold text-[var(--color-deep-green)] mt-1 font-mono">
@@ -285,6 +338,10 @@ export default function CrmProposalsDashboard() {
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Con Cambios</p>
           <p className="text-xl md:text-2xl font-extrabold text-orange-600 mt-1">{countRevision}</p>
+        </div>
+        <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Rechazados</p>
+          <p className="text-xl md:text-2xl font-extrabold text-red-600 mt-1">{countRejected}</p>
         </div>
         <div className="card p-5 bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/45">Borradores</p>
@@ -309,7 +366,10 @@ export default function CrmProposalsDashboard() {
           <select
             className="text-sm font-semibold bg-[var(--color-refined-gray)] border-none rounded-[var(--radius-premium)] px-3 py-2 text-[var(--color-dark-gray)] outline-none cursor-pointer"
             value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
+            onChange={e => {
+              setFilterStatus(e.target.value)
+              if (e.target.value === 'archived') setViewMode('list')
+            }}
           >
             <option value="all">Todos los estados</option>
             <option value="draft">Borrador</option>
@@ -320,6 +380,7 @@ export default function CrmProposalsDashboard() {
             <option value="completed_pending">Finalizado (P. Pago)</option>
             <option value="completed_paid">Finalizado (Pagado)</option>
             <option value="rejected">Rechazado</option>
+            <option value="archived">Archivados</option>
           </select>
         </div>
         </div>
@@ -359,10 +420,11 @@ export default function CrmProposalsDashboard() {
       ) : filtered.length === 0 ? (
         <div className="card p-12 text-center bg-white shadow-sm border border-[var(--color-deep-green)]/5">
           <span className="material-symbols-outlined text-5xl text-[var(--color-dark-gray)]/20 mb-4 block">receipt_long</span>
-          <p className="text-lg font-semibold text-[var(--color-dark-gray)]/40">No se encontraron presupuestos</p>
-          <p className="text-sm text-[var(--color-dark-gray)]/30 mt-1">Hacé click en "Nuevo Presupuesto" para crear una propuesta comercial.</p>
+          <p className="text-lg font-semibold text-[var(--color-dark-gray)]/40">
+            {filterStatus === 'archived' ? 'No hay presupuestos archivados' : 'No se encontraron presupuestos'}
+          </p>
         </div>
-      ) : viewMode === 'kanban' ? (
+      ) : viewMode === 'kanban' && filterStatus !== 'archived' ? (
         <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
           {Object.entries(STATUS_CONFIG).map(([statusKey, statusCfg]) => {
             const colProposals = filtered.filter(p => p.status === statusKey)
@@ -439,6 +501,9 @@ export default function CrmProposalsDashboard() {
                             </a>
                           </div>
                         </div>
+                        <div className="mt-3 border-t border-gray-100 pt-3">
+                          <ProposalLifecycleControls proposal={proposal} onStatusChange={handleStatusChange} onArchiveChange={handleArchiveChange} />
+                        </div>
                       </div>
                     )
                   })}
@@ -455,7 +520,7 @@ export default function CrmProposalsDashboard() {
             )
           })}
         </div>
-      ) : viewMode === 'report' ? (
+      ) : viewMode === 'report' && filterStatus !== 'archived' ? (
           <div className="space-y-6 animate-fade-in">
             {searchedGroups.length === 0 ? (
               <div className="card p-12 text-center bg-white shadow-sm border border-[var(--color-deep-green)]/5">
@@ -571,6 +636,7 @@ export default function CrmProposalsDashboard() {
                                         <a href={getProposalPublicPath(proposal)} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-[var(--color-deep-green)]/5 rounded text-gray-500 flex items-center justify-center" title="Ver Propuesta">
                                           <span className="material-symbols-outlined text-base">open_in_new</span>
                                         </a>
+                                        <ProposalLifecycleControls proposal={proposal} onStatusChange={handleStatusChange} onArchiveChange={handleArchiveChange} />
                                       </div>
                                     </td>
                                   </tr>
@@ -605,6 +671,7 @@ export default function CrmProposalsDashboard() {
                         <span className={`status-dot status-dot-${statusCfg.color}`} />
                         {statusCfg.label}
                       </span>
+                      {proposal.archived_at && <span className="badge badge-gray">Archivado</span>}
                       {clientDisplayName && (
                         <span className="badge badge-gray text-xs font-semibold">
                           👤 {clientDisplayName} {clientDisplayCompany ? `(${clientDisplayCompany})` : ''}
@@ -662,6 +729,7 @@ export default function CrmProposalsDashboard() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
+                      <ProposalLifecycleControls proposal={proposal} onStatusChange={handleStatusChange} onArchiveChange={handleArchiveChange} />
                       {/* WhatsApp */}
                       <button
                         onClick={() => handleCopyWhatsApp(proposal)}

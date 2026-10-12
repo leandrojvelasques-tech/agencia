@@ -5,10 +5,8 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 
 const NAV_ITEMS = [
   { to: '/admin/eventos', icon: 'event', label: 'Eventos' },
-  { to: '/admin/clases', icon: 'fact_check', label: 'Clases y Asistencia' },
   { to: '/admin/crm', icon: 'dashboard_customize', label: 'CRM Contenidos' },
   { to: '/admin/presupuestos', icon: 'request_quote', label: 'Presupuestos' },
-  { to: '/admin/procesos', icon: 'account_tree', label: 'Relevamiento Procesos' },
   { to: '/admin/clientes', icon: 'groups', label: 'Clientes' },
   { to: '/admin/reportes-clientes', icon: 'insights', label: 'Reportes de clientes' },
   { to: '/admin/pedidos-cambios', icon: 'assignment_turned_in', label: 'Pedidos de cambios' },

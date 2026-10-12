@@ -15,8 +15,6 @@ import EventSatisfaction from './pages/admin/EventSatisfaction'
 import EventReport from './pages/admin/EventReport'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
-import ClassesDashboard from './pages/admin/ClassesDashboard.jsx'
-import ProcessSurveysDashboard from './pages/admin/ProcessSurveysDashboard'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
@@ -48,8 +46,6 @@ import ChangeRequestsPortal from './pages/public/ChangeRequestsPortal'
 import ChangeRequestDeliveryReport from './pages/public/ChangeRequestDeliveryReport'
 import CrmProposalLanding from './pages/public/CrmProposalLanding'
 import GmpObrasProposal from './pages/public/GmpObrasProposal'
-import CoworkerAttendance from './pages/public/CoworkerAttendance'
-import ProcessSurveyPublic from './pages/public/ProcessSurveyPublic'
 import ChangeRequestsDashboard from './pages/admin/ChangeRequestsDashboard'
 import ChangeRequestCreate from './pages/admin/ChangeRequestCreate'
 import ChangeRequestDetail from './pages/admin/ChangeRequestDetail'
@@ -103,7 +99,6 @@ export default function App() {
           <Route path="eventos/:id/reporte" element={<EventReport />} />
           <Route path="plantillas" element={<AgendaTemplatesDashboard />} />
           <Route path="configuracion" element={<SettingsDashboard />} />
-          <Route path="clases" element={<ClassesDashboard />} />
           
           {/* CRM Private Routes */}
           <Route path="crm" element={<CrmDashboard />} />
@@ -129,8 +124,6 @@ export default function App() {
           <Route path="presupuestos/nuevo" element={<CrmProposalCreate />} />
           <Route path="presupuestos/:id/editar" element={<CrmProposalCreate />} />
 
-          {/* Relevamiento de Procesos (IA & Optimización) */}
-          <Route path="procesos" element={<ProcessSurveysDashboard />} />
         </Route>
 
         {/* Public Participant Routes */}
@@ -154,10 +147,6 @@ export default function App() {
         <Route path="/presupuesto/2026-09-gmp-obras-v01" element={<GmpObrasProposal />} />
         <Route path="/presupuesto/:token" element={<CrmProposalLanding />} />
         <Route path="/presupuesto/:slug/:token" element={<CrmProposalLanding />} />
-        <Route path="/clase/:token/asistencia" element={<CoworkerAttendance />} />
-
-        {/* Relevamiento de Procesos Public Route */}
-        <Route path="/relevamiento-proceso" element={<ProcessSurveyPublic />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
