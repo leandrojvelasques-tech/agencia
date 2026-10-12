@@ -92,7 +92,7 @@ export default function CrmProposalCreate() {
       const { data: publicUrlData } = supabase.storage
         .from('proposals')
         .getPublicUrl(filePath)
-        
+
       update('client_logo_url', publicUrlData.publicUrl)
       showToast('Logo subido correctamente')
     } catch (err) {
@@ -117,7 +117,7 @@ export default function CrmProposalCreate() {
           .select('*')
           .eq('id', id)
           .single()
-        
+
         if (pErr) throw pErr
         if (proposal) {
           setSavedProposal(proposal)
@@ -181,7 +181,7 @@ export default function CrmProposalCreate() {
   }, [form.items])
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
-  
+
   const updatePaymentDetails = (field, value) => {
     setForm(prev => ({
       ...prev,
@@ -516,8 +516,8 @@ export default function CrmProposalCreate() {
       {/* Toast */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-premium shadow-lg border transition-all duration-300 animate-fade-in ${
-          toast.type === 'error' 
-            ? 'bg-red-50 border-red-200 text-red-800' 
+          toast.type === 'error'
+            ? 'bg-red-50 border-red-200 text-red-800'
             : 'bg-emerald-50 border-emerald-200 text-emerald-800'
         }`}>
           <div className="flex items-center gap-2">
@@ -536,8 +536,8 @@ export default function CrmProposalCreate() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-extrabold tracking-tight">
-            {id 
-              ? `Editar Presupuesto ${form.proposal_number ? `(#${form.proposal_number.toString().padStart(4, '0')})` : ''}` 
+            {id
+              ? `Editar Presupuesto ${form.proposal_number ? `(#${form.proposal_number.toString().padStart(4, '0')})` : ''}`
               : 'Nuevo Presupuesto (#AUTO)'}
           </h1>
           <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">
@@ -598,7 +598,7 @@ export default function CrmProposalCreate() {
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
-        
+
         {/* TITULO Y ESTADO */}
         <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
@@ -661,7 +661,7 @@ export default function CrmProposalCreate() {
               <span className="material-symbols-outlined text-base">person</span>
               Datos del Cliente
             </h2>
-            
+
             {/* Client Selector */}
             <select
               className="form-input !py-1.5 !px-3 text-xs w-auto min-w-[200px]"
@@ -758,7 +758,7 @@ export default function CrmProposalCreate() {
               />
             </div>
           </div>
-          
+
           <div className="mt-4 border-t border-[var(--color-deep-green)]/8 pt-4">
             <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Logo del Cliente</label>
             <div className="flex items-center gap-4">
@@ -831,7 +831,7 @@ export default function CrmProposalCreate() {
                       <span className="material-symbols-outlined text-lg">delete</span>
                     </button>
                   </div>
-                  
+
                   <div className="grid sm:grid-cols-12 gap-4 pr-8">
                     <div className="sm:col-span-12">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Título del Producto/Servicio *</label>
@@ -844,7 +844,7 @@ export default function CrmProposalCreate() {
                         required
                       />
                     </div>
-                    
+
                     <div className="sm:col-span-12">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Descripción (Opcional)</label>
                       <textarea
@@ -854,7 +854,7 @@ export default function CrmProposalCreate() {
                         onChange={e => handleUpdateItem(item.id, 'description', e.target.value)}
                       />
                     </div>
-                    
+
                     <div className="sm:col-span-4">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Cantidad</label>
                       <input
@@ -866,7 +866,7 @@ export default function CrmProposalCreate() {
                         onChange={e => handleUpdateItem(item.id, 'quantity', Number(e.target.value))}
                       />
                     </div>
-                    
+
                     <div className="sm:col-span-4">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Precio Unitario ($)</label>
                       <input
@@ -890,7 +890,7 @@ export default function CrmProposalCreate() {
               ))}
             </div>
           )}
-          
+
           <div className="p-6 bg-[var(--color-deep-green)]/5 border-t border-[var(--color-deep-green)]/15 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Validez hasta</label>
@@ -901,7 +901,7 @@ export default function CrmProposalCreate() {
                 onChange={e => update('valid_until', e.target.value)}
               />
             </div>
-            
+
             <div className="text-right">
               <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-1 block">Monto Total del Presupuesto ($) *</label>
               <input
@@ -945,7 +945,7 @@ export default function CrmProposalCreate() {
             <span className="material-symbols-outlined text-sm">attach_file</span>
             Archivos Adjuntos (Fotos, Documentos, Referencias)
           </label>
-          
+
           {/* Existing attachments */}
           {form.attachments.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1005,7 +1005,7 @@ export default function CrmProposalCreate() {
             <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
             Propuesta Técnica Detallada (PDF Opcional)
           </label>
-          
+
           {form.pdf_url ? (
             <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--color-deep-green)]/20 bg-[var(--color-deep-green)]/5">
               <div className="flex items-center gap-2">
@@ -1067,7 +1067,7 @@ export default function CrmProposalCreate() {
               Agregar Pago
             </button>
           </div>
-          
+
           <div className="space-y-3">
             {(form.payment_details?.schedule || []).map((item, idx) => (
               <div key={item.id || idx} className="flex gap-2 items-center">
@@ -1111,7 +1111,7 @@ export default function CrmProposalCreate() {
                 </div>
               </div>
             ))}
-            
+
           </div>
           <div className="border-t border-[var(--color-deep-green)]/10 pt-4 space-y-4">
             <label className="flex items-center gap-3 text-sm font-bold text-[var(--color-deep-green)] cursor-pointer">
@@ -1149,168 +1149,167 @@ export default function CrmProposalCreate() {
                 <PaymentDiscountSummary discount={form.payment_details.discount} totalAmount={form.total_amount} />
               </>
             )}
+          </div>
+        </div>
+
+        {/* BANK TRANSFER PAYMENT DETAILS CARD */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+          <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-lg">account_balance</span>
+            Datos para la Transferencia Bancaria
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Banco *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.banco}
+                onChange={e => updatePaymentDetails('banco', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Titular de la cuenta *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.nombre}
+                onChange={e => updatePaymentDetails('nombre', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CBU *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5 font-mono"
+                value={form.payment_details.cbu}
+                onChange={e => updatePaymentDetails('cbu', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Alias *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.alias}
+                onChange={e => updatePaymentDetails('alias', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CUIT/CUIL *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5 font-mono"
+                value={form.payment_details.cuit}
+                onChange={e => updatePaymentDetails('cuit', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Número de Cuenta *</label>
+              <input
+                type="text"
+                className="form-input !py-1.5"
+                value={form.payment_details.cuenta}
+                onChange={e => updatePaymentDetails('cuenta', e.target.value)}
+                required
+              />
             </div>
           </div>
-  
-          {/* BANK TRANSFER PAYMENT DETAILS CARD */}
-          <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
-            <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-lg">account_balance</span>
-              Datos para la Transferencia Bancaria
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Banco *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5"
-                  value={form.payment_details.banco}
-                  onChange={e => updatePaymentDetails('banco', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Titular de la cuenta *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5"
-                  value={form.payment_details.nombre}
-                  onChange={e => updatePaymentDetails('nombre', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CBU *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5 font-mono"
-                  value={form.payment_details.cbu}
-                  onChange={e => updatePaymentDetails('cbu', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Alias *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5"
-                  value={form.payment_details.alias}
-                  onChange={e => updatePaymentDetails('alias', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CUIT/CUIL *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5 font-mono"
-                  value={form.payment_details.cuit}
-                  onChange={e => updatePaymentDetails('cuit', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Número de Cuenta *</label>
-                <input
-                  type="text"
-                  className="form-input !py-1.5"
-                  value={form.payment_details.cuenta}
-                  onChange={e => updatePaymentDetails('cuenta', e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-  
-          {/* Terms and Conditions Card */}
-          <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
-            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones Comerciales</label>
-            <textarea
-              className="form-input min-h-[120px] text-xs font-semibold leading-relaxed"
-              placeholder="Condiciones del presupuesto comercial..."
-              value={form.terms_conditions}
-              onChange={e => update('terms_conditions', e.target.value)}
-            />
-          </div>
-  
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl text-sm animate-fade-in">
-              {error}
-            </div>
-          )}
-  
-          {/* Submit Actions */}
-          <div className="flex flex-wrap justify-between items-center gap-3">
-            <Link to="/admin/presupuestos" className="btn-ghost">
-              Cancelar
-            </Link>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => setShowPreview(true)}
-                className="btn-secondary !py-2.5 !px-5 text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-base">visibility</span>
-                Vista Preliminar
-              </button>
-              {canSaveDraft && (
-                <button
-                  type="button"
-                  onClick={() => handleSave(null, true)}
-                  disabled={saveBusy}
-                  className="btn-secondary disabled:opacity-50"
-                >
-                  <span className="material-symbols-outlined text-lg">save</span>
-                  {loading ? 'Guardando...' : 'Guardar borrador'}
-                </button>
-              )}
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={saveBusy}
-              >
-                {loading ? (
-                  <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-lg">save</span>
-                    {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </form>
-  
-        {/* PREVIEW MODAL */}
-        {showPreview && (
-          <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
-            {/* Admin Header Banner */}
-            <div className="w-full max-w-4xl shrink-0 mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined">visibility</span>
-                <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPreview(false)}
-                className="bg-white/20 hover:bg-white/35 text-white font-bold text-xs py-1.5 px-4 rounded-lg transition-all"
-              >
-                Cerrar Vista Previa
-              </button>
-            </div>
-  
-            {/* La vista previa comparte el diseño del presupuesto público. */}
-            <div className="w-full max-w-4xl shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 text-left">
-              <CrmProposalLanding previewProposal={{
-                ...savedProposal,
-                ...form,
-                created_at: savedProposal?.created_at || new Date().toISOString(),
-              }} />
-            </div>
+        </div>
+
+        {/* Terms and Conditions Card */}
+        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
+          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones Comerciales</label>
+          <textarea
+            className="form-input min-h-[120px] text-xs font-semibold leading-relaxed"
+            placeholder="Condiciones del presupuesto comercial..."
+            value={form.terms_conditions}
+            onChange={e => update('terms_conditions', e.target.value)}
+          />
+        </div>
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl text-sm animate-fade-in">
+            {error}
           </div>
         )}
-      </div>
-    )
-  }
-  
+
+        {/* Submit Actions */}
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          <Link to="/admin/presupuestos" className="btn-ghost">
+            Cancelar
+          </Link>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="btn-secondary !py-2.5 !px-5 text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-base">visibility</span>
+              Vista Preliminar
+            </button>
+            {canSaveDraft && (
+              <button
+                type="button"
+                onClick={() => handleSave(null, true)}
+                disabled={saveBusy}
+                className="btn-secondary disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">save</span>
+                {loading ? 'Guardando...' : 'Guardar borrador'}
+              </button>
+            )}
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={saveBusy}
+            >
+              {loading ? (
+                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-lg">save</span>
+                  {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {/* PREVIEW MODAL */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
+          {/* Admin Header Banner */}
+          <div className="w-full max-w-4xl shrink-0 mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined">visibility</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPreview(false)}
+              className="bg-white/20 hover:bg-white/35 text-white font-bold text-xs py-1.5 px-4 rounded-lg transition-all"
+            >
+              Cerrar Vista Previa
+            </button>
+          </div>
+
+          {/* La vista previa comparte el diseño del presupuesto público. */}
+          <div className="w-full max-w-4xl shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 text-left">
+            <CrmProposalLanding previewProposal={{
+              ...savedProposal,
+              ...form,
+              created_at: savedProposal?.created_at || new Date().toISOString(),
+            }} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
