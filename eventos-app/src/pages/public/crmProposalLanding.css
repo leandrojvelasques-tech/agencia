@@ -52,6 +52,24 @@
   color: white;
 }
 .proposal-document .proposal-total > span:last-child { color: #a8d5c1; }
+.proposal-document .proposal-items { table-layout: fixed; }
+.proposal-document .proposal-items th,
+.proposal-document .proposal-items td {
+  padding: 16px 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.proposal-document .proposal-items th:first-child { width: 54%; }
+.proposal-document .proposal-items th:nth-child(2) { width: 8%; }
+.proposal-document .proposal-items th:nth-child(3),
+.proposal-document .proposal-items th:nth-child(4) { width: 19%; }
+.proposal-document .proposal-items td { vertical-align: top; }
+.proposal-document .proposal-items td:last-child { font-size: 13px; }
+.proposal-document .proposal-items th { letter-spacing: 0.05em; }
+.proposal-document .proposal-items th:first-child,
+.proposal-document .proposal-items td:first-child { padding-left: 24px; }
+.proposal-document .proposal-items th:last-child,
+.proposal-document .proposal-items td:last-child { padding-right: 24px; }
 .proposal-document .proposal-signature {
   padding: 24px;
   border: 1px solid var(--proposal-line);
@@ -68,6 +86,29 @@
   .proposal-document .proposal-total { flex-direction: column; align-items: flex-start; gap: 8px; }
   .proposal-document .proposal-party-heading { padding: 14px 20px; }
   .proposal-document .proposal-party-body { padding: 20px; }
+}
+
+@media screen and (max-width: 640px) {
+  .proposal-document .proposal-items,
+  .proposal-document .proposal-items tbody,
+  .proposal-document .proposal-items tr,
+  .proposal-document .proposal-items td { display: block; width: 100%; }
+  .proposal-document .proposal-items thead { display: none; }
+  .proposal-document .proposal-items tr { padding: 20px; }
+  .proposal-document .proposal-items td { padding: 0; }
+  .proposal-document .proposal-items td:first-child { padding: 0 0 12px; }
+  .proposal-document .proposal-items td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+  }
+  .proposal-document .proposal-items td[data-label]::before {
+    content: attr(data-label);
+    font-family: var(--font-body, sans-serif);
+    text-align: left;
+    font-weight: 500;
+  }
 }
 
 @media print {

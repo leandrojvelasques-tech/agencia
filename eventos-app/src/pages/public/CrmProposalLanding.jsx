@@ -4,6 +4,7 @@ import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
 import { getPaymentAmount } from '../../lib/paymentSchedule'
+import PaymentDiscountSummary from '../../components/PaymentDiscountSummary'
 import './crmProposalLanding.css'
 
 export default function CrmProposalLanding({ previewProposal = null }) {
@@ -313,8 +314,8 @@ export default function CrmProposalLanding({ previewProposal = null }) {
                 Detalle de la Inversión
               </h2>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
+            <div>
+              <table className="proposal-items w-full text-left text-sm">
                 <thead className="bg-[var(--color-refined-gray)]/50 text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60">
                   <tr>
                     <th className="px-6 py-4">Descripción del Ítem</th>
@@ -332,11 +333,11 @@ export default function CrmProposalLanding({ previewProposal = null }) {
                           <p className="text-xs text-[var(--color-dark-gray)]/60 mt-0.5 whitespace-pre-wrap">{item.description}</p>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center font-mono text-xs">{item.quantity}</td>
-                      <td className="px-6 py-4 text-right font-mono text-xs">
+                      <td data-label="Cantidad" className="px-6 py-4 text-center font-mono text-xs">{item.quantity}</td>
+                      <td data-label="Precio unitario" className="px-6 py-4 text-right font-mono text-xs">
                         ${Number(item.unit_price).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-6 py-4 text-right font-mono font-bold text-[var(--color-dark-gray)]">
+                      <td data-label="Subtotal" className="px-6 py-4 text-right font-mono font-bold text-[var(--color-dark-gray)]">
                         ${(Number(item.quantity) * Number(item.unit_price)).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
@@ -454,6 +455,7 @@ export default function CrmProposalLanding({ previewProposal = null }) {
                 ${Number(proposal.total_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
+            <PaymentDiscountSummary discount={proposal.payment_details?.discount} totalAmount={proposal.total_amount} />
           </div>
         </div>
 

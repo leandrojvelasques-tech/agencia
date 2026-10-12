@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
 import { normalizePaymentSchedule } from '../../lib/paymentSchedule'
+import { getPaymentDiscount, PAYMENT_DISCOUNT_TYPES } from '../../lib/paymentDiscount'
+import PaymentDiscountSummary from '../../components/PaymentDiscountSummary'
 import CrmProposalLanding from '../public/CrmProposalLanding'
 import { getProposalPath } from '../../../../shared/proposal-links.mjs'
 
@@ -421,6 +423,11 @@ export default function CrmProposalCreate() {
     }
     if (!asDraft && !form.title.trim()) {
       setError('El título de la propuesta es obligatorio')
+      return
+    }
+
+    if (form.payment_details.discount?.enabled && !getPaymentDiscount(form.payment_details.discount, form.total_amount)) {
+      setError('Indicá la modalidad de pago y un descuento mayor a 0% y de hasta 100%.')
       return
     }
 
@@ -1106,166 +1113,204 @@ export default function CrmProposalCreate() {
             ))}
             
           </div>
-        </div>
-
-        {/* BANK TRANSFER PAYMENT DETAILS CARD */}
-        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
-          <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-lg">account_balance</span>
-            Datos para la Transferencia Bancaria
-          </h3>
-          <div className="grid sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Banco *</label>
+          <div className="border-t border-[var(--color-deep-green)]/10 pt-4 space-y-4">
+            <label className="flex items-center gap-3 text-sm font-bold text-[var(--color-deep-green)] cursor-pointer">
               <input
-                type="text"
-                className="form-input !py-1.5"
-                value={form.payment_details.banco}
-                onChange={e => updatePaymentDetails('banco', e.target.value)}
-                required
+                type="checkbox"
+                checked={!!form.payment_details.discount?.enabled}
+                onChange={e => updatePaymentDetails('discount', {
+                  type: 'single_payment', percentage: 10,
+                  ...form.payment_details.discount, enabled: e.target.checked,
+                })}
+                className="accent-[var(--color-deep-green)]"
               />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Titular de la cuenta *</label>
-              <input
-                type="text"
-                className="form-input !py-1.5"
-                value={form.payment_details.nombre}
-                onChange={e => updatePaymentDetails('nombre', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CBU *</label>
-              <input
-                type="text"
-                className="form-input !py-1.5 font-mono"
-                value={form.payment_details.cbu}
-                onChange={e => updatePaymentDetails('cbu', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Alias *</label>
-              <input
-                type="text"
-                className="form-input !py-1.5"
-                value={form.payment_details.alias}
-                onChange={e => updatePaymentDetails('alias', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CUIT/CUIL *</label>
-              <input
-                type="text"
-                className="form-input !py-1.5 font-mono"
-                value={form.payment_details.cuit}
-                onChange={e => updatePaymentDetails('cuit', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Número de Cuenta *</label>
-              <input
-                type="text"
-                className="form-input !py-1.5"
-                value={form.payment_details.cuenta}
-                onChange={e => updatePaymentDetails('cuenta', e.target.value)}
-                required
-              />
+              Ofrecer descuento por modalidad de pago
+            </label>
+            {form.payment_details.discount?.enabled && (
+              <>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <label className="block text-xs font-semibold">
+                    Modalidad con descuento
+                    <select className="form-input mt-1" value={form.payment_details.discount.type}
+                      onChange={e => updatePaymentDetails('discount', { ...form.payment_details.discount, type: e.target.value })}>
+                      {Object.entries(PAYMENT_DISCOUNT_TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </label>
+                  <label className="block text-xs font-semibold">
+                    Descuento (%)
+                    <input type="number" min="0.01" max="100" step="0.01" required
+                      className="form-input mt-1" value={form.payment_details.discount.percentage}
+                      onChange={e => updatePaymentDetails('discount', {
+                        ...form.payment_details.discount,
+                        percentage: e.target.value === '' ? '' : Number(e.target.value),
+                      })} />
+                  </label>
+                </div>
+                <PaymentDiscountSummary discount={form.payment_details.discount} totalAmount={form.total_amount} />
+              </>
+            )}
             </div>
           </div>
-        </div>
-
-        {/* Terms and Conditions Card */}
-        <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
-          <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones Comerciales</label>
-          <textarea
-            className="form-input min-h-[120px] text-xs font-semibold leading-relaxed"
-            placeholder="Condiciones del presupuesto comercial..."
-            value={form.terms_conditions}
-            onChange={e => update('terms_conditions', e.target.value)}
-          />
-        </div>
-
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl text-sm animate-fade-in">
-            {error}
+  
+          {/* BANK TRANSFER PAYMENT DETAILS CARD */}
+          <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-4">
+            <h3 className="text-sm font-bold text-[var(--color-deep-green)] border-b border-[var(--color-deep-green)]/8 pb-2 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-lg">account_balance</span>
+              Datos para la Transferencia Bancaria
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Banco *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5"
+                  value={form.payment_details.banco}
+                  onChange={e => updatePaymentDetails('banco', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Titular de la cuenta *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5"
+                  value={form.payment_details.nombre}
+                  onChange={e => updatePaymentDetails('nombre', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CBU *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5 font-mono"
+                  value={form.payment_details.cbu}
+                  onChange={e => updatePaymentDetails('cbu', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Alias *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5"
+                  value={form.payment_details.alias}
+                  onChange={e => updatePaymentDetails('alias', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">CUIT/CUIL *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5 font-mono"
+                  value={form.payment_details.cuit}
+                  onChange={e => updatePaymentDetails('cuit', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/50 mb-1 block">Número de Cuenta *</label>
+                <input
+                  type="text"
+                  className="form-input !py-1.5"
+                  value={form.payment_details.cuenta}
+                  onChange={e => updatePaymentDetails('cuenta', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Submit Actions */}
-        <div className="flex flex-wrap justify-between items-center gap-3">
-          <Link to="/admin/presupuestos" className="btn-ghost">
-            Cancelar
-          </Link>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="btn-secondary !py-2.5 !px-5 text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-base">visibility</span>
-              Vista Preliminar
-            </button>
-            {canSaveDraft && (
+  
+          {/* Terms and Conditions Card */}
+          <div className="card p-6 bg-white shadow-sm border border-[var(--color-deep-green)]/5 space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 block">Términos y Condiciones Comerciales</label>
+            <textarea
+              className="form-input min-h-[120px] text-xs font-semibold leading-relaxed"
+              placeholder="Condiciones del presupuesto comercial..."
+              value={form.terms_conditions}
+              onChange={e => update('terms_conditions', e.target.value)}
+            />
+          </div>
+  
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl text-sm animate-fade-in">
+              {error}
+            </div>
+          )}
+  
+          {/* Submit Actions */}
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <Link to="/admin/presupuestos" className="btn-ghost">
+              Cancelar
+            </Link>
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => handleSave(null, true)}
-                disabled={saveBusy}
-                className="btn-secondary disabled:opacity-50"
+                onClick={() => setShowPreview(true)}
+                className="btn-secondary !py-2.5 !px-5 text-xs whitespace-nowrap flex items-center gap-1.5 shadow-sm"
               >
-                <span className="material-symbols-outlined text-lg">save</span>
-                {loading ? 'Guardando...' : 'Guardar borrador'}
+                <span className="material-symbols-outlined text-base">visibility</span>
+                Vista Preliminar
               </button>
-            )}
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={saveBusy}
-            >
-              {loading ? (
-                <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-              ) : (
-                <>
+              {canSaveDraft && (
+                <button
+                  type="button"
+                  onClick={() => handleSave(null, true)}
+                  disabled={saveBusy}
+                  className="btn-secondary disabled:opacity-50"
+                >
                   <span className="material-symbols-outlined text-lg">save</span>
-                  {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
-                </>
+                  {loading ? 'Guardando...' : 'Guardar borrador'}
+                </button>
               )}
-            </button>
-          </div>
-        </div>
-      </form>
-
-      {/* PREVIEW MODAL */}
-      {showPreview && (
-        <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
-          {/* Admin Header Banner */}
-          <div className="w-full max-w-4xl shrink-0 mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined">visibility</span>
-              <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={saveBusy}
+              >
+                {loading ? (
+                  <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-lg">save</span>
+                    {id ? 'Guardar Cambios' : 'Crear Presupuesto'}
+                  </>
+                )}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowPreview(false)}
-              className="bg-white/20 hover:bg-white/35 text-white font-bold text-xs py-1.5 px-4 rounded-lg transition-all"
-            >
-              Cerrar Vista Previa
-            </button>
           </div>
-
-          {/* La vista previa comparte el diseño del presupuesto público. */}
-          <div className="w-full max-w-4xl shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 text-left">
-            <CrmProposalLanding previewProposal={{
-              ...savedProposal,
-              ...form,
-              created_at: savedProposal?.created_at || new Date().toISOString(),
-            }} />
+        </form>
+  
+        {/* PREVIEW MODAL */}
+        {showPreview && (
+          <div className="fixed inset-0 bg-black/60 z-50 overflow-y-auto backdrop-blur-sm p-4 md:p-8 animate-fade-in flex flex-col items-center">
+            {/* Admin Header Banner */}
+            <div className="w-full max-w-4xl shrink-0 mb-4 bg-[var(--color-deep-green)] text-white px-4 py-3 rounded-xl flex items-center justify-between shadow-lg sticky top-0 z-50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined">visibility</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Vista Previa del Cliente</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="bg-white/20 hover:bg-white/35 text-white font-bold text-xs py-1.5 px-4 rounded-lg transition-all"
+              >
+                Cerrar Vista Previa
+              </button>
+            </div>
+  
+            {/* La vista previa comparte el diseño del presupuesto público. */}
+            <div className="w-full max-w-4xl shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 text-left">
+              <CrmProposalLanding previewProposal={{
+                ...savedProposal,
+                ...form,
+                created_at: savedProposal?.created_at || new Date().toISOString(),
+              }} />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  )
-}
+        )}
+      </div>
+    )
+  }
+  
