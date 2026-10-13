@@ -12,6 +12,7 @@ const previousWorkshopPhotos = [
 const previousWorkshopComments = [
   'Sólo quiero agradecer por la claridad de exposición',
   'Excelente, muy claro y a utilizar esta herramienta en nuestro trabajo',
+  'muy interesante para seguir metiendose en este nuevo mundo totalemnete indispensable que se viene por delante',
 ]
 
 export default function WorkshopPreviousEdition() {

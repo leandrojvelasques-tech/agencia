@@ -18,6 +18,7 @@
 .previous-workshop__quote > span { color: var(--brand); font-family: Georgia, serif; font-size: 62px; line-height: .85; }
 .previous-workshop__quote blockquote { margin: 12px 0 25px; color: var(--ink); font-size: 20px; line-height: 1.5; }
 .previous-workshop__quote figcaption { margin-top: auto; color: var(--steel); font-size: 12px; line-height: 1.5; }
+.previous-workshop__quote:last-child { grid-column: 1 / -1; }
 @media (max-width: 900px) {
   .previous-workshop__reviews { grid-template-columns: 1fr 1fr; }
   .previous-workshop__rating { grid-column: 1 / -1; }
