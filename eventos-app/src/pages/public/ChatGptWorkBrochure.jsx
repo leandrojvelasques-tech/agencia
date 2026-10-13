@@ -279,7 +279,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </div>
         <figure className="work-landing__proposal-photo">
           <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
-          <figcaption><strong>Experiencia aplicada</strong><span>Aprender, probar y resolver en equipo.</span></figcaption>
+          <figcaption><strong>{isNovemberEdition ? 'Taller de IA presencial' : 'Experiencia aplicada'}</strong><span>{isNovemberEdition ? 'Consejo Profesional de Ciencias Económicas del Chubut' : 'Aprender, probar y resolver en equipo.'}</span></figcaption>
         </figure>
         <aside className="work-landing__proposal-result"><strong>Al finalizar</strong><span>Vas a contar con los conceptos, los criterios y la práctica necesarios para empezar a pensar, configurar y desarrollar tus propios entornos de trabajo agénticos adaptados a tus necesidades.</span></aside>
       </section>
