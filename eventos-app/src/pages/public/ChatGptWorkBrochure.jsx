@@ -3,6 +3,7 @@ import WorkshopJourneyMap from './WorkshopJourneyMap'
 import WorkshopCaseMap from './WorkshopCaseMap'
 import WorkshopBlockBadge from './WorkshopBlockBadge'
 import WorkshopPreviousEdition from './WorkshopPreviousEdition'
+import WorkshopInvitationVideo from './WorkshopInvitationVideo'
 import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
@@ -253,19 +254,15 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </section>
       )}
 
-      <section className="work-landing__section work-landing__context">
-        {isNovemberEdition ? (
-          <figure className="work-landing__context-illustration">
-            <img src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/entorno-agentico.png`} alt="Un agente conecta documentos, proyectos, herramientas y tareas en un mismo entorno de trabajo." loading="lazy" width="1024" height="1024" />
-          </figure>
-        ) : <div className="work-landing__context-index" aria-hidden="true">2026</div>}
+      {isNovemberEdition ? <WorkshopInvitationVideo /> : <section className="work-landing__section work-landing__context">
+        <div className="work-landing__context-index" aria-hidden="true">2026</div>
         <div className="work-landing__context-copy">
           <p className="work-landing__eyebrow">UN CAMBIO DE ETAPA</p>
           <h2>La era de los entornos agénticos ya empezó.</h2>
           <p>En 2026, el trabajo con inteligencia artificial dio un salto: pasamos de conversar con un chat a trabajar en entornos capaces de integrar contexto, instrucciones, herramientas y acciones para producir resultados concretos.</p>
           <p>{isNovemberEdition ? 'El taller está abierto a profesionales, equipos administrativos, estudiantes y personas de otras áreas que quieran incorporar estas herramientas a su trabajo.' : 'Para los profesionales de Ciencias Económicas, aprender a trabajar con agentes se está convirtiendo en una capacidad necesaria para ampliar los servicios, mejorar la forma de resolver problemas y sostener la competitividad profesional.'}</p>
         </div>
-      </section>
+      </section>}
 
       <section className="work-landing__section work-landing__proposal">
         <div className="work-landing__proposal-intro">
