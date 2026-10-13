@@ -7,8 +7,6 @@
 .case-map__block--1 { grid-column: 1; grid-row: 1; }
 .case-map__block--2 { grid-column: 3; grid-row: 1; background: #e7edf6; }
 .case-map__block-top { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 20px; }
-.case-map__block-top > span { color: #fff; background: #2a7f8b; padding: 8px 12px; font-size: 12px; font-weight: 800; border-radius: 4px; }
-.case-map__block--2 .case-map__block-top > span { background: #686a9b; }
 .case-map__block-top small { font-size: 11px; color: #526973; }
 .case-map h4 { margin: 0; color: #12313a; font-size: 24px; line-height: 1.2; letter-spacing: -.025em; }
 .case-map ul { padding: 0; margin: 22px 0; list-style: none; }

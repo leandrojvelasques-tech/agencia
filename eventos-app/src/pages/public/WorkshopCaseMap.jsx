@@ -1,5 +1,6 @@
 import { novemberCaseBlocks } from '../../lib/workshopNovemberProgram'
 import './workshopCaseMap.css'
+import WorkshopBlockBadge from './WorkshopBlockBadge'
 
 export default function WorkshopCaseMap() {
   return <section className="case-map" aria-labelledby="case-map-title">
@@ -8,7 +9,7 @@ export default function WorkshopCaseMap() {
     <p className="case-map__intro">Dos bloques para resolver una situación profesional y preparar el trabajo que se repite.</p>
     <div className="case-map__route">
       {novemberCaseBlocks.map((block, index) => <article className={`case-map__block case-map__block--${index + 1}`} key={block.number}>
-        <div className="case-map__block-top"><span>Bloque {index + 1}</span><small>{index === 0 ? '14:00 a 15:15' : '15:30 a 16:45'}</small></div>
+        <div className="case-map__block-top"><WorkshopBlockBadge number={index + 1} /><small>{index === 0 ? '14:00 a 15:15' : '15:30 a 16:45'}</small></div>
         <h4>{block.title}</h4>
         <ul>{block.mapItems.map(item => <li key={item}>{item}</li>)}</ul>
         <p className="case-map__annotation">{block.mapNote}</p>

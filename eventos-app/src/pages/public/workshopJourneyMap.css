@@ -29,6 +29,7 @@
 .journey-map__phase { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 14px; color: #d5e5e6; font-size: 11px; font-weight: 750; }
 .journey-map__phase > span { color: var(--map-note); font-size: 14px; transform: rotate(-2deg); }
 .journey-map__phase--second { margin-top: 6px; }
+.journey-map__phase-label { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .journey-map__step { position: relative; grid-column: span 2; padding: 20px 17px 15px; background: var(--map-paper); color: var(--map-ink); border-radius: 4px 7px 3px 6px; box-shadow: 3px 4px 0 #051b2044; }
 .journey-map__step::after { content: '→'; position: absolute; right: -17px; top: 26px; z-index: 2; color: var(--map-marker); font-size: 23px; }
 .journey-map__step:nth-child(4)::after { content: '↴'; right: 5px; top: auto; bottom: -30px; }
@@ -54,8 +55,7 @@
 .journey-map__proactive .journey-map__annotation { font-size: 22px; white-space: nowrap; }
 .journey-map__proactive .journey-map__annotation > svg { width: 40px; }
 .journey-map__dot { position: relative; display: flex; flex-direction: column; align-items: flex-start; flex: 1; padding: 25px 20px; color: var(--map-ink); background: #dff0ec; border: 2px dashed #9edddf; border-radius: 6px 3px 9px 4px; }
-.journey-map__dot-label { display: inline-grid; gap: 3px; padding: 8px 12px; margin-bottom: 19px; color: #fff; background: #2a7f8b; font-size: 13px; font-weight: 850; border-radius: 4px; }
-.journey-map__dot-label > span { font-size: 10px; font-weight: 600; }
+.journey-map__dot-label { display: inline-grid; gap: 7px; margin-bottom: 19px; color: #2a7f8b; font-size: 12px; font-weight: 850; }
 .journey-map .journey-map__dot h4 { font-size: clamp(22px, 2.2vw, 29px); line-height: 1.25; }
 .journey-map__dot > p { margin: 19px 0 0; padding-top: 19px; border-top: 1px solid #93bdc2; color: #526973; font-size: 15px; line-height: 1.55; }
 .journey-map__dots-image { display: block; width: 100%; height: auto; margin: auto 0 0; border-radius: 12px 7px 14px 6px; background: #000; box-shadow: 3px 4px 0 #17343d18; }

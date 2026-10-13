@@ -1,6 +1,7 @@
 import './chatGptWorkBrochure.css'
 import WorkshopJourneyMap from './WorkshopJourneyMap'
 import WorkshopCaseMap from './WorkshopCaseMap'
+import WorkshopBlockBadge from './WorkshopBlockBadge'
 import { novemberCaseBlocks } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
@@ -275,10 +276,10 @@ export default function ChatGptWorkBrochure({ event = null }) {
              <div><h3>{dayOneTitle}</h3><p>Una primera jornada de demostraciones y recorrido guiado por las capacidades de ChatGPT Work, desde la configuración del entorno hasta sus herramientas de ampliación.</p></div>
            </div>
            {isNovemberEdition ? <>
-             <div className="work-landing__session-head"><h4>Bloque 1 · Antes del receso</h4><span>14:00 a 15:15 · Unidades 1, 2 y 3</span></div>
+             <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={1} /> Antes del receso</h4><span>14:00 a 15:15 · Unidades 1, 2 y 3</span></div>
              <div className="work-landing__blocks work-landing__units">{agendaDayOneBlocks.slice(0, 3).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
              <p className="work-landing__session-break">Receso · 15:15 a 15:30</p>
-             <div className="work-landing__session-head"><h4>Bloque 2 · Después del receso</h4><span>15:30 a 16:45 · Unidades 4, 5 y 6</span></div>
+             <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={2} /> Después del receso</h4><span>15:30 a 16:45 · Unidades 4, 5 y 6</span></div>
              <div className="work-landing__blocks work-landing__units">{agendaDayOneBlocks.slice(3).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
              <p className="work-landing__session-break">Consultas finales · 16:45 a 17:00</p>
            </> : <div className="work-landing__blocks">{agendaDayOneBlocks.map(block => <ProgramBlock key={block.number} block={block} />)}</div>}
