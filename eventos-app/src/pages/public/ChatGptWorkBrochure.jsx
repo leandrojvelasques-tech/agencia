@@ -205,6 +205,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
   if (isNovemberEdition) faqItems.push(
     ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Podés solicitar la cancelación hasta el día previo al inicio del taller, inclusive. En ese caso, recibirás un reembolso del 100% del importe transferido.'],
     ['¿Podés enviarme una factura?', 'Sí. Puedo emitirte una factura C. Al momento de inscribirte, enviame tus datos de facturación para que pueda emitirla y enviártela.'],
+    ['¿Puedo contratar este taller de forma personalizada para mi empresa?', 'Sí. Realizo cursos y talleres presenciales o virtuales personalizados para empresas. Adapto la propuesta a la cantidad de participantes y a los días y horarios de trabajo que les resulten convenientes.'],
   )
   return (
     <main className="work-landing">
