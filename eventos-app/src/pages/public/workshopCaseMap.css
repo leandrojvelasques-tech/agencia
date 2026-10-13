@@ -16,8 +16,6 @@
 .case-map__connection { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 7px; color: #89dadd; }
 .case-map__connection svg { width: 64px; height: 40px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .case-map__connection span { color: #e5d49a; font-family: 'Segoe Print', cursive; font-size: 11px; }
-.case-map__closing { margin: 28px 0 0; padding: 18px 22px; color: #12313a; background: #d9eeea; border-left: 4px solid #89dadd; font-size: 17px; font-weight: 750; line-height: 1.5; }
-.case-map__note { margin: 15px 0 0; color: #d0e0e2; font-size: 12px; line-height: 1.5; }
 @media(max-width: 700px) {
   .case-map__route { grid-template-columns: 1fr; }
   .case-map__block--1 { grid-column: 1; grid-row: 1; }

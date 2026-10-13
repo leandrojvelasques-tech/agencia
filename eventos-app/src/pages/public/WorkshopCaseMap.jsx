@@ -16,7 +16,5 @@ export default function WorkshopCaseMap() {
       </article>)}
       <div className="case-map__connection" aria-hidden="true"><svg viewBox="0 0 70 40"><path d="M5 20c15-13 34-13 54 0M47 9l14 11-14 10" /></svg><span>receso</span></div>
     </div>
-    <p className="case-map__closing">Primero resolvemos el caso. Después dejamos preparada una forma de repetir, seguir y mejorar ese trabajo.</p>
-    <p className="case-map__note">El grado de autonomía depende de la tarea, las herramientas disponibles y los puntos de revisión definidos.</p>
   </section>
 }
