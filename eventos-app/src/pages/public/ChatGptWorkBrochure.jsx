@@ -2,7 +2,7 @@ import './chatGptWorkBrochure.css'
 import WorkshopJourneyMap from './WorkshopJourneyMap'
 import WorkshopCaseMap from './WorkshopCaseMap'
 import WorkshopBlockBadge from './WorkshopBlockBadge'
-import { novemberCaseBlocks } from '../../lib/workshopNovemberProgram'
+import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
 const heroImage = '/workshop-chatgpt-work/hero-option-1-selected.png'
@@ -206,7 +206,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
-          <span className="work-landing__hero-duration" aria-label={isNovemberEdition ? '9 horas en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '9 h' : '5 h'}</span>
+          <span className={`work-landing__hero-duration${isNovemberEdition ? ' work-landing__hero-duration--november' : ''}`} aria-label={isNovemberEdition ? '7 horas y media en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '7,5 h' : '5 h'}</span>
           {(!isEventEdition || isVirtualEdition) && (
             <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
@@ -225,7 +225,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <p className="work-landing__eyebrow">{isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
           <div className="work-landing__edition-data">
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
-            <div className="work-landing__edition-time"><span>Horario</span><strong>{formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
+            <div className="work-landing__edition-time"><span>Horario</span><strong>{isNovemberEdition ? <>Jornadas 1 y 2: 14:00 a 17:00<br />Jornada 3: 14:00 a 15:30</> : formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
             <div className="work-landing__edition-location"><span>Lugar</span><strong>{isVirtualEdition ? 'Online' : (event.location || '—')}</strong></div>
             {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
           </div>
@@ -254,8 +254,8 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </div>
         <div className="work-landing__proposal-copy">
           <p>El taller recorre el entorno de ChatGPT Work para que comprendas su lógica y aprendas a configurarlo por tu propia cuenta.</p>
-          <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.{isNovemberEdition && ' En la tercera, vas a repetir la práctica con acompañamiento y resolver consultas.'}</p>
-          {isNovemberEdition && <p>Cada día, de 14 a 17 h: 75 minutos de trabajo, 15 minutos de receso, otros 75 minutos de trabajo y 15 minutos finales de consultas.</p>}
+          <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.{isNovemberEdition && ' En la tercera, vas a tener un espacio abierto para consultar el caso integrador, mostrar otros trabajos y pedir asesoramiento.'}</p>
+          {isNovemberEdition && <p>Jornadas 1 y 2, de 14 a 17 h: 75 minutos de trabajo, 15 minutos de receso, otros 75 minutos de trabajo y 15 minutos finales de consultas. Jornada 3, de 14 a 15:30 h: consultas abiertas, sin receso.</p>}
         </div>
         <figure className="work-landing__proposal-photo">
           <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
@@ -321,9 +321,9 @@ export default function ChatGptWorkBrochure({ event = null }) {
       </section>
 
       {isNovemberEdition && <>
-        <section className="work-landing__program work-landing__november-day-three">
-          <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Práctica y consultas</h3><p>Retomá el caso integrador, volvé sobre los pasos que quieras practicar y revisá los resultados con acompañamiento. Cerramos con 15 minutos finales de consultas.</p></div></div>
-          <div className="work-landing__blocks">{eventAgendaBlocks(event, 2, [], 'Práctica con acompañamiento').map(block => <ProgramBlock key={block.number} block={block} />)}</div>
+        <section className="work-landing__program work-landing__november-day-three" id="consultas-jornada-3">
+          <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Espacio abierto de consultas</h3><p>Un encuentro de 14:00 a 15:30, sin receso, para consultar el caso integrador, mostrar dudas y avances de otros trabajos, pedir asesoramiento y escuchar las preguntas de otras personas.</p></div></div>
+          <div className="work-landing__blocks work-landing__open-consultation"><ProgramBlock block={novemberConsultationBlock} /></div>
         </section>
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
           <p className="work-landing__eyebrow">INSCRIPCIÓN A LAS TRES JORNADAS</p><h2>Arancel según la fecha de inscripción.</h2>

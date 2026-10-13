@@ -296,6 +296,7 @@
 
 .work-landing__program .work-landing__eyebrow { color: #72d5da; }
 .work-landing__november-day-three { padding-top: 0; }
+.work-landing__blocks.work-landing__open-consultation { grid-template-columns: 1fr; }
 .work-landing__session-head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin: 28px 0 16px; }
 .work-landing .work-landing__session-head h4 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 0; color: #fff; font-size: 21px; }
 .work-landing__session-head > span { color: #a8d5c1; font-size: 12px; }
@@ -782,3 +783,5 @@
   .work-landing__hero-register-cta { transition: none; }
   .work-landing__hero-register-cta:hover { transform: none; }
 }
+.work-landing__hero-duration.work-landing__hero-duration--november { width: 8.5%; white-space: nowrap; }
+@media(max-width:760px) { .work-landing__hero-duration.work-landing__hero-duration--november { width: 20%; } }

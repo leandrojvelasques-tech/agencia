@@ -19,7 +19,7 @@ export const novemberCaseBlocks = [
       'Configurar plugins y herramientas.',
       'Dar instrucciones y comenzar a resolver.',
     ],
-    mapNote: 'Comprender → ordenar → resolver',
+    mapNote: 'Trabajo manual',
   },
   {
     number: '02',
@@ -43,6 +43,23 @@ export const novemberCaseBlocks = [
       'Incorporar seguimiento con agentes y Dots.',
       'Probar, revisar y ajustar el resultado.',
     ],
-    mapNote: 'Reutilizar → programar → revisar',
+    mapNote: 'Delegar',
   },
 ]
+
+export const novemberConsultationBlock = {
+  number: '01',
+  type: 'Bloque único',
+  durationLabel: '90 minutos · Sin receso',
+  title: 'Consultas y asesoramiento',
+  subtitle: '13 de noviembre · 14:00 a 15:30',
+  items: [
+    'Consultar dudas sobre el caso integrador.',
+    'Traer un trabajo particular y solicitar orientación.',
+    'Mostrar avances y revisar las dificultades que aparecieron.',
+    'Escuchar las preguntas de otras personas.',
+    'Pedir asesoramiento sobre los temas trabajados en el taller.',
+  ],
+  practiceLabel: 'Dinámica',
+  practice: 'Un espacio abierto para preguntar, mostrar tu trabajo o escuchar las consultas de otras personas.',
+}
