@@ -1,7 +1,8 @@
+import { useRef, useState } from 'react'
 import './workshopPreviousEdition.css'
 
 const previousWorkshopPhotos = [
-  ['leandro-camisa-blanca-adaptada.png', 'Imagen adaptada de Leandro Velasques con camisa blanca durante una capacitación virtual.', 'Primera jornada · recorrido por ChatGPT Work', true],
+  ['leandro-camisa-blanca-adaptada.png', 'Imagen adaptada de Leandro Velasques con camisa blanca durante una capacitación virtual.', 'Primera jornada · recorrido por ChatGPT Work'],
   ['virtual-septiembre-jornada-1.jpg', 'Encuentro virtual de la primera jornada del workshop de septiembre.', 'Primera jornada · recorrido por ChatGPT Work'],
   ['virtual-septiembre-jornada-2.jpg', 'Participantes conectados a la segunda jornada del workshop de septiembre.', 'Segunda jornada · aplicación práctica'],
   ['virtual-septiembre-consultas.jpg', 'Encuentro virtual de consultas posterior al workshop de septiembre.', 'Encuentro de consultas · dudas y avances'],
@@ -16,19 +17,39 @@ const previousWorkshopComments = [
 ]
 
 export default function WorkshopPreviousEdition() {
+  const galleryRef = useRef(null)
+  const [edges, setEdges] = useState({ start: true, end: false })
+  const updateEdges = () => {
+    const gallery = galleryRef.current
+    if (!gallery) return
+    setEdges({ start: gallery.scrollLeft < 2, end: gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 2 })
+  }
+  const moveGallery = direction => {
+    const gallery = galleryRef.current
+    if (!gallery) return
+    const step = gallery.firstElementChild.getBoundingClientRect().width + 24
+    gallery.scrollBy({ left: direction * step, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
   return (
     <section className="work-landing__section previous-workshop" id="workshop-anterior" aria-labelledby="previous-workshop-title">
       <header className="previous-workshop__intro">
         <p className="work-landing__eyebrow">LA EDICIÓN ANTERIOR</p>
         <h2 id="previous-workshop-title">Así se viven los encuentros virtuales.</h2>
-        <p>Imágenes del workshop de septiembre de 2026 y su encuentro posterior de consultas, junto con una imagen adaptada del capacitador.</p>
+        <p>Workshop de septiembre de 2026 y encuentro posterior de consultas.</p>
       </header>
 
-      <div className="previous-workshop__gallery">
-        {previousWorkshopPhotos.map(([file, alt, caption, adapted]) => (
+      <div className="previous-workshop__gallery-controls">
+        <span>4 fotos de encuentros virtuales</span>
+        <div>
+          <button type="button" onClick={() => moveGallery(-1)} disabled={edges.start} aria-label="Ver fotos anteriores" aria-controls="previous-workshop-gallery">←</button>
+          <button type="button" onClick={() => moveGallery(1)} disabled={edges.end} aria-label="Ver siguientes fotos" aria-controls="previous-workshop-gallery">→</button>
+        </div>
+      </div>
+      <div className="previous-workshop__gallery" id="previous-workshop-gallery" ref={galleryRef} onScroll={updateEdges} tabIndex={0} role="region" aria-label="Fotos de encuentros virtuales anteriores">
+        {previousWorkshopPhotos.map(([file, alt, caption]) => (
           <figure key={file}>
             <img src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/${file}`} alt={alt} loading="lazy" />
-            <figcaption>{caption}{adapted && <small>Imagen adaptada</small>}</figcaption>
+            <figcaption>{caption}</figcaption>
           </figure>
         ))}
       </div>

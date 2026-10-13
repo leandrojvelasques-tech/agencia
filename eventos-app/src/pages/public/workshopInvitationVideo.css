@@ -1,5 +1,5 @@
-.workshop-invitation { display: grid; grid-template-columns: 1.08fr 1fr; align-items: center; gap: 56px; background: var(--white); }
-.workshop-invitation__media { margin: 0; min-width: 0; }
+.workshop-invitation { background: var(--white); padding-bottom: 40px; }
+.workshop-invitation__media { margin: 0 auto; width: 100%; max-width: 880px; min-width: 0; }
 .workshop-invitation__media video { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--ink); }
 .workshop-invitation__poster { position: relative; overflow: hidden; aspect-ratio: 16 / 9; background: var(--ink); }
 .workshop-invitation__poster::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(16,22,27,.08) 45%, rgba(16,22,27,.84) 100%); pointer-events: none; }

@@ -220,6 +220,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
           {isNovemberEdition && <>
+            <span className="work-landing__hero-november-eyebrow">Taller intensivo · abierto a todo público</span>
             <span className="work-landing__hero-november-count work-landing__hero-november-count--days" aria-label="3 jornadas">3</span>
             <span className="work-landing__hero-november-count work-landing__hero-november-count--blocks" aria-label="6 bloques">6</span>
           </>}
@@ -264,7 +265,9 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </div>
       </section>}
 
-      <section className="work-landing__section work-landing__proposal">
+      {isNovemberEdition && <WorkshopPreviousEdition />}
+
+      {!isNovemberEdition && <section className="work-landing__section work-landing__proposal">
         <div className="work-landing__proposal-intro">
           <p className="work-landing__eyebrow">LA PROPUESTA</p>
           <h2>{isNovemberEdition ? 'Tres jornadas para conocer el entorno, practicar y resolver consultas.' : 'Dos jornadas de inmersión a la IA para pasar de 0 a 100.'}</h2>
@@ -279,7 +282,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <figcaption><strong>{isNovemberEdition ? 'Taller de IA presencial' : 'Experiencia aplicada'}</strong><span>{isNovemberEdition ? 'Consejo Profesional de Ciencias Económicas del Chubut' : 'Aprender, probar y resolver en equipo.'}</span></figcaption>
         </figure>
         <aside className="work-landing__proposal-result"><strong>Al finalizar</strong><span>Vas a contar con los conceptos, los criterios y la práctica necesarios para empezar a pensar, configurar y desarrollar tus propios entornos de trabajo agénticos adaptados a tus necesidades.</span></aside>
-      </section>
+      </section>}
 
       <section className="work-landing__program" id="programa">
         <div className="work-landing__program-head">
@@ -343,8 +346,6 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <div className="work-landing__blocks work-landing__open-consultation"><ProgramBlock block={novemberConsultationBlock} /></div>
         </section>
       </>}
-
-      {isNovemberEdition && <WorkshopPreviousEdition />}
 
       {isNovemberEdition && (
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">

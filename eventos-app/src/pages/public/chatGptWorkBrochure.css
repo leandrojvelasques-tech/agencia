@@ -790,9 +790,11 @@
 .work-landing__hero-november-count { position: absolute; top: 55.1%; width: 4.5%; height: 4.9%; display: grid; align-items: center; padding-left: .35%; background: #05080b; color: #fff; font-size: clamp(15px, 1.65vw, 27px); font-weight: 800; line-height: 1; }
 .work-landing__hero-november-count--days { left: 6.9%; }
 .work-landing__hero-november-count--blocks { left: 17.9%; }
+.work-landing__hero-november-eyebrow { position: absolute; top: 9.6%; left: 5.5%; width: 51%; min-height: 3%; background: #05080b; color: #26b7bd; font-size: clamp(8px, 1vw, 16px); font-weight: 800; line-height: 1.4; letter-spacing: .12em; text-transform: uppercase; }
 @media(max-width:760px) { .work-landing__hero-duration.work-landing__hero-duration--november { width: 20%; } }
 @media(max-width:760px) {
   .work-landing__hero-november-count { top: 56.05%; width: 13.2%; height: 4.2%; padding-left: 0; place-items: center; color: #2ab8c0; font-size: clamp(25px, 7.1vw, 58px); }
   .work-landing__hero-november-count--days { left: 7.5%; }
   .work-landing__hero-november-count--blocks { left: 35.8%; }
+  .work-landing__hero-november-eyebrow { top: 3.4%; left: 5.8%; width: 88%; min-height: 1.7%; font-size: clamp(9px, 3vw, 24px); }
 }
