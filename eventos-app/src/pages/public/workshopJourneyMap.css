@@ -36,6 +36,15 @@
 .journey-map__step:nth-child(3) { transform: rotate(.7deg); }
 .journey-map__step:nth-child(6) { transform: rotate(-.7deg); }
 .journey-map__number { display: grid; place-items: center; width: 35px; height: 35px; margin-bottom: 12px; color: #2b7581; background: #d7e9e7; border: 1px solid #82acb077; border-radius: 48% 54% 46% 50%; font-size: 13px; font-weight: 850; }
+.journey-map__card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.journey-map__card-top .journey-map__number { margin-bottom: 0; }
+.journey-map__symbol { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; transform: rotate(5deg); color: #358396; background: #deeff0; }
+.journey-map__symbol svg { width: 32px; height: 34px; transform: rotate(-5deg); }
+.journey-map__symbol--01 { color: #ad7a28; background: #f4e9cf; }
+.journey-map__symbol--02 { color: #4f83ad; background: #e1edf6; }
+.journey-map__symbol--03 { color: #8f64aa; background: #eee3f5; }
+.journey-map__symbol--04 { color: #398b73; background: #dceee5; }
+.journey-map__symbol--05 { color: #bf7954; background: #f6e7dd; }
 .journey-map .journey-map__step h4, .journey-map .journey-map__dot h4 { margin: 0; color: var(--map-ink); font-family: var(--font-heading, Arial, sans-serif); font-size: 19px; line-height: 1.25; letter-spacing: -.025em; }
 .journey-map__step p { min-height: 63px; margin: 10px 0 14px; color: #526973; font-size: 13px; line-height: 1.55; }
 .journey-map__step small { display: inline; color: #285a47; font-size: 12px; border-bottom: 2px solid #a8d5c1; padding-bottom: 2px; }
@@ -47,6 +56,7 @@
 .journey-map__dot-label { display: inline-block; padding: 8px 12px; margin-bottom: 19px; color: #fff; background: #2a7f8b; font-size: 13px; font-weight: 850; border-radius: 4px; }
 .journey-map .journey-map__dot h4 { font-size: clamp(22px, 2.2vw, 29px); line-height: 1.25; }
 .journey-map__dot > p { margin: 19px 0 0; padding-top: 19px; border-top: 1px solid #93bdc2; color: #526973; font-size: 15px; line-height: 1.55; }
+.journey-map__dots-image { display: block; width: 100%; height: auto; margin: 20px 0 0; border-radius: 12px 7px 14px 6px; background: #000; box-shadow: 3px 4px 0 #17343d18; }
 .journey-map__dot-note { position: relative; margin: 26px 0 39px; color: #285a47; font-size: 14px; line-height: 1.6; transform: rotate(-4deg); }
 .journey-map__dot-note > svg { position: absolute; right: 0; bottom: -25px; width: 50px; transform: rotate(12deg); }
 .journey-map__dot > small { display: block; color: #526973; font-size: 11px; line-height: 1.55; }
@@ -59,6 +69,7 @@
   .journey-map__dot { min-height: auto; height: auto; transform: none; }
   .journey-map__dot-note { margin: 23px 0 34px; }
   .journey-map__dot-note > svg { right: auto; left: 175px; }
+  .journey-map__dots-image { max-width: 270px; }
   .journey-map__step:nth-child(7)::after { content: '↓'; top: auto; bottom: -45px; right: 0; }
   .journey-map__proactive { margin-top: 10px; }
 }
