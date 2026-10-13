@@ -2,6 +2,7 @@ import './chatGptWorkBrochure.css'
 import WorkshopJourneyMap from './WorkshopJourneyMap'
 import WorkshopCaseMap from './WorkshopCaseMap'
 import WorkshopBlockBadge from './WorkshopBlockBadge'
+import WorkshopPreviousEdition from './WorkshopPreviousEdition'
 import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
@@ -344,6 +345,8 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{tier.start_date === '2026-10-15' ? '15 al 31 de octubre' : tier.start_date === '2026-11-01' ? '1 al 8 de noviembre' : 'Desde el 9 de noviembre'}</p></article>)}</div>
         </section>
       </>}
+
+      {isNovemberEdition && <WorkshopPreviousEdition />}
 
       <section className="work-landing__faq" id="preguntas-frecuentes">
         <div className="work-landing__faq-intro">
