@@ -58,8 +58,6 @@ export default function WorkshopJourneyMap() {
           <h4>El agente trabaja por vos.</h4>
           <p>Le asignás una responsabilidad. Detecta cambios y propone próximos pasos.</p>
           <img className="journey-map__dots-image" src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/dots-personajes-referencia.png`} alt="Personajes de Dots de distintos colores" width="462" height="315" />
-          <div className="journey-map__dot-note">Definir contexto,<br />límites y cuándo avisar <HandArrow /></div>
-          <small>Según la disponibilidad de tu cuenta. Las decisiones que requieren criterio humano se revisan con vos.</small>
         </article>
         <p className="journey-map__margin-note journey-map__margin-note--dots">Del pedido puntual al seguimiento.</p>
       </div>
