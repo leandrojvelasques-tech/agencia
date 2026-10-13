@@ -206,6 +206,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
     ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Si avisás hasta el día previo al inicio del taller, inclusive, recibirás un reembolso del 100% del importe transferido. Si avisás el mismo día del inicio del taller, el reintegro será del 50% del importe transferido.'],
     ['¿Podés enviarme una factura?', 'Sí. Puedo emitirte una factura C. Al momento de inscribirte, enviame tus datos de facturación para que pueda emitirla y enviártela.'],
     ['¿Puedo contratar este taller de forma personalizada para mi empresa?', 'Sí. Realizo cursos y talleres presenciales o virtuales personalizados para empresas. Adapto la propuesta a la cantidad de participantes y a los días y horarios de trabajo que les resulten convenientes.'],
+    ['¿El taller se vuelve a realizar en otros meses?', 'Sí. El taller se repite en otras oportunidades y su contenido se actualiza cada mes. Cada edición incorpora las nuevas funcionalidades que OpenAI va sumando, por lo que el programa evoluciona junto con la herramienta.'],
   )
   return (
     <main className="work-landing">
