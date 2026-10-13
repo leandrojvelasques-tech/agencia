@@ -1,7 +1,7 @@
 import './workshopInvitationVideo.css'
 
 export default function WorkshopInvitationVideo({ videoSrc = '' }) {
-  const poster = `${import.meta.env.BASE_URL}workshop-chatgpt-work/leandro-camisa-blanca-adaptada.png`
+  const poster = `${import.meta.env.BASE_URL}workshop-chatgpt-work/leandro-invitacion-biblioteca.png`
 
   return (
     <section className="work-landing__section workshop-invitation" aria-labelledby="workshop-invitation-title">
