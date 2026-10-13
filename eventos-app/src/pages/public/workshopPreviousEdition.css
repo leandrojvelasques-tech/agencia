@@ -34,6 +34,7 @@
   .previous-workshop__reviews { grid-template-columns: 1fr; gap: 20px; }
   .previous-workshop__gallery { width: 100%; min-width: 0; overflow-x: hidden; padding-bottom: 0; }
   .previous-workshop__gallery figure { flex-basis: 100%; scroll-snap-stop: always; }
+  .previous-workshop__gallery figure[data-active="false"] { display: none; }
   .previous-workshop__feedback { margin-top: 40px; }
   .previous-workshop__intro > p:last-child { font-size: 16px; }
 }

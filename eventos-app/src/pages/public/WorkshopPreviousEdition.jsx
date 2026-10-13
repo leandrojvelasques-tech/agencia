@@ -18,13 +18,24 @@ const previousWorkshopComments = [
 
 export default function WorkshopPreviousEdition() {
   const galleryRef = useRef(null)
+  const [activePhoto, setActivePhoto] = useState(0)
   const [edges, setEdges] = useState({ start: true, end: false })
   const updateEdges = () => {
     const gallery = galleryRef.current
     if (!gallery) return
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      setEdges({ start: activePhoto === 0, end: activePhoto === previousWorkshopPhotos.length - 1 })
+      return
+    }
     setEdges({ start: gallery.scrollLeft < 2, end: gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 2 })
   }
   const moveGallery = direction => {
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      const next = Math.max(0, Math.min(previousWorkshopPhotos.length - 1, activePhoto + direction))
+      setActivePhoto(next)
+      setEdges({ start: next === 0, end: next === previousWorkshopPhotos.length - 1 })
+      return
+    }
     const gallery = galleryRef.current
     if (!gallery) return
     const step = gallery.firstElementChild.getBoundingClientRect().width + 24
@@ -46,8 +57,8 @@ export default function WorkshopPreviousEdition() {
         </div>
       </div>
       <div className="previous-workshop__gallery" id="previous-workshop-gallery" ref={galleryRef} onScroll={updateEdges} tabIndex={0} role="region" aria-label="Fotos de encuentros virtuales anteriores">
-        {previousWorkshopPhotos.map(([file, alt, caption]) => (
-          <figure key={file}>
+        {previousWorkshopPhotos.map(([file, alt, caption], index) => (
+          <figure key={file} data-active={index === activePhoto}>
             <img src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/${file}`} alt={alt} loading="lazy" />
             <figcaption>{caption}</figcaption>
           </figure>
