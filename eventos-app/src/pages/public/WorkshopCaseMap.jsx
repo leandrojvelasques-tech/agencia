@@ -4,7 +4,7 @@ import WorkshopBlockBadge from './WorkshopBlockBadge'
 
 export default function WorkshopCaseMap() {
   return <section className="case-map" aria-labelledby="case-map-title">
-    <p className="case-map__eyebrow">MAPA PRELIMINAR DE LA JORNADA 2</p>
+    <p className="case-map__eyebrow">MAPA DE LA JORNADA 2</p>
     <h3 id="case-map-title">Del caso a la rutina de trabajo.</h3>
     <p className="case-map__intro">Dos bloques para resolver una situación profesional y preparar el trabajo que se repite.</p>
     <div className="case-map__route">

@@ -33,7 +33,7 @@ const eventAgendaBlocks = (event, classIndex, fallbackBlocks, type) => {
     number: String(isNovemberEdition ? index + 1 : classIndex * 2 + index + 1).padStart(2, '0'),
     title: block.title || `Bloque ${index + 1}`,
     subtitle: block.subtitle || '',
-    type: isNovemberEdition ? (classIndex === 0 ? `Bloque ${index < 3 ? 1 : 2} · Unidad ${index + 1}` : `Bloque ${index + 1}`) : type,
+    type: isNovemberEdition ? (classIndex === 0 ? `Bloque ${index < 3 ? 1 : index < 5 ? 2 : 3} · Unidad ${index + 1}` : `Bloque ${index + 1}`) : type,
     items: [],
     practice: block.description || '',
     practiceLabel: 'Descripción',
@@ -279,8 +279,10 @@ export default function ChatGptWorkBrochure({ event = null }) {
              <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={1} /> Antes del receso</h4><span>14:00 a 15:15 · Unidades 1, 2 y 3</span></div>
              <div className="work-landing__blocks work-landing__units">{agendaDayOneBlocks.slice(0, 3).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
              <p className="work-landing__session-break">Receso · 15:15 a 15:30</p>
-             <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={2} /> Después del receso</h4><span>15:30 a 16:45 · Unidades 4, 5 y 6</span></div>
-             <div className="work-landing__blocks work-landing__units">{agendaDayOneBlocks.slice(3).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
+             <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={2} /> Space, navegador y computadora</h4><span>Después del receso · Unidades 4 y 5</span></div>
+             <div className="work-landing__blocks">{agendaDayOneBlocks.slice(3, 5).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
+             <div className="work-landing__session-head"><h4><WorkshopBlockBadge number={3} /> Dots</h4><span>Dentro del mismo tramo de 15:30 a 16:45 · Unidad 6</span></div>
+             <div className="work-landing__blocks">{agendaDayOneBlocks.slice(5).map(block => <ProgramBlock key={block.number} block={block} />)}</div>
              <p className="work-landing__session-break">Consultas finales · 16:45 a 17:00</p>
            </> : <div className="work-landing__blocks">{agendaDayOneBlocks.map(block => <ProgramBlock key={block.number} block={block} />)}</div>}
           {(!event || event.slug === 'chatgpt-work-de-0-a-100-noviembre-2026') ? <WorkshopJourneyMap /> : (

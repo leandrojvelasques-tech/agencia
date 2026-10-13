@@ -37,7 +37,7 @@ export default function WorkshopJourneyMap() {
     <div className="journey-map__heading">
       <p>MAPA DE LA JORNADA 1</p>
       <h3 id="journey-map-title">El recorrido práctico de ChatGPT Work</h3>
-      <span>Dos bloques, seis unidades para configurar, trabajar y delegar con criterio.</span>
+      <span>Tres bloques, seis unidades para configurar, trabajar y delegar con criterio.</span>
     </div>
     <div className="journey-map__body">
       <div className="journey-map__reactive">
@@ -46,7 +46,7 @@ export default function WorkshopJourneyMap() {
           <ol className="journey-map__steps">
             <li className="journey-map__phase"><div className="journey-map__phase-label"><WorkshopBlockBadge number={1} /><span>Unidades 1, 2 y 3</span></div><span>preparar el entorno →</span></li>
             {units.slice(0, 3).map(unit => <BlockCard key={unit[0]} block={unit} />)}
-            <li className="journey-map__phase journey-map__phase--second"><div className="journey-map__phase-label"><WorkshopBlockBadge number={2} /><span>Unidades 4, 5 y 6</span></div><span>pasar a la acción ↴</span></li>
+            <li className="journey-map__phase journey-map__phase--second"><div className="journey-map__phase-label"><WorkshopBlockBadge number={2} /><span>Unidades 4 y 5</span></div><span>pasar a la acción ↴</span></li>
             {units.slice(3).map(unit => <BlockCard key={unit[0]} block={unit} wide />)}
           </ol>
         </div>
@@ -55,7 +55,7 @@ export default function WorkshopJourneyMap() {
       <div className="journey-map__proactive">
         <div className="journey-map__annotation">Agente proactivo <HandArrow /></div>
         <article className="journey-map__dot">
-          <div className="journey-map__dot-label"><WorkshopBlockBadge number={2} /><strong>Unidad 6 · DOTS</strong></div>
+          <div className="journey-map__dot-label"><WorkshopBlockBadge number={3} /><strong>Unidad 6 · DOTS</strong></div>
           <h4>El agente trabaja por vos.</h4>
           <p>Le asignás una responsabilidad. Detecta cambios y propone próximos pasos.</p>
           <img className="journey-map__dots-image" src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/dots-personajes-referencia.png`} alt="Personajes de Dots de distintos colores" width="462" height="315" />
