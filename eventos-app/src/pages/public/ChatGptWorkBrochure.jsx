@@ -3,7 +3,6 @@ import WorkshopJourneyMap from './WorkshopJourneyMap'
 import WorkshopCaseMap from './WorkshopCaseMap'
 import WorkshopBlockBadge from './WorkshopBlockBadge'
 import WorkshopPreviousEdition from './WorkshopPreviousEdition'
-import WorkshopInvitationVideo from './WorkshopInvitationVideo'
 import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
@@ -256,7 +255,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </section>
       )}
 
-      {isNovemberEdition ? <WorkshopInvitationVideo /> : <section className="work-landing__section work-landing__context">
+      {!isNovemberEdition && <section className="work-landing__section work-landing__context">
         <div className="work-landing__context-index" aria-hidden="true">2026</div>
         <div className="work-landing__context-copy">
           <p className="work-landing__eyebrow">UN CAMBIO DE ETAPA</p>
