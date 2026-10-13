@@ -5,6 +5,8 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
 import { supabase } from '../../lib/supabase'
+import NovemberRegistrationDetails from '../../components/NovemberRegistrationDetails'
+import { NOVEMBER_WORKSHOP_SLUG } from '../../lib/novemberRegistration'
 
 const getCarrera = (responses) => {
   if (!responses) return '—';
@@ -19,6 +21,7 @@ const getCarrera = (responses) => {
 
 const renderRegistrationInfo = (responses) => {
   if (!responses) return null;
+  if (responses.registration_schema === 'workshop_november_2026') return <NovemberRegistrationDetails responses={responses} />
   const isEc = responses.profesion === 'Profesional de Ciencias Económicas';
   const isEst = responses.profesion === 'Estudiante Universitario';
   const isOtro = responses.profesion === 'Otro';
@@ -265,7 +268,9 @@ export default function EventParticipants() {
         const hasService = commonServices.some(service => lowerVal.includes(service))
         const isNegative = lowerVal.includes('no ') || lowerVal.includes('ningun') || lowerVal.includes('gratis') || lowerVal === 'no'
         
-        if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
+        if (!valStr) {
+          suscripciones['No especificado'] = (suscripciones['No especificado'] || 0) + 1
+        } else if (isTrue || (isPaidTerm && !isNegative) || (hasService && !isNegative)) {
           suscripciones['Paga'] = (suscripciones['Paga'] || 0) + 1
         } else if (subVal === false || lowerVal === 'false' || isNegative || lowerVal === '—' || lowerVal === '') {
           suscripciones['Gratuita/Ninguna'] = (suscripciones['Gratuita/Ninguna'] || 0) + 1
@@ -367,6 +372,8 @@ export default function EventParticipants() {
     if (registrations.length === 0) return
 
     const headers = ['Nombre', 'Apellido', 'Email', 'Telefono', 'Fecha Elegida', 'Modalidad', 'Fecha Registro']
+    const novemberExport = event.slug === NOVEMBER_WORKSHOP_SLUG
+    if (novemberExport) headers.push('Provincia', 'Ciudad', 'Ocupación', 'Herramientas IA', 'Otra herramienta IA', 'Suscripción IA paga', 'Arancel', 'Fecha de arancel', 'Descuento estudiantil solicitado')
     surveyQuestions.forEach(q => headers.push(q.label))
 
     const rows = registrations.map(r => {
@@ -380,6 +387,10 @@ export default function EventParticipants() {
         r.registered_at ? format(new Date(r.registered_at), "yyyy-MM-dd HH:mm", { locale: es }) : ''
       ]
 
+      if (novemberExport) {
+        const answers = r.survey_responses || {}
+        row.push(answers.provincia || '', answers.ciudad || '', answers.profesion || '', (answers.herramientas_ia || []).join(' / '), answers.otra_herramienta_ia || '', answers.suscripcion_ia_paga || '', answers.price_amount ?? '', answers.price_applied_date || '', answers.student_discount_requested ? 'Sí' : 'No')
+      }
       surveyQuestions.forEach(q => {
         const ans = r.survey_responses?.[q.label]
         const displayAns = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : (ans || '')

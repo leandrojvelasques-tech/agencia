@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../lib/eventPricing'
+import { NOVEMBER_WORKSHOP_SLUG, REGISTRATION_DOCUMENT_BUCKET, ARGENTINA_PROVINCES } from '../lib/novemberRegistration'
 
 export const useStore = create((set, get) => ({
   // State
@@ -383,6 +385,18 @@ export const useStore = create((set, get) => ({
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
     const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, ...pData } = participantData
+    const isNovemberWorkshop = event.slug === NOVEMBER_WORKSHOP_SLUG
+    if (isNovemberWorkshop) {
+      const tier = getApplicablePriceTier(event.prices)
+      if (!event.registrations_open || !tier) return { success: false, error: 'La inscripción no está disponible para la fecha actual.' }
+      const answers = survey_responses || {}
+      const receipts = (answers.documents || []).filter(document => document.kind === 'payment_receipt')
+      const certificates = (answers.documents || []).filter(document => document.kind === 'student_certificate')
+      const expectedAmount = getPriceAmount(tier.price) * (answers.student_discount_requested ? .5 : 1)
+      if (!ARGENTINA_PROVINCES.includes(answers.provincia) || !answers.profesion?.trim() || !receipts.length || receipts.length > 2 || (answers.student_discount_requested && certificates.length !== 1)) return { success: false, error: 'Revisá la provincia, la ocupación y los archivos adjuntos.' }
+      if (answers.documents.some(document => document.bucket !== REGISTRATION_DOCUMENT_BUCKET || !document.path?.startsWith(`${event.id}/`))) return { success: false, error: 'Los archivos no corresponden a este evento.' }
+      if (answers.price_amount !== expectedAmount || answers.price_applied_date !== getArgentinaDateKey()) return { success: false, error: 'El arancel cambió. Actualizá la página y revisá el importe antes de confirmar.' }
+    }
     // Multi-day registrations represent the complete event; do not persist a comma-separated value as one date.
     const registrationDate = Array.isArray(event.offered_dates) && event.offered_dates.length > 1 ? null : selected_date
 
@@ -437,7 +451,7 @@ export const useStore = create((set, get) => ({
         event_id: event.id,
         participant_id: participantId,
         source: 'self_registration',
-        status: 'confirmed',
+        status: isNovemberWorkshop ? 'registered' : 'confirmed',
         attendance_mode,
         selected_date: registrationDate,
         survey_responses,

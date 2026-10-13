@@ -39,10 +39,11 @@ export default function EventConfirmation() {
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight mb-3 text-[var(--color-deep-green)]">
-          ¡Inscripción confirmada!
+          {slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? 'Inscripción recibida' : '¡Inscripción confirmada!'}
         </h1>
         <p className="text-base text-[var(--color-dark-gray)]/60 font-medium mb-8">
           Tu inscripción ha sido registrada correctamente.
+          {slug === 'chatgpt-work-de-0-a-100-noviembre-2026' && ' Revisaremos los comprobantes de pago y, si lo solicitaste, el certificado para el descuento estudiantil.'}
         </p>
 
         {event && (
@@ -57,7 +58,7 @@ export default function EventConfirmation() {
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">schedule</span>
-                <span className="font-medium">{event.start_time} hs · {event.duration_minutes} minutos</span>
+                <span className="font-medium">{slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? 'Jornadas 1 y 2: 14:00 a 17:00 · Jornada 3: 14:00 a 15:30' : `${event.start_time} hs · ${event.duration_minutes} minutos`}</span>
               </div>
               {event.organizer && (
                 <div className="flex items-center gap-3 text-sm">
