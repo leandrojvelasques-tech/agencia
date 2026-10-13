@@ -203,7 +203,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
     : genericFaqItems
   if (isNovemberEdition) faqItems.splice(1, 0, ['¿Necesito asistir presencialmente a alguna de las jornadas?', 'No. Las tres jornadas serán virtuales, por Google Meet. Vas a poder participar desde cualquier dispositivo con conexión a internet que permita acceder a Google Meet.'])
   if (isNovemberEdition) faqItems.push(
-    ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Podés solicitar la cancelación hasta el día previo al inicio del taller, inclusive. En ese caso, recibirás un reembolso del 100% del importe transferido.'],
+    ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Si avisás hasta el día previo al inicio del taller, inclusive, recibirás un reembolso del 100% del importe transferido. Si avisás el mismo día del inicio del taller, el reintegro será del 50% del importe transferido.'],
     ['¿Podés enviarme una factura?', 'Sí. Puedo emitirte una factura C. Al momento de inscribirte, enviame tus datos de facturación para que pueda emitirla y enviártela.'],
     ['¿Puedo contratar este taller de forma personalizada para mi empresa?', 'Sí. Realizo cursos y talleres presenciales o virtuales personalizados para empresas. Adapto la propuesta a la cantidad de participantes y a los días y horarios de trabajo que les resulten convenientes.'],
   )
