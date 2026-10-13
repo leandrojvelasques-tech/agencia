@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useStore } from '../../store/useStore'
@@ -7,6 +7,18 @@ import { AI_TOOLS, ARGENTINA_PROVINCES, DOCUMENT_TYPES, MAX_DOCUMENT_SIZE, REGIS
 
 function Field({ label, children, optional = false }) {
   return <div><label className="block text-sm font-bold mb-2">{label}{optional ? ' (opcional)' : ' *'}{children}</label></div>
+}
+
+function DocumentPicker({ label, onChange, multiple = false, disabled = false, buttonLabel = 'Agregar archivo', children }) {
+  const inputRef = useRef(null)
+  return <div>
+    <p className="text-sm font-bold mb-3">{label} *</p>
+    <button type="button" disabled={disabled} onClick={() => inputRef.current?.click()} className="btn-secondary inline-flex items-center justify-center gap-2 disabled:opacity-50">
+      <span aria-hidden="true" className="material-symbols-outlined text-xl">attach_file</span>{buttonLabel}
+    </button>
+    <input ref={inputRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple={multiple} disabled={disabled} onChange={onChange} aria-label={label} className="hidden" />
+    <p className="text-xs text-gray-500 mt-2">{children}</p>
+  </div>
 }
 
 export default function NovemberWorkshopRegistration({ event, registrations }) {
@@ -31,6 +43,12 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
   const capacityFull = event.max_capacity_virtual !== null && event.max_capacity_virtual !== undefined && event.max_capacity_virtual !== '' && registrations.filter(r => r.attendance_mode === 'virtual').length >= capacity
   const lastDate = [...(event.offered_dates || [event.event_date])].sort().at(-1)
   const available = event.status === 'published' && event.registrations_open !== false && ['self', 'both'].includes(event.registration_mode) && dateKey <= lastDate && !capacityFull
+  const openingDateLabel = upcomingTier ? new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long' }).format(new Date(`${upcomingTier.start_date}T12:00:00`)) : ''
+  const availabilityMessage = !available
+    ? (capacityFull ? 'Los cupos virtuales están completos.' : 'Este evento no acepta inscripciones en este momento.')
+    : !currentTier
+      ? (upcomingTier ? `La inscripción abre el ${openingDateLabel} de 2026. Podrás confirmar a partir de esa fecha.` : 'No hay un arancel de inscripción disponible para la fecha actual.')
+      : ''
 
   const validateFile = file => {
     if (!DOCUMENT_TYPES.includes(file.type)) throw new Error('Elegí archivos PDF, JPG, PNG o WEBP.')
@@ -125,14 +143,16 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
             {form.student_discount && <p className="text-sm mt-3">El beneficio requiere certificado de alumno regular y queda sujeto a su revisión.</p>}
           </div>
           {event.payment_methods && <div><h3 className="font-bold text-sm mb-2">Datos para la transferencia</h3><p className="text-sm whitespace-pre-line rounded-xl bg-gray-50 p-4">{event.payment_methods}</p></div>}
-          <Field label="Comprobantes de pago"><input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple disabled={receipts.length >= 2} onChange={chooseReceipts} className="block mt-3 text-sm w-full" /><span className="block text-xs font-normal text-gray-500 mt-2">Uno o dos archivos. PDF, JPG, PNG o WEBP · hasta 5 MB cada uno.</span></Field>
+          <DocumentPicker label="Comprobantes de pago" multiple disabled={busy || receipts.length >= 2} onChange={chooseReceipts} buttonLabel={receipts.length ? 'Agregar otro archivo' : 'Agregar archivo'}>Uno o dos archivos. PDF, JPG, PNG o WEBP · hasta 5 MB cada uno.</DocumentPicker>
+          {receipts.length > 0 && <p className="text-sm font-semibold text-[var(--color-deep-green)]">{receipts.length} de 2 archivos agregados.</p>}
           {receipts.map((file, index) => <div className="flex items-center gap-3 justify-between text-sm" key={`${file.name}-${index}`}><span className="break-all">{file.name}</span><button type="button" className="font-bold text-red-700" onClick={() => setReceipts(items => items.filter((_, i) => i !== index))}>Quitar</button></div>)}
-          {form.student_discount && <div><Field label="Certificado de alumno regular"><input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" onChange={chooseCertificate} className="block mt-3 text-sm w-full" /><span className="block text-xs font-normal text-gray-500 mt-2">Adjuntalo además del comprobante de pago para solicitar el beneficio.</span></Field>{certificate && <p className="text-sm mt-3 break-all">{certificate.name} <button type="button" className="font-bold text-red-700 ml-2" onClick={() => setCertificate(null)}>Quitar</button></p>}</div>}
+          {form.student_discount && <div><DocumentPicker label="Certificado de alumno regular" disabled={busy} onChange={chooseCertificate} buttonLabel={certificate ? 'Cambiar archivo' : 'Agregar archivo'}>Adjuntalo además del comprobante de pago para solicitar el beneficio.</DocumentPicker>{certificate && <p className="text-sm mt-3 break-all">{certificate.name} <button type="button" className="font-bold text-red-700 ml-2" onClick={() => setCertificate(null)}>Quitar</button></p>}</div>}
         </fieldset>
         {error && <p role="alert" className="text-sm text-red-700 bg-red-50 p-3 rounded-lg">{error}</p>}
-        {!available && <p className="text-sm text-amber-800">{capacityFull ? 'Los cupos virtuales están completos.' : 'Este evento no acepta inscripciones en este momento.'}</p>}
+        {availabilityMessage && <p id="registration-availability" role="status" className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 p-4 rounded-xl">{availabilityMessage}</p>}
+        {shownTier && <p className="text-sm font-bold text-[var(--color-deep-green)]">{currentTier ? 'Importe a transferir' : `Arancel desde el ${openingDateLabel}`}: {formatArsPrice(amount)}</p>}
         <p className="text-xs text-gray-600">Al confirmar, enviaremos tus comprobantes para revisión. El envío de la inscripción no acredita por sí solo el pago ni el beneficio estudiantil.</p>
-        <button disabled={busy || !available || !currentTier} className="btn-primary w-full justify-center disabled:opacity-50" type="submit">{busy ? 'Adjuntando archivos y registrando…' : 'Confirmar inscripción'}</button>
+        <button disabled={busy || !available || !currentTier} aria-describedby={availabilityMessage ? 'registration-availability' : undefined} className="btn-primary w-full justify-center disabled:opacity-50" type="submit">{busy ? 'Adjuntando archivos y registrando…' : !available ? 'Inscripción no disponible' : !currentTier && upcomingTier ? `Inscripción desde el ${openingDateLabel}` : 'Confirmar inscripción'}</button>
       </form>
     </main>
   </div>
