@@ -163,7 +163,7 @@ export const useStore = create((set, get) => ({
       is_public: false,
       show_on_home: false,
       registrations_open: false,
-      private_link_token: null,
+      private_link_token: Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''),
       attendance_link_token: null,
     })
 

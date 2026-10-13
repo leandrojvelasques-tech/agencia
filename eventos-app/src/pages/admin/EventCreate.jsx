@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
 import { supabase } from '../../lib/supabase'
+import { validateDatePriceSchedule } from '../../lib/eventPricing'
 
 const STEPS = ['Información', 'Fecha y Agenda', 'Inscripción', 'Materiales', 'Encuesta']
 
@@ -651,6 +652,11 @@ export default function EventCreate() {
     prices: [...(prev.prices || []), { concept: '', price: '' }]
   }))
 
+  const addDatePriceTier = () => setForm(prev => ({
+    ...prev,
+    prices: [...(prev.prices || []), { pricing_mode: 'date', concept: '', price: '', start_date: '', end_date: '' }]
+  }))
+
   const removePriceAlternative = (idx) => setForm(prev => ({
     ...prev,
     prices: (prev.prices || []).filter((_, i) => i !== idx)
@@ -684,6 +690,11 @@ export default function EventCreate() {
     console.log('Iniciando guardado...', { options, form })
     setSaveError('')
     setSaved(false)
+    const datePricingError = validateDatePriceSchedule(form.prices)
+    if (datePricingError) {
+      setSaveError(datePricingError)
+      return
+    }
     
     // Separamos materiales y limpiamos datos para el update de la tabla 'events'
     // IMPORTANTE: Eliminamos campos que NO existen en la DB o son restringidos
@@ -1988,6 +1999,9 @@ export default function EventCreate() {
                 >
                   <span className="material-symbols-outlined text-xs">add</span> Agregar Tarifa
                 </button>
+                <button type="button" onClick={addDatePriceTier} className="btn-secondary !py-1.5 !px-3.5 !text-xs flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs">event</span> Agregar tramo por fecha
+                </button>
               </div>
 
               {(!form.prices || form.prices.length === 0) ? (
@@ -1998,7 +2012,7 @@ export default function EventCreate() {
               ) : (
                 <div className="space-y-3">
                   {(form.prices || []).map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm">
+                    <div key={idx} className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border border-[var(--color-deep-green)]/8 shadow-sm">
                       <div className="flex-1">
                         <input
                           type="text"
@@ -2017,6 +2031,11 @@ export default function EventCreate() {
                           onChange={e => updatePriceAlternative(idx, 'price', e.target.value)}
                         />
                       </div>
+                      {item.pricing_mode === 'date' && <>
+                        <label className="text-xs">Desde <input type="date" className="form-input !py-2 text-xs" value={item.start_date || ''} onChange={e => updatePriceAlternative(idx, 'start_date', e.target.value)} /></label>
+                        <label className="text-xs">Hasta <input type="date" className="form-input !py-2 text-xs" value={item.end_date || ''} onChange={e => updatePriceAlternative(idx, 'end_date', e.target.value)} /></label>
+                        <span className="text-xs text-gray-500">Dejalo vacío para un tramo sin fecha de cierre.</span>
+                      </>}
                       <button
                         type="button"
                         onClick={() => removePriceAlternative(idx)}

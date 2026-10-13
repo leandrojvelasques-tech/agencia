@@ -295,6 +295,14 @@
 }
 
 .work-landing__program .work-landing__eyebrow { color: #72d5da; }
+.work-landing__november-day-three { padding-top: 0; }
+.work-landing__november-pricing { background: #fff; }
+.work-landing__november-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+.work-landing__november-tiers article { padding: 26px; background: #eaf2ee; border-top: 3px solid #285a47; }
+.work-landing__november-tiers span { display: block; color: #285a47; font-size: 13px; font-weight: 750; }
+.work-landing__november-tiers strong { display: block; margin-top: 12px; color: #173b2c; font-size: clamp(28px, 3.4vw, 42px); }
+.work-landing__november-tiers p { margin-bottom: 0; color: #4f4c4d; font-size: 14px; }
+@media(max-width: 650px) { .work-landing__november-tiers { grid-template-columns: 1fr; } }
 .work-landing__program-head { max-width: 820px; }
 .work-landing__program-head h2 { color: var(--white); }
 

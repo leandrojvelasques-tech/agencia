@@ -1,4 +1,6 @@
 import './chatGptWorkBrochure.css'
+import WorkshopJourneyMap from './WorkshopJourneyMap'
+import { formatArsPrice } from '../../lib/eventPricing'
 
 const heroImage = '/workshop-chatgpt-work/hero-option-1-selected.png'
 const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
@@ -31,6 +33,7 @@ const eventAgendaBlocks = (event, classIndex, fallbackBlocks, type) => {
     items: [],
     practice: block.description || '',
     practiceLabel: 'Descripción',
+    durationLabel: event.slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? '' : '1 hora',
   }))
 }
 
@@ -130,7 +133,7 @@ function ProgramBlock({ block }) {
     <article className="work-landing__block">
       <div className="work-landing__block-top">
         <span>{block.number}</span>
-        <small>1 hora</small>
+        {(block.durationLabel ?? '1 hora') && <small>{block.durationLabel ?? '1 hora'}</small>}
       </div>
       <p className="work-landing__block-type">{block.type}</p>
       <h3>{block.title}</h3>
@@ -159,6 +162,7 @@ function FaqAnswer({ question, answer }) {
 }
 
 export default function ChatGptWorkBrochure({ event = null }) {
+  const isNovemberEdition = event?.slug === 'chatgpt-work-de-0-a-100-noviembre-2026'
   const isEventEdition = Boolean(event)
   const registrationUrl = event ? `/evento/${event.slug}/inscripcion` : '/brochure/chatgpt-work/inscripcion'
   const dates = event?.offered_dates?.length ? event.offered_dates : (event?.event_date ? [event.event_date] : [])
@@ -184,9 +188,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
       '¿Las jornadas quedarán grabadas?',
       '¿Qué pasa si no puedo participar de una de las jornadas en vivo?',
     ].includes(question)).map(([question, answer]) => {
+      if (isNovemberEdition && question === '¿Soy estudiante universitario? ¿Puedo participar?') return [question, 'Sí. Esta edición está abierta a estudiantes, profesionales y personas de otras áreas. El arancel depende de la fecha de inscripción.']
+      if (isNovemberEdition && question === '¿Va a quedar grabado el evento?') return null
       if (question === '¿Necesito instalar algo antes?') return [question, 'Para el primer día no es necesario tener instalada la aplicación: la jornada será principalmente expositiva. Para aprovechar mejor el segundo día, recomendamos instalar ChatGPT para escritorio con anticipación y evitar perder tiempo en la instalación. Si tenés una cuenta gratuita, podés seguir la demostración del docente, trabajar junto con alguien que tenga ChatGPT Plus o participar con las restricciones propias de tu plan. También necesitás una computadora con conexión estable a internet y acceso a Zoom.']
       return [question, answer]
-    })
+    }).filter(Boolean)
     : genericFaqItems
   return (
     <main className="work-landing">
@@ -196,7 +202,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
-          <span className="work-landing__hero-duration" aria-label="5 horas de duración estimada">5 h</span>
+          <span className="work-landing__hero-duration" aria-label={isNovemberEdition ? '9 horas en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '9 h' : '5 h'}</span>
           {(!isEventEdition || isVirtualEdition) && (
             <div className="work-landing__hero-mode" aria-label="Modalidad online por Zoom">
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
@@ -233,18 +239,19 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <p className="work-landing__eyebrow">UN CAMBIO DE ETAPA</p>
           <h2>La era de los entornos agénticos ya empezó.</h2>
           <p>En 2026, el trabajo con inteligencia artificial dio un salto: pasamos de conversar con un chat a trabajar en entornos capaces de integrar contexto, instrucciones, herramientas y acciones para producir resultados concretos.</p>
-          <p>Para los profesionales de Ciencias Económicas, aprender a trabajar con agentes se está convirtiendo en una capacidad necesaria para ampliar los servicios, mejorar la forma de resolver problemas y sostener la competitividad profesional.</p>
+          <p>{isNovemberEdition ? 'El taller está abierto a profesionales, equipos administrativos, estudiantes y personas de otras áreas que quieran incorporar estas herramientas a su trabajo.' : 'Para los profesionales de Ciencias Económicas, aprender a trabajar con agentes se está convirtiendo en una capacidad necesaria para ampliar los servicios, mejorar la forma de resolver problemas y sostener la competitividad profesional.'}</p>
         </div>
       </section>
 
       <section className="work-landing__section work-landing__proposal">
         <div className="work-landing__proposal-intro">
           <p className="work-landing__eyebrow">LA PROPUESTA</p>
-          <h2>Dos jornadas de inmersión a la IA para pasar de 0 a 100.</h2>
+          <h2>{isNovemberEdition ? 'Tres jornadas para conocer el entorno, practicar y resolver consultas.' : 'Dos jornadas de inmersión a la IA para pasar de 0 a 100.'}</h2>
         </div>
         <div className="work-landing__proposal-copy">
           <p>El taller recorre el entorno de ChatGPT Work para que comprendas su lógica y aprendas a configurarlo por tu propia cuenta.</p>
-          <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.</p>
+          <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.{isNovemberEdition && ' En la tercera, vas a repetir la práctica con acompañamiento y resolver consultas.'}</p>
+          {isNovemberEdition && <p>Cada día, de 14 a 17 h: 75 minutos de trabajo, 15 minutos de receso, otros 75 minutos de trabajo y 15 minutos finales de consultas.</p>}
         </div>
         <figure className="work-landing__proposal-photo">
           <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
@@ -265,6 +272,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
              <div><h3>{dayOneTitle}</h3><p>Una primera jornada de demostraciones y recorrido guiado por las capacidades de ChatGPT Work, desde la configuración del entorno hasta sus herramientas de ampliación.</p></div>
            </div>
            <div className="work-landing__blocks">{agendaDayOneBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
+          {(!event || event.slug === 'chatgpt-work-de-0-a-100-noviembre-2026') ? <WorkshopJourneyMap /> : (
           <div className="work-landing__practice-showcase work-landing__practice-showcase--day-one">
             <figure className="work-landing__practice-photo work-landing__practice-photo--day-one">
               <img src={dayOnePhoto} alt="Participantes siguiendo una demostración práctica en el CPCE Chubut" loading="lazy" />
@@ -276,6 +284,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
               <p className="work-landing__practice-map-note">Configurá el entorno, dale contexto y reglas, y después ampliá lo que el agente puede hacer.</p>
             </div>
           </div>
+          )}
         </section>
 
         <section className="work-landing__day work-landing__day--practice">
@@ -297,6 +306,17 @@ export default function ChatGptWorkBrochure({ event = null }) {
           </div>
         </section>
       </section>
+
+      {isNovemberEdition && <>
+        <section className="work-landing__program work-landing__november-day-three">
+          <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Práctica y consultas</h3><p>Retomá el caso integrador, volvé sobre los pasos que quieras practicar y revisá los resultados con acompañamiento. Cerramos con 15 minutos finales de consultas.</p></div></div>
+          <div className="work-landing__blocks">{eventAgendaBlocks(event, 2, [], 'Práctica con acompañamiento').map(block => <ProgramBlock key={block.number} block={block} />)}</div>
+        </section>
+        <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
+          <p className="work-landing__eyebrow">INSCRIPCIÓN A LAS TRES JORNADAS</p><h2>Arancel según la fecha de inscripción.</h2>
+          <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{tier.start_date === '2026-10-15' ? '15 al 31 de octubre' : tier.start_date === '2026-11-01' ? '1 al 8 de noviembre' : 'Desde el 9 de noviembre'}</p></article>)}</div>
+        </section>
+      </>}
 
       <section className="work-landing__faq" id="preguntas-frecuentes">
         <div className="work-landing__faq-intro">
@@ -330,7 +350,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         <h2>Prepará tu práctica profesional para trabajar con agentes.</h2>
         <p>{isEventEdition
           ? (hasCustomPricing
-            ? 'La inscripción comprende las dos jornadas. Matriculados CPCECh: sin costo. Profesionales no matriculados: $ 116.300.-. Título en trámite y estudiantes avanzados de Ciencias Económicas: sin cargo. Requiere inscripción previa.'
+            ? (isNovemberEdition ? 'La inscripción comprende las tres jornadas. La edición está abierta a todo público y el arancel depende de la fecha de inscripción.' : 'La inscripción comprende las dos jornadas. Matriculados CPCECh: sin costo. Profesionales no matriculados: $ 116.300.-. Título en trámite y estudiantes avanzados de Ciencias Económicas: sin cargo. Requiere inscripción previa.')
             : 'La actividad es sin cargo y está destinada a matriculados del CPCE Chubut de todas sus delegaciones. Requiere inscripción previa.')
           : 'Consultá por próximas fechas, grupos cerrados y capacitaciones para equipos e instituciones.'}</p>
         <a className="work-landing__button work-landing__button--light" href={registrationUrl}>{isEventEdition ? 'Completar inscripción' : 'Inscribirme'}</a>

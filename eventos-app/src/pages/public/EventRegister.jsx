@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { getPublicMeetLink } from '../../lib/publicMeetAccess'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { getArgentinaDateKey, getApplicablePriceTier, isDateBasedPriceSchedule, formatArsPrice } from '../../lib/eventPricing'
 
 const formatEventDate = (dateStr) => {
   const parts = dateStr.split('-')
@@ -63,6 +64,7 @@ export default function EventRegister() {
 
   const getPricingCategory = (selectedProfession, surveyData) => {
     if (!selectedProfession) return null;
+    if (isDateBasedPriceSchedule(event?.prices)) return 'paid_external';
     const lower = selectedProfession.toLowerCase();
     
     // Custom prices mode
@@ -110,6 +112,7 @@ export default function EventRegister() {
   }
 
   const requiresPayment = (selectedProfession) => {
+    if (usesDatePricing) return Boolean(activePriceTier)
     if (!selectedProfession) return false;
     if (!event?.prices?.length) return false;
     
@@ -151,6 +154,8 @@ export default function EventRegister() {
 
   const hasPresencial = event && event.max_capacity_presencial !== 0 && event.max_capacity_presencial !== '0' && event.max_capacity_presencial !== 0.0
   const hasVirtual = event && event.max_capacity_virtual !== 0 && event.max_capacity_virtual !== '0' && event.max_capacity_virtual !== 0.0
+  const usesDatePricing = isDateBasedPriceSchedule(event?.prices)
+  const activePriceTier = usesDatePricing ? getApplicablePriceTier(event.prices) : null
   const isCompanyRegistration = event?.registration_variant === 'company'
   const publicMeetLink = getPublicMeetLink(event)
 
@@ -286,7 +291,7 @@ export default function EventRegister() {
   const isPastEvent = event && eventDate < new Date()
   
   // Allow registration in preview mode even if status is not 'published'
-  const canRegister = event && (event.status === 'published' || isPreview) && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
+  const canRegister = event && (event.status === 'published' || isPreview) && (event.registrations_open !== false || isPreview) && !isPastEvent && (event.registration_mode === 'self' || event.registration_mode === 'both')
 
   if (!event || !canRegister) {
     return (
@@ -348,6 +353,11 @@ export default function EventRegister() {
 
     if (!isCompanyRegistration && !survey.profesion) {
       setError('El campo Profesión / Ocupación Actual es obligatorio')
+      return
+    }
+
+    if (usesDatePricing && !activePriceTier) {
+      setError('La inscripción todavía no tiene un arancel vigente para la fecha de hoy')
       return
     }
 
@@ -446,6 +456,8 @@ export default function EventRegister() {
           certificado_alumno_regular_nombre: academicDocuments.certificadoName || null,
           ...survey
         }
+
+    if (usesDatePricing) Object.assign(surveyResponses, { pricing_mode: 'date', price_concept: activePriceTier.concept, price_amount: Number(String(activePriceTier.price).replace(/[^0-9]/g, '')), price_applied_date: getArgentinaDateKey() })
 
     const result = await selfRegister(slug, {
       ...form,
@@ -702,7 +714,14 @@ export default function EventRegister() {
                 required
               >
                 <option value="">Selecciona tu profesión / ocupación</option>
-                {event.prices && event.prices.length > 0 ? (
+                {usesDatePricing ? (
+                  <>
+                    <option value="Profesional / trabajador independiente">Profesional / trabajador independiente</option>
+                    <option value="Equipo de una organización">Equipo de una organización</option>
+                    <option value="Estudiante">Estudiante</option>
+                    <option value="Otro">Otra profesión / ocupación</option>
+                  </>
+                ) : event.prices && event.prices.length > 0 ? (
                   event.prices.map((p, idx) => (
                     <option key={idx} value={p.concept}>
                       {p.concept} {p.price ? `(${p.price})` : ''}
@@ -717,6 +736,7 @@ export default function EventRegister() {
                 )}
               </select>
             </div>
+            {usesDatePricing && <div className="rounded-xl bg-[var(--color-refined-gray)] p-4 text-sm">{activePriceTier ? <><strong>Arancel vigente: {formatArsPrice(activePriceTier.price)}</strong><p className="mt-1">{activePriceTier.concept}</p></> : <p>La inscripción abre el 15 de octubre de 2026.</p>}</div>}
 
             {(survey.profesion === 'Profesional de Ciencias Económicas' || cat === 'matriculado_chubut' || cat === 'matriculado_otro') && (
               <div className="space-y-4 p-4 rounded-[var(--radius-premium)] bg-[var(--color-refined-gray)]/30 border border-[var(--color-deep-green)]/5 animate-fade-in">
