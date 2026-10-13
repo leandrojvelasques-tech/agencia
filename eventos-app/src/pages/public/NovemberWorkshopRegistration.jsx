@@ -135,7 +135,6 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
         </fieldset>
         <fieldset disabled={busy} className="space-y-5 border-t pt-5">
           <legend className="text-lg font-bold pt-5">Arancel y comprobantes</legend>
-          <label className="flex items-start gap-3 text-sm"><input className="mt-1" type="checkbox" checked={form.student_discount} onChange={e => update('student_discount', e.target.checked)} /><span><strong>Solicito el 50% de descuento para estudiantes.</strong><br />Soy alumno regular de Ciencias Económicas de la Facultad de Ciencias Económicas de la UNPSJB, en cualquiera de sus delegaciones.</span></label>
           <div className="rounded-xl bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/20 p-5" aria-live="polite">
             <p className="font-semibold">{currentTier ? 'Importe a transferir según la fecha de inscripción' : 'Importe al abrir la inscripción'}</p>
             {shownTier && <><p className="text-3xl font-extrabold text-[var(--color-deep-green)] my-2">{formatArsPrice(amount)}</p><p className="text-sm">{shownTier.concept}{form.student_discount && ' · con 50% de descuento'}</p>{!currentTier && <p className="text-sm mt-2">La inscripción abre el 15 de octubre de 2026.</p>}</>}
@@ -143,6 +142,7 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
             {form.student_discount && <p className="text-sm mt-3">El beneficio requiere certificado de alumno regular y queda sujeto a su revisión.</p>}
           </div>
           {event.payment_methods && <div><h3 className="font-bold text-sm mb-2">Datos para la transferencia</h3><p className="text-sm whitespace-pre-line rounded-xl bg-gray-50 p-4">{event.payment_methods}</p></div>}
+          <label className="flex items-start gap-3 text-sm"><input className="mt-1" type="checkbox" checked={form.student_discount} onChange={e => update('student_discount', e.target.checked)} /><span><strong>Solicito el 50% de descuento para estudiantes.</strong><br />Soy alumno regular de Ciencias Económicas de la Facultad de Ciencias Económicas de la UNPSJB, en cualquiera de sus delegaciones.</span></label>
           <DocumentPicker label="Comprobantes de pago" multiple disabled={busy || receipts.length >= 2} onChange={chooseReceipts} buttonLabel={receipts.length ? 'Agregar otro archivo' : 'Agregar archivo'}>Uno o dos archivos. PDF, JPG, PNG o WEBP · hasta 5 MB cada uno.</DocumentPicker>
           {receipts.length > 0 && <p className="text-sm font-semibold text-[var(--color-deep-green)]">{receipts.length} de 2 archivos agregados.</p>}
           {receipts.map((file, index) => <div className="flex items-center gap-3 justify-between text-sm" key={`${file.name}-${index}`}><span className="break-all">{file.name}</span><button type="button" className="font-bold text-red-700" onClick={() => setReceipts(items => items.filter((_, i) => i !== index))}>Quitar</button></div>)}
