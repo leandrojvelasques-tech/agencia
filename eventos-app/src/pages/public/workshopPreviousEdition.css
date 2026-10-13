@@ -1,4 +1,4 @@
-.previous-workshop { background: var(--white); padding-top: 40px; }
+.previous-workshop { background: var(--white); padding-top: 40px; min-width: 0; }
 .previous-workshop__intro { max-width: 780px; }
 .previous-workshop__intro > p:last-child { margin: 22px 0 0; color: var(--steel); font-size: 17px; line-height: 1.65; }
 .previous-workshop__gallery-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 30px; margin-bottom: 16px; }
@@ -32,7 +32,8 @@
 }
 @media (max-width: 600px) {
   .previous-workshop__reviews { grid-template-columns: 1fr; gap: 20px; }
-  .previous-workshop__gallery figure { flex-basis: 88%; }
+  .previous-workshop__gallery { width: 100%; min-width: 0; overflow-x: hidden; padding-bottom: 0; }
+  .previous-workshop__gallery figure { flex-basis: 100%; scroll-snap-stop: always; }
   .previous-workshop__feedback { margin-top: 40px; }
   .previous-workshop__intro > p:last-child { font-size: 16px; }
 }
