@@ -1,7 +1,7 @@
 import './workshopPreviousEdition.css'
 
 const previousWorkshopPhotos = [
-  ['virtual-septiembre-leandro.jpg', 'Leandro Velasques explicando durante el workshop virtual de septiembre.', 'Explicaciones en vivo'],
+  ['virtual-septiembre-leandro-reconstruida.png', 'Retrato de Leandro Velasques reconstruido a partir de la grabación del workshop virtual de septiembre.', 'Explicaciones en vivo · imagen reconstruida'],
   ['virtual-septiembre-jornada-1.jpg', 'Encuentro virtual de la primera jornada del workshop de septiembre.', 'Primera jornada · recorrido por ChatGPT Work'],
   ['virtual-septiembre-jornada-2.jpg', 'Participantes conectados a la segunda jornada del workshop de septiembre.', 'Segunda jornada · aplicación práctica'],
   ['virtual-septiembre-consultas.jpg', 'Encuentro virtual de consultas posterior al workshop de septiembre.', 'Encuentro de consultas · dudas y avances'],
