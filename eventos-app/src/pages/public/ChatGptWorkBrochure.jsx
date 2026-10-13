@@ -193,6 +193,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
       '¿Qué pasa si no puedo participar de una de las jornadas en vivo?',
     ].includes(question)).map(([question, answer]) => {
       if (isNovemberEdition && question === 'Nunca usé inteligencia artificial. ¿Puedo hacer el taller?') return [question, `${answer}\n\nPara aprovechar mejor el tiempo, te recomendamos tener ChatGPT para escritorio descargado e instalado antes de comenzar, tanto si usás una cuenta gratuita como paga. La descarga y la instalación no se harán durante el taller.`]
+      if (isNovemberEdition && question === '¿Cómo será la parte práctica?') return [question, `${answer}\n\nEntre la segunda y la tercera jornada, podés seguir practicando en tu casa. Las dudas que aparezcan al trabajar por tu cuenta también las podés llevar a la tercera jornada de consultas, donde vamos a revisar cuestiones prácticas, avances y dificultades.`]
       if (isNovemberEdition && question === '¿Necesito instalar algo antes?') return [question, 'Sí. Te recomendamos descargar e instalar ChatGPT para escritorio antes de la primera jornada, tanto si usás una cuenta gratuita como paga. La descarga y la instalación no se harán durante el taller, para aprovechar el tiempo de trabajo.\n\nPara realizar la práctica, recomendamos una computadora con conexión estable a internet. Podés seguir las jornadas desde cualquier dispositivo que permita acceder a Google Meet.']
       if (isNovemberEdition && question === '¿Soy estudiante universitario? ¿Puedo participar?') return [question, 'Sí. Esta edición está abierta a estudiantes, profesionales y personas de otras áreas.\n\nLos estudiantes que estén cursando Ciencias Económicas en la Facultad de Ciencias Económicas de la Universidad Nacional de la Patagonia San Juan Bosco (UNPSJB) tienen un 50% de descuento sobre el arancel vigente al momento de la inscripción, presentando su certificado de alumno regular. El beneficio aplica a estudiantes de cualquiera de sus delegaciones.']
       if (isNovemberEdition && question === '¿Va a quedar grabado el evento?') return ['¿Quedan grabadas las sesiones?', 'Sí. Las sesiones quedan grabadas y podés verlas después, aunque no hayas podido participar en vivo.\n\nAl finalizar cada día, se enviará la grabación completa, sin edición ni cortes. Dentro de las 48 horas posteriores a cada jornada, se pondrá a disposición la versión editada, con los cortes y ajustes correspondientes.']
@@ -201,6 +202,10 @@ export default function ChatGptWorkBrochure({ event = null }) {
     }).filter(Boolean)
     : genericFaqItems
   if (isNovemberEdition) faqItems.splice(1, 0, ['¿Necesito asistir presencialmente a alguna de las jornadas?', 'No. Las tres jornadas serán virtuales, por Google Meet. Vas a poder participar desde cualquier dispositivo con conexión a internet que permita acceder a Google Meet.'])
+  if (isNovemberEdition) faqItems.push(
+    ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Podés solicitar la cancelación hasta el día previo al inicio del taller, inclusive. En ese caso, recibirás un reembolso del 100% del importe transferido.'],
+    ['¿Podés enviarme una factura?', 'Sí. Puedo emitirte una factura C. Al momento de inscribirte, enviame tus datos de facturación para que pueda emitirla y enviártela.'],
+  )
   return (
     <main className="work-landing">
       <section className="work-landing__hero" id="inicio">
