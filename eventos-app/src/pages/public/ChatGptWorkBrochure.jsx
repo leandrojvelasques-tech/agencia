@@ -1,5 +1,7 @@
 import './chatGptWorkBrochure.css'
 import WorkshopJourneyMap from './WorkshopJourneyMap'
+import WorkshopCaseMap from './WorkshopCaseMap'
+import { novemberCaseBlocks } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
 const heroImage = '/workshop-chatgpt-work/hero-option-1-selected.png'
@@ -181,7 +183,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
   ))
   const hasCustomPricing = Boolean(event?.prices?.length)
   const agendaDayOneBlocks = hasTwoDayAgenda ? eventAgendaBlocks(event, 0, dayOneBlocks, 'Demostración en vivo') : dayOneBlocks
-  const agendaDayTwoBlocks = hasTwoDayAgenda ? eventAgendaBlocks(event, 1, dayTwoBlocks, 'Actividad práctica') : dayTwoBlocks
+  const agendaDayTwoBlocks = isNovemberEdition ? novemberCaseBlocks : (hasTwoDayAgenda ? eventAgendaBlocks(event, 1, dayTwoBlocks, 'Actividad práctica') : dayTwoBlocks)
   const dayOneTitle = hasTwoDayAgenda ? event.agenda[0].title?.replace(/^Día\s*1\s*·\s*/i, '') : 'Conocer el entorno y verlo en acción'
   const dayTwoTitle = hasTwoDayAgenda ? event.agenda[1].title?.replace(/^Día\s*2\s*·\s*/i, '') : 'Construir un caso práctico integrador'
   const faqItems = isEventEdition
@@ -298,10 +300,10 @@ export default function ChatGptWorkBrochure({ event = null }) {
         <section className="work-landing__day work-landing__day--practice">
            <div className="work-landing__day-title">
              <span>Jornada 2</span>
-             <div><h3>{dayTwoTitle}</h3><p>Una jornada práctica para aplicar los recursos trabajados durante el primer día y construir, probar y mejorar una solución sobre un caso profesional concreto.</p></div>
+             <div><h3>{dayTwoTitle}</h3><p>{isNovemberEdition ? 'Primero presentamos el caso, reunimos la información y comenzamos a resolverlo. Después convertimos lo trabajado en una rutina reutilizable, con skills, tareas programadas, Sites y seguimiento.' : 'Una jornada práctica para aplicar los recursos trabajados durante el primer día y construir, probar y mejorar una solución sobre un caso profesional concreto.'}</p></div>
            </div>
            <div className="work-landing__blocks">{agendaDayTwoBlocks.map((block) => <ProgramBlock block={block} key={block.number} />)}</div>
-          <div className="work-landing__practice-showcase">
+          {isNovemberEdition ? <WorkshopCaseMap /> : <div className="work-landing__practice-showcase">
             <figure className="work-landing__practice-photo work-landing__practice-photo--day-two">
                <img src={practicePhoto} alt={isVirtualEdition ? 'Participantes trabajando sobre un caso profesional' : 'Edición presencial de capacitación en el CPCE Chubut'} loading="lazy" />
                <figcaption><span>{isVirtualEdition ? 'De la configuración a la solución' : 'Del mapa a la práctica'}</span><strong>{isVirtualEdition ? 'Trabajo guiado sobre un caso profesional.' : 'Trabajo presencial y colaborativo.'}</strong></figcaption>
@@ -311,7 +313,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
               <ol>{dayTwoSteps.map(([number, title, description]) => <li key={number}><span>{number}</span><strong>{title}</strong><small>{description}</small></li>)}</ol>
               <p className="work-landing__practice-map-note">El paso a paso se ajustará al caso práctico definitivo.</p>
             </div>
-          </div>
+          </div>}
         </section>
       </section>
 

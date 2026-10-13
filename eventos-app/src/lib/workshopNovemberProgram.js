@@ -1,0 +1,48 @@
+export const novemberCaseBlocks = [
+  {
+    number: '01',
+    type: 'Bloque 1 · Antes del receso',
+    durationLabel: '75 minutos',
+    title: 'Entender el caso y preparar el entorno',
+    subtitle: 'Presentación, información, contexto y primeras tareas.',
+    items: [
+      'Presentar el caso y las situaciones que hay que resolver.',
+      'Explorar distintas formas de buscar y reunir la información necesaria.',
+      'Organizar los archivos, definir el contexto y preparar las instrucciones del agente.',
+      'Conectar y configurar los plugins y las herramientas que requiere el caso.',
+      'Dar pedidos concretos al agente y comenzar a resolver las primeras tareas.',
+    ],
+    practice: 'Trabajar sobre el caso con la información reunida y el entorno configurado. Revisar las primeras respuestas y completar el contexto cuando haga falta.',
+    mapItems: [
+      'Presentar el caso y reunir la información.',
+      'Organizar el proyecto y su contexto.',
+      'Configurar plugins y herramientas.',
+      'Dar instrucciones y comenzar a resolver.',
+    ],
+    mapNote: 'Comprender → ordenar → resolver',
+  },
+  {
+    number: '02',
+    type: 'Bloque 2 · Después del receso',
+    durationLabel: '75 minutos',
+    title: 'Convertir la solución en una rutina de trabajo',
+    subtitle: 'Skills, tareas programadas, Sites y seguimiento.',
+    items: [
+      'Transformar una tarea o proceso del caso en un skill reutilizable.',
+      'Definir acciones y tareas programadas para el trabajo que se repite.',
+      'Elaborar Sites y utilizarlos para presentar reportes de información.',
+      'Seguir usando los plugins necesarios durante la ejecución del flujo.',
+      'Explorar agentes y Dots como apoyo para el seguimiento de tareas rutinarias del proyecto.',
+      'Probar el resultado, revisarlo y ajustar el flujo antes de dejarlo en uso.',
+    ],
+    practice: 'Dejar preparada una rutina que pueda continuar con distintos grados de autonomía, con tareas definidas, límites y puntos de revisión.',
+    mapItems: [
+      'Construir un skill a partir de lo trabajado.',
+      'Programar tareas y usar los plugins.',
+      'Elaborar Sites y reportes de información.',
+      'Incorporar seguimiento con agentes y Dots.',
+      'Probar, revisar y ajustar el resultado.',
+    ],
+    mapNote: 'Reutilizar → programar → revisar',
+  },
+]
