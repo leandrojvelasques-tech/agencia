@@ -345,13 +345,16 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Espacio abierto de consultas</h3><p>Un encuentro de 14:00 a 15:30, sin receso, para consultar el caso integrador, mostrar dudas y avances de otros trabajos, pedir asesoramiento y escuchar las preguntas de otras personas.</p></div></div>
           <div className="work-landing__blocks work-landing__open-consultation"><ProgramBlock block={novemberConsultationBlock} /></div>
         </section>
+      </>}
+
+      {isNovemberEdition && <WorkshopPreviousEdition />}
+
+      {isNovemberEdition && (
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
           <p className="work-landing__eyebrow">INSCRIPCIÓN A LAS TRES JORNADAS</p><h2>Arancel según la fecha de inscripción.</h2>
           <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{tier.start_date === '2026-10-15' ? '15 al 31 de octubre' : tier.start_date === '2026-11-01' ? '1 al 8 de noviembre' : 'Desde el 9 de noviembre'}</p></article>)}</div>
         </section>
-      </>}
-
-      {isNovemberEdition && <WorkshopPreviousEdition />}
+      )}
 
       <section className="work-landing__faq" id="preguntas-frecuentes">
         <div className="work-landing__faq-intro">
