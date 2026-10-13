@@ -1,6 +1,6 @@
 import './workshopJourneyMap.css'
 
-const blocks = [
+const units = [
   ['01', 'Configuración general', 'Interfaz, privacidad, seguridad y confidencialidad.', 'Preparar la base'],
   ['02', 'Proyectos', 'Chats, instrucciones, AGENTS.md y MEMORY.md.', 'Dar contexto y reglas'],
   ['03', 'Complementos', 'Plugins, apps, conectores y skills.', 'Sumar capacidades'],
@@ -36,17 +36,17 @@ export default function WorkshopJourneyMap() {
     <div className="journey-map__heading">
       <p>MAPA DE LA JORNADA 1</p>
       <h3 id="journey-map-title">El recorrido práctico de ChatGPT Work</h3>
-      <span>Seis bloques para configurar, trabajar y delegar con criterio.</span>
+      <span>Dos bloques, seis unidades para configurar, trabajar y delegar con criterio.</span>
     </div>
     <div className="journey-map__body">
       <div className="journey-map__reactive">
         <div className="journey-map__annotation">Agente reactivo <HandArrow /></div>
         <div className="journey-map__reactive-outline">
           <ol className="journey-map__steps">
-            <li className="journey-map__phase">Primer tramo · bloques 1, 2 y 3 <span>preparar el entorno →</span></li>
-            {blocks.slice(0, 3).map(block => <BlockCard key={block[0]} block={block} />)}
-            <li className="journey-map__phase journey-map__phase--second">Segundo tramo · bloques 4, 5 y 6 <span>pasar a la acción ↴</span></li>
-            {blocks.slice(3).map(block => <BlockCard key={block[0]} block={block} wide />)}
+            <li className="journey-map__phase">Bloque 1 · Unidades 1, 2 y 3 <span>preparar el entorno →</span></li>
+            {units.slice(0, 3).map(unit => <BlockCard key={unit[0]} block={unit} />)}
+            <li className="journey-map__phase journey-map__phase--second">Bloque 2 · Unidades 4, 5 y 6 <span>pasar a la acción ↴</span></li>
+            {units.slice(3).map(unit => <BlockCard key={unit[0]} block={unit} wide />)}
           </ol>
         </div>
         <p className="journey-map__margin-note">Vos iniciás el pedido. El agente responde y actúa con supervisión.</p>
@@ -54,7 +54,7 @@ export default function WorkshopJourneyMap() {
       <div className="journey-map__proactive">
         <div className="journey-map__annotation">Agente proactivo <HandArrow /></div>
         <article className="journey-map__dot">
-          <span className="journey-map__dot-label">06 · DOTS</span>
+          <span className="journey-map__dot-label"><span>Bloque 2</span><strong>Unidad 6 · DOTS</strong></span>
           <h4>El agente trabaja por vos.</h4>
           <p>Le asignás una responsabilidad. Detecta cambios y propone próximos pasos.</p>
           <img className="journey-map__dots-image" src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/dots-personajes-referencia.png`} alt="Personajes de Dots de distintos colores" width="462" height="315" />

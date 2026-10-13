@@ -54,7 +54,8 @@
 .journey-map__proactive .journey-map__annotation { font-size: 22px; white-space: nowrap; }
 .journey-map__proactive .journey-map__annotation > svg { width: 40px; }
 .journey-map__dot { position: relative; display: flex; flex-direction: column; align-items: flex-start; flex: 1; padding: 25px 20px; color: var(--map-ink); background: #dff0ec; border: 2px dashed #9edddf; border-radius: 6px 3px 9px 4px; }
-.journey-map__dot-label { display: inline-block; padding: 8px 12px; margin-bottom: 19px; color: #fff; background: #2a7f8b; font-size: 13px; font-weight: 850; border-radius: 4px; }
+.journey-map__dot-label { display: inline-grid; gap: 3px; padding: 8px 12px; margin-bottom: 19px; color: #fff; background: #2a7f8b; font-size: 13px; font-weight: 850; border-radius: 4px; }
+.journey-map__dot-label > span { font-size: 10px; font-weight: 600; }
 .journey-map .journey-map__dot h4 { font-size: clamp(22px, 2.2vw, 29px); line-height: 1.25; }
 .journey-map__dot > p { margin: 19px 0 0; padding-top: 19px; border-top: 1px solid #93bdc2; color: #526973; font-size: 15px; line-height: 1.55; }
 .journey-map__dots-image { display: block; width: 100%; height: auto; margin: auto 0 0; border-radius: 12px 7px 14px 6px; background: #000; box-shadow: 3px 4px 0 #17343d18; }
