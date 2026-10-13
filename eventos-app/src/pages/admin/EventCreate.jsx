@@ -1248,12 +1248,12 @@ export default function EventCreate() {
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Coordinador *</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Capacitador / Coordinador *</label>
                 <input className="form-input" value={form.coordinator} onChange={e => update('coordinator', e.target.value)} />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-dark-gray)]/60 mb-2 block">Organizador / Institución</label>
-                <input className="form-input" placeholder="Ej: UTN Trelew" value={form.organizer} onChange={e => update('organizer', e.target.value)} />
+                <input className="form-input" placeholder="Ej: Lic. Leandro Velasques o una institución" value={form.organizer} onChange={e => update('organizer', e.target.value)} />
               </div>
             </div>
 

@@ -239,13 +239,14 @@ export default function ChatGptWorkBrochure({ event = null }) {
       </section>
 
       {isEventEdition && (
-        <section className="work-landing__edition" aria-label="Datos de esta edición">
+        <section className={`work-landing__edition${isNovemberEdition ? ' work-landing__edition--november' : ''}`} aria-label="Datos de esta edición">
           <p className="work-landing__eyebrow">{isNovemberEdition ? 'EDICIÓN ONLINE · GOOGLE MEET' : isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
-          <div className="work-landing__edition-data">
+          <div className={`work-landing__edition-data${isNovemberEdition ? ' work-landing__edition-data--complete' : ''}`}>
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
             <div className="work-landing__edition-time"><span>Horario</span><strong>{isNovemberEdition ? <>Jornadas 1 y 2: 14:00 a 17:00<br />Jornada 3: 14:00 a 15:30</> : formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
-            <div className="work-landing__edition-location"><span>Lugar</span><strong>{isVirtualEdition ? 'Online' : (event.location || '—')}</strong></div>
-            {event.organizer && <div className="work-landing__edition-organizer"><span>Organiza</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
+            <div className="work-landing__edition-location"><span>{isNovemberEdition ? 'Modalidad' : 'Lugar'}</span><strong>{isVirtualEdition ? <>Online{isNovemberEdition && <><br />Google Meet</>}</> : (event.location || '—')}</strong></div>
+            {event.organizer && <div className="work-landing__edition-organizer"><span>Organizador</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
+            {isNovemberEdition && event.coordinator && <div className="work-landing__edition-facilitator"><span>Capacitador</span><strong>{event.coordinator}</strong></div>}
           </div>
           <p className="work-landing__edition-note">
             {hasCustomPricing
