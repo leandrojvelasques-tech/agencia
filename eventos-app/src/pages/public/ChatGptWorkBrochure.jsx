@@ -248,7 +248,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
       )}
 
       <section className="work-landing__section work-landing__context">
-        <div className="work-landing__context-index" aria-hidden="true">2026</div>
+        {isNovemberEdition ? (
+          <figure className="work-landing__context-illustration">
+            <img src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/entorno-agentico.png`} alt="Un agente conecta documentos, proyectos, herramientas y tareas en un mismo entorno de trabajo." loading="lazy" width="1024" height="1024" />
+          </figure>
+        ) : <div className="work-landing__context-index" aria-hidden="true">2026</div>}
         <div className="work-landing__context-copy">
           <p className="work-landing__eyebrow">UN CAMBIO DE ETAPA</p>
           <h2>La era de los entornos agénticos ya empezó.</h2>

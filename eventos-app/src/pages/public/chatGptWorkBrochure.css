@@ -262,6 +262,8 @@
 }
 
 .work-landing__context-copy { max-width: 790px; }
+.work-landing__context-illustration { margin: 0; align-self: center; }
+.work-landing__context-illustration img { display: block; width: 100%; height: auto; }
 .work-landing__context-copy > p:not(.work-landing__eyebrow) { margin: 25px 0 0; color: #555c61; font-size: 18px; line-height: 1.72; }
 
 .work-landing__proposal {
@@ -543,6 +545,7 @@
   .work-landing__proposal-result { min-height: auto; }
   .work-landing__proposal-photo figcaption { display: grid; gap: 4px; }
   .work-landing__context-index { font-size: 82px; }
+  .work-landing__context-illustration { width: min(100%, 320px); justify-self: center; }
   .work-landing__context-copy > p:not(.work-landing__eyebrow),
   .work-landing__proposal-copy > p { font-size: 16px; }
   .work-landing__program { padding-top: 78px; padding-bottom: 84px; }
