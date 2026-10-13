@@ -2,6 +2,7 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { findAccess } = require('./private/reportAccess');
+const { renderHomeWorkshop } = require('./lib/homeWorkshop');
 
 const port = Number(process.env.PORT || 3000);
 const rootDir = __dirname;
@@ -177,7 +178,13 @@ const server = http.createServer(async (req, res) => {
 
     // The public root is the institutional site. The events app is served only
     // for its explicit SPA routes, including /admin.
-    if (pathname === '/') return sendFile(res, path.join(rootDir, 'index.html'));
+    if (pathname === '/' || pathname === '/index.html') {
+      const html = await fs.promises.readFile(path.join(rootDir, 'index.html'), 'utf8');
+      const renderedHtml = await renderHomeWorkshop(html);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store');
+      return res.end(renderedHtml);
+    }
     if (pathname.toLowerCase() === '/cv' || pathname.toLowerCase() === '/cv/') {
       return sendFile(res, path.join(rootDir, 'cv', 'index.html'));
     }

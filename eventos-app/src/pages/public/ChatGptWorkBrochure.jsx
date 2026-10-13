@@ -224,7 +224,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <span className="work-landing__hero-november-count work-landing__hero-november-count--days" aria-label="3 jornadas">3</span>
             <span className="work-landing__hero-november-count work-landing__hero-november-count--blocks" aria-label="6 bloques">6</span>
           </>}
-          <span className={`work-landing__hero-duration${isNovemberEdition ? ' work-landing__hero-duration--november' : ''}`} aria-label={isNovemberEdition ? '7 horas y media en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '7,5 h' : '5 h'}</span>
+          <span className={`work-landing__hero-duration${isNovemberEdition ? ' work-landing__hero-duration--november' : ''}`} aria-label={isNovemberEdition ? '7 horas en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '7 h' : '5 h'}</span>
           {(!isEventEdition || isVirtualEdition) && (
             <div className="work-landing__hero-mode" aria-label={isNovemberEdition ? 'Modalidad online por Google Meet' : 'Modalidad online por Zoom'}>
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
@@ -243,7 +243,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <p className="work-landing__eyebrow">{isNovemberEdition ? 'EDICIÓN ONLINE · GOOGLE MEET' : isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
           <div className={`work-landing__edition-data${isNovemberEdition ? ' work-landing__edition-data--complete' : ''}`}>
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
-            <div className="work-landing__edition-time"><span>Horario</span><strong>{isNovemberEdition ? <>Jornadas 1 y 2: 14:00 a 17:00<br />Jornada 3: 14:00 a 15:30</> : formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
+            <div className="work-landing__edition-time"><span>Horario</span><strong>{isNovemberEdition ? <>Jornadas 1 y 2: 14:00 a 17:00<br />Jornada 3: 14:00 a 15:00</> : formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
             <div className="work-landing__edition-location"><span>{isNovemberEdition ? 'Modalidad' : 'Lugar'}</span><strong>{isVirtualEdition ? <>Online{isNovemberEdition && <><br />Google Meet</>}</> : (event.location || '—')}</strong></div>
             {event.organizer && <div className="work-landing__edition-organizer"><span>Organizador</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
             {isNovemberEdition && event.coordinator && <div className="work-landing__edition-facilitator"><span>Capacitador</span><strong>{event.coordinator}</strong></div>}
@@ -276,7 +276,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         <div className="work-landing__proposal-copy">
           <p>El taller recorre el entorno de ChatGPT Work para que comprendas su lógica y aprendas a configurarlo por tu propia cuenta.</p>
           <p>En la primera jornada vas a conocer sus principales capacidades a través de explicaciones y demostraciones aplicadas a situaciones concretas. En la segunda, vas a construir, probar y mejorar un entorno de trabajo agéntico aplicado a un caso profesional.{isNovemberEdition && ' En la tercera, vas a tener un espacio abierto para consultar el caso integrador, mostrar otros trabajos y pedir asesoramiento.'}</p>
-          {isNovemberEdition && <p>Jornadas 1 y 2, de 14 a 17 h: 75 minutos de trabajo, 15 minutos de receso, otros 75 minutos de trabajo y 15 minutos finales de consultas. Jornada 3, de 14 a 15:30 h: consultas abiertas, sin receso.</p>}
+          {isNovemberEdition && <p>Jornadas 1 y 2, de 14 a 17 h: 75 minutos de trabajo, 15 minutos de receso, otros 75 minutos de trabajo y 15 minutos finales de consultas. Jornada 3, de 14 a 15 h: consultas abiertas, sin receso.</p>}
         </div>
         <figure className="work-landing__proposal-photo">
           <img src={proposalPhoto} alt="Participantes trabajando en equipo durante un taller presencial" loading="lazy" />
@@ -343,13 +343,14 @@ export default function ChatGptWorkBrochure({ event = null }) {
 
       {isNovemberEdition && <>
         <section className="work-landing__program work-landing__november-day-three" id="consultas-jornada-3">
-          <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Espacio abierto de consultas</h3><p>Un encuentro de 14:00 a 15:30, sin receso, para consultar el caso integrador, mostrar dudas y avances de otros trabajos, pedir asesoramiento y escuchar las preguntas de otras personas.</p></div></div>
+          <div className="work-landing__day-title"><span>Jornada 3</span><div><h3>Espacio abierto de consultas</h3><p>Un encuentro de una hora, de 14:00 a 15:00, sin receso, para consultar el caso integrador, mostrar dudas y avances de otros trabajos, pedir asesoramiento y escuchar las preguntas de otras personas.</p></div></div>
           <div className="work-landing__blocks work-landing__open-consultation"><ProgramBlock block={novemberConsultationBlock} /></div>
         </section>
       </>}
 
       {isNovemberEdition && (
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
+          {event.official_banner_url && <figure className="work-landing__official-banner"><img src={event.official_banner_url} alt={event.title} loading="lazy" style={{ display: 'block', maxWidth: '540px', width: '100%', height: 'auto', margin: '0 auto 40px' }} /></figure>}
           <p className="work-landing__eyebrow">INSCRIPCIÓN A LAS TRES JORNADAS</p><h2>Arancel según la fecha de inscripción.</h2>
           <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{tier.start_date === '2026-10-15' ? '15 al 31 de octubre' : tier.start_date === '2026-11-01' ? '1 al 8 de noviembre' : 'Desde el 9 de noviembre'}</p></article>)}</div>
         </section>

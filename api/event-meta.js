@@ -1,3 +1,4 @@
+const { getPublicSupabaseConfig } = require('../lib/supabasePublicConfig');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -49,8 +50,8 @@ function safeFetch(url, options = {}) {
 module.exports = async (req, res) => {
   const { slug, token } = req.query;
 
-  const supabaseUrl = 'https://oaapnglvbkvxyydjnmun.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hYXBuZ2x2Ymt2eHl5ZGpubXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjg3MDAsImV4cCI6MjA5MTcwNDcwMH0.Q0H0K1dKT77gawhU-YfkqmpAnDqgzq0i8etoY9bLM_0';
+  const { supabaseUrl, supabaseKey } = getPublicSupabaseConfig();
+
 
   const runtimeConfig = JSON.stringify({ supabaseUrl, supabaseAnonKey: supabaseKey }).replace(/</g, '\\u003c');
   const injectRuntimeConfig = (source) => source.includes('__APP_CONFIG__')

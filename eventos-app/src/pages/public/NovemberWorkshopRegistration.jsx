@@ -113,7 +113,8 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
     <main className="max-w-xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-extrabold text-[var(--color-deep-green)] mb-3">Inscripción al taller</h1>
       <h2 className="font-bold mb-3">{event.title}</h2>
-      <p className="text-sm leading-relaxed mb-6">Tres jornadas virtuales por Google Meet: recorrido por ChatGPT Work, caso práctico y consultas. Tu inscripción incluye los tres encuentros y las grabaciones. Te recomendamos tener la aplicación de escritorio instalada, con una cuenta gratuita o paga.</p>
+      {(event.official_banner_url || event.banner_url) && <img src={event.official_banner_url || event.banner_url} alt={event.title} className="w-full h-auto rounded-xl mb-6" />}
+      <p className="text-sm leading-relaxed mb-6">Tres jornadas virtuales por Google Meet, 7 horas en total: 11 y 12 de noviembre, de 14 a 17 h; 13 de noviembre, de 14 a 15 h. Recorrido por ChatGPT Work, caso práctico y consultas. Tu inscripción incluye los tres encuentros y las grabaciones. Te recomendamos tener la aplicación de escritorio instalada, con una cuenta gratuita o paga.</p>
       <form onSubmit={submit} className="card p-6 space-y-6">
         <fieldset disabled={busy} className="space-y-5">
           <legend className="text-lg font-bold mb-4">Tus datos</legend>

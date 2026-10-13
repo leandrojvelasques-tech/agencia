@@ -50,9 +50,9 @@ export const novemberCaseBlocks = [
 export const novemberConsultationBlock = {
   number: '01',
   type: 'Bloque único',
-  durationLabel: '90 minutos · Sin receso',
+  durationLabel: '60 minutos · Sin receso',
   title: 'Consultas y asesoramiento',
-  subtitle: '13 de noviembre · 14:00 a 15:30',
+  subtitle: '13 de noviembre · 14:00 a 15:00',
   items: [
     'Consultar dudas sobre el caso integrador.',
     'Traer un trabajo particular y solicitar orientación.',
