@@ -1,7 +1,7 @@
 import './workshopPreviousEdition.css'
 
 const previousWorkshopPhotos = [
-  ['virtual-septiembre-leandro-reconstruida.png', 'Retrato de Leandro Velasques reconstruido a partir de la grabación del workshop virtual de septiembre.', 'Explicaciones en vivo · imagen reconstruida'],
+  ['capacitacion-oveon.jpg', 'Leandro Velasques durante la capacitación virtual de inteligencia artificial para OVEON.', 'Capacitación virtual · OVEON'],
   ['virtual-septiembre-jornada-1.jpg', 'Encuentro virtual de la primera jornada del workshop de septiembre.', 'Primera jornada · recorrido por ChatGPT Work'],
   ['virtual-septiembre-jornada-2.jpg', 'Participantes conectados a la segunda jornada del workshop de septiembre.', 'Segunda jornada · aplicación práctica'],
   ['virtual-septiembre-consultas.jpg', 'Encuentro virtual de consultas posterior al workshop de septiembre.', 'Encuentro de consultas · dudas y avances'],
@@ -20,8 +20,8 @@ export default function WorkshopPreviousEdition() {
     <section className="work-landing__section previous-workshop" id="workshop-anterior" aria-labelledby="previous-workshop-title">
       <header className="previous-workshop__intro">
         <p className="work-landing__eyebrow">LA EDICIÓN ANTERIOR</p>
-        <h2 id="previous-workshop-title">Así se vivió el workshop virtual.</h2>
-        <p>Imágenes de las jornadas de septiembre de 2026 y del encuentro posterior de consultas.</p>
+        <h2 id="previous-workshop-title">Así se viven los encuentros virtuales.</h2>
+        <p>Imágenes del workshop de septiembre de 2026, su encuentro de consultas y la capacitación virtual de OVEON.</p>
       </header>
 
       <div className="previous-workshop__gallery">

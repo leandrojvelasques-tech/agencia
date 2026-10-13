@@ -6,11 +6,12 @@ import WorkshopPreviousEdition from './WorkshopPreviousEdition'
 import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
 import { formatArsPrice } from '../../lib/eventPricing'
 
-const heroImage = '/workshop-chatgpt-work/hero-option-1-selected.png'
-const heroMobileImage = '/workshop-chatgpt-work/hero-option-1-mobile-v1.png'
-const proposalPhoto = '/workshop-chatgpt-work/taller-cpce-trabajo-en-equipo.jpeg'
-const dayOnePhoto = '/workshop-chatgpt-work/taller-cpce-demostracion-en-vivo.jpeg'
-const practicePhoto = '/workshop-chatgpt-work/taller-cpce-experiencia-presencial.jpeg'
+const workshopAssetBase = `${import.meta.env.BASE_URL}workshop-chatgpt-work/`
+const heroImage = `${workshopAssetBase}hero-option-1-selected.png`
+const heroMobileImage = `${workshopAssetBase}hero-option-1-mobile-v1.png`
+const proposalPhoto = `${workshopAssetBase}taller-cpce-trabajo-en-equipo.jpeg`
+const dayOnePhoto = `${workshopAssetBase}taller-cpce-demostracion-en-vivo.jpeg`
+const practicePhoto = `${workshopAssetBase}taller-cpce-experiencia-presencial.jpeg`
 const desktopDownloadUrl = 'https://chatgpt.com/es-419/download/'
 const formatEditionDate = (date) => new Intl.DateTimeFormat('es-AR', {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -217,6 +218,10 @@ export default function ChatGptWorkBrochure({ event = null }) {
             <source media="(max-width: 760px)" srcSet={heroMobileImage} />
             <img src={heroImage} alt="Propuesta visual del taller ChatGPT Work: de 0 a 100" />
           </picture>
+          {isNovemberEdition && <>
+            <span className="work-landing__hero-november-count work-landing__hero-november-count--days" aria-label="3 jornadas">3</span>
+            <span className="work-landing__hero-november-count work-landing__hero-november-count--blocks" aria-label="6 bloques">6</span>
+          </>}
           <span className={`work-landing__hero-duration${isNovemberEdition ? ' work-landing__hero-duration--november' : ''}`} aria-label={isNovemberEdition ? '7 horas y media en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '7,5 h' : '5 h'}</span>
           {(!isEventEdition || isVirtualEdition) && (
             <div className="work-landing__hero-mode" aria-label={isNovemberEdition ? 'Modalidad online por Google Meet' : 'Modalidad online por Zoom'}>
@@ -364,7 +369,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
       </section>
 
       <section className="work-landing__section work-landing__trainer" id="capacitador">
-        <div className="work-landing__portrait"><img src="/slides/comodoro/leandro_profile.jpg" alt="Lic. Adm. Leandro Velasques" loading="lazy" /></div>
+        <div className="work-landing__portrait"><img src={`${import.meta.env.BASE_URL}slides/comodoro/leandro_profile.jpg`} alt="Lic. Adm. Leandro Velasques" loading="lazy" /></div>
         <div className="work-landing__trainer-copy">
           <p className="work-landing__eyebrow">SOBRE EL CAPACITADOR</p>
           <h2>Lic. Adm. Leandro Velasques</h2>
@@ -387,7 +392,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
       </section>
 
       <footer className="work-landing__footer">
-        <div><img src="/logo_triskel.png" alt="" /><strong>Lic. Adm. Leandro Velasques</strong><span>MP Tomo III – Folio 58</span></div>
+        <div><img src={`${import.meta.env.BASE_URL}logo_triskel.png`} alt="" /><strong>Lic. Adm. Leandro Velasques</strong><span>MP Tomo III – Folio 58</span></div>
         <a href="https://www.leandrovelasques.com.ar">www.leandrovelasques.com.ar</a>
       </footer>
     </main>
