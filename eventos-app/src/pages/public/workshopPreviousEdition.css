@@ -5,6 +5,7 @@
 .previous-workshop__gallery figure { margin: 0; min-width: 0; background: var(--paper); }
 .previous-workshop__gallery img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #101416; }
 .previous-workshop__gallery figcaption { padding: 14px 18px; color: var(--graphite); font-size: 13px; line-height: 1.5; border-bottom: 2px solid var(--mint); }
+.previous-workshop__gallery figcaption small { display: block; margin-top: 3px; color: var(--steel); font-size: 11px; }
 .previous-workshop__feedback { margin-top: 58px; }
 .previous-workshop__feedback-heading h3 { margin: 14px 0 28px; color: var(--ink); font-family: var(--font-heading); font-size: clamp(26px, 3vw, 36px); line-height: 1.15; letter-spacing: -.035em; }
 .previous-workshop__reviews { display: grid; grid-template-columns: .9fr 1fr 1fr; gap: 24px; }

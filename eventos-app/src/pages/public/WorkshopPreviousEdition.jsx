@@ -1,7 +1,7 @@
 import './workshopPreviousEdition.css'
 
 const previousWorkshopPhotos = [
-  ['capacitacion-oveon.jpg', 'Leandro Velasques durante la capacitación virtual de inteligencia artificial para OVEON.', 'Capacitación virtual · OVEON'],
+  ['leandro-camisa-blanca-adaptada.png', 'Imagen adaptada de Leandro Velasques con camisa blanca durante una capacitación virtual.', 'Primera jornada · recorrido por ChatGPT Work', true],
   ['virtual-septiembre-jornada-1.jpg', 'Encuentro virtual de la primera jornada del workshop de septiembre.', 'Primera jornada · recorrido por ChatGPT Work'],
   ['virtual-septiembre-jornada-2.jpg', 'Participantes conectados a la segunda jornada del workshop de septiembre.', 'Segunda jornada · aplicación práctica'],
   ['virtual-septiembre-consultas.jpg', 'Encuentro virtual de consultas posterior al workshop de septiembre.', 'Encuentro de consultas · dudas y avances'],
@@ -21,14 +21,14 @@ export default function WorkshopPreviousEdition() {
       <header className="previous-workshop__intro">
         <p className="work-landing__eyebrow">LA EDICIÓN ANTERIOR</p>
         <h2 id="previous-workshop-title">Así se viven los encuentros virtuales.</h2>
-        <p>Imágenes del workshop de septiembre de 2026, su encuentro de consultas y la capacitación virtual de OVEON.</p>
+        <p>Imágenes del workshop de septiembre de 2026 y su encuentro posterior de consultas, junto con una imagen adaptada del capacitador.</p>
       </header>
 
       <div className="previous-workshop__gallery">
-        {previousWorkshopPhotos.map(([file, alt, caption]) => (
+        {previousWorkshopPhotos.map(([file, alt, caption, adapted]) => (
           <figure key={file}>
             <img src={`${import.meta.env.BASE_URL}workshop-chatgpt-work/${file}`} alt={alt} loading="lazy" />
-            <figcaption>{caption}</figcaption>
+            <figcaption>{caption}{adapted && <small>Imagen adaptada</small>}</figcaption>
           </figure>
         ))}
       </div>
