@@ -1,0 +1,34 @@
+.november-registration {
+  --registration-orange: #e49a58;
+  --registration-peach: #fff2e6;
+  --registration-orange-ink: #85471d;
+}
+.november-registration__description {
+  padding: 18px 20px;
+  background: var(--registration-peach);
+  border-left: 4px solid var(--registration-orange);
+  border-radius: 0 12px 12px 0;
+}
+.november-registration__section {
+  min-width: 0;
+  padding: 18px 16px 20px;
+  border: 1px solid #ead6c4;
+  border-radius: 14px;
+}
+.november-registration__section > legend {
+  max-width: 100%;
+  margin-bottom: 0;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: #ffe5cc;
+  color: var(--registration-orange-ink);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.november-registration__section--data { background: #fffaf5; }
+.november-registration__section--experience { background: #f0f7f3; border-color: #c9ded2; }
+.november-registration__section--payment { background: var(--registration-peach); }
+.november-registration__section .form-input { background: #fff; }
+@media (min-width: 640px) {
+  .november-registration__section { padding-left: 20px; padding-right: 20px; }
+}

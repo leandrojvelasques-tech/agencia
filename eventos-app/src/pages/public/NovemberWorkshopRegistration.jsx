@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useStore } from '../../store/useStore'
 import { formatArsPrice, getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../../lib/eventPricing'
 import { AI_TOOLS, ARGENTINA_PROVINCES, DOCUMENT_TYPES, MAX_DOCUMENT_SIZE, REGISTRATION_DOCUMENT_BUCKET } from '../../lib/novemberRegistration'
+import './novemberWorkshopRegistration.css'
 
 function Field({ label, children, optional = false }) {
   return <div><label className="block text-sm font-bold mb-2">{label}{optional ? ' (opcional)' : ' *'}{children}</label></div>
@@ -108,15 +109,15 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
     } catch (err) { setError(err.message || 'No se pudo completar la inscripción. Intentá nuevamente.') } finally { setBusy(false) }
   }
 
-  return <div className="min-h-screen bg-[var(--color-refined-gray)]">
+  return <div className="november-registration min-h-screen bg-[var(--color-refined-gray)]">
     <header className="glass-nav sticky top-0 z-30"><div className="max-w-2xl mx-auto px-6 flex items-center h-16"><Link to={`/evento/${event.slug}`} className="font-semibold text-sm">← Volver al evento</Link></div></header>
     <main className="max-w-xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-extrabold text-[var(--color-deep-green)] mb-3">Inscripción al taller</h1>
       <h2 className="font-bold mb-3">{event.title}</h2>
       {(event.official_banner_url || event.banner_url) && <img src={event.official_banner_url || event.banner_url} alt={event.title} className="w-full h-auto rounded-xl mb-6" />}
-      <p className="text-sm leading-relaxed mb-6">Tres jornadas en modalidad online, 7 horas en total: 11 y 12 de noviembre, de 14 a 17 h; 13 de noviembre, de 14 a 15 h. Recorrido por ChatGPT Work, caso práctico y consultas. Tu inscripción incluye los tres encuentros y las grabaciones. Te recomendamos tener la aplicación de escritorio instalada, con una cuenta gratuita o paga.</p>
-      <form onSubmit={submit} className="card p-6 space-y-6">
-        <fieldset disabled={busy} className="space-y-5">
+      <p className="november-registration__description text-sm leading-relaxed mb-6">Tres jornadas en modalidad online, 7 horas en total: 11 y 12 de noviembre, de 14 a 17 h; 13 de noviembre, de 14 a 15 h. Recorrido por ChatGPT Work, caso práctico y consultas. Tu inscripción incluye los tres encuentros y las grabaciones. Te recomendamos tener la aplicación de escritorio instalada, con una cuenta gratuita o paga.</p>
+      <form onSubmit={submit} className="card p-4 sm:p-6 space-y-6">
+        <fieldset disabled={busy} className="november-registration__section november-registration__section--data space-y-5">
           <legend className="text-lg font-bold mb-4">Tus datos</legend>
           <div className="grid sm:grid-cols-2 gap-5">
             <Field label="Nombre"><input required maxLength={100} className="form-input mt-2" value={form.first_name} onChange={e => update('first_name', e.target.value)} autoComplete="given-name" /></Field>
@@ -128,14 +129,14 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
           <Field label="Ciudad de residencia" optional><input className="form-input mt-2" maxLength={150} placeholder="Ej: Comodoro Rivadavia" value={form.city} onChange={e => update('city', e.target.value)} autoComplete="address-level2" /></Field>
           <Field label="Ocupación actual"><input required className="form-input mt-2" maxLength={200} placeholder="Contanos a qué te dedicás" value={form.occupation} onChange={e => update('occupation', e.target.value)} /></Field>
         </fieldset>
-        <fieldset disabled={busy} className="space-y-5 border-t pt-5">
-          <legend className="text-lg font-bold pt-5">Tu experiencia con IA (opcional)</legend>
+        <fieldset disabled={busy} className="november-registration__section november-registration__section--experience space-y-5">
+          <legend className="text-lg font-bold">Tu experiencia con IA (opcional)</legend>
           <p className="text-sm text-gray-600">Estas dos preguntas nos ayudan a preparar las actividades. Podés dejarlas sin responder.</p>
           <fieldset><legend className="text-sm font-bold mb-3">¿Qué herramientas o aplicaciones de inteligencia artificial usás?</legend><div className="grid sm:grid-cols-2 gap-3">{AI_TOOLS.map(tool => <label key={tool} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.ai_tools.includes(tool)} onChange={() => toggleTool(tool)} />{tool}</label>)}</div>{form.ai_tools.includes('Otra') && <input aria-label="Otra herramienta de IA" className="form-input mt-3" maxLength={150} placeholder="¿Cuál?" value={form.ai_other} onChange={e => update('ai_other', e.target.value)} />}</fieldset>
           <Field label="¿Tenés alguna suscripción paga a una herramienta de IA?" optional><select className="form-input mt-2" value={form.paid_ai_subscription} onChange={e => update('paid_ai_subscription', e.target.value)}><option value="">Prefiero no responder</option><option>Sí</option><option>No, uso versiones gratuitas</option><option>No uso herramientas de IA</option></select></Field>
         </fieldset>
-        <fieldset disabled={busy} className="space-y-5 border-t pt-5">
-          <legend className="text-lg font-bold pt-5">Arancel y comprobantes</legend>
+        <fieldset disabled={busy} className="november-registration__section november-registration__section--payment space-y-5">
+          <legend className="text-lg font-bold">Arancel y comprobantes</legend>
           <div className="rounded-xl bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/20 p-5" aria-live="polite">
             <p className="font-semibold">{currentTier ? 'Importe a transferir según la fecha de inscripción' : 'Importe al abrir la inscripción'}</p>
             {shownTier && <><p className="text-3xl font-extrabold text-[var(--color-deep-green)] my-2">{formatArsPrice(amount)}</p><p className="text-sm">{shownTier.concept}{form.student_discount && ' · con 50% de descuento'}</p>{!currentTier && <p className="text-sm mt-2">La inscripción abre el 15 de octubre de 2026.</p>}</>}
