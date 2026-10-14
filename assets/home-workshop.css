@@ -4,6 +4,7 @@
 .news-workshop-status .news-status{position:static;letter-spacing:.025em}
 .news-image--workshop{background:#031015}
 .news-image--workshop img{object-position:right center}
-.news-workshop-cover{position:absolute;left:22px;right:22px;bottom:18px;color:#fff;font:500 28px/1.12 var(--body);letter-spacing:-.04em;text-shadow:0 2px 10px #000}
-.news-workshop-cover em{display:block;color:#29bdc4;font-style:normal;max-width:250px}
+.news-workshop-cover{position:absolute;left:22px;right:22px;top:76px;color:#fff;font:500 28px/1.12 var(--body);letter-spacing:-.04em;text-shadow:0 2px 10px #000}
+.news-workshop-cover em{display:block;color:#29bdc4;font-style:normal;max-width:180px}
 .news-workshop-date{color:var(--mint);font-size:12px!important;line-height:1.7!important;margin-bottom:22px!important}
+.news-image--workshop{min-height:205px}
