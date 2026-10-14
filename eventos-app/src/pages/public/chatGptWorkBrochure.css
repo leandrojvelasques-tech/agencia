@@ -726,6 +726,16 @@
 @media (max-width: 760px) {
   .work-landing__hero { padding-left: 0; padding-right: 0; padding-top: 0; }
   .work-landing__hero-selected { max-width: 845px; }
+  .work-landing__hero-selected::before {
+    content: '';
+    position: absolute;
+    top: 65.8%;
+    left: 6.4%;
+    width: 87.2%;
+    height: 6.5%;
+    background: #020609;
+    pointer-events: none;
+  }
   .work-landing__hero-duration {
     top: 56.05%;
     left: 71.8%;
@@ -740,7 +750,8 @@
   .work-landing__hero-selected-cta {
     top: 66%;
     left: 6.5%;
-    width: 43.5%;
+    width: 41.5%;
+    z-index: 1;
     height: 5.9%;
     display: flex;
     align-items: center;
@@ -764,8 +775,9 @@
   }
   .work-landing__hero-register-cta {
     top: 66%;
-    left: 50%;
-    width: 43.5%;
+    left: 52%;
+    width: 41.5%;
+    z-index: 1;
     height: 5.9%;
     font-size: clamp(8px, 2.2vw, 11px);
   }

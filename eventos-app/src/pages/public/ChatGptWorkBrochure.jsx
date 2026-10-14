@@ -225,11 +225,11 @@ export default function ChatGptWorkBrochure({ event = null }) {
           </>}
           <span className={`work-landing__hero-duration${isNovemberEdition ? ' work-landing__hero-duration--november' : ''}`} aria-label={isNovemberEdition ? '7 horas en tres jornadas' : '5 horas de duración estimada'}>{isNovemberEdition ? '7 h' : '5 h'}</span>
           {(!isEventEdition || isVirtualEdition) && (
-            <div className="work-landing__hero-mode" aria-label={isNovemberEdition ? 'Modalidad online por Google Meet' : 'Modalidad online por Zoom'}>
+            <div className="work-landing__hero-mode" aria-label={isNovemberEdition ? 'Modalidad online' : 'Modalidad online por Zoom'}>
               <span className="work-landing__hero-mode-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" role="img"><path d="M4.5 7.5h9a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Zm11 3.2 4.2-2.4c.8-.5 1.8.1 1.8 1v5.4c0 .9-1 1.5-1.8 1l-4.2-2.4v-2.6Z" /></svg>
               </span>
-              <span><small>Modalidad online</small><strong>{isNovemberEdition ? 'Google Meet' : 'Por Zoom'}</strong></span>
+              <span>{isNovemberEdition ? <strong>Modalidad online</strong> : <><small>Modalidad online</small><strong>Por Zoom</strong></>}</span>
             </div>
           )}
           <a className="work-landing__hero-selected-cta" href="#programa" aria-label="Conocer el programa"><span>Conocer el programa</span></a>
