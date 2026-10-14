@@ -27,7 +27,7 @@
 }
 .november-registration__section--data { background: #fffaf5; }
 .november-registration__section--experience { background: #f0f7f3; border-color: #c9ded2; }
-.november-registration__section--payment { background: var(--registration-peach); }
+.november-registration__section--payment { background: #fff; border-color: #dedede; }
 .november-registration__section .form-input { background: #fff; }
 @media (min-width: 640px) {
   .november-registration__section { padding-left: 20px; padding-right: 20px; }
