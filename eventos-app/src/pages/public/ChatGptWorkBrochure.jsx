@@ -196,14 +196,14 @@ export default function ChatGptWorkBrochure({ event = null }) {
     ].includes(question)).map(([question, answer]) => {
       if (isNovemberEdition && question === 'Nunca usé inteligencia artificial. ¿Puedo hacer el taller?') return [question, `${answer}\n\nPara aprovechar mejor el tiempo, te recomendamos tener ChatGPT para escritorio descargado e instalado antes de comenzar, tanto si usás una cuenta gratuita como paga. La descarga y la instalación no se harán durante el taller.`]
       if (isNovemberEdition && question === '¿Cómo será la parte práctica?') return [question, `${answer}\n\nEntre la segunda y la tercera jornada, podés seguir practicando en tu casa. Las dudas que aparezcan al trabajar por tu cuenta también las podés llevar a la tercera jornada de consultas, donde vamos a revisar cuestiones prácticas, avances y dificultades.`]
-      if (isNovemberEdition && question === '¿Necesito instalar algo antes?') return [question, 'Sí. Te recomendamos descargar e instalar ChatGPT para escritorio antes de la primera jornada, tanto si usás una cuenta gratuita como paga. La descarga y la instalación no se harán durante el taller, para aprovechar el tiempo de trabajo.\n\nPara realizar la práctica, recomendamos una computadora con conexión estable a internet. Podés seguir las jornadas desde cualquier dispositivo que permita acceder a Google Meet.']
+      if (isNovemberEdition && question === '¿Necesito instalar algo antes?') return [question, 'Sí. Te recomendamos descargar e instalar ChatGPT para escritorio antes de la primera jornada, tanto si usás una cuenta gratuita como paga. La descarga y la instalación no se harán durante el taller, para aprovechar el tiempo de trabajo.\n\nPara realizar la práctica, recomendamos una computadora con conexión estable a internet. Podés seguir las jornadas desde cualquier dispositivo que te permita conectarte al encuentro online.']
       if (isNovemberEdition && question === '¿Soy estudiante universitario? ¿Puedo participar?') return [question, 'Sí. Esta edición está abierta a estudiantes, profesionales y personas de otras áreas.\n\nLos estudiantes que estén cursando Ciencias Económicas en la Facultad de Ciencias Económicas de la Universidad Nacional de la Patagonia San Juan Bosco (UNPSJB) tienen un 50% de descuento sobre el arancel vigente al momento de la inscripción, presentando su certificado de alumno regular. El beneficio aplica a estudiantes de cualquiera de sus delegaciones.']
       if (isNovemberEdition && question === '¿Va a quedar grabado el evento?') return ['¿Quedan grabadas las sesiones?', 'Sí. Las sesiones quedan grabadas y podés verlas después, aunque no hayas podido participar en vivo.\n\nAl finalizar cada día, se enviará la grabación completa, sin edición ni cortes. Dentro de las 48 horas posteriores a cada jornada, se pondrá a disposición la versión editada, con los cortes y ajustes correspondientes.']
       if (question === '¿Necesito instalar algo antes?') return [question, 'Para el primer día no es necesario tener instalada la aplicación: la jornada será principalmente expositiva. Para aprovechar mejor el segundo día, recomendamos instalar ChatGPT para escritorio con anticipación y evitar perder tiempo en la instalación. Si tenés una cuenta gratuita, podés seguir la demostración del docente, trabajar junto con alguien que tenga ChatGPT Plus o participar con las restricciones propias de tu plan. También necesitás una computadora con conexión estable a internet y acceso a Zoom.']
       return [question, answer]
     }).filter(Boolean)
     : genericFaqItems
-  if (isNovemberEdition) faqItems.splice(1, 0, ['¿Necesito asistir presencialmente a alguna de las jornadas?', 'No. Las tres jornadas serán virtuales, por Google Meet. Vas a poder participar desde cualquier dispositivo con conexión a internet que permita acceder a Google Meet.'])
+  if (isNovemberEdition) faqItems.splice(1, 0, ['¿Necesito asistir presencialmente a alguna de las jornadas?', 'No. Las tres jornadas serán en modalidad online. Vas a poder participar desde cualquier dispositivo con conexión a internet que te permita conectarte al encuentro.'])
   if (isNovemberEdition) faqItems.push(
     ['¿Puedo cancelar mi inscripción y solicitar un reembolso?', 'Sí. Si avisás con al menos 72 horas de anticipación al inicio del taller, recibirás un reembolso del 100% del importe transferido. Si avisás dentro de las 72 horas previas, antes del día de inicio, el reintegro será del 50%. Las cancelaciones realizadas el mismo día de inicio del taller no tienen reintegro.'],
     ['¿Podés enviarme una factura?', 'Sí. Puedo emitirte una factura C. Al momento de inscribirte, enviame tus datos de facturación para que pueda emitirla y enviártela.'],
@@ -239,18 +239,18 @@ export default function ChatGptWorkBrochure({ event = null }) {
 
       {isEventEdition && (
         <section className={`work-landing__edition${isNovemberEdition ? ' work-landing__edition--november' : ''}`} aria-label="Datos de esta edición">
-          <p className="work-landing__eyebrow">{isNovemberEdition ? 'EDICIÓN ONLINE · GOOGLE MEET' : isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
+          <p className="work-landing__eyebrow">{isNovemberEdition ? 'MODALIDAD ONLINE' : isVirtualEdition ? 'EDICIÓN ONLINE · POR ZOOM' : 'EDICIÓN PRESENCIAL · COMODORO RIVADAVIA'}</p>
           <div className={`work-landing__edition-data${isNovemberEdition ? ' work-landing__edition-data--complete' : ''}`}>
             <div className="work-landing__edition-dates"><span>Fechas</span><strong>{editionDates.join(' · ')}</strong></div>
             <div className="work-landing__edition-time"><span>Horario</span><strong>{isNovemberEdition ? <>Jornadas 1 y 2: 14:00 a 17:00<br />Jornada 3: 14:00 a 15:00</> : formatTimeRange(event.start_time, event.duration_minutes)}</strong></div>
-            <div className="work-landing__edition-location"><span>{isNovemberEdition ? 'Modalidad' : 'Lugar'}</span><strong>{isVirtualEdition ? <>Online{isNovemberEdition && <><br />Google Meet</>}</> : (event.location || '—')}</strong></div>
+            <div className="work-landing__edition-location"><span>{isNovemberEdition ? 'Modalidad' : 'Lugar'}</span><strong>{isVirtualEdition ? 'Online' : (event.location || '—')}</strong></div>
             {event.organizer && <div className="work-landing__edition-organizer"><span>Organizador</span><span className="work-landing__edition-organizer-brand">{event.client_logo_url && <img src={event.client_logo_url} alt={`Logo de ${event.organizer}`} />}<strong>{event.organizer}</strong></span></div>}
             {isNovemberEdition && event.coordinator && <div className="work-landing__edition-facilitator"><span>Capacitador</span><strong>{event.coordinator}</strong></div>}
           </div>
           <p className="work-landing__edition-note">
             {hasCustomPricing
               ? 'Inscripción previa. Consultá las modalidades y aranceles en el formulario de inscripción.'
-              : (isVirtualEdition ? `Actividad online por ${isNovemberEdition ? 'Google Meet' : 'Zoom'}, con inscripción previa.` : 'Sin cargo para matriculados del CPCE Chubut, de todas sus delegaciones, con inscripción previa.')}
+              : (isVirtualEdition ? (isNovemberEdition ? 'Actividad en modalidad online, con inscripción previa.' : 'Actividad online por Zoom, con inscripción previa.') : 'Sin cargo para matriculados del CPCE Chubut, de todas sus delegaciones, con inscripción previa.')}
           </p>
         </section>
       )}
