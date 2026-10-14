@@ -10,7 +10,7 @@
 .previous-workshop__gallery-controls button:focus-visible, .previous-workshop__gallery:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; }
 .previous-workshop__gallery { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding-bottom: 14px; scrollbar-width: thin; scrollbar-color: var(--mint) var(--paper); }
 .previous-workshop__gallery figure { flex: 0 0 calc(50% - 12px); margin: 0; min-width: 0; background: var(--paper); scroll-snap-align: start; }
-.previous-workshop__gallery img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #101416; }
+.previous-workshop__gallery img, .previous-workshop__gallery video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #101416; }
 .previous-workshop__gallery figcaption { display: flex; align-items: center; min-height: 64px; padding: 14px 18px; color: var(--graphite); font-size: 13px; line-height: 1.5; border-bottom: 2px solid var(--mint); }
 .previous-workshop__feedback { margin-top: 58px; }
 .previous-workshop__feedback-heading h3 { margin: 14px 0 28px; color: var(--ink); font-family: var(--font-heading); font-size: clamp(26px, 3vw, 36px); line-height: 1.15; letter-spacing: -.035em; }
