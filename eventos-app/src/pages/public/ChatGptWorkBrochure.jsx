@@ -265,8 +265,6 @@ export default function ChatGptWorkBrochure({ event = null }) {
         </div>
       </section>}
 
-      {isNovemberEdition && <WorkshopPreviousEdition />}
-
       {!isNovemberEdition && <section className="work-landing__section work-landing__proposal">
         <div className="work-landing__proposal-intro">
           <p className="work-landing__eyebrow">LA PROPUESTA</p>
@@ -346,6 +344,8 @@ export default function ChatGptWorkBrochure({ event = null }) {
           <div className="work-landing__blocks work-landing__open-consultation"><ProgramBlock block={novemberConsultationBlock} /></div>
         </section>
       </>}
+
+      {isNovemberEdition && <WorkshopPreviousEdition />}
 
       {isNovemberEdition && (
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
