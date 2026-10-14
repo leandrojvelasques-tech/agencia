@@ -336,7 +336,7 @@ serve(async (req) => {
     const { data: template, error: tempErr } = await supabase
       .from('email_templates')
       .select('*')
-      .eq('id', emailType)
+      .eq('id', emailType === 'welcome' ? (event.welcome_email_template_id || 'welcome') : emailType)
       .single();
 
     if (tempErr || !template) {
@@ -350,6 +350,11 @@ serve(async (req) => {
     let dateStr = event.event_date || '';
     if (reg.selected_date) {
       dateStr = reg.selected_date;
+    } else if (Array.isArray(event.offered_dates) && event.offered_dates.length > 1) {
+      dateStr = event.offered_dates
+        .filter(Boolean)
+        .map((date: string) => new Date(date + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }))
+        .join(' y ');
     }
     const modalityStr = reg.attendance_mode === 'virtual' ? 'Virtual (Online)' : 'Presencial';
     const domain = 'https://www.leandrovelasques.com.ar';
@@ -482,7 +487,9 @@ serve(async (req) => {
     // 5. Setup replyTo arrays
     const coordinators = event.notification_recipients || [];
     const coordinatorEmails = coordinators.map((c: any) => c.email).filter(Boolean);
-    const eventReplyTo = coordinatorEmails.length > 0 ? coordinatorEmails : ['leandrojvelasques@gmail.com'];
+    const eventReplyTo = event.slug === 'chatgpt-work-de-0-a-100-noviembre-2026'
+      ? ['info@leandrovelasques.com.ar']
+      : (coordinatorEmails.length > 0 ? coordinatorEmails : ['leandrojvelasques@gmail.com']);
 
     // 6. Send email to participant (or test email)
     let participantResult = { status: 'skipped', errorMessage: null as string | null };
