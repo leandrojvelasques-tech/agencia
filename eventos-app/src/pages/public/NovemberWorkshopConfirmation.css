@@ -1,0 +1,43 @@
+.november-confirmation {
+  min-height: 100vh;
+  background: #142c35;
+  background-image: radial-gradient(#82d5dc16 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #f3f8f7;
+  font-family: Arial, sans-serif;
+}
+.november-confirmation__content { max-width: 850px; margin: 0 auto; padding: 48px 30px; }
+.november-confirmation__eyebrow { margin: 0; color: #82d5dc; letter-spacing: 2px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.november-confirmation__status { display: inline-flex; gap: 10px; align-items: center; border: 1px solid #42616b; border-radius: 30px; padding: 9px 15px; font-size: 12px; color: #d5e8e9; margin: 22px 0; }
+.november-confirmation__status span { color: #82d5dc; font-size: 18px; }
+.november-confirmation h1 { font-size: clamp(34px, 6vw, 54px); font-weight: 700; letter-spacing: -1.8px; line-height: 1.08; margin: 0 0 20px; }
+.november-confirmation__intro { color: #c7d8de; max-width: 620px; font-size: 17px; line-height: 1.65; margin: 0; }
+.november-confirmation__event { background: #f0f5f4; border-radius: 12px; color: #19323d; margin-top: 32px; padding: 28px; }
+.november-confirmation__event .november-confirmation__eyebrow { color: #287e8b; }
+.november-confirmation h2 { margin: 10px 0; font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+.november-confirmation__sessions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 24px 0 18px; }
+.november-confirmation__session { border-top: 1px solid #bfd6d8; padding-top: 18px; }
+.november-confirmation__session strong { font-size: 25px; display: block; margin: 9px 0; }
+.november-confirmation__session span { color: #287e8b; font-weight: 700; letter-spacing: 1px; font-size: 11px; text-transform: uppercase; }
+.november-confirmation__session p { font-size: 14px; margin: 0; }
+.november-confirmation__details { color: #526b76; font-size: 13px; line-height: 1.7; margin: 0; }
+.november-confirmation__next { border-left: 3px solid #82d5dc; background: #24424d; padding: 23px 26px; margin: 22px 0 26px; border-radius: 0 8px 8px 0; }
+.november-confirmation__next h3 { font-size: 16px; color: #82d5dc; margin: 0; font-weight: 700; }
+.november-confirmation__next p { font-size: 14px; color: #d7e6e9; line-height: 1.65; margin: 9px 0 0; }
+.november-confirmation__next .november-confirmation__note { font-size: 12px; color: #b9cfd5; }
+.november-confirmation__actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.november-confirmation__button { background: #82d5dc; color: #19323d; padding: 15px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 700; }
+.november-confirmation__button:hover { background: #a6e2e7; }
+.november-confirmation__link { color: #b9d0d5; text-decoration: none; font-size: 13px; }
+.november-confirmation__link:hover { color: #fff; }
+.november-confirmation a:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.november-confirmation footer { border-top: 1px solid #36515c; margin-top: 34px; padding-top: 20px; color: #b9cfd5; font-size: 12px; }
+@media (max-width: 530px) {
+  .november-confirmation__content { padding: 30px 20px; }
+  .november-confirmation__event { padding: 24px 20px; }
+  .november-confirmation__sessions { grid-template-columns: 1fr; gap: 16px; }
+  .november-confirmation__session { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+  .november-confirmation__session span { grid-column: 1 / -1; }
+  .november-confirmation__session strong { font-size: 22px; }
+  .november-confirmation__intro { font-size: 16px; }
+}

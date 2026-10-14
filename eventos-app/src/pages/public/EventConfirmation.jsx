@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import NovemberWorkshopConfirmation from './NovemberWorkshopConfirmation'
+import { NOVEMBER_WORKSHOP_SLUG } from '../../lib/novemberRegistration'
 
 const formatRegistrationDates = (selectedDate, event) => {
   const dates = selectedDate
@@ -31,6 +33,10 @@ export default function EventConfirmation() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center p-4">Cargando...</div>
 
+  if (slug === NOVEMBER_WORKSHOP_SLUG && event) {
+    return <NovemberWorkshopConfirmation event={event} />
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-refined-gray)] flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center animate-fade-in">
@@ -39,11 +45,10 @@ export default function EventConfirmation() {
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight mb-3 text-[var(--color-deep-green)]">
-          {slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? 'Inscripción recibida' : '¡Inscripción confirmada!'}
+          ¡Inscripción confirmada!
         </h1>
         <p className="text-base text-[var(--color-dark-gray)]/60 font-medium mb-8">
           Tu inscripción ha sido registrada correctamente.
-          {slug === 'chatgpt-work-de-0-a-100-noviembre-2026' && ' Revisaremos los comprobantes de pago y, si lo solicitaste, el certificado para el descuento estudiantil.'}
         </p>
 
         {event && (
@@ -58,7 +63,7 @@ export default function EventConfirmation() {
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span className="material-symbols-outlined text-lg text-[var(--color-deep-green)]/50">schedule</span>
-                <span className="font-medium">{slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? 'Jornadas 1 y 2: 14:00 a 17:00 · Jornada 3: 14:00 a 15:30' : `${event.start_time} hs · ${event.duration_minutes} minutos`}</span>
+                <span className="font-medium">{event.start_time} hs · {event.duration_minutes} minutos</span>
               </div>
               {event.organizer && (
                 <div className="flex items-center gap-3 text-sm">
