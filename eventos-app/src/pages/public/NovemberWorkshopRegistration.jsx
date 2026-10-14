@@ -127,7 +127,7 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
           <Field label="Teléfono"><input required type="tel" className="form-input mt-2" value={form.phone} onChange={e => update('phone', e.target.value)} autoComplete="tel" /></Field>
           <Field label="Provincia de residencia"><select required className="form-input mt-2" value={form.province} onChange={e => update('province', e.target.value)}>{ARGENTINA_PROVINCES.map(province => <option key={province}>{province}</option>)}</select></Field>
           <Field label="Ciudad de residencia" optional><input className="form-input mt-2" maxLength={150} placeholder="Ej: Comodoro Rivadavia" value={form.city} onChange={e => update('city', e.target.value)} autoComplete="address-level2" /></Field>
-          <Field label="Ocupación actual"><input required className="form-input mt-2" maxLength={200} placeholder="Contanos a qué te dedicás" value={form.occupation} onChange={e => update('occupation', e.target.value)} /></Field>
+          <Field label="Ocupación actual" optional><input className="form-input mt-2" maxLength={200} placeholder="Contanos a qué te dedicás" value={form.occupation} onChange={e => update('occupation', e.target.value)} /></Field>
         </fieldset>
         <fieldset disabled={busy} className="november-registration__section november-registration__section--experience space-y-5">
           <legend className="text-lg font-bold">Tu experiencia con IA (opcional)</legend>
