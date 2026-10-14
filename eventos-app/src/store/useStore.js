@@ -384,7 +384,7 @@ export const useStore = create((set, get) => ({
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
 
-    const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, ...pData } = participantData
+    const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, private_details = null, ...pData } = participantData
     const isNovemberWorkshop = event.slug === NOVEMBER_WORKSHOP_SLUG
     if (isNovemberWorkshop) {
       const tier = getApplicablePriceTier(event.prices)
@@ -396,6 +396,15 @@ export const useStore = create((set, get) => ({
       if (!ARGENTINA_PROVINCES.includes(answers.provincia) || !receipts.length || receipts.length > 2 || (answers.student_discount_requested && certificates.length !== 1)) return { success: false, error: 'Revisá la provincia y los archivos adjuntos.' }
       if (answers.documents.some(document => document.bucket !== REGISTRATION_DOCUMENT_BUCKET || !document.path?.startsWith(`${event.id}/`))) return { success: false, error: 'Los archivos no corresponden a este evento.' }
       if (answers.price_amount !== expectedAmount || answers.price_applied_date !== getArgentinaDateKey()) return { success: false, error: 'El arancel cambió. Actualizá la página y revisá el importe antes de confirmar.' }
+      const { data, error } = await supabase.functions.invoke('register-november-workshop', {
+        body: { participant: pData, answers, private_details },
+      })
+      if (error) {
+        let message = 'No se pudo completar la inscripción. Intentá nuevamente.'
+        try { message = (await error.context.json()).error || message } catch { /* No private data in logs. */ }
+        return { success: false, error: message }
+      }
+      return data || { success: false, error: 'No se pudo completar la inscripción.' }
     }
     // Multi-day registrations represent the complete event; do not persist a comma-separated value as one date.
     const registrationDate = Array.isArray(event.offered_dates) && event.offered_dates.length > 1 ? null : selected_date

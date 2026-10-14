@@ -9,3 +9,16 @@ export const ARGENTINA_PROVINCES = [
 export const AI_TOOLS = ['ChatGPT', 'Claude', 'Gemini', 'Microsoft Copilot', 'Grok', 'Perplexity', 'Meta AI', 'Otra', 'No uso ninguna']
 export const DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
 export const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024
+
+export function validateWorkshopPrivateDetails(details) {
+  if (!/^\d{7,8}$/.test(details?.dni || '')) return 'Ingresá tu DNI con 7 u 8 números, sin puntos.'
+  if (!details.invoice_requested) return ''
+  const cuit = details.invoice_cuit || ''
+  if (!/^\d{11}$/.test(cuit)) return 'Ingresá un CUIT de 11 números para la factura C.'
+  const weights = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
+  const sum = weights.reduce((total, weight, index) => total + Number(cuit[index]) * weight, 0)
+  const digit = (11 - (sum % 11)) % 11
+  if (digit === 10 || digit !== Number(cuit[10])) return 'Revisá el CUIT ingresado.'
+  if ((details.invoice_name || '').trim().length < 2) return 'Completá el nombre o razón social para la factura.'
+  return ''
+}

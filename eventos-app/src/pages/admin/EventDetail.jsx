@@ -370,6 +370,7 @@ export default function EventDetail() {
   const materialsUrl = `${window.location.origin}/evento/${eventAccessKey}/materiales`
   const ACTIONS = [
     { to: `/admin/eventos/${id}/participantes`, icon: 'group', label: 'Participantes', count: stats.totalRegistered },
+    ...(event.slug === 'chatgpt-work-de-0-a-100-noviembre-2026' ? [{ to: `/admin/eventos/${id}/facturacion`, icon: 'receipt_long', label: 'Datos y facturación', count: null }] : []),
     { to: `/admin/eventos/${id}/participantes?tab=survey`, icon: 'assignment', label: 'Encuestas de Inscripción', count: null },
     { to: `/admin/eventos/${id}/asistencia`, icon: 'fact_check', label: 'Asistencia', count: stats.present },
     { to: `/admin/eventos/${id}/minuta`, icon: 'description', label: 'Minuta', count: null },

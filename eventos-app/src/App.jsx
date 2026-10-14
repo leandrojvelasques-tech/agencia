@@ -15,6 +15,7 @@ import EventSatisfaction from './pages/admin/EventSatisfaction'
 import EventReport from './pages/admin/EventReport'
 import AgendaTemplatesDashboard from './pages/admin/AgendaTemplatesDashboard'
 import SettingsDashboard from './pages/admin/SettingsDashboard'
+import WorkshopBilling from './pages/admin/WorkshopBilling'
 
 // CRM Pages
 import CrmDashboard from './pages/admin/CrmDashboard'
@@ -93,6 +94,7 @@ export default function App() {
           <Route path="eventos/:id" element={<EventDetail />} />
           <Route path="eventos/:id/editar" element={<EventCreate />} />
           <Route path="eventos/:id/participantes" element={<EventParticipants />} />
+          <Route path="eventos/:id/facturacion" element={<WorkshopBilling />} />
           <Route path="eventos/:id/asistencia" element={<EventAttendance />} />
           <Route path="eventos/:id/minuta" element={<EventMinuta />} />
           <Route path="eventos/:id/satisfaccion" element={<EventSatisfaction />} />

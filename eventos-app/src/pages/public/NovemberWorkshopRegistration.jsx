@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useStore } from '../../store/useStore'
 import { formatArsPrice, formatPriceTierDates, getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../../lib/eventPricing'
-import { AI_TOOLS, ARGENTINA_PROVINCES, DOCUMENT_TYPES, MAX_DOCUMENT_SIZE, REGISTRATION_DOCUMENT_BUCKET } from '../../lib/novemberRegistration'
+import { AI_TOOLS, ARGENTINA_PROVINCES, DOCUMENT_TYPES, MAX_DOCUMENT_SIZE, REGISTRATION_DOCUMENT_BUCKET, validateWorkshopPrivateDetails } from '../../lib/novemberRegistration'
 import './novemberWorkshopRegistration.css'
 
 function Field({ label, children, optional = false }) {
@@ -25,7 +25,7 @@ function DocumentPicker({ label, onChange, multiple = false, disabled = false, b
 export default function NovemberWorkshopRegistration({ event, registrations }) {
   const navigate = useNavigate()
   const selfRegister = useStore(state => state.selfRegister)
-  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', province: 'Chubut', city: '', occupation: '', ai_tools: [], ai_other: '', paid_ai_subscription: '', student_discount: false })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', dni: '', province: 'Chubut', city: '', occupation: '', ai_tools: [], ai_other: '', paid_ai_subscription: '', student_discount: false, invoice_requested: false, invoice_cuit: '', invoice_name: '', invoice_notes: '', newsletter_opt_in: false })
   const [receipts, setReceipts] = useState([])
   const [certificate, setCertificate] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -83,6 +83,16 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
   }
   const submit = async eventForm => {
     eventForm.preventDefault(); setError('')
+    const privateDetails = {
+      dni: form.dni.trim(),
+      invoice_requested: form.invoice_requested,
+      invoice_cuit: form.invoice_requested ? form.invoice_cuit.replace(/\D/g, '') : null,
+      invoice_name: form.invoice_requested ? form.invoice_name.trim() : null,
+      invoice_notes: form.invoice_requested ? form.invoice_notes.trim() : null,
+      newsletter_opt_in: form.newsletter_opt_in,
+    }
+    const privateError = validateWorkshopPrivateDetails(privateDetails)
+    if (privateError) { setError(privateError); return }
     const today = getArgentinaDateKey()
     const tier = getApplicablePriceTier(event.prices, today)
     if (!available || !tier) { setError('La inscripción no está disponible para esta fecha.'); return }
@@ -96,6 +106,7 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
       if (form.student_discount) documents.push(await upload(certificate, 'student_certificate'))
       const result = await selfRegister(event.slug, {
         first_name: form.first_name.trim(), last_name: form.last_name.trim(), email: form.email.trim(), phone: form.phone.trim(), telegram: form.city.trim(), attendance_mode: 'virtual',
+        private_details: privateDetails,
         survey_responses: {
           registration_schema: 'workshop_november_2026', profesion: form.occupation.trim(), provincia: form.province, ciudad: form.city.trim(),
           herramientas_ia: form.ai_tools, otra_herramienta_ia: form.ai_tools.includes('Otra') ? form.ai_other.trim() : '', suscripcion_ia_paga: form.paid_ai_subscription,
@@ -123,6 +134,8 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
             <Field label="Nombre"><input required maxLength={100} className="form-input mt-2" value={form.first_name} onChange={e => update('first_name', e.target.value)} autoComplete="given-name" /></Field>
             <Field label="Apellido"><input required maxLength={100} className="form-input mt-2" value={form.last_name} onChange={e => update('last_name', e.target.value)} autoComplete="family-name" /></Field>
           </div>
+          <Field label="DNI"><input required inputMode="numeric" pattern="[0-9]{7,8}" maxLength={8} className="form-input mt-2" placeholder="Sin puntos ni espacios" value={form.dni} onChange={e => update('dni', e.target.value.replace(/\D/g, ''))} /></Field>
+          <p className="text-xs text-gray-600">Usaremos tu DNI para identificar tu inscripción.</p>
           <Field label="Email"><input required type="email" className="form-input mt-2" value={form.email} onChange={e => update('email', e.target.value)} autoComplete="email" /></Field>
           <Field label="Teléfono"><input required type="tel" className="form-input mt-2" value={form.phone} onChange={e => update('phone', e.target.value)} autoComplete="tel" /></Field>
           <Field label="Provincia de residencia"><select required className="form-input mt-2" value={form.province} onChange={e => update('province', e.target.value)}>{ARGENTINA_PROVINCES.map(province => <option key={province}>{province}</option>)}</select></Field>
@@ -134,6 +147,19 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
           <p className="text-sm text-gray-600">Estas dos preguntas nos ayudan a preparar las actividades. Podés dejarlas sin responder.</p>
           <fieldset><legend className="text-sm font-bold mb-3">¿Qué herramientas o aplicaciones de inteligencia artificial usás?</legend><div className="grid sm:grid-cols-2 gap-3">{AI_TOOLS.map(tool => <label key={tool} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.ai_tools.includes(tool)} onChange={() => toggleTool(tool)} />{tool}</label>)}</div>{form.ai_tools.includes('Otra') && <input aria-label="Otra herramienta de IA" className="form-input mt-3" maxLength={150} placeholder="¿Cuál?" value={form.ai_other} onChange={e => update('ai_other', e.target.value)} />}</fieldset>
           <Field label="¿Tenés alguna suscripción paga a una herramienta de IA?" optional><select className="form-input mt-2" value={form.paid_ai_subscription} onChange={e => update('paid_ai_subscription', e.target.value)}><option value="">Prefiero no responder</option><option>Sí</option><option>No, uso versiones gratuitas</option><option>No uso herramientas de IA</option></select></Field>
+        </fieldset>
+        <fieldset disabled={busy} className="november-registration__section space-y-5">
+          <legend className="text-lg font-bold">Facturación (opcional)</legend>
+          <label className="flex items-start gap-3 text-sm font-bold">
+            <input type="checkbox" className="mt-1" checked={form.invoice_requested} onChange={e => update('invoice_requested', e.target.checked)} />
+            Necesito factura C
+          </label>
+          {form.invoice_requested && <div className="space-y-5">
+            <p className="text-sm text-gray-600">Indicá a nombre de quién debemos emitir la factura. La enviaremos al email de tu inscripción.</p>
+            <Field label="CUIT para la factura"><input required inputMode="numeric" maxLength={13} className="form-input mt-2" placeholder="11 números, con o sin guiones" value={form.invoice_cuit} onChange={e => update('invoice_cuit', e.target.value.replace(/[^0-9-]/g, ''))} /></Field>
+            <Field label="Nombre completo o razón social"><input required maxLength={200} className="form-input mt-2" value={form.invoice_name} onChange={e => update('invoice_name', e.target.value)} /></Field>
+            <Field label="Datos adicionales para la factura" optional><textarea rows={3} maxLength={1000} className="form-input mt-2" placeholder="Domicilio fiscal, condición ante IVA u otra aclaración para emitir la factura." value={form.invoice_notes} onChange={e => update('invoice_notes', e.target.value)} /></Field>
+          </div>}
         </fieldset>
         <fieldset disabled={busy} className="november-registration__section november-registration__section--payment space-y-5">
           <legend className="text-lg font-bold">Arancel y comprobantes</legend>
@@ -153,6 +179,10 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
         {error && <p role="alert" className="text-sm text-red-700 bg-red-50 p-3 rounded-lg">{error}</p>}
         {availabilityMessage && <p id="registration-availability" role="status" className="text-sm font-semibold text-amber-900 bg-amber-50 border border-amber-200 p-4 rounded-xl">{availabilityMessage}</p>}
         {shownTier && <p className="text-sm font-bold text-[var(--color-deep-green)]">{currentTier ? 'Importe a transferir' : `Arancel desde el ${openingDateLabel}`}: {formatArsPrice(amount)}</p>}
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" disabled={busy} className="mt-1" checked={form.newsletter_opt_in} onChange={e => update('newsletter_opt_in', e.target.checked)} />
+          <span>Deseo recibir novedades sobre próximos talleres y workshops.<span className="block text-xs text-gray-600 mt-1">Usaremos tu email para avisarte de próximas actividades. Podés pedir la baja respondiendo al correo.</span></span>
+        </label>
         <p className="text-xs text-gray-600">Al confirmar, enviaremos tus comprobantes para revisión. El envío de la inscripción no acredita por sí solo el pago ni el beneficio estudiantil.</p>
         <button disabled={busy || !available || !currentTier} aria-describedby={availabilityMessage ? 'registration-availability' : undefined} className="btn-primary w-full justify-center disabled:opacity-50" type="submit">{busy ? 'Adjuntando archivos y registrando…' : !available ? 'Inscripción no disponible' : !currentTier && upcomingTier ? `Inscripción desde el ${openingDateLabel}` : 'Confirmar inscripción'}</button>
       </form>
