@@ -28,6 +28,8 @@
 .november-registration__section--data { background: #fffaf5; }
 .november-registration__section--experience { background: #f0f7f3; border-color: #c9ded2; }
 .november-registration__section--payment { background: #fff; border-color: #dedede; }
+.november-registration__section--billing { background: #f5f9fa; border-color: #cbdfe2; }
+.november-registration__section--billing .form-input { border: 1px solid #d4dcde; border-radius: 10px; }
 .november-registration__section .form-input { background: #fff; }
 @media (min-width: 640px) {
   .november-registration__section { padding-left: 20px; padding-right: 20px; }

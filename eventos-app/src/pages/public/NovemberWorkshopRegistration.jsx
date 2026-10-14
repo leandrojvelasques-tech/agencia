@@ -148,7 +148,7 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
           <fieldset><legend className="text-sm font-bold mb-3">¿Qué herramientas o aplicaciones de inteligencia artificial usás?</legend><div className="grid sm:grid-cols-2 gap-3">{AI_TOOLS.map(tool => <label key={tool} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.ai_tools.includes(tool)} onChange={() => toggleTool(tool)} />{tool}</label>)}</div>{form.ai_tools.includes('Otra') && <input aria-label="Otra herramienta de IA" className="form-input mt-3" maxLength={150} placeholder="¿Cuál?" value={form.ai_other} onChange={e => update('ai_other', e.target.value)} />}</fieldset>
           <Field label="¿Tenés alguna suscripción paga a una herramienta de IA?" optional><select className="form-input mt-2" value={form.paid_ai_subscription} onChange={e => update('paid_ai_subscription', e.target.value)}><option value="">Prefiero no responder</option><option>Sí</option><option>No, uso versiones gratuitas</option><option>No uso herramientas de IA</option></select></Field>
         </fieldset>
-        <fieldset disabled={busy} className="november-registration__section space-y-5">
+        <fieldset disabled={busy} className="november-registration__section november-registration__section--billing space-y-5">
           <legend className="text-lg font-bold">Facturación (opcional)</legend>
           <label className="flex items-start gap-3 text-sm font-bold">
             <input type="checkbox" className="mt-1" checked={form.invoice_requested} onChange={e => update('invoice_requested', e.target.checked)} />
