@@ -35,6 +35,18 @@ export const formatArsPrice = (price) => new Intl.NumberFormat('es-AR', {
   maximumFractionDigits: 0,
 }).format(getPriceAmount(price))
 
+export const formatPriceTierDates = (tier) => {
+  if (!tier?.start_date) return ''
+  const label = (value) => new Intl.DateTimeFormat('es-AR', {
+    day: 'numeric', month: 'long', timeZone: 'UTC',
+  }).format(new Date(`${value}T12:00:00Z`))
+  if (!tier.end_date) return `Desde el ${label(tier.start_date)}`
+  if (tier.start_date.slice(0, 7) === tier.end_date.slice(0, 7)) {
+    return `${Number(tier.start_date.slice(8))} al ${label(tier.end_date)}`
+  }
+  return `${label(tier.start_date)} al ${label(tier.end_date)}`
+}
+
 export const validateDatePriceSchedule = (prices) => {
   if (Array.isArray(prices) && prices.some(price => price?.pricing_mode === 'date') && !isDateBasedPriceSchedule(prices)) {
     return 'Usá tramos por fecha o tarifas por categoría en un mismo evento, no ambos formatos mezclados.'

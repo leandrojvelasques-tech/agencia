@@ -4,7 +4,7 @@ import WorkshopCaseMap from './WorkshopCaseMap'
 import WorkshopBlockBadge from './WorkshopBlockBadge'
 import WorkshopPreviousEdition from './WorkshopPreviousEdition'
 import { novemberCaseBlocks, novemberConsultationBlock } from '../../lib/workshopNovemberProgram'
-import { formatArsPrice } from '../../lib/eventPricing'
+import { formatArsPrice, formatPriceTierDates } from '../../lib/eventPricing'
 
 const workshopAssetBase = `${import.meta.env.BASE_URL}workshop-chatgpt-work/`
 const heroImage = `${workshopAssetBase}hero-option-1-selected.png`
@@ -351,7 +351,7 @@ export default function ChatGptWorkBrochure({ event = null }) {
         <section className="work-landing__section work-landing__november-pricing" aria-label="Aranceles de noviembre">
           {event.official_banner_url && <figure className="work-landing__official-banner"><img src={event.official_banner_url} alt={event.title} loading="lazy" style={{ display: 'block', maxWidth: '540px', width: '100%', height: 'auto', margin: '0 auto 40px' }} /></figure>}
           <p className="work-landing__eyebrow">INSCRIPCIÓN A LAS TRES JORNADAS</p><h2>Arancel según la fecha de inscripción.</h2>
-          <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{tier.start_date === '2026-10-15' ? '15 al 31 de octubre' : tier.start_date === '2026-11-01' ? '1 al 8 de noviembre' : 'Desde el 9 de noviembre'}</p></article>)}</div>
+          <div className="work-landing__november-tiers">{event.prices.map(tier => <article key={tier.start_date}><span>{tier.concept}</span><strong>{formatArsPrice(tier.price)}</strong><p>{formatPriceTierDates(tier)}</p></article>)}</div>
         </section>
       )}
 

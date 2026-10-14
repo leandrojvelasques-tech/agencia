@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useStore } from '../../store/useStore'
-import { formatArsPrice, getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../../lib/eventPricing'
+import { formatArsPrice, formatPriceTierDates, getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../../lib/eventPricing'
 import { AI_TOOLS, ARGENTINA_PROVINCES, DOCUMENT_TYPES, MAX_DOCUMENT_SIZE, REGISTRATION_DOCUMENT_BUCKET } from '../../lib/novemberRegistration'
 import './novemberWorkshopRegistration.css'
 
@@ -139,8 +139,8 @@ export default function NovemberWorkshopRegistration({ event, registrations }) {
           <legend className="text-lg font-bold">Arancel y comprobantes</legend>
           <div className="rounded-xl bg-[var(--color-deep-green)]/5 border border-[var(--color-deep-green)]/20 p-5" aria-live="polite">
             <p className="font-semibold">{currentTier ? 'Importe a transferir según la fecha de inscripción' : 'Importe al abrir la inscripción'}</p>
-            {shownTier && <><p className="text-3xl font-extrabold text-[var(--color-deep-green)] my-2">{formatArsPrice(amount)}</p><p className="text-sm">{shownTier.concept}{form.student_discount && ' · con 50% de descuento'}</p>{!currentTier && <p className="text-sm mt-2">La inscripción abre el 15 de octubre de 2026.</p>}</>}
-            <ul className="text-sm space-y-1 mt-4">{event.prices.map(tier => <li key={tier.start_date}>{tier.start_date === '2026-10-15' ? '15–31 de octubre' : tier.start_date === '2026-11-01' ? '1–8 de noviembre' : 'Desde el 9 de noviembre'}: {formatArsPrice(getPriceAmount(tier.price) * (form.student_discount ? .5 : 1))}</li>)}</ul>
+            {shownTier && <><p className="text-3xl font-extrabold text-[var(--color-deep-green)] my-2">{formatArsPrice(amount)}</p><p className="text-sm">{shownTier.concept}{form.student_discount && ' · con 50% de descuento'}</p>{!currentTier && <p className="text-sm mt-2">La inscripción abre el {openingDateLabel} de 2026.</p>}</>}
+            <ul className="text-sm space-y-1 mt-4">{event.prices.map(tier => <li key={tier.start_date}>{formatPriceTierDates(tier)}: {formatArsPrice(getPriceAmount(tier.price) * (form.student_discount ? .5 : 1))}</li>)}</ul>
             {form.student_discount && <p className="text-sm mt-3">El beneficio requiere certificado de alumno regular y queda sujeto a su revisión.</p>}
           </div>
           {event.payment_methods && <div><h3 className="font-bold text-sm mb-2">Datos para la transferencia</h3><p className="text-sm whitespace-pre-line rounded-xl bg-gray-50 p-4">{event.payment_methods}</p></div>}
