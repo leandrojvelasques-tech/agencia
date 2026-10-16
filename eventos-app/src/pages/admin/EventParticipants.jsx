@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
 import { supabase } from '../../lib/supabase'
+import ParticipantExport from '../../components/ParticipantExport'
 import NovemberRegistrationDetails from '../../components/NovemberRegistrationDetails'
 import { NOVEMBER_WORKSHOP_SLUG } from '../../lib/novemberRegistration'
 
@@ -423,7 +424,9 @@ export default function EventParticipants() {
             <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">{event.title} · {registrations.length} inscriptos</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+          <ParticipantExport event={event} registrations={registrations} />
+          <ParticipantExport event={event} registrations={registrations} onlyPresent />
           {activeTab === 'survey' && surveyQuestions.length > 0 && (
             <button onClick={exportToCSV} className="btn-secondary">
               <span className="material-symbols-outlined text-lg">download</span>

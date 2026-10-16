@@ -5,6 +5,7 @@ import { useStore } from '../../store/useStore'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DonutChart, { CHART_COLORS } from '../../components/DonutChart'
+import ParticipantExport from '../../components/ParticipantExport'
 
 const getCarrera = (responses) => {
   if (!responses) return '—';
@@ -386,12 +387,16 @@ export default function EventParticipantsPublic() {
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight mb-1">{event.title}</h1>
             <p className="text-sm text-[var(--color-dark-gray)]/60 font-medium">Listado oficial de inscripciones para el Consejo de Ciencias Económicas</p>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+          <ParticipantExport event={event} registrations={participants} token={token} />
+          <ParticipantExport event={event} registrations={participants} token={token} onlyPresent />
           {activeTab === 'survey' && surveyQuestions.length > 0 && (
             <button onClick={exportToCSV} className="btn-secondary self-end md:self-auto">
               <span className="material-symbols-outlined text-lg">download</span>
               <span>Exportar CSV</span>
             </button>
           )}
+          </div>
         </div>
 
         {/* Quick Stats */}

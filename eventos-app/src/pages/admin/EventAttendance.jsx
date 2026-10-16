@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
+import ParticipantExport from '../../components/ParticipantExport'
 
 export default function EventAttendance() {
   const { id } = useParams()
@@ -72,6 +73,7 @@ export default function EventAttendance() {
 
       {/* Quick actions */}
       <div className="card p-4 mb-6 flex flex-wrap items-center gap-3">
+        <ParticipantExport event={event} registrations={registrations} onlyPresent />
         <button onClick={handleMarkAll} className="btn-ghost text-xs !text-[var(--color-deep-green)]">
           <span className="material-symbols-outlined text-base">done_all</span>
           Marcar todos presentes
