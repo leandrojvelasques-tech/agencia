@@ -104,3 +104,58 @@
   .marketing-page .marketing-back { max-width:none; margin-left:auto; font-size:12px; }
 }
 .marketing-page .case-process-card:nth-child(n) .case-step-visual { color:var(--green); background:#edf4ef; }
+
+/* Photographic process cards. Keep the real calendar uncropped. */
+.marketing-page .case-timeline .case-process-card {
+  grid-template-rows:auto 1fr;
+  padding:0;
+  gap:0;
+  overflow:hidden;
+}
+.marketing-page .case-process-card .case-step {
+  top:12px;
+  left:12px;
+  z-index:2;
+  padding:5px 9px;
+}
+.marketing-page .case-step-photo {
+  display:block;
+  position:relative;
+  width:100%;
+  aspect-ratio:3/2;
+  margin:0;
+  overflow:hidden;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.marketing-page .case-step-photo img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.marketing-page .case-step-calendar img {
+  object-fit:contain;
+  padding:10px 6px;
+}
+.marketing-page .marketing-calendar-zoom {
+  position:absolute;
+  right:8px;
+  bottom:7px;
+  padding:2px 7px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--green);
+  font-size:10px;
+  font-weight:600;
+}
+.marketing-page .case-step-calendar:hover .marketing-calendar-zoom { text-decoration:underline; }
+.marketing-page .case-step-calendar:focus-visible { outline-offset:-4px; }
+.marketing-page .marketing-step-copy { padding:22px; }
+.marketing-page .case-timeline .marketing-step-copy h3 { margin-bottom:14px; }
+.marketing-page .marketing-process-note { margin-top:20px; color:var(--graphite); font-size:11px; line-height:1.6; }
+@media (max-width:620px) {
+  .marketing-page .marketing-step-copy { padding:22px; }
+  .marketing-page .case-step-photo { aspect-ratio:3/2; }
+}
