@@ -159,3 +159,22 @@
   .marketing-page .marketing-step-copy { padding:22px; }
   .marketing-page .case-step-photo { aspect-ratio:3/2; }
 }
+
+/* The full team: two leads, then photography, coordination and design. */
+.marketing-page .marketing-team-expanded { grid-template-columns:repeat(6,minmax(0,1fr)); }
+.marketing-page .marketing-team-expanded .case-team-card:nth-child(n) { grid-column:span 2; grid-template-columns:1fr; }
+.marketing-page .marketing-team-expanded .case-team-card:nth-child(-n+2) { grid-column:span 3; grid-template-columns:minmax(150px,.85fr) 1fr; }
+.marketing-page .marketing-team-expanded .case-team-card:nth-child(n+3) figure { height:280px; min-height:0; aspect-ratio:auto; }
+@media (max-width:1050px) {
+  .marketing-page .marketing-team-expanded .case-team-card:nth-child(-n+2) { grid-template-columns:1fr; }
+}
+@media (max-width:860px) {
+  .marketing-page .marketing-team-expanded { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .marketing-page .marketing-team-expanded .case-team-card:nth-child(n) { grid-column:auto; grid-template-columns:1fr; }
+  .marketing-page .marketing-team-expanded .case-team-card:last-child { grid-column:1/-1; width:calc(50% - 12px); justify-self:center; }
+}
+@media (max-width:620px) {
+  .marketing-page .marketing-team-expanded { grid-template-columns:1fr; }
+  .marketing-page .marketing-team-expanded .case-team-card:last-child { grid-column:auto; width:100%; }
+  .marketing-page .marketing-team-expanded .case-team-card:nth-child(n+3) figure { height:350px; }
+}
