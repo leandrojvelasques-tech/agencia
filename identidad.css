@@ -36,6 +36,7 @@
 .contact .button { background: var(--copper-ink); border-color: var(--copper); }
 .contact .button:hover { background: var(--deep); }
 footer.wrap { border-top: 3px solid var(--copper); }
+.implementation.projects-only .implementation-cases { margin-top: 0; padding-top: 0; border-top: 0; }
 
 /* Formación: cobre en los gestos, grafito en los apoyos y blanco en la lectura. */
 .training-copy > .eyebrow, .training-gallery-head .eyebrow,
