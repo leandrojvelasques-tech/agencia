@@ -57,3 +57,15 @@
 .marketing-case-link-copy .implementation-case-cta:hover,.marketing-case-link-copy .implementation-case-cta:focus-visible{background:#99563f;box-shadow:0 12px 22px #b56e5238;transform:translateY(-1px)}
 @media (max-width:620px){.marketing-case-link{max-width:none;grid-template-columns:1fr;margin-top:34px}.marketing-case-link-copy{padding:22px}.marketing-case-link-copy .implementation-case-cta{margin-top:19px;padding:10px 13px}}
 @media (prefers-reduced-motion:reduce){.marketing-case-link-copy .implementation-case-cta{transition:none}.marketing-case-link-copy .implementation-case-cta:hover,.marketing-case-link-copy .implementation-case-cta:focus-visible{transform:none}}
+
+/* Current in-company course: preserve the complete virtual-meeting photo. */
+.news-card--incompany{grid-column:1/-1;display:grid;grid-template-columns:1.3fr 1fr;background:#285a47;border-color:#285a47;color:#fff}
+.news-card--incompany .news-image--incompany{aspect-ratio:auto;min-height:220px;background:#18241e}
+.news-card--incompany .news-image--incompany img{display:block;object-fit:contain}
+.news-card--incompany .news-body{padding:28px}
+.news-card--incompany .news-status{position:static;align-self:flex-start;margin-bottom:18px;background:#fff;color:#285a47;box-shadow:none}
+.news-card--incompany .news-kicker{color:#a8d5c1}
+.news-card--incompany .news-body h3{font-size:clamp(25px,2.5vw,34px)}
+.news-card--incompany .news-body>p:not(.news-kicker){color:#fff;margin-bottom:18px}
+.news-card--incompany .news-meta{color:#fff;border-color:#ffffff40}
+@media(max-width:760px){.news-card--incompany{grid-template-columns:1fr}.news-card--incompany .news-image--incompany{aspect-ratio:25/9;min-height:0}.news-card--incompany .news-body{padding:24px}}
