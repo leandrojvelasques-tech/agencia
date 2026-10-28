@@ -1,0 +1,79 @@
+/* Paleta ampliada oficial. Aplicación compartida al inicio y a Formación. */
+:root {
+  --green: #285A47;
+  --mint: #A8D5C1;
+  --fog: #EDEDED;
+  --graphite: #4F4C4D;
+  --white: #FFFFFF;
+  --copper: #B86F4D;
+  --copper-ink: #8B543C;
+  --deep: #25302C;
+  --clay: var(--copper);
+  --ink: var(--deep);
+}
+
+/* El logo conserva su archivo y sus colores. */
+.site-header { border-bottom-color: var(--fog); }
+.hero.wrap { background: var(--graphite); border-left: 5px solid var(--copper); }
+.hero.wrap::before { border-color: #B86F4D55; box-shadow: 0 0 0 62px #B86F4D0B, 0 0 0 124px #B86F4D08; }
+.hero h1 em { text-decoration: underline; text-decoration-color: var(--copper); text-decoration-thickness: 2px; text-underline-offset: .15em; }
+.hero-photo figcaption { border-left-color: var(--copper); }
+.hero-signature { border-left-color: var(--copper); }
+.novedades { background: var(--fog); }
+.news-intro .eyebrow, .services-intro .eyebrow, .method-intro .eyebrow { color: var(--copper-ink); }
+.service-strip .service-label { color: var(--copper-ink); }
+.service-strip > a:nth-child(2) { background: var(--fog); border-color: #D8D6D6; }
+.service-strip > a:nth-child(3) { background: #FFFFFF; border-top: 3px solid var(--copper); }
+.implementation { background: var(--fog); }
+.implementation-case-cta, .marketing-case-link-copy .implementation-case-cta { background: var(--copper-ink); color: var(--white); }
+.implementation-case-cta:hover, .marketing-case-link-copy .implementation-case-cta:hover { background: var(--graphite); }
+.implementation-case-cta b, .marketing-case-link-copy .implementation-case-cta b { color: var(--copper-ink); }
+.method li { border-top: 2px solid var(--copper); }
+.method li > span { color: var(--copper-ink); }
+.contact { background: var(--graphite); color: var(--white); }
+.contact .eyebrow, .contact h2 em { color: var(--mint); }
+.contact p:not(.eyebrow), .contact .contact-note { color: var(--white); }
+.contact .button { background: var(--copper-ink); border-color: var(--copper); }
+.contact .button:hover { background: var(--deep); }
+footer.wrap { border-top: 3px solid var(--copper); }
+
+/* Formación: cobre en los gestos, grafito en los apoyos y blanco en la lectura. */
+.training-copy > .eyebrow, .training-gallery-head .eyebrow,
+.training-page-hero .eyebrow, .training-modalities .eyebrow,
+.training-topics .eyebrow, .training-back { color: var(--copper-ink); }
+.training-copy h2 em { text-decoration: underline; text-decoration-color: var(--copper); text-decoration-thickness: 2px; text-underline-offset: .15em; }
+.training-copy > .training-key { border-left-color: var(--copper); }
+.training-portrait figcaption { background: var(--graphite); border-top: 3px solid var(--copper); }
+.training-portrait figcaption span { color: var(--white); }
+.training-gallery { padding: 30px; background: var(--fog); }
+.training-controls button { color: var(--copper-ink); border-color: var(--copper-ink); }
+.training-controls button:hover:not(:disabled) { background: var(--copper-ink); color: var(--white); }
+.training-track { scrollbar-color: var(--copper-ink) var(--fog); }
+.training-slide figcaption span { color: var(--graphite); }
+.training-next { border-top: 3px solid var(--copper); padding: 28px 30px; background: var(--graphite); }
+.training-next > p { color: var(--white); }
+.training-next .button { background: var(--copper-ink); border-color: var(--copper); }
+.training-next .button:hover { background: var(--deep); }
+.training-page h1 em { color: var(--copper-ink); }
+.training-modalities { background: var(--fog); }
+.training-format, .training-format .training-fit { border-color: #CFCCCC; }
+.training-format li::marker { color: var(--copper-ink); }
+.training-topic-grid article { border-top-color: var(--copper); }
+.training-approach { background: var(--graphite); }
+.training-approach li { border-bottom-color: #FFFFFF55; }
+.training-contact { background: var(--deep); color: var(--white); border-top: 4px solid var(--copper); }
+.training-contact .eyebrow, .training-contact h2 em { color: var(--mint); }
+.training-contact p:not(.eyebrow) { color: var(--white); }
+.training-contact .button { background: var(--copper-ink); border-color: var(--copper); }
+.training-contact .button:hover { background: var(--graphite); }
+.training-next :focus-visible, .training-approach :focus-visible,
+.training-contact :focus-visible, .contact :focus-visible, .hero :focus-visible { outline-color: var(--mint); }
+
+@media (max-width: 760px) {
+  .training-gallery { padding: 24px 18px; }
+  .training-gallery-head { gap: 12px; }
+  .training-gallery-head h3 { font-size: 22px; }
+  .training-gallery-head .eyebrow { max-width: 180px; }
+  .training-next { padding: 24px 22px; }
+  .training-track { grid-auto-columns: 88%; }
+}
