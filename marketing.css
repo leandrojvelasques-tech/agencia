@@ -178,3 +178,72 @@
   .marketing-page .marketing-team-expanded .case-team-card:last-child { grid-column:auto; width:100%; }
   .marketing-page .marketing-team-expanded .case-team-card:nth-child(n+3) figure { height:350px; }
 }
+
+/* Client development cards and the shared copper accents. */
+:root { --copper:#B86F4D; --copper-ink:#8B543C; }
+.development-client-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+.development-client-card { display:flex; flex-direction:column; overflow:hidden; min-width:0; background:#fff; border:1px solid #dce1dd; border-radius:8px; }
+.development-client-card figure { margin:0; background:#ededed; border-bottom:1px solid #dce1dd; }
+.development-client-card figure img { width:100%; aspect-ratio:2/1; object-fit:cover; object-position:left top; background:#fff; }
+.development-client-copy { display:flex; flex-direction:column; flex:1; padding:25px 22px; }
+.development-client-copy h3 { min-height:2.4em; margin-bottom:12px; font-size:27px; line-height:1.2; }
+.development-client-description { margin:0 0 25px; font-size:14px; line-height:1.7; color:var(--graphite); }
+.development-client-actions { display:flex; flex-direction:column; align-items:flex-start; gap:18px; margin-top:auto; }
+.development-client-actions .button { padding:12px 16px; font-size:12px; width:100%; gap:10px; }
+.development-client-actions .text-link { color:var(--copper-ink); }
+.marketing-intro { border-top:6px solid var(--copper); }
+.marketing-intro-copy .eyebrow::before { content:""; display:inline-block; width:32px; height:3px; margin-right:12px; vertical-align:middle; background:var(--copper); }
+.marketing-intro-copy h2 em { text-decoration:underline; text-decoration-color:var(--copper); text-decoration-thickness:2px; text-underline-offset:.18em; }
+.marketing-intro .marketing-content-board { border-top:4px solid var(--copper); }
+.marketing-intro-action--center { flex-direction:column; text-align:center; gap:16px; padding-top:34px; border-top-color:#B86F4D; }
+.marketing-intro-action--center .marketing-main-cta { margin:0; padding:19px 32px; background:var(--copper-ink); border:1px solid var(--copper); color:#fff; font-size:16px; min-width:280px; justify-content:center; }
+.marketing-intro-action--center .marketing-main-cta:hover { background:#73452f; }
+.marketing-page .marketing-service-hero { border-top:5px solid var(--copper); }
+.marketing-page .eyebrow { color:var(--copper-ink); }
+.marketing-page .marketing-section-nav { border-bottom:3px solid var(--copper); }
+.marketing-page .marketing-hero-copy h1 em { text-decoration:underline; text-decoration-color:var(--copper); text-decoration-thickness:2px; text-underline-offset:.14em; }
+.marketing-page .marketing-content-board { border-top:4px solid var(--copper); }
+.marketing-productions { background:#ededed; }
+.production-client-nav { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px; }
+.production-client-nav a { padding:10px 17px; border:1px solid var(--copper); border-radius:4px; color:var(--copper-ink); font-size:13px; font-weight:600; background:#fff; }
+.production-client-nav a:hover { background:var(--copper-ink); color:#fff; }
+.production-client { padding:40px; margin-top:32px; background:#fff; border-top:4px solid var(--copper); border-radius:6px; scroll-margin-top:120px; }
+.production-client header { margin-bottom:28px; }
+.production-client header .eyebrow { margin-bottom:12px; }
+.production-client h3 { font-size:32px; margin-bottom:12px; }
+.production-client header>p:last-child { color:var(--graphite); font-size:14px; }
+.production-video-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; max-width:780px; }
+.production-video { margin:0; min-width:0; }
+.production-video video { display:block; width:100%; aspect-ratio:9/16; object-fit:contain; background:#25302c; border-radius:7px; max-height:560px; }
+.production-video figcaption,.production-graphic-grid figcaption { padding-top:12px; font-size:12px; color:var(--graphite); }
+.production-client--landscape .production-video-grid { grid-template-columns:1fr; max-width:900px; }
+.production-client--landscape video { aspect-ratio:16/9; max-height:none; }
+.production-graphic-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; max-width:780px; margin:32px 0; }
+.production-graphic-grid img { width:100%; height:340px; object-fit:contain; background:#ededed; border-radius:7px; }
+@media(max-width:1100px) {
+ .development-client-grid { gap:16px; }
+ .development-client-copy { padding:22px 16px; }
+ .development-client-copy h3 { font-size:23px; }
+ .development-client-actions .button { font-size:11px; padding:12px; }
+ .site-header:has(.menu-toggle) { min-height:86px; }
+ .site-header .menu-toggle { display:block; border:1px solid var(--line); padding:7px 10px; background:#fff; color:var(--green); border-radius:4px; cursor:pointer; }
+ .site-header #nav { display:none; position:absolute; top:100%; left:0; right:0; background:#fff; padding:20px 32px; border-bottom:1px solid var(--line); flex-direction:column; align-items:stretch; }
+ .site-header #nav.open { display:flex; }
+}
+@media(max-width:760px) {
+ .development-client-grid { grid-template-columns:1fr; gap:24px; }
+ .development-client-copy h3 { min-height:0; font-size:28px; }
+ .development-client-actions { flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+ .development-client-actions .button { width:auto; font-size:12px; }
+ .production-client { padding:26px 20px; }
+ .production-video-grid,.production-graphic-grid { gap:16px; }
+ .production-video video { max-height:500px; }
+ .production-graphic-grid img { height:230px; }
+ .marketing-intro-action--center .marketing-main-cta { min-width:0; width:100%; max-width:360px; font-size:15px; padding:18px 24px; }
+}
+@media(max-width:420px) {
+ .production-video-grid { grid-template-columns:1fr; }
+ .production-video { max-width:300px; width:100%; margin:auto; }
+ .production-client--landscape .production-video { max-width:none; }
+ .production-graphic-grid { grid-template-columns:1fr; }
+}
