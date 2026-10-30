@@ -64,3 +64,5 @@
  .production-mobile-clients button:focus-visible{outline:3px solid #285a47;outline-offset:3px}
  .production-client-grid>.production-client:not(.is-active-client){display:none}
 }
+
+.production-instagram-link{display:flex;width:max-content;max-width:100%;margin:12px auto 0;font-size:11px;color:var(--green)}
