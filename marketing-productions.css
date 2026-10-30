@@ -66,3 +66,13 @@
 }
 
 .production-instagram-link{display:flex;width:max-content;max-width:100%;margin:12px auto 0;font-size:11px;color:var(--green)}
+
+/* Instagram-style navigation over the screen, synced with the lower controls. */
+.social-screen{position:relative}
+.social-screen-controls{position:absolute;inset:0 0 40px;display:flex;align-items:center;justify-content:space-between;padding:0 6px;pointer-events:none;z-index:3}
+.social-screen-controls[hidden]{display:none}
+.social-screen-controls button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #25302c24;border-radius:50%;background:#fffffff2;color:#25302c;box-shadow:0 2px 8px #25302c26;cursor:pointer;pointer-events:auto;font:400 28px/1 Arial,sans-serif}
+.social-screen-controls button:hover:enabled{background:var(--green);color:#fff}
+.social-screen-controls button:disabled{opacity:.28;cursor:default}
+.social-screen-controls button:focus-visible{outline:3px solid var(--copper,#b86f4d);outline-offset:2px}
+.social-screen-controls button span{margin-top:-3px}

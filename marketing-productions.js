@@ -13,9 +13,10 @@
   document.querySelectorAll('[data-social-client]').forEach((client) => {
     const tabs = [...client.querySelectorAll('[data-social-format]')];
     const panels = [...client.querySelectorAll('[data-social-panel]')];
-    const previous = client.querySelector('[data-social-prev]');
-    const next = client.querySelector('[data-social-next]');
+    const previous = [...client.querySelectorAll('[data-social-prev]')];
+    const next = [...client.querySelectorAll('[data-social-next]')];
     const count = client.querySelector('[data-social-count]');
+    const screenControls = client.querySelector('.social-screen-controls');
     const states = panels.map((panel) => ({
       panel, track: panel.querySelector('[data-social-track]'),
       cards: [...panel.querySelectorAll('.social-slide')], active: 0,
@@ -30,11 +31,11 @@
         Math.round(state.track.scrollLeft / state.track.clientWidth)));
       count.textContent = `${state.active + 1} / ${state.cards.length}`;
       count.setAttribute('aria-label', `${tabs[selected].textContent}: ${state.active + 1} de ${state.cards.length}`);
-      previous.disabled = state.active === 0;
-      next.disabled = state.active === state.cards.length - 1;
+      if (screenControls) screenControls.hidden = state.cards.length < 2;
+      previous.forEach(button => { button.disabled = state.active === 0; });
+      next.forEach(button => { button.disabled = state.active === state.cards.length - 1; });
       const trackId = state.track.id;
-      previous.setAttribute('aria-controls', trackId);
-      next.setAttribute('aria-controls', trackId);
+      [...previous, ...next].forEach(button => button.setAttribute('aria-controls', trackId));
       state.cards.forEach((card, index) => {
         if (index !== state.active) card.querySelector('video')?.pause();
       });
@@ -76,8 +77,8 @@
         tabs[destination].focus();
       });
     });
-    previous.addEventListener('click', () => move(-1));
-    next.addEventListener('click', () => move(1));
+    previous.forEach(button => button.addEventListener('click', () => move(-1)));
+    next.forEach(button => button.addEventListener('click', () => move(1)));
     states.forEach((state, index) => {
       state.track.id = `${state.panel.id}-track`;
       state.track.addEventListener('scroll', () => {
