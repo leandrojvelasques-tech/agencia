@@ -1,0 +1,35 @@
+/* Jerarquía de los tres servicios de la Home. */
+.training-home .training-copy h2.service-heading,
+.marketing-intro .marketing-intro-copy h2.service-heading,
+.development-home h2.service-heading {
+  font: 600 clamp(36px, 3.8vw, 54px)/1.12 var(--body);
+  letter-spacing: -.04em;
+  text-wrap: balance;
+  margin: 0 0 24px;
+  color: var(--green);
+}
+.marketing-intro .marketing-intro-copy h2.service-heading { color: var(--white); }
+.training-home .training-copy > .service-subheading,
+.marketing-intro .marketing-intro-copy > .service-subheading {
+  font-size: clamp(21px, 1.8vw, 26px);
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  margin: 0 0 24px;
+  max-width: 600px;
+  color: var(--ink);
+}
+.marketing-intro .marketing-intro-copy > .service-subheading { color: var(--mint); }
+.development-home .implementation-head { align-items: start; }
+.development-home h2.service-heading { margin-bottom: 0; }
+@media (max-width: 760px) {
+  .training-home .training-copy h2.service-heading,
+  .marketing-intro .marketing-intro-copy h2.service-heading,
+  .development-home h2.service-heading {
+    font-size: clamp(32px, 7.5vw, 40px);
+    margin-bottom: 20px;
+  }
+  .training-home .training-copy > .service-subheading,
+  .marketing-intro .marketing-intro-copy > .service-subheading { font-size: 21px; margin-bottom: 20px; }
+  .development-home h2.service-heading { margin-bottom: 0; }
+}
