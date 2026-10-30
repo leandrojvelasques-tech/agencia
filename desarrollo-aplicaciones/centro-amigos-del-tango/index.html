@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#285a47">
   <meta name="robots" content="index,follow">
-  <meta name="description" content="Caso de desarrollo de Centro Amigos del Tango: sitio público y aplicación de gestión conectados.">
+  <meta name="description" content="Caso del Centro Amigos del Tango: agenda pública para la comunidad, gestión online de socios, cuotas, caja y eventos, y un portal de consulta para cada socio.">
   <link rel="canonical" href="https://www.leandrovelasques.com.ar/desarrollo-aplicaciones/centro-amigos-del-tango/">
   <title>Centro Amigos del Tango · Caso de desarrollo · Leandro Velasques</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,56 +13,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="../../styles.css?v=rev27" rel="stylesheet">
   <link href="../styles.css?v=casos-20261029-rev27" rel="stylesheet">
+  <link href="case.css?v=20261030" rel="stylesheet">
   <script src="../app.js?v=rev27" defer></script>
 </head>
-<body class="projects-page">
+<body class="projects-page cat-development">
   <a class="skip" href="#contenido">Ir al contenido</a>
   <header class="site-header">
     <a class="brand" href="../../index.html#inicio" aria-label="Leandro Velasques, inicio"><img src="../../assets/logo-oficial.png" alt="Logo oficial de Leandro José Velasques" width="2101" height="562"></a>
     <a class="text-link" href="../../index.html#desarrollo">← Volver al inicio</a>
   </header>
   <main id="contenido">
-    <section class="projects-hero section"><div class="wrap"><p class="eyebrow">CASO DE DESARROLLO</p><h1>Centro Amigos del Tango</h1><div class="projects-hero-copy"><p>El sitio público y las herramientas de gestión de la organización, en un mismo recorrido.</p><div class="projects-hero-links"><a href="#centro-amigos-del-tango-sitio">El sitio web ↓</a><a href="#centro-amigos-del-tango-aplicacion">La aplicación de gestión ↓</a></div></div></div></section>
+    <section class="projects-hero section cat-hero"><div class="wrap cat-hero-grid">
+      <div class="cat-hero-copy"><p class="eyebrow">CASO REAL · DESARROLLO DE APLICACIONES</p><h1>Centro Amigos<br><em>del Tango.</em></h1><div class="projects-hero-copy"><p>Una agenda abierta a la comunidad tanguera. Una gestión online para la comisión directiva y un acceso propio para cada socio.</p></div><nav class="projects-hero-links" aria-label="Recorrer el caso"><a href="#centro-amigos-del-tango-sitio">El sitio público ↓</a><a href="#centro-amigos-del-tango-aplicacion">La gestión interna ↓</a><a href="#portal-socios">El portal de socios ↓</a></nav></div>
+      <div class="cat-hero-visual"><figure class="cat-hero-site"><div class="office-browser"><i></i><i></i><i></i><span>Centro Amigos del Tango · Sitio público</span></div><img src="../../assets/caso-cat-front.png" alt="Portada del Centro Amigos del Tango con su identidad y la actividad de la comunidad tanguera" width="1365" height="768" fetchpriority="high"><figcaption>LA ACTIVIDAD DE LA INSTITUCIÓN, ABIERTA A LA COMUNIDAD</figcaption></figure><figure class="cat-hero-portal"><img src="../../assets/cat-back-05.png" alt="Portal de socios con consulta de cuotas y acceso al historial de pagos" width="1723" height="913"><figcaption>CADA SOCIO PUEDE CONSULTAR SU SITUACIÓN</figcaption></figure></div>
+    </div></section>
 
     <section class="projects-list section" id="proyectos"><div class="wrap"><article class="project-detail project-detail-cat" id="centro-amigos-del-tango">
           <header class="project-detail-head">
             <img src="../../assets/cliente-cat-logo.png" alt="Logo del Centro Amigos del Tango" width="192" height="192">
-            <div><span>ASOCIACIÓN CIVIL Y CULTURAL</span><h2>Centro Amigos del Tango</h2><p>Portal para socios y panel administrativo conectados con la actividad de la institución.</p></div>
+            <div><span>ASOCIACIÓN CIVIL Y CULTURAL</span><h2>Centro Amigos del Tango</h2><p>Sitio público, gestión interna y portal de socios conectados en una misma plataforma.</p></div>
           </header>
-          <div class="request-note"><span>SOLICITUD INICIAL</span><div><h3>Necesidad planteada</h3><p>Renovar la presencia digital de la institución para mostrar sus actividades, la comisión directiva, los eventos, las clases y cómo asociarse. También se necesitaba un sistema propio para gestionar socios, cobranzas, eventos y comunicaciones, con un portal para cada socio y un back office para la comisión, conectado con la información que se publica en el sitio.</p></div></div>
+          <section class="cat-needs" aria-labelledby="needs-title"><p class="eyebrow">PUNTO DE PARTIDA</p><h2 id="needs-title">Dos necesidades de la institución.</h2><div class="cat-needs-grid"><article><span>HACIA LA COMUNIDAD · FRONT OFFICE</span><h3>Hacer visible la actividad del Centro.</h3><p>Mostrar los eventos, las clases y las actividades de la institución en una agenda accesible a toda la comunidad del tango, tanto a socios como a quienes todavía no forman parte del Centro.</p></article><article><span>HACIA LA GESTIÓN · BACK OFFICE</span><h3>Pasar de Excel a una base online.</h3><p>La cobranza de cuotas se llevaba en una planilla. La comisión directiva necesitaba ordenar la base histórica de socios, seguir deudas y pagos, y registrar los movimientos de caja y la gestión de eventos.</p><p>También hacía falta que cada socio pudiera consultar su situación sin pedirle a alguien de la comisión que revisara el Excel.</p></article></div></section>
 
           <div class="office-card office-card-front" id="centro-amigos-del-tango-sitio">
-            <div class="office-card-media" data-project-carousel>
-              <div class="office-browser"><i></i><i></i><i></i><span>Portal de socios</span></div>
+            <div class="office-card-media" data-project-carousel role="region" aria-roledescription="carrusel" aria-label="Capturas del sitio público">
+              <div class="office-browser"><i></i><i></i><i></i><span>Sitio público · Agenda y actividades</span></div>
               <div class="office-slides">
-                <a class="office-slide is-active" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener"><img src="../../assets/caso-cat-front.png" alt="Inicio del sitio y portal público del Centro Amigos del Tango" width="1365" height="768"></a>
-                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img src="../../assets/cat-front-01.jpg" alt="Novedades del Centro Amigos del Tango" width="1599" height="796"></a>
-                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img src="../../assets/cat-front-02.jpg" alt="Agenda tanguera del Centro Amigos del Tango" width="1600" height="697"></a>
-                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img src="../../assets/cat-front-03.jpg" alt="Clases y milongas del Centro Amigos del Tango" width="1594" height="766"></a>
-                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img src="../../assets/cat-front-04.jpg" alt="Comisión directiva del Centro Amigos del Tango" width="1602" height="693"></a>
+                <a class="office-slide is-active" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener"><img loading="lazy" src="../../assets/caso-cat-front.png" alt="Inicio del sitio y portal público del Centro Amigos del Tango" width="1365" height="768"></a>
+                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img loading="lazy" src="../../assets/cat-front-01.jpg" alt="Novedades del Centro Amigos del Tango" width="1599" height="796"></a>
+                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img loading="lazy" src="../../assets/cat-front-02.jpg" alt="Agenda tanguera del Centro Amigos del Tango" width="1600" height="697"></a>
+                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img loading="lazy" src="../../assets/cat-front-03.jpg" alt="Clases y milongas del Centro Amigos del Tango" width="1594" height="766"></a>
+                <a class="office-slide" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener" hidden><img loading="lazy" src="../../assets/cat-front-04.jpg" alt="Comisión directiva del Centro Amigos del Tango" width="1602" height="693"></a>
               </div>
-              <div class="office-carousel-controls"><button type="button" data-prev aria-label="Ver captura anterior">←</button><span data-count>1 / 5</span><div data-dots></div><button type="button" data-next aria-label="Ver captura siguiente">→</button></div>
+              <div class="office-carousel-controls"><button type="button" data-prev aria-label="Ver captura anterior">←</button><span data-count aria-live="polite">1 / 5</span><div data-dots></div><button type="button" data-next aria-label="Ver captura siguiente">→</button></div>
             </div>
-            <div class="office-card-copy"><span>FRONT OFFICE</span><h3>Sitio institucional y agenda</h3><p>Se renovó el sitio para mostrar las actividades, la comisión directiva y los próximos eventos. El recorrido facilita asociarse, encontrar clases de tango, consultar el calendario y acceder a información útil para bailarines y socios.</p><a class="text-link" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener">Visitar el sitio y portal <span aria-hidden="true">↗</span></a></div>
+            <div class="office-card-copy"><span>FRONT OFFICE · SITIO PÚBLICO</span><h3>Una agenda para toda la comunidad del tango.</h3><p>El sitio reúne los eventos y las actividades de la institución: clases, milongas, novedades y calendario. La información está abierta a toda la comunidad, sin necesidad de ser socio.</p><p>También presenta a la comisión directiva y permite conocer cómo asociarse al Centro.</p><a class="text-link" href="https://socios.centroamigosdeltango.com/" target="_blank" rel="noopener">Visitar el sitio público <span aria-hidden="true">↗</span></a></div>
           </div>
 
           <div class="office-connection" aria-hidden="true"><span>INFORMACIÓN CONECTADA</span><i></i></div>
 
           <div class="office-card office-card-back" id="centro-amigos-del-tango-aplicacion">
-            <div class="office-card-media" data-project-carousel>
+            <div class="office-card-media" data-project-carousel role="region" aria-roledescription="carrusel" aria-label="Capturas del panel administrativo">
               <div class="office-browser"><i></i><i></i><i></i><span>Panel administrativo</span></div>
               <div class="office-slides">
-                <div class="office-slide is-active"><img src="../../assets/cat-back-01.jpg" alt="Dashboard administrativo del Centro Amigos del Tango" width="1710" height="772"></div>
-                <div class="office-slide" hidden><img src="../../assets/cat-back-02.jpg" alt="Gestión de eventos del Centro Amigos del Tango" width="1603" height="870"></div>
-                <div class="office-slide" hidden><img src="../../assets/cat-back-03.png" alt="Historial de caja con datos ficticios del Centro Amigos del Tango" width="1748" height="900"></div>
-                <div class="office-slide" hidden><img src="../../assets/cat-back-04.png" alt="Panel de socios con datos ficticios del Centro Amigos del Tango" width="1999" height="787"></div>
-                <div class="office-slide" hidden><img src="../../assets/cat-back-05.png" alt="Portal de socios con datos ficticios del Centro Amigos del Tango" width="1723" height="913"></div>
+                <div class="office-slide is-active"><img loading="lazy" src="../../assets/cat-back-01.jpg" alt="Dashboard administrativo del Centro Amigos del Tango" width="1710" height="772"></div>
+                <div class="office-slide" hidden><img loading="lazy" src="../../assets/cat-back-02.jpg" alt="Gestión de eventos del Centro Amigos del Tango" width="1603" height="870"></div>
+                <div class="office-slide" hidden><img loading="lazy" src="../../assets/cat-back-03.png" alt="Historial de caja con datos ficticios del Centro Amigos del Tango" width="1748" height="900"></div>
+                <div class="office-slide" hidden><img loading="lazy" src="../../assets/cat-back-04.png" alt="Panel de socios con datos ficticios del Centro Amigos del Tango" width="1999" height="787"></div>
               </div>
-              <div class="office-carousel-controls"><button type="button" data-prev aria-label="Ver captura anterior">←</button><span data-count>1 / 5</span><div data-dots></div><button type="button" data-next aria-label="Ver captura siguiente">→</button></div>
+              <div class="office-carousel-controls"><button type="button" data-prev aria-label="Ver captura anterior">←</button><span data-count aria-live="polite">1 / 4</span><div data-dots></div><button type="button" data-next aria-label="Ver captura siguiente">→</button></div>
+              <p class="cat-media-note">Las capturas de caja y padrón utilizan datos ficticios.</p>
             </div>
-            <div class="office-card-copy"><span>PORTAL DE SOCIOS + BACK OFFICE</span><h3>Socios y administración</h3><p>El socio puede consultar su estado, deuda y cuota, pagar y acceder a novedades y a la agenda tanguera. La comisión directiva puede validar cobranzas, gestionar altas y bajas, realizar campañas, administrar la caja de eventos y publicar contenidos para socios o para todo el público.</p><div class="backoffice-tags"><span>Estado de socio</span><span>Cuotas y pagos</span><span>Cobranzas</span><span>Altas y bajas</span><span>Caja de eventos</span><span>Publicaciones</span></div></div>
+            <div class="office-card-copy"><span>BACK OFFICE · COMISIÓN DIRECTIVA</span><h3>Socios, cobranzas y caja con registro digital.</h3><p>La comisión trabaja sobre una base online que reúne el padrón histórico, el estado de cada socio y sus cuotas. Puede revisar y aprobar los pagos, con registro de cada validación.</p><p>El módulo de caja identifica los movimientos de cuotas y de cada evento. La gestión también contempla la publicación de eventos y el cobro de entradas y clases, tanto de socios como de no socios.</p><div class="backoffice-tags"><span>Padrón histórico</span><span>Cuotas y mora</span><span>Validación de pagos</span><span>Caja</span><span>Eventos y clases</span></div></div>
           </div>
-        <section class="case-modules" aria-labelledby="modules-title"><p class="eyebrow">APLICACIONES DEL BACK OFFICE</p><h2 id="modules-title">Qué gestiona el equipo.</h2><div class="case-module-grid"><article><h3>Socios y cuotas</h3><p>Altas, bajas, estado de socio, deuda y cuotas.</p></article><article><h3>Pagos y cobranzas</h3><p>Consulta de pagos en el portal y validación de cobranzas por la comisión.</p></article><article><h3>Eventos y caja</h3><p>Administración de eventos y de su movimiento de caja.</p></article><article><h3>Comunicaciones y contenidos</h3><p>Campañas, novedades y publicaciones dirigidas a socios o a todo el público.</p></article></div></section></article></div></section>
+        <section class="case-modules" aria-labelledby="modules-title"><p class="eyebrow">GESTIÓN DE LA INSTITUCIÓN</p><h2 id="modules-title">Qué puede administrar la comisión.</h2><div class="case-module-grid">
+          <article><h3>Padrón histórico y estados</h3><p>La base de socios quedó ordenada por situación: activos, caídos, de baja y con deuda. El sistema contempla el estado de mora y permite consultar la situación de cada persona.</p></article>
+          <article><h3>Cuotas, pagos y recibos</h3><p>La cobranza que se llevaba en Excel pasa a una base online. La comisión revisa y aprueba los pagos; la validación queda registrada y el socio puede descargar su recibo.</p></article>
+          <article><h3>Caja de cuotas y eventos</h3><p>Un módulo digital registra los movimientos de caja, con identificación de los ingresos por cuotas y de las cajas correspondientes a cada evento.</p></article>
+          <article><h3>Eventos, entradas y clases</h3><p>Gestión y publicación de eventos, cobro de entradas y de clases, contemplando la participación de socios y de no socios.</p></article>
+        </div></section>
+        <section class="cat-member" id="portal-socios" aria-labelledby="member-title"><div class="cat-member-copy"><p class="eyebrow">PORTAL DE SOCIOS · ACCESO PERSONAL</p><h2 id="member-title">Cada socio puede consultar su situación.</h2><p>Con su propio usuario, el socio ingresa a la aplicación y consulta su deuda, su estado y el historial de cuotas pagadas. Puede descargar sus recibos y consultar los eventos.</p><p>La información queda disponible sin depender de que una persona de la comisión directiva busque los datos en una planilla.</p><ul><li>Estado de socio y deuda actual.</li><li>Registro de cuotas pagadas y recibos.</li><li>Eventos y novedades de la institución.</li></ul></div><figure><img loading="lazy" src="../../assets/cat-back-05.png" alt="Vista del portal personal del socio, con consulta de cuotas y navegación a Mis Pagos" width="1723" height="913"><figcaption>Acceso personal a la información de cuotas y pagos.</figcaption></figure></section>
+        </article></div></section>
     <section class="contact section"><div class="wrap contact-grid"><div><p class="eyebrow">¿TENÉS UN PROCESO PARA ORDENAR?</p><h2>Podemos convertirlo<br><em>en una herramienta.</em></h2></div><div><p>Revisamos la necesidad y la forma real de trabajar antes de definir qué conviene desarrollar o automatizar.</p><a class="button" href="../../contacto.html?interes=automatizacion">Conversemos sobre tu proyecto <span aria-hidden="true">↗</span></a></div></div></section>
   </main>
   <footer class="wrap"><img src="../../assets/logo-oficial.png" alt="Leandro José Velasques" width="2101" height="562"><p>Licenciado en Administración · Matrícula profesional CPCE Chubut · Tomo III · Folio 58</p><a href="../../index.html#desarrollo">Volver al inicio ↑</a></footer>
