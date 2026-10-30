@@ -76,3 +76,10 @@
 .social-screen-controls button:disabled{opacity:.28;cursor:default}
 .social-screen-controls button:focus-visible{outline:3px solid var(--copper,#b86f4d);outline-offset:2px}
 .social-screen-controls button span{margin-top:-3px}
+
+/* Direct Instagram profile links beneath each phone. */
+.marketing-page .production-instagram-link { display:flex; align-items:center; justify-content:center; width:46px; height:46px; padding:10px; margin:18px auto 0; border:1px solid #cadbd1; border-radius:50%; background:#fff; color:#285a47; transition:transform .2s ease,background .2s ease,box-shadow .2s ease; }
+.production-instagram-link svg { display:block; width:24px; height:24px; }
+.production-instagram-link:hover { background:#edf5f0; box-shadow:0 5px 14px #285a4718; transform:translateY(-3px); }
+.production-instagram-link:focus-visible { outline:3px solid #285a47; outline-offset:4px; }
+@media(prefers-reduced-motion:reduce) { .production-instagram-link { transition:none; } .production-instagram-link:hover { transform:none; } }

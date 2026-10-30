@@ -269,3 +269,88 @@
  .marketing-page .case-step-photo { aspect-ratio:1; }
  .marketing-scope { gap:12px; }
 }
+
+/* Optional scope of the digital marketing proposal. */
+.marketing-services { background:#fff; scroll-margin-top:110px; }
+.marketing-services-intro { max-width:480px; }
+.marketing-services .marketing-services-subtitle { color:var(--green); font-weight:600; margin-bottom:14px; }
+.marketing-services-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; list-style:none; padding:0; margin:0; }
+.marketing-services-grid li { min-width:0; padding:28px; border:1px solid #285a4726; border-radius:8px; background:#fff; }
+.marketing-service-number { display:block; color:var(--green); font-size:12px; letter-spacing:.1em; margin-bottom:24px; }
+.marketing-services-grid h3 { color:var(--green); font-size:22px; line-height:1.3; margin:0 0 14px; }
+.marketing-services-grid p { color:var(--graphite); font-size:14px; line-height:1.8; margin:0; }
+.marketing-services-grid li:last-child { grid-column:span 3; display:grid; grid-template-columns:32px minmax(0,1fr) minmax(0,1.5fr); align-items:start; gap:24px; background:#f5f9f7; }
+.marketing-services-grid li:last-child h3,.marketing-services-grid li:last-child .marketing-service-number { margin-bottom:0; }
+.marketing-services-note { margin:26px 0 0; padding-left:16px; border-left:3px solid var(--mint); color:var(--graphite); font-size:13px; line-height:1.7; }
+@media(max-width:1000px) {
+ .marketing-services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .marketing-services-grid li:last-child { grid-column:span 2; grid-template-columns:32px 1fr; }
+ .marketing-services-grid li:last-child p { grid-column:2; }
+}
+@media(max-width:620px) {
+ .marketing-services-grid { grid-template-columns:1fr; gap:14px; }
+ .marketing-services-grid li { padding:24px; }
+ .marketing-services-grid li:last-child { grid-column:auto; display:block; }
+ .marketing-services-grid li:last-child .marketing-service-number { margin-bottom:24px; }
+ .marketing-services-grid li:last-child h3 { margin-bottom:14px; }
+}
+
+/* Keep this section independent from the home-page service list. */
+.marketing-page #servicios > .wrap { display:block; }
+.marketing-page #servicios .section-head { display:grid; grid-template-columns:1.2fr 1fr; align-items:end; gap:48px; margin-bottom:38px; }
+.marketing-page #servicios .marketing-services-grid li { display:block; position:relative; border-radius:18px; border-color:#dce5df; box-shadow:0 4px 16px #285a4705; transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease; }
+.marketing-service-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.marketing-page #servicios .marketing-service-number { margin:0; color:#628571; }
+.marketing-service-icons { display:flex; align-items:center; gap:10px; color:var(--green); }
+.marketing-service-icons svg { display:block; width:35px; height:35px; padding:2px; transition:transform .24s ease; }
+.marketing-page #servicios .marketing-services-grid li:last-child { display:block; }
+.marketing-page #servicios .marketing-services-grid li:last-child h3 { margin-bottom:14px; }
+.marketing-page #servicios .marketing-services-grid li:last-child p { max-width:850px; }
+@media(hover:hover) and (pointer:fine) {
+ .marketing-page #servicios .marketing-services-grid li:hover { transform:translateY(-7px); box-shadow:0 18px 36px #285a4718; border-color:#8fb7a1; }
+ .marketing-page #servicios .marketing-services-grid li:hover .marketing-service-icons svg { transform:rotate(-5deg) scale(1.08); }
+}
+@media(max-width:760px) {
+ .marketing-page #servicios .section-head { grid-template-columns:1fr; gap:22px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .marketing-page #servicios .marketing-services-grid li,.marketing-service-icons svg { transition:none; }
+ .marketing-page #servicios .marketing-services-grid li:hover,.marketing-page #servicios .marketing-services-grid li:hover .marketing-service-icons svg { transform:none; }
+}
+
+/* Explicit contrast prevents the home-page dark-section styles leaking here. */
+.marketing-page #servicios .marketing-services-intro p { color:#4f4c4d; font-size:16px; line-height:1.8; }
+.marketing-page #servicios .marketing-services-intro .marketing-services-subtitle { color:#285a47; }
+.marketing-page #servicios .marketing-service-icons { color:#285a47; margin-top:0; }
+.marketing-page #servicios .marketing-services-note { color:#4f4c4d; }
+
+/* Real client work arranged as a responsive creative pinboard. */
+.marketing-page .marketing-pinboard { padding:24px; overflow:hidden; background-color:#253b32; background-image:radial-gradient(#ffffff15 1px,transparent 1px); background-size:16px 16px; border-radius:12px 12px 40px 12px; }
+.pinboard-canvas { position:relative; aspect-ratio:1/1.12; margin:26px 0 18px; isolation:isolate; }
+.pin-piece { position:absolute; padding:7px; background:#fffdf7; box-shadow:0 10px 22px #0005; border-radius:3px; }
+.pin-piece img { width:100%; aspect-ratio:4/5; object-fit:cover; }
+.pin-piece-label { color:#285a47; font-size:8px; font-weight:700; letter-spacing:.08em; padding:4px 2px 7px; }
+.pin-piece-client { display:block; color:#4f4c4d; font-size:9px; padding:7px 2px 2px; }
+.pin-piece--jubilarse { width:46%; left:2%; top:1%; transform:rotate(-6deg); }
+.pin-piece--cayo { width:47%; right:0; top:7%; transform:rotate(7deg); }
+.pin-piece--puerto { width:46%; left:7%; bottom:0; transform:rotate(-4deg); z-index:2; }
+.pin-piece--reel { width:32%; right:7%; bottom:0; transform:rotate(8deg); border:5px solid #18251f; border-radius:23px; padding:5px; background:#fff; z-index:3; }
+.pin-piece--reel img { aspect-ratio:9/16; border-radius:7px; }
+.pin-piece--reel .pin-piece-label { text-align:center; }
+.pin-piece--reel .pin-piece-client { font-size:8px; text-align:center; }
+.pin { position:absolute; left:48%; top:-7px; width:13px; height:13px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#efc5a5,#b86f4d 70%); box-shadow:2px 4px 3px #0005; z-index:4; }
+.pin-piece--reel .pin { display:none; }
+.pin-play { position:absolute; top:46%; left:36%; width:34px; height:34px; display:grid; place-items:center; background:#ffffffdd; color:#285a47; border-radius:50%; font-size:15px; padding-left:2px; }
+@media(max-width:620px) { .marketing-page .marketing-pinboard { padding:18px; } .pinboard-canvas { margin-top:20px; } .pin-piece-client { font-size:8px; } .pin-piece-label { font-size:7px; } }
+
+/* Team locations and a restrained elevation on hover. */
+.marketing-page #equipo .case-team-card:nth-child(n) { box-shadow:0 5px 18px #285a470b; transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease; }
+.marketing-page #equipo .case-team-copy .team-city { display:flex; align-items:center; gap:7px; color:#285a47; font-size:13px; font-weight:600; line-height:1.5; margin:9px 0 16px; }
+.team-city svg { width:16px; height:16px; flex:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+@media(hover:hover) and (pointer:fine) {
+ .marketing-page #equipo .case-team-card:nth-child(n):hover { transform:translateY(-6px); box-shadow:0 18px 34px #285a471c; border-color:#91b6a2; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .marketing-page #equipo .case-team-card:nth-child(n) { transition:none; }
+ .marketing-page #equipo .case-team-card:nth-child(n):hover { transform:none; }
+}
