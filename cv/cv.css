@@ -45,7 +45,8 @@
 .cv-timeline-year{color:#e1b49e;font-size:14px;font-weight:700;line-height:1.4}
 .cv-timeline-item h3{max-width:650px;font:600 24px/1.16 var(--body);letter-spacing:-.04em}
 .cv-company{margin-top:8px;color:#b8d9ca;font:italic 18px/1.4 var(--display)}
-.cv-timeline-item div>p:last-child{max-width:700px;margin-top:13px;color:#d0ddd7;font-size:14px;line-height:1.7}
+.cv-timeline-item div>p:not(.cv-company){max-width:700px;margin-top:13px;color:#d0ddd7;font-size:14px;line-height:1.7}
+.cv-professional-details a{text-decoration:underline;text-underline-offset:4px;overflow-wrap:anywhere}
 .cv-other-experience{margin:1px 0 0 64px;padding:23px 25px;border-top:1px solid #a8d5c14d;color:#d7e4de}
 .cv-other-experience>span{color:var(--cv-mint);font-size:11px;font-weight:700;letter-spacing:.13em}
 .cv-other-experience p{margin-top:10px;font-size:13px}

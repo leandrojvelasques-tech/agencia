@@ -54,11 +54,11 @@ def first(path):
 
 
 styles = {
-    "eyebrow": ParagraphStyle("eyebrow", fontName="ArialBold", fontSize=8, leading=11, textColor=GREEN, spaceAfter=9),
+    "eyebrow": ParagraphStyle("eyebrow", fontName="ArialBold", fontSize=8, leading=11, textColor=GREEN, spaceAfter=9, keepWithNext=True),
     "name": ParagraphStyle("name", fontName="ArialBold", fontSize=31, leading=33, textColor=DARK, spaceAfter=12),
     "role": ParagraphStyle("role", fontName="ArialBold", fontSize=13, leading=18, textColor=GREEN, spaceAfter=9),
     "lead": ParagraphStyle("lead", fontName="Arial", fontSize=10, leading=15, textColor=MUTED, spaceAfter=14),
-    "section": ParagraphStyle("section", fontName="ArialBold", fontSize=17, leading=21, textColor=DARK, spaceBefore=16, spaceAfter=10),
+    "section": ParagraphStyle("section", fontName="ArialBold", fontSize=17, leading=21, textColor=DARK, spaceBefore=16, spaceAfter=10, keepWithNext=True),
     "body": ParagraphStyle("body", fontName="Arial", fontSize=9.3, leading=14.4, textColor=DARK, spaceAfter=8),
     "small": ParagraphStyle("small", fontName="Arial", fontSize=8.5, leading=12.5, textColor=MUTED),
     "date": ParagraphStyle("date", fontName="ArialBold", fontSize=8.5, leading=12, textColor=COPPER),
@@ -156,13 +156,15 @@ for index, article in enumerate(experience.xpath('.//article[contains(@class,"cv
         story += [PageBreak(), para("TRAYECTORIA PROFESIONAL · CONTINUACIÓN", "eyebrow"), Spacer(1, 5)]
     parts = [para(text(article.xpath('./span')[0]), "date"), para(text(article.xpath('.//h3')[0]), "item")]
     parts.append(para(text(article.xpath('.//p[contains(@class,"cv-company")]')[0]), "org"))
-    parts.append(para(text(article.xpath('.//div/p[last()]')[0]), "small"))
+    for item in article.xpath('.//div/p[not(contains(@class,"cv-company"))]'):
+        parts.append(para(text(item), "small"))
     story += [card(parts, top=True), Spacer(1, 4)]
 other = experience.xpath('.//div[contains(@class,"cv-other-experience")]/p')
 story.append(para("OTRAS EXPERIENCIAS", "eyebrow"))
 for item in other:
     story.append(para(text(item), "small"))
 
+story.append(PageBreak())
 volunteer = first('//section[contains(@class,"cv-volunteer")]')
 story += heading("PARTICIPACIÓN INSTITUCIONAL", "Voluntariado y trabajo en comunidad")
 for article in volunteer.xpath('.//div[contains(@class,"cv-volunteer-grid")]/article'):
@@ -171,7 +173,6 @@ for article in volunteer.xpath('.//div[contains(@class,"cv-volunteer-grid")]/art
     parts.append(para(text(article.xpath('./p[last()]')[0]), "small"))
     story += [card(parts), Spacer(1, 4)]
 
-story.append(PageBreak())
 education = first('//section[contains(@class,"cv-education")]')
 story += heading("FORMACIÓN Y ACTUALIZACIÓN", "Administración, marketing, calidad e inteligencia artificial")
 for article in education.xpath('.//div[contains(@class,"cv-education-list")]/article'):
