@@ -1,0 +1,43 @@
+.jubilarse-development{--client-navy:#13265c;--client-lime:#87b449}
+.jubilarse-hero{overflow:hidden;background:linear-gradient(125deg,#eef4f0,#fff 70%);padding:78px 0 70px}
+.jubilarse-hero-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:54px;align-items:center}
+.jubilarse-hero h1{font-size:clamp(48px,5.6vw,80px)}
+.jubilarse-hero .projects-hero-copy>p{max-width:440px}
+.jubilarse-hero .projects-hero-links{gap:9px}
+.jubilarse-hero-visual{position:relative;padding:10px 0 108px;min-width:0}
+.jubilarse-hero-visual figure{margin:0;overflow:hidden;border:1px solid #d7dedc;border-radius:12px;background:white;box-shadow:0 18px 45px #13265c18}
+.jubilarse-hero-site{transform:rotate(-2deg);margin-right:24px!important}
+.jubilarse-hero-visual img{display:block;width:100%;height:auto}
+.jubilarse-hero-visual figcaption{padding:12px 16px;color:var(--client-navy);font-size:9px;font-weight:700;letter-spacing:.1em}
+.jubilarse-hero-site figcaption{border-top:3px solid var(--client-lime)}
+.jubilarse-hero-agenda{position:absolute;bottom:0;right:-8px;width:82%;transform:rotate(2deg);border-color:var(--client-navy)!important}
+.jubilarse-hero-agenda figcaption{background:var(--client-navy);color:white}
+.jubilarse-development .request-note p+p{margin-top:14px}
+.jubilarse-process{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center;gap:40px;margin:0 0 58px;padding:28px;background:#f3f6f4;border-radius:16px}
+.jubilarse-process figure{margin:0}.jubilarse-process img{display:block;width:100%;height:auto;border-radius:10px}
+.jubilarse-process h3{font-size:28px;line-height:1.15;letter-spacing:-.04em;margin:10px 0 16px}
+.jubilarse-process p:not(.eyebrow),.jubilarse-measurement p:not(.eyebrow),.jubilarse-next p:not(.eyebrow){color:var(--graphite);font-size:14px;line-height:1.8}
+.jubilarse-process p+p,.jubilarse-measurement p+p,.jubilarse-development .office-card-copy>p+p{margin-top:14px}
+.jubilarse-development .office-card-copy{padding:34px}
+.jubilarse-development .office-card-copy h3{font-size:32px}
+.jubilarse-development .office-slides{height:350px}
+.jubilarse-media-note{padding:10px 16px;font-size:11px;line-height:1.6;color:#4f4c4d;background:#f5f8f6;margin:0}
+.jubilarse-measurement{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:40px;align-items:center;margin-top:68px;padding:40px 0;border-top:1px solid var(--project-line);border-bottom:1px solid var(--project-line)}
+.jubilarse-measurement h2{font-size:clamp(28px,3vw,39px);line-height:1.1;margin:12px 0 20px;letter-spacing:-.05em}
+.jubilarse-measurement h2 em{color:var(--project-green);font-style:normal}
+.jubilarse-measurement .text-link{display:inline-block;margin-top:22px;font-size:12px}
+.jubilarse-measurement figure{margin:0;min-width:0}.jubilarse-measurement img{display:block;width:100%;height:auto;border:1px solid var(--project-line);border-radius:10px}.jubilarse-measurement figcaption{font-size:11px;line-height:1.7;color:var(--graphite);margin-top:12px}
+.jubilarse-development .case-modules{border-top:0;margin-top:58px;padding-top:0;scroll-margin-top:110px}
+.jubilarse-development .case-module-grid{gap:18px}
+.jubilarse-development .case-module-grid article{padding:26px;background:#f3f7f4}
+.jubilarse-development .case-module-grid h3{font-size:23px;line-height:1.2;letter-spacing:-.035em}
+.jubilarse-next{margin-top:48px;padding:32px;border:1px dashed #92af9f;border-radius:14px;background:white}
+.jubilarse-next h2{font-size:34px;letter-spacing:-.05em;margin:10px 0}
+.jubilarse-next-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:26px;padding-top:26px;border-top:1px solid var(--project-line)}
+.jubilarse-next-grid article>span{font-size:9px;letter-spacing:.1em;font-weight:700;color:var(--project-green)}
+.jubilarse-next-grid h3{font-size:23px;letter-spacing:-.035em;margin:10px 0}
+.jubilarse-development .office-card,.jubilarse-development .jubilarse-measurement{scroll-margin-top:100px}
+.jubilarse-development a:focus-visible,.jubilarse-development button:focus-visible{outline:3px solid var(--project-green);outline-offset:4px}
+@media(max-width:1000px){.jubilarse-hero-grid{gap:30px}.jubilarse-hero .projects-hero-links{max-width:330px}.jubilarse-hero-visual{padding-bottom:90px}.jubilarse-hero-agenda{width:90%}.jubilarse-process,.jubilarse-measurement{gap:28px}.jubilarse-development .office-slides{height:330px}}
+@media(max-width:760px){.jubilarse-hero-grid{grid-template-columns:1fr;gap:30px}.jubilarse-hero .projects-hero-links{max-width:none}.jubilarse-hero-visual{max-width:580px;width:100%;margin:0 auto;padding:12px 10px 115px}.jubilarse-hero-agenda{right:3px;width:80%}.jubilarse-process,.jubilarse-measurement{grid-template-columns:1fr}.jubilarse-process{padding:24px}.jubilarse-process figure{max-width:500px}.jubilarse-measurement{margin-top:46px}.jubilarse-next{padding:25px}}
+@media(max-width:620px){.jubilarse-hero{padding:44px 0 42px}.jubilarse-hero h1{font-size:50px}.jubilarse-hero-visual{padding-bottom:85px}.jubilarse-hero-visual .office-browser{height:30px;padding:0 10px}.jubilarse-hero-visual .office-browser span{font-size:9px}.jubilarse-hero-visual figcaption{font-size:8px;padding:10px}.jubilarse-hero-site{margin-right:10px!important}.jubilarse-hero-agenda{width:86%}.jubilarse-development .office-slides{height:245px}.jubilarse-development .office-card-copy{padding:27px 23px}.jubilarse-development .office-card-copy h3{font-size:28px}.jubilarse-next-grid{grid-template-columns:1fr;gap:24px}.jubilarse-development .case-module-grid article{padding:23px}.jubilarse-process{margin-bottom:38px}.jubilarse-development .project-detail-head h2{font-size:27px}}

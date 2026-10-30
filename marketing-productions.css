@@ -1,0 +1,66 @@
+/* Compact social portfolio: one phone per client; switch format in place. */
+.marketing-productions{overflow:hidden;background:radial-gradient(ellipse at 5% 30%,#a8d5c130,transparent 45%),radial-gradient(ellipse at 95% 80%,#ead5c735,transparent 40%),#fafbf8}
+.marketing-productions .section-head{align-items:center;gap:40px;margin-bottom:32px}
+.marketing-productions .section-head h2{font-size:clamp(38px,4.5vw,58px);line-height:1.06;letter-spacing:-.065em}
+.marketing-productions .section-head h2 em{display:inline-block;position:relative;color:#285a47}
+.marketing-productions .section-head h2 em::after{content:"";position:absolute;left:0;right:-8px;bottom:-8px;height:12px;border-bottom:3px solid #b86f4d;border-radius:0 0 55% 30%;transform:rotate(-2deg)}
+.marketing-productions .section-head>p{max-width:290px;font-size:14px;line-height:1.8}
+.production-preview-note{padding:10px 15px;margin:0 0 30px;border:1px dashed #aac2b4;border-radius:8px;color:#285a47;background:#fff;font-size:12px;line-height:1.6}
+.production-client-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;align-items:start}
+.marketing-productions .production-client{min-width:0;margin:0;padding:0;border:0;background:none;border-radius:0;box-shadow:none;scroll-margin-top:110px}
+.marketing-productions .production-client:nth-child(2){padding-top:24px}
+.marketing-productions .production-client-head{margin:0 0 14px;text-align:center}
+.marketing-productions .production-client-head h3{font-size:21px;line-height:1.25;font-weight:500;letter-spacing:-.04em;margin:0}
+.social-format-tabs{display:flex;gap:3px;width:max-content;margin:0 auto 18px;padding:4px;background:#e5ece6;border-radius:30px}
+.social-format-tabs button{border:0;border-radius:30px;background:transparent;color:#4f4c4d;padding:8px 20px;font:inherit;font-size:11px;font-weight:600;line-height:1.3;cursor:pointer}
+.social-format-tabs button[aria-selected=true]{background:#285a47;color:#fff;box-shadow:0 3px 7px #285a4720}
+.social-phone-stage{position:relative;padding:14px 18px 18px;max-width:310px;margin:auto;isolation:isolate}
+.social-phone-stage::before{content:"";position:absolute;inset:24px 0 0;background:#e4eee5;border-radius:35% 10% 20% 12%;z-index:-1;transform:rotate(-3deg)}
+.production-client:nth-child(2) .social-phone-stage::before{background:#f0e5d8;border-radius:14% 24% 12% 30%;transform:rotate(3deg)}
+.production-client:nth-child(3) .social-phone-stage::before{background:#e0eaed;border-radius:28% 12% 25% 10%}
+.social-phone-stage::after{content:"";position:absolute;top:4px;right:35px;width:64px;height:20px;background:#a8d5c175;transform:rotate(9deg);z-index:1;pointer-events:none}
+.social-phone{width:100%;max-width:244px;margin:auto;overflow:hidden;border:5px solid #25302c;border-radius:30px;background:#fff;box-shadow:4px 11px 0 #285a4708,0 10px 20px #25302c12}
+.social-phone-speaker{height:21px;position:relative}
+.social-phone-speaker::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:48px;height:4px;background:#25302c;border-radius:20px}
+.social-phone-top{display:flex;align-items:center;gap:7px;padding:8px 10px 10px;border-bottom:1px solid #ededed}
+.social-phone-top img{width:25px;height:25px;object-fit:contain;border:1px solid #e5e9e5;border-radius:50%;flex-shrink:0;background:white}
+.social-phone-top strong{color:#25302c;font-size:9px;line-height:1.3}
+.social-phone-top>span{margin-left:auto;font-size:9px;color:#4f4c4d}
+.social-panel[hidden]{display:none!important}
+.social-track{display:flex;position:relative;overflow-x:auto;gap:0;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.social-track::-webkit-scrollbar{display:none}
+.social-slide{flex:0 0 100%;width:100%;min-width:0;margin:0;scroll-snap-align:start;scroll-snap-stop:always}
+.social-media{width:100%;aspect-ratio:9/16;overflow:hidden;background:#eef4ef;display:grid;place-items:center}
+.social-media--videos{background:#16251d}
+.social-media>img,.social-media>video{display:block;width:100%;height:100%;object-fit:contain;max-height:none;border-radius:0}
+.social-slide figcaption{font-size:10px;line-height:1.5;padding:8px 10px;color:#4f4c4d;min-height:32px;overflow-wrap:anywhere}
+.social-phone-icons{display:flex;gap:10px;padding:2px 11px 11px;color:#25302c}
+.social-phone-icons svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.social-phone-icons svg:last-child{margin-left:auto}
+.social-phone-home{width:62px;height:4px;margin:0 auto 8px;border-radius:10px;background:#25302c}
+.social-pending{display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center;width:100%;height:100%;background:radial-gradient(ellipse at 20% 0%,#fff9,transparent 65%),#dceadf;color:#285a47}
+.social-pending>span{font-size:32px;line-height:1;margin-bottom:18px}
+.social-pending strong{font-size:17px;font-weight:500;letter-spacing:-.04em;line-height:1.3}
+.social-pending p{font-size:10px;margin-top:10px;line-height:1.5}
+.social-media--videos .social-pending{background:radial-gradient(ellipse at 80% 100%,#3e6652,transparent 65%),#213d2f;color:#d9eee2}
+.social-gallery-controls{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:16px}
+.social-gallery-controls button{width:32px;height:32px;border:1px solid #b9c8bc;border-radius:50%;background:white;color:#285a47;font-size:17px;display:grid;place-items:center;cursor:pointer}
+.social-gallery-controls button:hover:enabled{background:#285a47;color:white}
+.social-gallery-controls button:disabled{opacity:.3;cursor:default}
+.social-gallery-controls>span{font-size:10px;min-width:30px;text-align:center;font-variant-numeric:tabular-nums;color:#4f4c4d}
+.social-gallery-hint{max-width:230px;margin:10px auto 0;display:flex;justify-content:space-between;font:400 13px/1.5 "Segoe Print","Bradley Hand",cursive;color:#506958;transform:rotate(-2deg)}
+.social-gallery-hint>span{font-size:21px;line-height:1}
+.production-case-link{display:block;width:max-content;max-width:100%;margin:17px auto 0!important;font-size:11px;color:#285a47}
+.social-format-tabs button:focus-visible,.social-gallery-controls button:focus-visible,.social-track:focus-visible{outline:3px solid #285a47;outline-offset:3px}
+@media(max-width:1000px){.production-client-grid{gap:16px}.social-phone-stage{padding-left:9px;padding-right:9px}.marketing-productions .production-client-head h3{font-size:19px}.social-phone{border-width:4px;border-radius:26px}.social-phone-stage::after{right:25px}}
+@media(max-width:860px){.production-client-grid{grid-template-columns:1fr;gap:42px}.marketing-productions .production-client:nth-child(2){padding-top:0}.social-phone-stage{width:100%;max-width:310px;padding-left:18px;padding-right:18px}.social-phone{max-width:244px;border-width:5px;border-radius:30px}.marketing-productions .production-client-head h3{font-size:23px}.marketing-productions .section-head{gap:23px}.marketing-productions .section-head>p{max-width:100%}.marketing-productions .section-head h2{font-size:40px}.social-gallery-hint{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.social-track{scroll-behavior:auto}}
+
+.production-mobile-clients{display:none}
+@media(max-width:860px){
+ .production-mobile-clients{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:0 0 26px}
+ .production-mobile-clients button{padding:9px 12px;border:1px solid #b9c8bc;border-radius:25px;background:white;color:#285a47;font-family:inherit;font-size:11px;cursor:pointer}
+ .production-mobile-clients button[aria-pressed=true]{background:#285a47;color:white}
+ .production-mobile-clients button:focus-visible{outline:3px solid #285a47;outline-offset:3px}
+ .production-client-grid>.production-client:not(.is-active-client){display:none}
+}
