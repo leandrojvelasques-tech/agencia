@@ -79,8 +79,8 @@
 .cv-download .eyebrow{margin-bottom:14px;color:var(--cv-dark)}
 .cv-download h2{color:var(--cv-dark);font:500 clamp(34px,4.5vw,58px)/1.02 var(--body);letter-spacing:-.065em}
 .cv-download p:not(.eyebrow){margin-top:12px;color:#352b27;font-size:15px}
-.cv-download .button-light{flex-shrink:0;color:#fff;background:var(--cv-dark);border-color:var(--cv-dark);box-shadow:0 11px 22px #3c241929}
-.cv-download .button-light:hover{background:#151b18}
+.cv-download .button-light{flex-shrink:0;color:var(--ink);background:var(--mint);border-color:var(--mint)}
+.cv-download .button-light:hover{background:#c7eadb;border-color:#c7eadb}
 .cv-page footer{width:100%;max-width:none;padding:35px max(56px,calc((100% - 1208px)/2));background:var(--cv-dark);color:#fff}
 .cv-page footer p{color:#cbd3cf}
 .cv-page footer img{filter:brightness(0) invert(1)}

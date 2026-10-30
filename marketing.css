@@ -359,3 +359,34 @@
 .marketing-clients { background:var(--green); color:#fff; }
 .marketing-clients .client-proof { margin-top:0; padding-top:0; border-top:0; }
 .marketing-clients .client-proof-heading h2 { max-width:290px; color:#fff; font:500 clamp(25px,2.5vw,34px)/1.14 var(--body); letter-spacing:-.045em; }
+
+/* Keep website addresses in one row and case actions in the next. */
+.development-home .development-client-actions {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:40px 44px;
+  align-items:center;
+  gap:14px;
+  width:100%;
+}
+.development-home .development-client-site {
+  justify-self:start;
+  align-self:start;
+  max-width:100%;
+  gap:10px;
+  color:var(--green);
+  font-size:12px;
+  line-height:1.5;
+  padding:3px 0;
+}
+.development-client-domain { min-width:0; overflow-wrap:anywhere; }
+.development-home .development-client-actions .button {
+  width:100%;
+  min-height:44px;
+  padding:11px 16px;
+  font-size:14px;
+}
+@media(max-width:760px) {
+  .development-home .development-client-actions { grid-template-rows:auto 44px; }
+  .development-home .development-client-actions:not(:has(.button)) { grid-template-rows:auto; }
+}
