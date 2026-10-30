@@ -12,7 +12,11 @@
 .jubilarse-hero-site figcaption{border-top:3px solid var(--client-lime)}
 .jubilarse-hero-agenda{position:absolute;bottom:0;right:-8px;width:82%;transform:rotate(2deg);border-color:var(--client-navy)!important}
 .jubilarse-hero-agenda figcaption{background:var(--client-navy);color:white}
-.jubilarse-development .request-note p+p{margin-top:14px}
+.jubilarse-needs{margin:0;padding-left:20px;list-style:disc;color:var(--graphite);font-size:14px;line-height:1.8}
+.jubilarse-needs li+li{margin-top:14px}
+.jubilarse-needs li::marker{color:var(--project-green)}
+.jubilarse-needs strong{font-weight:600}
+@media(max-width:620px){.jubilarse-needs{font-size:13px;line-height:1.7}}
 .jubilarse-process{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center;gap:40px;margin:0 0 58px;padding:28px;background:#f3f6f4;border-radius:16px}
 .jubilarse-process figure{margin:0}.jubilarse-process img{display:block;width:100%;height:auto;border-radius:10px}
 .jubilarse-process h3{font-size:28px;line-height:1.15;letter-spacing:-.04em;margin:10px 0 16px}
