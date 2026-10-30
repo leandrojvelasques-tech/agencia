@@ -247,3 +247,25 @@
  .production-client--landscape .production-video { max-width:none; }
  .production-graphic-grid { grid-template-columns:1fr; }
 }
+
+/* Visual objectives and less staged process scenes. */
+.marketing-scene { background-image:url("assets/marketing-escenas-20261030.webp"); background-repeat:no-repeat; background-size:303% auto; }
+.marketing-needs article { padding-top:0; border-top:0; }
+.marketing-need-photo { aspect-ratio:1; margin-bottom:22px; border-radius:6px; background-color:var(--client-paper); }
+.marketing-scene--find { background-position:0 0; }
+.marketing-scene--understand { background-position:50% 0; }
+.marketing-scene--act { background-position:100% 0; }
+.marketing-page .case-step-photo.marketing-scene { background-image:url("assets/marketing-escenas-20261030.webp"); background-repeat:no-repeat; background-size:303% auto; background-color:#ededed; aspect-ratio:1; }
+.marketing-page .case-step-photo { aspect-ratio:1; }
+.marketing-page .case-step-photo img { object-position:center; }
+.marketing-page .case-step-photo.marketing-scene--photo { background-position:50% 100%; }
+.marketing-page .case-step-photo.marketing-scene--results { background-position:100% 100%; }
+.marketing-needs h3 { font-size:24px; margin-bottom:12px; }
+.marketing-needs p { max-width:32ch; }
+.marketing-scope { margin-top:30px; padding-top:22px; }
+@media (max-width:620px) {
+ .marketing-needs { gap:32px; }
+ .marketing-need-photo { aspect-ratio:1; max-width:360px; margin-bottom:18px; }
+ .marketing-page .case-step-photo { aspect-ratio:1; }
+ .marketing-scope { gap:12px; }
+}
