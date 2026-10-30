@@ -354,3 +354,8 @@
  .marketing-page #equipo .case-team-card:nth-child(n) { transition:none; }
  .marketing-page #equipo .case-team-card:nth-child(n):hover { transform:none; }
 }
+
+/* Clientes trasladados del inicio a la página de Marketing. */
+.marketing-clients { background:var(--green); color:#fff; }
+.marketing-clients .client-proof { margin-top:0; padding-top:0; border-top:0; }
+.marketing-clients .client-proof-heading h2 { max-width:290px; color:#fff; font:500 clamp(25px,2.5vw,34px)/1.14 var(--body); letter-spacing:-.045em; }
