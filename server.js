@@ -146,14 +146,18 @@ const server = http.createServer(async (req, res) => {
         return res.end('Enlace no válido.');
       }
       if (!reportId) return sendPrivatePortal(res, access, token);
-      const report = access.reports.find(item => item.id === reportId);
-      if (!report) {
+      const isPdf = reportId.endsWith('.pdf');
+      const lookupId = isPdf ? reportId.slice(0, -4) : reportId;
+      const report = access.reports.find(item => item.id === lookupId);
+      const reportFile = isPdf ? report?.pdfFile : report?.file;
+      if (!reportFile) {
         setPrivateHeaders(res);
         res.statusCode = 404;
         return res.end('Reporte no encontrado.');
       }
       setPrivateHeaders(res);
-      return sendFile(res, path.join(rootDir, 'private-reports', report.file));
+      if (isPdf) res.setHeader('Content-Disposition', `attachment; filename="${report.pdfFile}"`);
+      return sendFile(res, path.join(rootDir, 'private-reports', reportFile));
     }
 
     const eventMatch = pathname.match(/^\/evento\/([^/]+)(?:\/(inscripcion|reporte))?\/?$/);
