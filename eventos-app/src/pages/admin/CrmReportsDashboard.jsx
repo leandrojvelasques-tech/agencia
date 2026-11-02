@@ -4,11 +4,6 @@ import { supabase } from '../../lib/supabase'
 const GOOGLE_CATEGORY = 'Reportes mensuales de encuestas de Google'
 const SOCIAL_CATEGORY = 'Reportes mensuales de redes sociales'
 
-function answerLabel(report) {
-  if (report.answered == null) return 'Pendiente de verificación'
-  return `${report.answered}/${report.reviews} contestadas`
-}
-
 export default function CrmReportsDashboard() {
   const [clientFilter, setClientFilter] = useState('Todos los clientes')
   const [periodFilter, setPeriodFilter] = useState('Todos los períodos')
@@ -169,7 +164,7 @@ export default function CrmReportsDashboard() {
                   <p className="text-xl font-extrabold mt-1">{report.instagramInteractions?.toLocaleString('es-AR') || '—'}</p>
                   <p className="text-[10px] text-[var(--color-dark-gray)]/45 mt-1">interacciones</p>
                 </div>
-              </div> : <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              </div> : <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                 <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Opiniones</p>
                   <p className="text-xl font-extrabold mt-1">{report.reviews}</p>
@@ -181,10 +176,6 @@ export default function CrmReportsDashboard() {
                 <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Positivas</p>
                   <p className="text-xl font-extrabold mt-1">{report.positiveRate}%</p>
-                </div>
-                <div className="rounded-xl bg-[var(--color-refined-gray)]/60 p-3">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-dark-gray)]/45">Respuestas</p>
-                  <p className="text-sm font-extrabold mt-2 leading-tight">{answerLabel(report)}</p>
                 </div>
               </div>}
 
