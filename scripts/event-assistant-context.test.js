@@ -23,6 +23,16 @@ test('rejects private, draft, unexpected or missing events even if the source re
     assert.equal(await loadEventAssistantContext({ fetchImpl: source(row), now }), null);
   }
 });
+
+test('reads current prices from the event source, including free and paid alternatives', async () => {
+  for (const prices of [[], [{ concept: 'Jóvenes profesionales', price: 'Sin cargo' }], [{ concept: 'General', price: '$ 5.000' }]]) {
+    const result = await loadEventAssistantContext({ fetchImpl: async url => {
+      assert.ok(url.searchParams.get('select').split(',').includes('prices'));
+      return { ok: true, json: async () => [{ ...event, prices }] };
+    }, now });
+    assert.deepEqual(result.event.prices, prices);
+  }
+});
 test('reports closed registration after the event or on a completed event', async () => {
   for (const row of [{ ...event, registrations_open: false }, { ...event, status: 'completed' }, { ...event, registration_mode: 'admin' }]) {
     assert.equal((await loadEventAssistantContext({ fetchImpl: source(row), now })).registration.available, false);
