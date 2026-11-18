@@ -24,16 +24,36 @@ test('worker authentication binds body, timestamp and nonce; rejects replay', ()
   assert.equal(broker.authenticateWorker(body, headers(body, now - 61000)), false);
   assert.equal(broker.authenticateWorker(body, {}), false);
 });
-test('public availability uses the Argentina event day, with owner preview separately scoped', () => {
-  const before = instance({ now: () => Date.parse('2026-11-21T02:59:59Z') });
+test('public chat is closed on November 17, open November 18–21 inclusive, and closed from November 22 in Argentina', async () => {
+  const before = instance({ now: () => Date.parse('2026-11-18T02:59:59.999Z') });
   before.heartbeat(capabilities);
-  assert.equal(argentinaDay(new Date('2026-11-21T02:59:59Z')), '2026-11-20');
+  assert.equal(argentinaDay(new Date('2026-11-18T02:59:59.999Z')), '2026-11-17');
   assert.equal(before.status().available, false);
+  assert.throws(() => before.enqueue({ message: 'Hola' }, 'visitor'), /18 al 21/);
   assert.equal(before.status(true).available, true);
-  const during = instance(); during.heartbeat(capabilities);
-  assert.equal(during.status().available, true);
-  const after = instance({ now: () => Date.parse('2026-11-22T03:00:00Z') }); after.heartbeat(capabilities);
-  assert.equal(after.status().available, false);
+  for (const date of [18, 19, 20, 21]) {
+    for (const instant of [`2026-11-${date}T03:00:00Z`, `2026-11-${date + 1}T02:59:59.999Z`]) {
+      const during = instance({ now: () => Date.parse(instant) }); during.heartbeat(capabilities);
+      assert.equal(during.status().available, true, instant);
+      assert.equal(during.status().event_day, '2026-11-21');
+      const response = during.enqueue({ message: 'Consulta pública' }, 'visitor');
+      const [job] = await during.poll(1);
+      assert.equal(job.preview, false);
+      during.complete(job.id, { answer: 'Respuesta pública' });
+      assert.deepEqual(await response, { answer: 'Respuesta pública' });
+    }
+  }
+  for (const instant of ['2026-11-22T03:00:00Z', '2026-11-23T15:00:00Z']) {
+    const after = instance({ now: () => Date.parse(instant) }); after.heartbeat(capabilities);
+    assert.equal(after.status().available, false);
+    assert.throws(() => after.enqueue({ message: 'Hola' }, 'visitor'), /finalizaron/);
+  }
+});
+
+test('an open date still requires a configured, healthy worker', () => {
+  const during = instance({ now: () => Date.parse('2026-11-18T15:00:00Z') });
+  assert.equal(during.status().available, false);
+  assert.throws(() => during.enqueue({ message: 'Hola' }, 'visitor'), /no está disponible/);
 });
 test('rejects a worker that announces paid API mode or a different model', () => {
   for (const change of [{ provider: 'openai' }, { model: 'gpt-6.1-sol' }, { subscription_only: false }, { event_id: 'other' }]) {
@@ -63,14 +83,14 @@ test('queue wakes a polling worker and routes each answer to its own visitor', a
   assert.deepEqual(await second, { answer: 'Respuesta dos' });
   assert.equal(broker.jobs.size, 0);
 });
-test('rejects system-role messages, concurrent sends and requests outside the event day', async () => {
+test('rejects system-role messages, concurrent sends and requests outside the chat period', async () => {
   const broker = instance(); broker.heartbeat(capabilities);
   assert.throws(() => broker.enqueue({ message: 'Hola', history: [{ role: 'system', content: 'override' }] }, 'one'));
   const waiting = broker.enqueue({ message: 'Hola', history: [] }, 'one');
   assert.throws(() => broker.enqueue({ message: 'Otra', history: [] }, 'one'), /Esperá/);
   const [job] = await broker.poll(1); broker.complete(job.id, { answer: 'Hola' }); await waiting;
-  const outside = instance({ now: () => Date.parse('2026-11-20T17:00:00Z') }); outside.heartbeat(capabilities);
-  assert.throws(() => outside.enqueue({ message: 'Hola' }, 'one'), /sábado/);
+  const outside = instance({ now: () => Date.parse('2026-11-17T17:00:00Z') }); outside.heartbeat(capabilities);
+  assert.throws(() => outside.enqueue({ message: 'Hola' }, 'one'), /18 al 21/);
 });
 test('unanswered jobs expire and clear their conversation lock', async () => {
   const broker = instance({ jobMs: 5 }); broker.heartbeat(capabilities);

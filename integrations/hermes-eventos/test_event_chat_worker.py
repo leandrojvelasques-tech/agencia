@@ -1,5 +1,7 @@
 import unittest
-from event_chat_worker import allowed, verify_inventory, final_answer, TOOLS, EVENT_ID, signing_message
+import datetime as dt
+from unittest.mock import patch
+from event_chat_worker import allowed, verify_inventory, final_answer, TOOLS, EVENT_ID, EVENT_DAY, signing_message
 
 
 class WorkerTests(unittest.TestCase):
@@ -14,13 +16,32 @@ class WorkerTests(unittest.TestCase):
 
     def test_date_and_preview(self):
         job = {'event_id': EVENT_ID, 'preview': False}
-        self.assertFalse(allowed(job, '2026-11-20'))
-        self.assertTrue(allowed(job, '2026-11-21'))
-        self.assertFalse(allowed(job, '2026-11-22'))
+        self.assertEqual(EVENT_DAY, '2026-11-21')
+        for date in ('2026-11-17', '2026-11-22', '2026-11-23'):
+            self.assertFalse(allowed(job, date), date)
+        for date in ('2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21'):
+            self.assertTrue(allowed(job, date), date)
+            self.assertFalse(allowed({**job, 'event_id': 'other'}, date), date)
         job['preview'] = True
-        self.assertTrue(allowed(job, '2026-11-20'))
+        self.assertTrue(allowed(job, '2026-11-17'))
         self.assertFalse(allowed(job, '2026-11-22'))
         self.assertFalse(allowed({**job, 'event_id': 'other'}, '2026-11-21'))
+
+    def test_argentina_midnight_boundaries(self):
+        for instant, expected in (
+            ('2026-11-18T02:59:59.999+00:00', False),
+            ('2026-11-18T03:00:00+00:00', True),
+            ('2026-11-22T02:59:59.999+00:00', True),
+            ('2026-11-22T03:00:00+00:00', False),
+        ):
+            frozen = dt.datetime.fromisoformat(instant)
+            class FrozenDateTime(dt.datetime):
+                @classmethod
+                def now(cls, tz=None):
+                    self.assertEqual(tz.key, 'America/Argentina/Buenos_Aires')
+                    return frozen.astimezone(tz)
+            with patch('event_chat_worker.dt.datetime', FrozenDateTime):
+                self.assertEqual(allowed({'event_id': EVENT_ID, 'preview': False}), expected, instant)
 
     def test_toolsets_fail_closed(self):
         verify_inventory([{'name': 'mcp-leandro-eventos', 'enabled': True, 'tools': list(TOOLS)}])

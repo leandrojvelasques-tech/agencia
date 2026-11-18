@@ -27,7 +27,7 @@ La carpeta de destino es la misma de `eventos_mcp.py`.
    log privado del perfil. No registrar preguntas, respuestas ni credenciales.
 5. Verificar heartbeat y conversación real en la vista privada del organizador.
 
-El canal público está limitado al 21/11/2026 según Buenos Aires. Antes de esa
+El canal público está habilitado del 18 al 21/11/2026 inclusive según Buenos Aires. Antes de esa
 fecha solo admite pruebas del organizador autenticado en Supabase. El proceso
 termina después del día del evento. El formulario funciona de forma independiente.
 

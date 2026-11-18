@@ -22,6 +22,7 @@ RELAY = 'https://www.leandrovelasques.com.ar/api/event-chat-relay'
 LOCAL = 'http://127.0.0.1:8642/p/asistente-eventos'
 EVENT_ID = 'd9962e70-4b7a-44be-b6f3-20151c810bdb'
 EVENT_DAY = '2026-11-21'
+CHAT_START_DAY = '2026-11-18'
 TOOLS = {'get_event_information', 'list_event_materials', 'read_event_text', 'view_event_slide', 'get_registration_instructions'}
 CAPABILITIES = dict(model='gpt-6-luna', provider='openai-codex', subscription_only=True, event_id=EVENT_ID)
 SYSTEM = '''Sos el asistente de la charla de agentes de IA del CPCE Chubut del 21/11/2026.
@@ -42,7 +43,7 @@ def day():
 
 def allowed(job, today=None):
     today = today or day()
-    return (today == EVENT_DAY or (today < EVENT_DAY and job.get('preview') is True)) and job.get('event_id') == EVENT_ID
+    return (CHAT_START_DAY <= today <= EVENT_DAY or (today < CHAT_START_DAY and job.get('preview') is True)) and job.get('event_id') == EVENT_ID
 
 
 def signing_message(raw, timestamp, nonce):
