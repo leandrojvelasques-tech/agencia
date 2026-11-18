@@ -1,11 +1,13 @@
 # Lectura privada de inscripciones para Hermes
 
-Estado al 18/11/2026: implementado y probado localmente con datos sintéticos.
-No está desplegado, no está conectado a Hermes y no hay reportes activos.
+Estado de publicación y conexión del 18/11/2026: ver `PRODUCTION-VALIDATION.md`.
+La API está publicada y el adaptador privado está instalado. No hay reportes
+ni envíos programados. `LOCAL-VALIDATION.md` conserva la evidencia de la etapa local.
 
 Rama: `codex/event-registration-readonly-20261118`, creada desde el commit
-`45378e4` de `codex/eventos-agentes-20261117`. No se hizo push ni commit.
-El estado del servidor de producción no fue inspeccionado.
+`45378e4` de `codex/eventos-agentes-20261117`. La publicación web usa la rama
+productiva existente `codex/hostinger-dokploy-files`; los commits exactos y la
+verificación operativa figuran en el informe de producción.
 
 ## Diagnóstico y decisión
 
@@ -29,9 +31,11 @@ Fuentes revisadas:
 El MCP existente se usa en el perfil del asistente público. Consulta la
 información pública del evento y materiales, sin inscripciones. **No se le
 agrega el acceso a participantes.** El código nuevo ofrece una API HTTP privada
-y un adaptador Python sin dependencias para el Hermes privado. No agrega otro
-servidor MCP. La conexión efectiva del adaptador como herramienta de Hermes
-queda pendiente de comprobar en el perfil privado que se elija.
+y un cliente Python sin dependencias para el Hermes privado. La etapa de
+conexión agrega un adaptador stdio de dos herramientas (`registration_mcp.py`)
+que reutiliza el SDK MCP ya instalado en Hermes. Permite consultarlas en lenguaje
+natural sin agregar puertos ni un servicio de red. Se mantiene separado del MCP
+del asistente público.
 
 La fuente es una RPC nueva de Supabase. Un envoltorio `SECURITY INVOKER` llama
 a una función `SECURITY DEFINER` en un esquema nuevo y privado. La elevación
@@ -81,7 +85,8 @@ actual. Las novedades usan esa misma definición, dentro de `[from, cutoff)`.
   correo no nulo único en participantes; el alta reutiliza el participante por
   correo y trata `23505` como inscripción existente. No se agrega deduplicación
   por persona; el consumidor deduplica entregas por `id` de inscripción.
-- El esquema vivo puede haber cambiado: no se verificó en producción. El SQL
+- En la etapa de publicación se verificaron las columnas necesarias del esquema
+  vivo, sin leer personas. El SQL
   local del esquema tampoco contiene todas las columnas posteriores; antes de
   desplegar hay que validar sólo estructura, permisos y configuración, sin
   leer participantes. No se aplicó el esquema histórico completo.
@@ -241,7 +246,8 @@ del navegador, al frontend ni a un archivo versionado. No se necesitan variables
 VITE para este acceso. El servidor sólo conserva el hash en su configuración;
 recibe la credencial desde Hermes y la presenta por HTTPS a la RPC.
 
-No se generó ninguna credencial real. Cuando se apruebe la activación:
+El secreto real se aprovisionó en el entorno privado; no figura en este documento.
+Para renovar o reconstruir el acceso, usar este procedimiento:
 
 1. Generar al menos 32 bytes aleatorios con una herramienta de secretos, codificar
    en base64url sin relleno y calcular SHA-256 sobre ese texto UTF-8 exacto.
@@ -282,8 +288,9 @@ Con esa herramienta conectada y verificada, Hermes podrá responder consultas
 como «¿cuántas inscripciones hay?» o «mostrame las nuevas desde ayer». Deberá
 convertir horarios de Argentina a UTC antes de invocar la API. El adaptador
 consulta una página por invocación; Hermes debe seguir `next_cursor`.
-La configuración real y el mecanismo de habilitar herramientas en ese perfil
-no se inspeccionaron ni modificaron. No se declara una conexión funcional todavía.
+La conexión nativa instalada usa `registration_mcp.py` y el SDK existente de
+Hermes. La entrada MCP, el perfil, los propietarios de archivos y las pruebas
+operativas se detallan en `PRODUCTION-VALIDATION.md`.
 
 ## Despliegue y reversión: procedimiento sin ejecutar
 
@@ -314,7 +321,7 @@ drop schema cpce_registration_private;
 ```
 
 Sin `CASCADE`: si surgieron dependencias nuevas, detener y revisar. No se tocan
-registros, participantes ni formularios. Ninguno de estos pasos se ejecutó.
+registros, participantes ni formularios. La reversión no se ejecutó.
 
 ## Pruebas locales
 
@@ -332,9 +339,7 @@ gateway alojado de Supabase ni la configuración real de PostgREST/Dokploy/Herme
 
 ## Decisiones pendientes
 
-- Aprobar despliegue, aprovisionar la credencial y fijar su vencimiento.
-- Verificar estructura y permisos del entorno real sin consultar participantes.
-- Elegir y conectar el perfil privado de Hermes.
+- Renovar o revocar la credencial antes de su vencimiento si corresponde.
 - Confirmar definición alternativa de total o exclusión de pruebas, si se desea.
 - Para reportes posteriores: destinatario operativo, horarios (8:00 y 20:00
   siguen sin confirmar), zona America/Argentina/Buenos_Aires, primer período,
