@@ -111,7 +111,7 @@ def run_server():
         return read_text(material_id)
 
     @server.tool(annotations=annotations)
-    def view_event_slide(material_id: MaterialId) -> Image:
+    def view_event_slide(material_id: MaterialId):
         """Ver una diapositiva concreta para comprender el contenido visual. No distribuir imágenes al visitante."""
         return Image(path=str(material_path(material_id, True)))
 
