@@ -94,7 +94,12 @@ export default function EventAssistantBubble({ registrationPath, designPreview =
         {!status?.available && <p className="event-assistant-pending">{designPreview ? 'Vista previa del asistente. La conversación estará disponible el día del encuentro.' : status?.message || 'Consultando disponibilidad…'}</p>}
         {status?.available && <form className="event-assistant-compose" onSubmit={send}>
           <label htmlFor="event-assistant-question">Tu consulta sobre el evento</label>
-          <textarea id="event-assistant-question" value={draft} maxLength={1500} rows={2} disabled={sending} onChange={event => setDraft(event.target.value)} placeholder="¿Qué vamos a ver en la charla?" />
+          <textarea id="event-assistant-question" value={draft} maxLength={1500} rows={2} disabled={sending} onChange={event => setDraft(event.target.value)} onKeyDown={event => {
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+              event.preventDefault()
+              if (!event.repeat) event.currentTarget.form?.requestSubmit()
+            }
+          }} aria-description="Enter para enviar. Shift + Enter para agregar un renglón." placeholder="¿Qué vamos a ver en la charla?" />
           <button type="submit" disabled={sending || !draft.trim()}>{sending ? 'Respondiendo…' : 'Enviar consulta →'}</button>
         </form>}
         <a href={registrationPath}>Ir a la inscripción <span aria-hidden="true">→</span></a>
