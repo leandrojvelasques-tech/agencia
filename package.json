@@ -1,5 +1,11 @@
 {
+  "scripts": {
+    "test:registration-reader": "node --test tests/event-registration-reader.test.js"
+  },
   "dependencies": {
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14"
   }
 }
