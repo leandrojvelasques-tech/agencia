@@ -6,6 +6,7 @@ import { useStore } from '../../store/useStore'
 import { EVENT_PROFESSIONS, validateEventRegistration } from '../../lib/agentsEvent'
 import { getArgentinaDateKey } from '../../lib/eventPricing'
 import '../../styles/agents-event.css'
+import EventAssistantBubble from '../../components/EventAssistantBubble'
 
 const Icon = ({ children }) => <span className="material-symbols-outlined" aria-hidden="true">{children}</span>
 const TOPICS = [
@@ -77,6 +78,7 @@ export default function AgentsEventPage({ event, registration = false, preview =
         {preview && <section className="ae-assistant-proposal"><Icon>chat_bubble</Icon><div><h2>Un asistente para consultar sobre el evento</h2><p>Este espacio se conectará con el agente de eventos en Hermes. La conversación todavía no está activada.</p></div><span>En preparación</span></section>}
       </>}
     </main>
+    {preview && !registration && <EventAssistantBubble registrationPath={registrationPath} />}
     <footer className="ae-footer"><span>{event.organizer || 'Comisión de Jóvenes Profesionales · CPCE Chubut'}</span><a href="https://www.leandrovelasques.com.ar">Lic. Leandro Velasques <Icon>north_east</Icon></a></footer>
   </div>
 }
