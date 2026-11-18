@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from urllib.error import HTTPError
 import registration_reader as client
+import registration_mcp as private_mcp
 
 TOKEN = "fictional_test_credential_000000000000000000000000"
 
@@ -42,6 +43,11 @@ class ReaderTests(unittest.TestCase):
 
     def test_redirects_are_blocked(self):
         self.assertIsNone(client.NoRedirect().redirect_request(None, None, 302, None, None, "https://other.invalid"))
+
+    @patch.dict(os.environ, {"HERMES_HOME": "/opt/data/profiles/asistente-eventos"})
+    def test_public_profile_cannot_load_private_adapter(self):
+        with self.assertRaises(ValueError):
+            private_mcp.load_private_credential()
 
 
 if __name__ == "__main__":
