@@ -8,22 +8,24 @@
 .event-assistant-greeting strong { font-size: 12px; font-weight: 600; }
 .event-assistant-greeting > span { color: #285a47; font-size: 12px; font-weight: 700; }
 .event-assistant-greeting b { color: #8b543c; padding-left: 18px; font-size: 15px; }
-.event-assistant-panel { width: min(350px, calc(100vw - 32px)); margin-bottom: 14px; background: white; border: 1px solid #d8e1dc; border-radius: 16px; box-shadow: 0 12px 48px #25302c26; overflow: auto; max-height: calc(100dvh - 120px); }
-.event-assistant-panel > header { display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: #285a47; color: white; }
+.event-assistant-panel { display: flex; flex-direction: column; width: min(350px, calc(100vw - 32px)); max-height: calc(100dvh - 120px); margin-bottom: 14px; background: white; border: 1px solid #d8e1dc; border-radius: 16px; box-shadow: 0 12px 48px #25302c26; overflow: hidden; }
+.event-assistant-panel.is-connected { height: min(620px, calc(100dvh - 120px)); }
+.event-assistant-panel > header { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding: 13px 16px; background: #285a47; color: white; }
 .event-assistant-mini { display: grid; place-items: center; width: 44px; height: 44px; }
 .event-assistant-mini svg { width: 44px; height: 44px; }
 .event-assistant-panel header h2 { font-size: 16px; font-weight: 700; color: white; }
 .event-assistant-panel header p { font-size: 10px; color: #dbeee4; margin-top: 3px; }
 .event-assistant-panel header button { display: grid; place-items: center; margin-left: auto; width: 34px; height: 34px; font-size: 26px; line-height: 1; cursor: pointer; border-radius: 6px; }
 .event-assistant-panel header button:hover { background: #ffffff18; }
-.event-assistant-content { padding: 20px; }
+.event-assistant-content { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 16px; overflow: hidden; }
 .event-assistant-preview { display: block; color: #8b543c; font-size: 10px; margin-bottom: 15px; }
 .event-assistant-message { padding: 15px; background: #edf3ef; border-radius: 1px 12px 12px 12px; font-size: 13px; line-height: 1.8; }
 .event-assistant-pending { font-size: 11px; color: #4f4c4d; line-height: 1.8; margin: 15px 0; }
 .event-assistant-content > a { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1px solid #d8e1dc; border-radius: 7px; color: #285a47; font-size: 12px; font-weight: 600; margin-top: 8px; }
 .event-assistant-content > a:hover { background: #edf3ef; }
-.event-assistant-panel > footer { border-top: 1px solid #e4e9e6; padding: 12px 16px; color: #4f4c4d; font-size: 9px; text-align: center; }
-.event-assistant-messages { overflow-y: auto; max-height: min(290px, 34dvh); overscroll-behavior: contain; }
+.event-assistant-panel > footer { flex-shrink: 0; border-top: 1px solid #e4e9e6; padding: 12px 16px; color: #4f4c4d; font-size: 9px; text-align: center; }
+.event-assistant-messages { flex: 1; min-height: 45px; overflow-y: auto; overscroll-behavior: contain; }
+.event-assistant-content > :not(.event-assistant-messages) { flex-shrink: 0; }
 .event-assistant-messages .event-assistant-message { margin-bottom: 10px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
 .event-assistant-message.event-assistant-user { background: #285a47; color: white; margin-left: 25px; border-radius: 12px 1px 12px 12px; }
 .event-assistant-compose { display: grid; gap: 8px; margin-top: 12px; }

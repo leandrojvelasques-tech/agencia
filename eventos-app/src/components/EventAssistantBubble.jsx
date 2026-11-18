@@ -80,7 +80,7 @@ export default function EventAssistantBubble({ registrationPath, designPreview =
   }
 
   return <aside className="event-assistant-widget" aria-label="Asistente del evento">
-    {open && <section className="event-assistant-panel" role="dialog" aria-labelledby="event-assistant-heading">
+    {open && <section className={`event-assistant-panel${status?.available ? ' is-connected' : ''}`} role="dialog" aria-labelledby="event-assistant-heading">
       <header><div className="event-assistant-mini"><AssistantCharacter /></div><div><h2 id="event-assistant-heading">Asistente del evento</h2><p>Consultas e inscripción</p></div><button ref={closeButton} type="button" onClick={close} aria-label="Cerrar asistente"><span aria-hidden="true">×</span></button></header>
       <div className="event-assistant-content">
         {status?.preview && <span className="event-assistant-preview">Prueba privada del organizador</span>}
