@@ -23,6 +23,17 @@
 .event-assistant-content > a { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1px solid #d8e1dc; border-radius: 7px; color: #285a47; font-size: 12px; font-weight: 600; margin-top: 8px; }
 .event-assistant-content > a:hover { background: #edf3ef; }
 .event-assistant-panel > footer { border-top: 1px solid #e4e9e6; padding: 12px 16px; color: #4f4c4d; font-size: 9px; text-align: center; }
+.event-assistant-messages { overflow-y: auto; max-height: min(290px, 34dvh); overscroll-behavior: contain; }
+.event-assistant-messages .event-assistant-message { margin-bottom: 10px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.event-assistant-message.event-assistant-user { background: #285a47; color: white; margin-left: 25px; border-radius: 12px 1px 12px 12px; }
+.event-assistant-compose { display: grid; gap: 8px; margin-top: 12px; }
+.event-assistant-compose label { font-size: 11px; color: #4f4c4d; }
+.event-assistant-compose textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #becfc4; border-radius: 8px; font: inherit; font-size: 16px; resize: vertical; max-height: 120px; background: white; color: #25302c; }
+.event-assistant-compose button { border: 0; border-radius: 7px; padding: 11px; color: white; background: #285a47; cursor: pointer; font-size: 12px; font-weight: 600; }
+.event-assistant-compose button:disabled { opacity: .55; cursor: default; }
+.event-assistant-error { color: #8b392c; font-size: 12px; line-height: 1.6; }
+.event-assistant-restart { display: block; margin: 12px auto 0; color: #4f4c4d; font-size: 11px; text-decoration: underline; cursor: pointer; }
+.event-assistant-widget :focus-visible { outline: 3px solid #b86f4d; outline-offset: 3px; }
 @keyframes assistant-wave { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-18deg); } 60% { transform: rotate(8deg); } }
 @keyframes assistant-blink { 0%,40%,48%,100% { transform: scaleY(1); } 44% { transform: scaleY(.12); } }
 @media (max-width: 640px) { .event-assistant-widget { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); } .event-assistant-avatar { width: 61px; height: 61px; border-radius: 21px 21px 7px 21px; } .event-assistant-avatar svg { width: 55px; height: 55px; } .event-assistant-greeting { padding: 11px 13px; } .event-assistant-greeting strong,.event-assistant-greeting > span { font-size: 11px; } }

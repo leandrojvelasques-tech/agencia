@@ -85,7 +85,7 @@ export default function AgentsEventPage({ event, registration = false, preview =
         <section className="ae-participate"><div><p className="ae-kicker">PARTICIPÁ DEL ENCUENTRO</p><h2>Traé tus preguntas.</h2><p>Podés dejar tus datos y solicitar las diapositivas de la charla.</p></div>{(preview || registrationOpen) ? <a className="ae-button" href={registrationPath}>Completar inscripción <Icon>arrow_forward</Icon></a> : <p className="ae-closed">Inscripciones aún no abiertas.</p>}</section>
       </>}
     </main>
-    {preview && !registration && <EventAssistantBubble registrationPath={registrationPath} />}
+    {!registration && <EventAssistantBubble registrationPath={registrationPath} designPreview={preview} />}
     <footer className="ae-footer"><span>{event.organizer || 'Comisión de Jóvenes Profesionales · CPCE Chubut'}</span><a href="https://www.leandrovelasques.com.ar">Lic. Leandro Velasques <Icon>north_east</Icon></a></footer>
   </div>
 }

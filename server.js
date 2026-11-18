@@ -3,6 +3,7 @@ const http = require('http');
 const path = require('path');
 const { findAccess } = require('./private/reportAccess');
 const { renderHomeWorkshop } = require('./lib/homeWorkshop');
+const { handleEventChat } = require('./lib/eventChatHttp');
 
 const port = Number(process.env.PORT || 3000);
 const rootDir = __dirname;
@@ -134,6 +135,8 @@ const server = http.createServer(async (req, res) => {
     const pathname = decodeURIComponent(requestUrl.pathname);
     const query = Object.fromEntries(requestUrl.searchParams.entries());
     const apiMatch = pathname.match(/^\/api\/([a-z-]+)\/?$/);
+
+    if (await handleEventChat(req, res, requestUrl)) return;
 
     if (apiMatch && apiHandlers[apiMatch[1]]) return runApiHandler(req, res, apiHandlers[apiMatch[1]], query);
 
