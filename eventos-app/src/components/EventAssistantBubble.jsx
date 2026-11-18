@@ -52,11 +52,11 @@ export default function EventAssistantBubble({ registrationPath, designPreview =
   useEffect(() => {
     if (!open) return
     closeButton.current?.focus()
-    const onKeyDown = event => { if (event.key === 'Escape') { setOpen(false); launcher.current?.focus() } }
+    const onKeyDown = event => { if (event.key === 'Escape') { setOpen(false); requestAnimationFrame(() => launcher.current?.focus()) } }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open])
-  const close = () => { setOpen(false); launcher.current?.focus() }
+  const close = () => { setOpen(false); requestAnimationFrame(() => launcher.current?.focus()) }
   async function send(event) {
     event.preventDefault()
     if (!draft.trim() || sending || !status?.available) return
@@ -79,7 +79,7 @@ export default function EventAssistantBubble({ registrationPath, designPreview =
     } finally { setSending(false) }
   }
 
-  return <aside className="event-assistant-widget" aria-label="Asistente del evento">
+  return <aside className={`event-assistant-widget${open ? ' is-open' : ''}`} aria-label="Asistente del evento">
     {open && <section className={`event-assistant-panel${status?.available ? ' is-connected' : ''}`} role="dialog" aria-labelledby="event-assistant-heading">
       <header><div className="event-assistant-mini"><AssistantCharacter /></div><div><h2 id="event-assistant-heading">Asistente del evento</h2><p>Consultas e inscripción</p></div><button ref={closeButton} type="button" onClick={close} aria-label="Cerrar asistente"><span aria-hidden="true">×</span></button></header>
       <div className="event-assistant-content">
