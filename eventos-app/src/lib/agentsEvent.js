@@ -5,6 +5,7 @@ export function validateEventRegistration(values) {
   const errors = {}
   if (!values.first_name?.trim()) errors.first_name = 'Ingresá tu nombre.'
   if (!values.last_name?.trim()) errors.last_name = 'Ingresá tu apellido.'
+  if (!values.residence_city?.trim()) errors.residence_city = 'Ingresá tu ciudad de residencia.'
   if (!EVENT_PROFESSIONS.includes(values.profession)) errors.profession = 'Seleccioná tu profesión.'
   if (values.profession === EVENT_PROFESSIONS.at(-1) && !values.other_profession?.trim()) errors.other_profession = 'Indicanos cuál es tu profesión.'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email?.trim() || '')) errors.email = 'Ingresá un correo electrónico válido.'

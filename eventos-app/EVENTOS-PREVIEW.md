@@ -16,8 +16,8 @@ Abrir `http://127.0.0.1:5187/preview.html?view=landing`. La barra superior permi
 ## Cambios preparados
 
 - Página y formulario de la charla, con los recursos gráficos existentes.
-- Nombre, apellido, profesión y correo; solicitud opcional de diapositivas. Revisión antes de confirmar.
-- Integración con `selfRegister`: datos de la persona en `participants`; profesión y solicitud de material en `registrations.survey_responses`.
+- Nombre, apellido, profesión, ciudad de residencia y correo; solicitud opcional de diapositivas. Revisión antes de confirmar.
+- Integración con `selfRegister`: datos de la persona en `participants`; profesión, ciudad de residencia y solicitud de material en `registrations.survey_responses`.
 - Catálogo del gestor más compacto, próximo evento destacado, filtros y accesos a participantes.
 - Novedades en una fila: cuatro tarjetas en escritorio, tres o dos en anchos intermedios, una en celular. Flechas, teclado y desplazamiento táctil.
 - Tarjeta de la Oficina Anticorrupción con estado finalizado. Es contenido estático de la portada; no hay un evento coincidente en la base consultada.
