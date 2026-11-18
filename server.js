@@ -9,6 +9,7 @@ const rootDir = __dirname;
 const appDir = path.join(rootDir, '_app');
 
 const apiHandlers = {
+  'event-assistant-context': require('./api/event-assistant-context'),
   'brevo-check': require('./api/brevo-check'),
   'brevo-test': require('./api/brevo-test'),
   'event-meta': require('./api/event-meta'),
