@@ -6,6 +6,8 @@ import { es } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
 import { getPublicMeetLink } from '../../lib/publicMeetAccess'
 import ChatGptWorkBrochure from './ChatGptWorkBrochure'
+import AgentsEventPage from './AgentsEventPage'
+import { AGENTS_EVENT_SLUG } from '../../lib/agentsEvent'
 
 const ensureAbsoluteUrl = (url) => {
   if (!url) return ''
@@ -79,6 +81,8 @@ export default function EventLanding() {
       </div>
     )
   }
+
+  if (event.slug === AGENTS_EVENT_SLUG) return <AgentsEventPage event={event} />
 
   if (event.landing_template === 'chatgpt-work') {
     return <ChatGptWorkBrochure event={event} />

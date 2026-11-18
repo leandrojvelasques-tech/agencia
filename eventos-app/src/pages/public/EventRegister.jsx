@@ -7,6 +7,8 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { getArgentinaDateKey, getApplicablePriceTier, isDateBasedPriceSchedule, formatArsPrice } from '../../lib/eventPricing'
 import NovemberWorkshopRegistration from './NovemberWorkshopRegistration'
+import AgentsEventPage from './AgentsEventPage'
+import { AGENTS_EVENT_SLUG } from '../../lib/agentsEvent'
 import { NOVEMBER_WORKSHOP_SLUG } from '../../lib/novemberRegistration'
 
 const formatEventDate = (dateStr) => {
@@ -287,6 +289,8 @@ export default function EventRegister() {
 
   const searchParams = new URLSearchParams(window.location.search)
   const isPreview = searchParams.get('preview') === 'true'
+
+  if (event?.slug === AGENTS_EVENT_SLUG) return <AgentsEventPage event={event} registration />
 
   if (event?.slug === NOVEMBER_WORKSHOP_SLUG) return <NovemberWorkshopRegistration event={event} registrations={regs} />
 

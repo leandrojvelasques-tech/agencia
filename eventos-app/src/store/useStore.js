@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { getApplicablePriceTier, getArgentinaDateKey, getPriceAmount } from '../lib/eventPricing'
 import { NOVEMBER_WORKSHOP_SLUG, REGISTRATION_DOCUMENT_BUCKET, ARGENTINA_PROVINCES } from '../lib/novemberRegistration'
+import { AGENTS_EVENT_SLUG } from '../lib/agentsEvent'
 
 export const useStore = create((set, get) => ({
   // State
@@ -383,6 +384,7 @@ export const useStore = create((set, get) => ({
     const event = await get().getEventBySlug(eventSlug)
     if (!event) return { success: false, error: 'Evento no encontrado' }
     if (!['published', 'in_progress'].includes(event.status)) return { success: false, error: 'Este evento no está disponible' }
+    if (event.slug === AGENTS_EVENT_SLUG && !event.registrations_open) return { success: false, error: 'Las inscripciones de este evento están cerradas.' }
 
     const { attendance_mode = 'presencial', selected_date = null, survey_responses = null, payment_receipt_url = null, secondParticipant = null, private_details = null, ...pData } = participantData
     const isNovemberWorkshop = event.slug === NOVEMBER_WORKSHOP_SLUG

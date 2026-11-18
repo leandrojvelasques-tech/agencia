@@ -54,7 +54,7 @@ export default function AdminLayout() {
                 LEANDRO VELASQUES
               </span>
               <span className="text-[10px] font-semibold text-[var(--color-dark-gray)]/60 mt-1 tracking-tight">
-                Gestor de Eventos
+                Panel de gestión
               </span>
             </div>
           </a>
@@ -100,17 +100,18 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Top bar */}
         <header className="sticky top-0 z-30 glass-nav px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
               onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menú de administración"
               className="lg:hidden mr-4 text-[var(--color-dark-gray)] hover:text-[var(--color-deep-green)] transition-colors"
             >
               <span className="material-symbols-outlined text-2xl">menu</span>
             </button>
-            <div className="flex-1" />
+            <p className="text-xs font-medium text-[var(--color-dark-gray)]/70">Lic. Leandro Velasques <span className="mx-2 text-[var(--color-deep-green)]/25">/</span> Administración</p>
           </div>
         </header>
 
