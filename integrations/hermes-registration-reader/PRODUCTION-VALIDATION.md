@@ -70,7 +70,12 @@ real del servicio, no solamente como root, y consultó la API pública con éxit
 - La misma consulta por la ruta API principal habitual también respondió
   «Total: 1 inscripción», con corte `18/11/2026, 14:34:46 UTC`.
 - Endpoint público sin credencial: HTTP 401, `credential_required`.
+- Credencial incorrecta: HTTP 403; selector de otro evento: HTTP 400;
+  intento DELETE con credencial válida: HTTP 405. Los cuatro casos conservan
+  `Cache-Control` sin almacenamiento público.
 - Contexto público y estado del chat: HTTP 200 y respuestas sin caché.
+- Inicio, administración sin sesión, landing e inscripción: HTTP 200.
+- Worker público `event_chat_worker.py --check`: «Profile and five event tools verified».
 
 Las pruebas operativas de datos consultaron el total y un intervalo vacío. No se
 copiaron nombres, correos ni fichas de participantes a archivos o capturas.
