@@ -4,14 +4,16 @@ import '../styles/event-assistant.css'
 
 function AssistantCharacter() {
   return <svg viewBox="0 0 80 80" fill="none" aria-hidden="true" className="event-assistant-character">
-    <path d="M40 19V12" stroke="#B86F4D" strokeWidth="3" strokeLinecap="round" />
-    <circle cx="40" cy="9" r="4" fill="#B86F4D" />
-    <path d="M17 26c0-5 4-9 9-9h28c5 0 9 4 9 9v23c0 5-4 9-9 9H39L26 67v-9c-5 0-9-4-9-9V26Z" fill="#A8D5C1" />
-    <rect x="23" y="25" width="34" height="24" rx="11" fill="#285A47" />
-    <g className="event-assistant-eyes"><ellipse cx="32" cy="35" rx="2.8" ry="3.7" fill="white" /><ellipse cx="48" cy="35" rx="2.8" ry="3.7" fill="white" /></g>
-    <path d="M36 42q4 4 8 0" stroke="white" strokeWidth="2" strokeLinecap="round" />
-    <path className="event-assistant-hand" d="M64 45q9-2 9-10" stroke="#A8D5C1" strokeWidth="5" strokeLinecap="round" />
-    <path d="M16 44q-6 0-7-6" stroke="#A8D5C1" strokeWidth="5" strokeLinecap="round" />
+    <rect x="10" y="29" width="8" height="24" rx="4" fill="#A6B5FF" />
+    <rect x="62" y="29" width="8" height="24" rx="4" fill="#A6B5FF" />
+    <path d="M24 15q16-8 32 0l7 15v20L53 64l-9 7h-8l-9-7-10-14V30l7-15Z" fill="#EDF1FF" />
+    <path d="M24 15l5 14-5 19 9 15M56 15l-5 14 5 19-9 15" stroke="#B4C0DF" strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="m35 17 5-3 5 3-5 4-5-4Z" fill="#7E91F2" />
+    <path d="M27 32h10v10H26l-3-5 4-5ZM53 32H43v10h11l3-5-4-5Z" fill="#263354" />
+    <g className="event-assistant-eyes"><path d="M28 37h6M46 37h6" stroke="#94DAFF" strokeWidth="3" strokeLinecap="round" /></g>
+    <path d="M40 33v16l-4 3h8" stroke="#9CAFD2" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+    <path d="M33 59h14" stroke="#4356AB" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M36 64h8" stroke="#B4C0DF" strokeWidth="2" strokeLinecap="round" />
   </svg>
 }
 
@@ -94,13 +96,13 @@ export default function EventAssistantBubble({ registrationPath, designPreview =
         {!status?.available && <p className="event-assistant-pending">{designPreview ? 'Vista previa del asistente. La conversación estará disponible el día del encuentro.' : status?.message || 'Consultando disponibilidad…'}</p>}
         {status?.available && <form className="event-assistant-compose" onSubmit={send}>
           <label htmlFor="event-assistant-question">Tu consulta sobre el evento</label>
-          <textarea id="event-assistant-question" value={draft} maxLength={1500} rows={2} disabled={sending} onChange={event => setDraft(event.target.value)} onKeyDown={event => {
+          <textarea id="event-assistant-question" value={draft} maxLength={1500} rows={2} enterKeyHint="send" disabled={sending} onChange={event => setDraft(event.target.value)} onKeyDown={event => {
             if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
               event.preventDefault()
               if (!event.repeat) event.currentTarget.form?.requestSubmit()
             }
-          }} aria-description="Enter para enviar. Shift + Enter para agregar un renglón." placeholder="¿Qué vamos a ver en la charla?" />
-          <button type="submit" disabled={sending || !draft.trim()}>{sending ? 'Respondiendo…' : 'Enviar consulta →'}</button>
+          }} aria-describedby="event-assistant-send-hint" placeholder="¿Qué vamos a ver en la charla?" />
+          <p id="event-assistant-send-hint" className="event-assistant-send-hint">Enter para enviar · Shift + Enter para otro renglón</p>
         </form>}
         <a href={registrationPath}>Ir a la inscripción <span aria-hidden="true">→</span></a>
         {messages.length > 0 && !sending && <button className="event-assistant-restart" type="button" onClick={() => { resetSession.current = true; setMessages([]); setError(''); setDraft('') }}>Nueva conversación</button>}
