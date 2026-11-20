@@ -3,18 +3,7 @@ import { supabase } from '../lib/supabase'
 import '../styles/event-assistant.css'
 
 function AssistantCharacter() {
-  return <svg viewBox="0 0 80 80" fill="none" aria-hidden="true" className="event-assistant-character">
-    <rect x="10" y="29" width="8" height="24" rx="4" fill="#A6B5FF" />
-    <rect x="62" y="29" width="8" height="24" rx="4" fill="#A6B5FF" />
-    <path d="M24 15q16-8 32 0l7 15v20L53 64l-9 7h-8l-9-7-10-14V30l7-15Z" fill="#EDF1FF" />
-    <path d="M24 15l5 14-5 19 9 15M56 15l-5 14 5 19-9 15" stroke="#B4C0DF" strokeWidth="2.5" strokeLinejoin="round" />
-    <path d="m35 17 5-3 5 3-5 4-5-4Z" fill="#7E91F2" />
-    <path d="M27 32h10v10H26l-3-5 4-5ZM53 32H43v10h11l3-5-4-5Z" fill="#263354" />
-    <g className="event-assistant-eyes"><path d="M28 37h6M46 37h6" stroke="#94DAFF" strokeWidth="3" strokeLinecap="round" /></g>
-    <path d="M40 33v16l-4 3h8" stroke="#9CAFD2" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-    <path d="M33 59h14" stroke="#4356AB" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M36 64h8" stroke="#B4C0DF" strokeWidth="2" strokeLinecap="round" />
-  </svg>
+  return <img src="/assets/event-assistant-robot.png" width="80" height="80" alt="" aria-hidden="true" draggable="false" className="event-assistant-character" />
 }
 
 async function ownerHeaders(ownerPreview) {
