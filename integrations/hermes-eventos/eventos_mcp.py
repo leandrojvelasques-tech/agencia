@@ -97,7 +97,7 @@ def run_server():
 
     @server.tool(annotations=annotations)
     def get_event_information() -> dict:
-        """Consultar los datos vigentes del evento público en el backoffice: fecha, horario, contenidos e inscripción. No contiene asistentes."""
+        """Consultar los datos vigentes del evento público en el backoffice: fecha, horario, contenidos, inscripción y presentation_url público. Compartir la presentación solo si la piden; no adjuntar archivos privados. No contiene asistentes."""
         return fetch_event_context()
 
     @server.tool(annotations=annotations)

@@ -42,3 +42,14 @@ test('reports closed registration after the event or on a completed event', asyn
 test('propagates source failure instead of supplying stale event details', async () => {
   await assert.rejects(loadEventAssistantContext({ fetchImpl: async () => ({ ok: false }), now }));
 });
+
+
+test('exposes only the approved public presentation and no newsletter subscription', async () => {
+  const result = await loadEventAssistantContext({ fetchImpl: source({ ...event,
+    presentation_url: 'https://private.invalid/material', participants: [{ email: 'synthetic@example.invalid' }],
+  }), now });
+  assert.equal(result.presentation_url, 'https://www.leandrovelasques.com.ar/presentacion/e348e08c-b0d3-46fd-a108-cfeff2eb8290');
+  assert.equal(result.communications.newsletter_consent_available, false);
+  assert.ok(!JSON.stringify(result).includes('private.invalid'));
+  assert.ok(!JSON.stringify(result).includes('synthetic@example.invalid'));
+});
